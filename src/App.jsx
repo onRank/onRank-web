@@ -1,8 +1,9 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import Login from './components/auth/Login'
-import Studies from './pages/Studies'  // 이 컴포넌트는 아직 만들어야 합니다
-import UserRegistration from './pages/UserRegistration'  // 추가
+import LoginPage from './pages/auth/LoginPage'
+import RegisterPage from './pages/auth/RegisterPage'
+import StudiesPage from './pages/study/StudiesPage'
+import ProtectedRoute from './components/auth/ProtectedRoute'
 import './App.css'
 
 function App() {
@@ -21,9 +22,16 @@ function App() {
           </header>
           <main>
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/studies" element={<Studies />} />
-              <Route path="/register" element={<UserRegistration />} />
+              <Route path="/" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
+              <Route 
+                path="/studies" 
+                element={
+                  <ProtectedRoute>
+                    <StudiesPage />
+                  </ProtectedRoute>
+                } 
+              />
             </Routes>
           </main>
         </div>
