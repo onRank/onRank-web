@@ -32,7 +32,7 @@ function LoginPage() {
 
       if (data.isNewUser) {
         navigate('/register', { 
-          state: { 
+          state: {
             email: decoded.email,
             name: decoded.name 
           }
