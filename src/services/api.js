@@ -2,18 +2,12 @@ import axios from 'axios'
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  withCredentials: true  // 쿠키 자동 전송
 })
 
-// 요청 인터셉터 추가
+// 토큰은 쿠키에 있으므로 인터셉터에서 헤더 추가 불필요
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
     return config
   },
   (error) => {
@@ -27,18 +21,11 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       try {
-        // PATCH /reissue-token 호출
-        const response = await authService.reissueToken()
-        const newToken = response.data.token
-        localStorage.setItem('token', newToken)
-        
+        // 토큰 갱신 (쿠키는 자동으로 처리됨)
+        await authService.reissueToken()
         // 실패했던 요청 재시도
-        const originalRequest = error.config
-        originalRequest.headers.Authorization = `Bearer ${newToken}`
-        return api(originalRequest)
+        return api(error.config)
       } catch (refreshError) {
-        // 리프레시 실패시 로그아웃
-        localStorage.removeItem('token')
         window.location.href = '/'
       }
     } else if (error.response?.status === 403) {
@@ -62,8 +49,11 @@ export const authService = {
   // POST /oauth/add - 회원 정보 입력
   addUserInfo: (userData) => api.post('/oauth/add', userData),
   
-  // POST /logout - 로그아웃
-  logout: () => api.post('/logout'),
+  // POST /logout - 로그아웃 (쿠키 삭제 처리)
+  logout: async () => {
+    await api.post('/logout')
+    window.location.href = '/'
+  },
   
   // PATCH /reissue-token - 토큰 리프레시
   reissueToken: () => api.patch('/reissue-token')

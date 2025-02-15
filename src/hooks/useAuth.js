@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { authService } from '../services/api'
+import { api } from '../services/api'
 
 export function useAuth() {
   const [user, setUser] = useState(null)
@@ -8,15 +8,14 @@ export function useAuth() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const userData = await authService.checkAuth()
-        setUser(userData)
+        const { data } = await api.get('/auth/check')
+        setUser(data)
       } catch (error) {
-        console.error('Auth check failed:', error)
+        setUser(null)
       } finally {
         setLoading(false)
       }
     }
-
     checkAuth()
   }, [])
 

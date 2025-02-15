@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react"
 import StudyList from "../../components/study/StudyList"
 import { studyService } from "../../services/api"
+import { useAuth } from "../../contexts/AuthContext"
+import { authService } from "../../services/api"
 
 function StudiesPage() {
+  const { user } = useAuth()
   const [studies, setStudies] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -25,13 +28,23 @@ function StudiesPage() {
     fetchStudies()
   }, [])
 
+  const handleLogout = async () => {
+    try {
+      await authService.logout()
+      // 로그아웃 후 자동으로 홈으로 리다이렉트 (api.js에서 처리)
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
   if (loading) {
     return <div>Loading studies...</div>
   }
 
   return (
     <div className="studies-container">
-      <h2>스터디 목록</h2>
+      <h2>안녕하세요, {user.nickname}님!</h2>
+      <button onClick={handleLogout}>로그아웃</button>
       {error && <div className="error-message">{error}</div>}
       <StudyList studies={studies} />
     </div>

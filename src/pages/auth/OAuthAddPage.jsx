@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../../services/api'  // api.js에서 authService import
+import { useAuth } from '../../contexts/AuthContext'
 
 function OAuthAddPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -11,6 +13,12 @@ function OAuthAddPage() {
     phoneNumber: '',
     department: ''  // 학과 정보 추가
   })
+
+  useEffect(() => {
+    if (user?.nickname) {
+      navigate('/studies')
+    }
+  }, [user, navigate])
 
   const handleChange = (e) => {
     const { name, value } = e.target
