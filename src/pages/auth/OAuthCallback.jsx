@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import LoadingSpinner from '../common/LoadingSpinner'
+import LoadingSpinner from '../../components/common/LoadingSpinner'
 
 function OAuthCallback() {
   const navigate = useNavigate()

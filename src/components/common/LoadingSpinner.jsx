@@ -5,4 +5,6 @@ function LoadingSpinner() {
       <p>로그인 처리중입니다...</p>
     </div>
   )
-} 
+}
+
+export default LoadingSpinner 
