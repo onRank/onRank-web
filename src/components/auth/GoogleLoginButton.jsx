@@ -1,25 +1,13 @@
 import { GoogleLogin } from '@react-oauth/google'
 
-function GoogleLoginButton({ onSuccess, isLoading }) {
-  const handleError = (error) => {
-    console.error('Login Failed:', error)
-  }
-
-  if (isLoading) {
-    return <div>Loading...</div>
-  }
-
+function GoogleLoginButton() {
   return (
-    <GoogleLogin
-      onSuccess={onSuccess}
-      onError={handleError}
-      useOneTap={false}
-      select_account={true}
-      flow="implicit"
-      auto_select={false}
-      ux_mode="popup"
-      cancel_on_tap_outside={false}
-    />
+    <a 
+      href={`${import.meta.env.VITE_API_URL}/oauth`}
+      className="google-login-button"
+    >
+      Google로 로그인하기
+    </a>
   )
 }
 

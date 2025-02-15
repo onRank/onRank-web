@@ -21,32 +21,52 @@ api.interceptors.request.use(
   }
 )
 
-// 응답 인터셉터 추가
+// 응답 인터셉터 개선
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/'
+      try {
+        // PATCH /reissue-token 호출
+        const response = await authService.reissueToken()
+        const newToken = response.data.token
+        localStorage.setItem('token', newToken)
+        
+        // 실패했던 요청 재시도
+        const originalRequest = error.config
+        originalRequest.headers.Authorization = `Bearer ${newToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        // 리프레시 실패시 로그아웃
+        localStorage.removeItem('token')
+        window.location.href = '/'
+      }
+    } else if (error.response?.status === 403) {
+      // 권한 없음
+      alert('접근 권한이 없습니다.')
+    } else if (error.response?.status === 404) {
+      // 리소스 없음
+      console.error('요청한 리소스를 찾을 수 없습니다.')
+    } else if (error.response?.status >= 500) {
+      // 서버 에러
+      alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     }
     return Promise.reject(error)
   }
 )
 
-export const postService = {
-  getPosts: () => api.get('/posts'),
-  getPost: (id) => api.get(`/posts/${id}`),
-  createPost: (data) => api.post('/posts', data),
-  updatePost: (id, data) => api.put(`/posts/${id}`, data),
-  deletePost: (id) => api.delete(`/posts/${id}`)
-}
-
-export const studentService = {
-  createStudent: async (studentData) => {
-    const response = await api.post('/students', studentData)
-    return response.data
-  },
-  // Add more student-related API calls
+export const authService = {
+  // POST /oauth - 구글 소셜 로그인
+  googleLogin: () => api.post('/oauth'),
+  
+  // POST /oauth/add - 회원 정보 입력
+  addUserInfo: (userData) => api.post('/oauth/add', userData),
+  
+  // POST /logout - 로그아웃
+  logout: () => api.post('/logout'),
+  
+  // PATCH /reissue-token - 토큰 리프레시
+  reissueToken: () => api.patch('/reissue-token')
 }
 
 export const studyService = {
