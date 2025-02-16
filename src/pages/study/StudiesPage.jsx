@@ -34,6 +34,7 @@ function StudiesPage() {
       // 로그아웃 후 자동으로 홈으로 리다이렉트 (api.js에서 처리)
     } catch (error) {
       console.error('Logout failed:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
     }
   }
 

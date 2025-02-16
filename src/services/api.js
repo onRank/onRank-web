@@ -1,7 +1,8 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+// api를 named export로 변경
+export const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL,  // 실제 API URL 사용
   withCredentials: true  // 쿠키 자동 전송
 })
 
@@ -76,5 +77,3 @@ export const studyService = {
   },
   // 필요한 다른 스터디 관련 API 호출 추가
 }
-
-export default api
