@@ -5,29 +5,18 @@ import { api } from '../../services/api'
 import LoadingSpinner from '../../components/LoadingSpinner'
 
 function ProtectedRoute({ children }) {
-  const navigate = useNavigate()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const { user, loading } = useAuth()
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        await api.get('/auth/check')  // 인증 확인 API
-        setIsAuthenticated(true)
-      } catch (error) {
-        navigate('/')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-    checkAuth()
-  }, [navigate])
-
-  if (isLoading) {
+  if (loading) {
     return <LoadingSpinner />
   }
 
-  return isAuthenticated ? children : null
+  // 인증되지 않은 사용자는 로그인 페이지로
+  if (!user) {
+    return <Navigate to="/" />
+  }
+
+  return children
 }
 
 export default ProtectedRoute 

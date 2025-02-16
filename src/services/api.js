@@ -43,20 +43,26 @@ api.interceptors.response.use(
 )
 
 export const authService = {
-  // POST /oauth - 구글 소셜 로그인
-  googleLogin: () => api.post('/oauth'),
+  // POST /auth - 구글 소셜 로그인
+  // googleLogin: () => api.post('/auth'), 
   
-  // POST /oauth/add - 회원 정보 입력
-  addUserInfo: (userData) => api.post('/oauth/add', userData),
+  // POST /auth/add - 회원 정보 입력
+  addUserInfo: (userData) => api.post('/auth/add', userData),
   
-  // POST /logout - 로그아웃 (쿠키 삭제 처리)
+  // POST /auth/logout - 로그아웃
   logout: async () => {
-    await api.post('/logout')
+    await api.post('/auth/logout')  // /logout -> /auth/logout
     window.location.href = '/'
   },
   
-  // PATCH /reissue-token - 토큰 리프레시
-  reissueToken: () => api.patch('/reissue-token')
+  // PATCH /auth/reissue-token - 토큰 리프레시
+  reissueToken: () => api.patch('/auth/reissue-token'),
+  
+  // GET /auth/login/user - 사용자 정보 조회
+  getUserInfo: () => api.get('/auth/login/user'),
+  
+  // PATCH /auth/update - 사용자 정보 업데이트
+  updateUserInfo: (userData) => api.patch('/auth/update', userData)
 }
 
 export const studyService = {
@@ -71,4 +77,4 @@ export const studyService = {
   // 필요한 다른 스터디 관련 API 호출 추가
 }
 
-export default api 
+export default api

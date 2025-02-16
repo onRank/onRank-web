@@ -1,7 +1,7 @@
 function GoogleLoginButton() {
   return (
     <a 
-      href={`${import.meta.env.VITE_API_URL}/oauth`}
+      href={`${import.meta.env.VITE_API_URL}/auth`}
       className="google-login-button"
     >
       Google로 로그인하기
@@ -9,4 +9,4 @@ function GoogleLoginButton() {
   )
 }
 
-export default GoogleLoginButton 
+export default GoogleLoginButton  

@@ -44,6 +44,9 @@ function StudiesPage() {
   return (
     <div className="studies-container">
       <h2>안녕하세요, {user.nickname}님!</h2>
+      <div className="user-info">
+        <p>학과: {user.department}</p>
+      </div>
       <button onClick={handleLogout}>로그아웃</button>
       {error && <div className="error-message">{error}</div>}
       <StudyList studies={studies} />

@@ -7,11 +7,7 @@ export default defineConfig({
   server: {
     port: 3000,
     proxy: {
-      '/login/oauth/google': {
-        target: 'http://localhost:8080',
-        changeOrigin: true
-      },
-      '/api': {
+      '/auth': {
         target: 'http://localhost:8080',
         changeOrigin: true
       }

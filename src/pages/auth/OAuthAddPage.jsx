@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext'
 
 function OAuthAddPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, updateUserInfo } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [formData, setFormData] = useState({
@@ -40,9 +40,12 @@ function OAuthAddPage() {
     }
     setIsLoading(true)
     try {
-      // formData = { nickname: '입력값', phoneNumber: '입력값', department: '입력값' }
-      await authService.addUserInfo(formData)
-      navigate('/studies')
+      const success = await updateUserInfo(formData)
+      if (success) {
+        navigate('/studies')
+      } else {
+        setError('회원정보 등록에 실패했습니다.')
+      }
     } catch (error) {
       setError('회원정보 등록에 실패했습니다.')
     } finally {
