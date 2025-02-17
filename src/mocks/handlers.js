@@ -5,26 +5,11 @@ const mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken'
 
 export const handlers = [
   // 구글 로그인 시작
-  http.get('http://localhost:8080/auth', () => {
+  http.post('http://localhost:8080/auth/login', () => {
     return HttpResponse.json({
       isNewUser: true,
       redirectUrl: '/auth/add?isNewUser=true'
     })
-  }),
-
-  // 콜백 처리
-  http.get('http://localhost:8080/auth/callback', () => {
-    return HttpResponse.json(
-      { isNewUser: true },
-      {
-        headers: {
-          'Set-Cookie': [
-            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
-            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
-          ]
-        }
-      }
-    )
   }),
 
   // 사용자 정보 조회
@@ -58,12 +43,38 @@ export const handlers = [
 
   // 회원 정보 입력
   http.post('http://localhost:8080/auth/add', () => {
-    // ...
+    return HttpResponse.json(
+      {
+        email: 'test@example.com',
+        name: '홍길동',
+        nickname: '길동이',
+        department: '컴퓨터공학과',
+        phoneNumber: '01012345678'
+      },
+      {
+        headers: {
+          'Set-Cookie': [
+            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
+            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
+          ]
+        }
+      }
+    )
   }),
 
   // 토큰 리프레시
   http.post('http://localhost:8080/auth/reissue-token', () => {
-    // ...
+    return HttpResponse.json(
+      { message: 'Token refreshed' },
+      {
+        headers: {
+          'Set-Cookie': [
+            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
+            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
+          ]
+        }
+      }
+    )
   }),
 
   // 로그아웃
@@ -82,6 +93,12 @@ export const handlers = [
 
   // 회원 정보 수정
   http.patch('http://localhost:8080/auth/update', () => {
-    // ...
+    return HttpResponse.json({
+      email: 'test@example.com',
+      name: '홍길동',
+      nickname: '길동이',
+      department: '컴퓨터공학과',
+      phoneNumber: '01012345678'
+    })
   })
 ] 

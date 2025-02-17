@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { api } from '../services/api'
+import { api, authService } from '../services/api'
 
 const AuthContext = createContext(null)
 
@@ -21,8 +21,18 @@ export function AuthProvider({ children }) {
     fetchUserInfo()
   }, [])
 
+  const logout = async () => {
+    try {
+      await authService.logout()
+      setUser(null)
+      window.location.href = '/'  // 로그아웃 후 홈으로 리다이렉트
+    } catch (error) {
+      console.error('Logout failed:', error)
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, logout }}>
       {children}
     </AuthContext.Provider>
   )

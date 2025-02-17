@@ -22,9 +22,7 @@ api.interceptors.response.use(
   async (error) => {
     if (error.response?.status === 401) {
       try {
-        // 토큰 갱신 (쿠키는 자동으로 처리됨)
-        await authService.reissueToken()
-        // 실패했던 요청 재시도
+        await authService.reissueToken()  // POST /auth/reissue-token 사용 확인
         return api(error.config)
       } catch (refreshError) {
         window.location.href = '/'
@@ -44,25 +42,22 @@ api.interceptors.response.use(
 )
 
 export const authService = {
-  // POST /auth - 구글 소셜 로그인
-  // googleLogin: () => api.post('/auth'), 
+  // POST /auth/login
+  googleLogin: () => api.post('/auth/login'),
   
-  // POST /auth/add - 회원 정보 입력
+  // POST /auth/add
   addUserInfo: (userData) => api.post('/auth/add', userData),
   
-  // POST /auth/logout - 로그아웃
-  logout: async () => {
-    await api.post('/auth/logout')  // /logout -> /auth/logout
-    window.location.href = '/'
-  },
+  // POST /auth/logout
+  logout: () => api.post('/auth/logout'),
   
-  // PATCH /auth/reissue-token - 토큰 리프레시
-  reissueToken: () => api.patch('/auth/reissue-token'),
+  // POST /auth/reissue-token
+  reissueToken: () => api.post('/auth/reissue-token'),
   
-  // GET /auth/login/user - 사용자 정보 조회
+  // GET /auth/login/user
   getUserInfo: () => api.get('/auth/login/user'),
   
-  // PATCH /auth/update - 사용자 정보 업데이트
+  // PATCH /auth/update
   updateUserInfo: (userData) => api.patch('/auth/update', userData)
 }
 
