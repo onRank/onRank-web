@@ -1,27 +1,12 @@
 import axios from 'axios'
 
-// MSW 활성화 여부 확인
-const isMswEnabled = import.meta.env.VITE_MSW_ENABLED === 'true';
-
-// MSW 초기화 (development 환경에서만)
-if (isMswEnabled && process.env.NODE_ENV === 'development') {
-  // worker가 이미 시작되었는지 확인
-  if (!window.msw) {
-    (async () => {
-      const { worker } = await import('../mocks/browser');
-      worker.start();
-      window.msw = true;  // worker 시작 표시
-    })();
-  }
-}
-
-// api를 named export로 변경
+// api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,  // 실제 API URL 사용
-  withCredentials: true  // 쿠키 자동 전송 설정 (중요!)
+  baseURL: import.meta.env.VITE_API_URL,
+  withCredentials: true
 })
 
-// 토큰은 쿠키에 있으므로 인터셉터에서 헤더 추가 불필요
+// 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
     return config
@@ -31,25 +16,20 @@ api.interceptors.request.use(
   }
 )
 
-// 응답 인터셉터에서 토큰 관련 처리
+// 응답 인터셉터
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
       try {
-        // 토큰 만료시 재발급 시도
         await authService.reissueToken()
-        // 토큰 재발급 성공시 실패했던 요청 재시도
         return api(error.config)
       } catch (refreshError) {
-        // 토큰 재발급 실패시 로그인 페이지로
         window.location.href = '/'
       }
     } else if (error.response?.status === 403) {
-      // 권한 없음
       alert('접근 권한이 없습니다.')
     } else if (error.response?.status >= 500) {
-      // 서버 에러
       alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
     }
     return Promise.reject(error)

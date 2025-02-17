@@ -4,26 +4,16 @@ import { React } from "react";
 import { createRoot } from "react-dom/client";
 
 async function enableMocking() {
-  if (process.env.NODE_ENV === 'development' && 
-      import.meta.env.VITE_MSW_ENABLED === 'true' && 
-      !window.msw) {
+  if (import.meta.env.VITE_MSW_ENABLED === 'true') {
     const { worker } = await import('./mocks/browser')
     await worker.start({
       onUnhandledRequest: 'bypass',
-      serviceWorker: {
-        url: '/mockServiceWorker.js'
-      }
-    });
-    window.msw = true;
+    })
+    console.log('[MSW] Mocking enabled - 테스트 모드로 실행됩니다.')
+  } else {
+    console.log('[API] Real backend - 실제 백엔드와 연동됩니다.')
   }
 }
-
-// MSW 초기화 (development 환경에서만)
-// if (import.meta.env.VITE_MSW_ENABLED === 'true' && !window.msw) {
-//   const { worker } = await import('./mocks/browser');
-//   worker.start();
-//   window.msw = true;
-// }
 
 enableMocking().then(() => {
   createRoot(document.getElementById("root")).render(
