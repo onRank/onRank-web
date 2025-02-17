@@ -3,25 +3,27 @@ import StudyList from "../../components/study/StudyList"
 import { studyService } from "../../services/api"
 import { useAuth } from "../../contexts/AuthContext"
 import { authService } from "../../services/api"
+import LoadingSpinner from "../../components/common/LoadingSpinner"
+import ErrorMessage from "../../components/common/ErrorMessage"
 
 function StudiesPage() {
   const { user } = useAuth()
   const [studies, setStudies] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchStudies = async () => {
       try {
-        setLoading(true)
+        setIsLoading(true)
         setError(null)
         const data = await studyService.getStudies()
         setStudies(data)
       } catch (error) {
         console.error("Error fetching studies:", error)
-        setError("스터디 목록을 불러오는데 실패했습니다.")
+        setError(error.message)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
@@ -38,19 +40,25 @@ function StudiesPage() {
     }
   }
 
-  if (loading) {
-    return <div>Loading studies...</div>
+  if (isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />
   }
 
   return (
-    <div className="studies-container">
-      <h2>안녕하세요, {user.nickname}님!</h2>
-      <div className="user-info">
-        <p>학과: {user.department}</p>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">스터디 목록</h1>
+      <div className="studies-container">
+        <h2>안녕하세요, {user.nickname}님!</h2>
+        <div className="user-info">
+          <p>학과: {user.department}</p>
+        </div>
+        <button onClick={handleLogout}>로그아웃</button>
+        <StudyList studies={studies} />
       </div>
-      <button onClick={handleLogout}>로그아웃</button>
-      {error && <div className="error-message">{error}</div>}
-      <StudyList studies={studies} />
     </div>
   )
 }
