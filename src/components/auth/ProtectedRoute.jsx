@@ -1,11 +1,12 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import LoadingSpinner from '../common/LoadingSpinner'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div>Loading...</div>  // 또는 LoadingSpinner 컴포넌트
+    return <LoadingSpinner />
   }
 
   // 인증되지 않은 사용자는 로그인 페이지로

@@ -18,7 +18,7 @@ if (isMswEnabled && process.env.NODE_ENV === 'development') {
 // api를 named export로 변경
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,  // 실제 API URL 사용
-  withCredentials: true  // 쿠키 자동 전송
+  withCredentials: true  // 쿠키 자동 전송 설정 (중요!)
 })
 
 // 토큰은 쿠키에 있으므로 인터셉터에서 헤더 추가 불필요
@@ -31,15 +31,18 @@ api.interceptors.request.use(
   }
 )
 
-// 응답 인터셉터 개선
+// 응답 인터셉터에서 토큰 관련 처리
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
       try {
-        await authService.reissueToken()  // POST /auth/reissue-token 사용 확인
+        // 토큰 만료시 재발급 시도
+        await authService.reissueToken()
+        // 토큰 재발급 성공시 실패했던 요청 재시도
         return api(error.config)
       } catch (refreshError) {
+        // 토큰 재발급 실패시 로그인 페이지로
         window.location.href = '/'
       }
     } else if (error.response?.status === 403) {
@@ -54,23 +57,27 @@ api.interceptors.response.use(
 )
 
 export const authService = {
-  // POST /auth/login
+  // 구글 로그인
   googleLogin: () => api.post('/auth/login'),
   
-  // POST /auth/add
-  addUserInfo: (userData) => api.post('/auth/add', userData),
-  
-  // POST /auth/logout
-  logout: () => api.post('/auth/logout'),
-  
-  // POST /auth/reissue-token
+  // 토큰 재발급
   reissueToken: () => api.post('/auth/reissue-token'),
   
-  // GET /auth/login/user
+  // 로그아웃 (서버에서 쿠키 제거)
+  logout: async () => {
+    const response = await api.post('/auth/logout')
+    // 로그아웃 성공시 홈으로 리다이렉트
+    if (response.status === 200) {
+      window.location.href = '/'
+    }
+    return response
+  },
+
+  // 사용자 정보 조회
   getUserInfo: () => api.get('/auth/login/user'),
   
-  // PATCH /auth/update
-  updateUserInfo: (userData) => api.patch('/auth/update', userData)
+  // 추가 정보 입력
+  addUserInfo: (userData) => api.post('/auth/add', userData)
 }
 
 export const studyService = {

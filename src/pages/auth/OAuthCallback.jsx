@@ -1,34 +1,26 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { api } from '../../services/api'
+import { useNavigate, useLocation } from 'react-router-dom'
+import LoadingSpinner from '../../components/common/LoadingSpinner'
 
 function OAuthCallback() {
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
+  const location = useLocation()
 
   useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        // 백엔드에서 콜백 처리 및 isNewUser 정보 받기
-        const response = await api.get('/auth/login/user')
-        const { isNewUser } = response.data
+    // URL 파라미터에서 isNewUser 값을 가져옴
+    const searchParams = new URLSearchParams(location.search)
+    const isNewUser = searchParams.get('isNewUser') === 'true'
 
-        // isNewUser에 따라 다른 페이지로 리다이렉트
-        if (isNewUser) {
-          navigate('/auth/add')
-        } else {
-          navigate('/studies')
-        }
-      } catch (error) {
-        console.error('OAuth callback failed:', error)
-        navigate('/')  // 에러 시 홈으로
-      }
+    if (isNewUser) {
+      // 새로운 사용자면 추가 정보 입력 페이지로
+      navigate('/auth/add')
+    } else {
+      // 기존 사용자면 스터디 목록 페이지로
+      navigate('/studies')
     }
+  }, [navigate, location])
 
-    handleCallback()
-  }, [navigate])
-
-  return <div>로그인 처리 중...</div>
+  return <LoadingSpinner />
 }
 
 export default OAuthCallback 
