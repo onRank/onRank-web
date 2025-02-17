@@ -1,36 +1,25 @@
 import { useNavigate } from 'react-router-dom'
 import { api } from '../../services/api'
+import { authService } from '../../services/auth'
 
 function GoogleLoginButton() {
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {
-    e.preventDefault()
-
-    if (import.meta.env.VITE_MSW_ENABLED === 'true') {
-      // MSW 테스트 모드
-      try {
-        const response = await api.post('/auth/login')
-        if (response.data.redirectUrl) {
-          navigate(response.data.redirectUrl)
-        }
-      } catch (error) {
-        console.error('Login failed:', error)
-      }
-    } else {
-      // 실제 백엔드 연동 모드
-      window.location.href = `${import.meta.env.VITE_API_URL}/auth/login`
+  const handleGoogleLogin = async () => {
+    try {
+      console.log('[Login] 구글 로그인 시도...')
+      const response = await authService.googleLogin()
+      console.log('[Login] 백엔드 응답:', response.data)
+      window.location.href = response.data.redirectUrl
+    } catch (error) {
+      console.error('[Login] 구글 로그인 실패:', error.response?.data || error.message)
     }
   }
 
   return (
-    <a 
-      href="#"
-      onClick={handleLogin}
-      className="google-login-button"
-    >
-      Google로 로그인하기
-    </a>
+    <button onClick={handleGoogleLogin}>
+      Google 로그인
+    </button>
   )
 }
 
