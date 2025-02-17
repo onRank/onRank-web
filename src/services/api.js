@@ -38,17 +38,7 @@ api.interceptors.response.use(
 
 export const authService = {
   // 구글 로그인
-  googleLogin: async () => {
-    console.log('[API] 구글 로그인 요청')
-    try {
-      const response = await api.post('/auth/login')
-      console.log('[API] 구글 로그인 응답:', response.data)
-      return response
-    } catch (error) {
-      console.error('[API] 구글 로그인 에러:', error.response?.data || error.message)
-      throw error
-    }
-  },
+  googleLogin: () => api.post('/auth/login'),
   
   // 토큰 재발급
   reissueToken: () => api.post('/auth/reissue-token'),
@@ -64,30 +54,10 @@ export const authService = {
   },
 
   // 사용자 정보 조회
-  getUserInfo: async () => {
-    console.log('[API] 사용자 정보 조회 요청')
-    try {
-      const response = await api.get('/auth/login/user')
-      console.log('[API] 사용자 정보:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('[API] 사용자 정보 조회 실패:', error.response?.data || error.message)
-      throw error
-    }
-  },
+  getUserInfo: () => api.get('/auth/login/user'),
   
   // 추가 정보 입력
-  addUserInfo: async (userData) => {
-    console.log('[API] 사용자 추가 정보 입력:', userData)
-    try {
-      const response = await api.post('/auth/add', userData)
-      console.log('[API] 추가 정보 입력 성공:', response.data)
-      return response.data
-    } catch (error) {
-      console.error('[API] 추가 정보 입력 실패:', error.response?.data || error.message)
-      throw error
-    }
-  }
+  addUserInfo: (userData) => api.post('/auth/add', userData)
 }
 
 export const studyService = {
