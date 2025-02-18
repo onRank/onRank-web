@@ -6,7 +6,7 @@ function OAuthCallback() {
   const location = useLocation()
 
   useEffect(() => {
-    console.log('[Callback] 콜백 페이지 진입')
+    console.log('[Callback] /auth/callback 페이지 진입')
     console.log('[Callback] 현재 URL:', window.location.href)
     console.log('[Callback] pathname:', location.pathname)
     console.log('[Callback] URL 파라미터:', location.search)
