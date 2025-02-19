@@ -5,7 +5,7 @@ import StudiesPage from "./pages/study/StudiesPage";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
-import StudyDetailPage from './pages/study/StudyDetailPage';
+import StudyDetailPage from "./pages/study/StudyDetailPage";
 import "./App.css";
 
 function App() {
