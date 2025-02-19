@@ -8,7 +8,7 @@ export const handlers = [
   http.post('http://localhost:8080/auth/login', () => {
     return HttpResponse.json({
       isNewUser: true,
-      redirectUrl: '/auth/callback?isNewUser=true'
+      redirectUrl: '/auth?isNewUser=true'
     })
   }),
 

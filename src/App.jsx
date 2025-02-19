@@ -19,7 +19,7 @@ function App() {
           <main>
             <Routes>
               <Route path="/" element={<LoginPage />} />
-              <Route path="/auth/callback" element={<OAuthCallback />} />
+              <Route path="/auth" element={<OAuthCallback />} />
               <Route path="/auth/add" element={<OAuthAddPage />} />
               <Route
                 path="/studies"
