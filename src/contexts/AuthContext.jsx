@@ -9,6 +9,12 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
+      // 로그인 콜백 페이지에서는 사용자 정보 조회 스킵
+      if (window.location.pathname.includes('/auth/callback')) {
+        setLoading(false)
+        return
+      }
+
       try {
         console.log('AuthContext - 사용자 정보 조회 시도')
         const { data } = await api.get('/auth/login/user')
