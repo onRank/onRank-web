@@ -1,9 +1,14 @@
 import axios from 'axios'
 
+if (!import.meta.env.VITE_API_URL) {
+  console.error('API URL이 설정되지 않았습니다')
+}
+
 // api 인스턴스 생성
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true
+  withCredentials: true,
+  timeout: 5000  // 5초 타임아웃 추가
 })
 
 // 요청 인터셉터
@@ -20,13 +25,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    // 401 에러시 로그인 페이지로 리다이렉트하지 않고 에러만 반환
     if (error.response?.status === 401) {
-      try {
-        await authService.reissueToken()
-        return api(error.config)
-      } catch (refreshError) {
-        window.location.href = '/'
-      }
+      return Promise.reject(error)
     } else if (error.response?.status === 403) {
       alert('접근 권한이 없습니다.')
     } else if (error.response?.status >= 500) {

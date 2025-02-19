@@ -8,25 +8,49 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+    console.log('[Auth] 컴포넌트 마운트')
+    
     const fetchUserInfo = async () => {
-      // 로그인 콜백 페이지에서는 사용자 정보 조회 스킵
-      if (window.location.pathname.includes('/auth/callback')) {
+      const currentPath = window.location.pathname
+      console.log('[Auth] 현재 경로:', currentPath)
+
+      if (currentPath.includes('/auth/callback') || currentPath === '/') {
+        console.log('[Auth] 사용자 정보 조회 스킵 - 로그인 진행 중')
         setLoading(false)
         return
       }
 
       try {
-        console.log('AuthContext - 사용자 정보 조회 시도')
+        console.log('[Auth] 사용자 정보 조회 시도')
         const { data } = await api.get('/auth/login/user')
-        setUser(data)
+        console.log('[Auth] 사용자 정보 조회 성공:', data)
+        if (mounted) {
+          setUser(data)
+        }
       } catch (error) {
-        console.log('AuthContext - 에러:', error)
-        setUser(null)
+        console.log('[Auth] 사용자 정보 조회 실패:', error)
+        if (mounted) {
+          if (error.response?.status === 401) {
+            console.log('[Auth] 인증되지 않은 사용자')
+            setUser(null)
+          } else {
+            console.error('[Auth] 예상치 못한 에러:', error)
+          }
+        }
       } finally {
-        setLoading(false)
+        if (mounted) {
+          setLoading(false)
+        }
       }
     }
+
     fetchUserInfo()
+
+    return () => {
+      console.log('[Auth] 컴포넌트 언마운트')
+      mounted = false
+    }
   }, [])
 
   const logout = async () => {
