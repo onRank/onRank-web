@@ -19,13 +19,12 @@ function GoogleLoginButton() {
   }
 
   return (
-    <a 
-      href="#"
+    <button 
       onClick={handleLogin}
       className="google-login-button"
     >
       Google로 로그인하기
-    </a>
+    </button>
   )
 }
 
