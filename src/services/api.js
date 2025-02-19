@@ -23,11 +23,12 @@ api.interceptors.request.use(
 
 // 응답 인터셉터
 api.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    // 401 에러시 로그인 페이지로 리다이렉트하지 않고 에러만 반환
+  response => response,
+  error => {
     if (error.response?.status === 401) {
-      return Promise.reject(error)
+      // JWT 토큰이 만료된 경우
+      document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
+      window.location.href = '/'
     } else if (error.response?.status === 403) {
       alert('접근 권한이 없습니다.')
     } else if (error.response?.status >= 500) {

@@ -12,32 +12,29 @@ export function AuthProvider({ children }) {
     console.log('[Auth] 컴포넌트 마운트')
     
     const fetchUserInfo = async () => {
-      const currentPath = window.location.pathname
-      console.log('[Auth] 현재 경로:', currentPath)
-
-      if (currentPath.includes('/auth/callback') || currentPath === '/') {
-        console.log('[Auth] 사용자 정보 조회 스킵 - 로그인 진행 중')
+      // JWT 토큰 확인
+      const token = document.cookie.match(/jwt=([^;]+)/)?.[1]
+      if (!token) {
+        console.log('[Auth] JWT 토큰 없음')
+        setUser(null)
         setLoading(false)
         return
       }
 
+      // 토큰이 있으면 해당 토큰으로 사용자 인증 완료
       try {
-        console.log('[Auth] 사용자 정보 조회 시도')
-        const { data } = await api.get('/auth/login/user')
-        console.log('[Auth] 사용자 정보 조회 성공:', data)
+        // JWT 토큰에서 필요한 정보 추출
+        const payload = JSON.parse(atob(token.split('.')[1]))
         if (mounted) {
-          setUser(data)
+          setUser({
+            id: payload.sub,
+            email: payload.email,
+            // 토큰에 포함된 다른 정보들...
+          })
         }
       } catch (error) {
-        console.log('[Auth] 사용자 정보 조회 실패:', error)
-        if (mounted) {
-          if (error.response?.status === 401) {
-            console.log('[Auth] 인증되지 않은 사용자')
-            setUser(null)
-          } else {
-            console.error('[Auth] 예상치 못한 에러:', error)
-          }
-        }
+        console.error('[Auth] 토큰 파싱 에러:', error)
+        setUser(null)
       } finally {
         if (mounted) {
           setLoading(false)
@@ -46,11 +43,7 @@ export function AuthProvider({ children }) {
     }
 
     fetchUserInfo()
-
-    return () => {
-      console.log('[Auth] 컴포넌트 언마운트')
-      mounted = false
-    }
+    return () => { mounted = false }
   }, [])
 
   const logout = async () => {
