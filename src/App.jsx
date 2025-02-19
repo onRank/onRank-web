@@ -9,7 +9,7 @@ import StudyDetailPage from './pages/study/StudyDetailPage';
 import "./App.css";
 
 function App() {
-  console.log('App 컴포넌트 렌더링')
+  console.log('[App] 렌더링 시작')
   return (
     <AuthProvider>
       <Router>
@@ -19,11 +19,16 @@ function App() {
           </header>
           <main>
             <Routes>
-              {console.log('Routes 렌더링')}
-              <Route path="/" element={<LoginPage />} />
+              {console.log('[App] Routes 렌더링')}
+              <Route path="/" element={
+                <>
+                  {console.log('[App] 메인 페이지 라우트 매칭')}
+                  <LoginPage />
+                </>
+              } />
               <Route path="/auth/callback" element={
                 <>
-                  {console.log('Callback 라우트 매칭 시도')}
+                  {console.log('[App] 콜백 라우트 매칭')}
                   <OAuthCallback />
                 </>
               } />

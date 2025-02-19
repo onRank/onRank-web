@@ -4,32 +4,33 @@ import { api, authService } from '../services/api'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
+  console.log('[Auth] Provider 렌더링')
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('[Auth] useEffect 실행')
     let mounted = true
-    console.log('[Auth] 컴포넌트 마운트')
-    
+
     const fetchUserInfo = async () => {
-      // JWT 토큰 확인
+      console.log('[Auth] JWT 토큰 확인 시작')
       const token = document.cookie.match(/jwt=([^;]+)/)?.[1]
+      console.log('[Auth] 토큰 존재 여부:', !!token)
+
       if (!token) {
-        console.log('[Auth] JWT 토큰 없음')
+        console.log('[Auth] 토큰 없음')
         setUser(null)
         setLoading(false)
         return
       }
 
-      // 토큰이 있으면 해당 토큰으로 사용자 인증 완료
       try {
-        // JWT 토큰에서 필요한 정보 추출
         const payload = JSON.parse(atob(token.split('.')[1]))
+        console.log('[Auth] 토큰 페이로드:', payload)
         if (mounted) {
           setUser({
             id: payload.sub,
             email: payload.email,
-            // 토큰에 포함된 다른 정보들...
           })
         }
       } catch (error) {
@@ -43,9 +44,13 @@ export function AuthProvider({ children }) {
     }
 
     fetchUserInfo()
-    return () => { mounted = false }
+    return () => {
+      console.log('[Auth] cleanup')
+      mounted = false
+    }
   }, [])
 
+  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading)
   const logout = async () => {
     try {
       await authService.logout()
