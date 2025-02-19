@@ -9,6 +9,7 @@ import StudyDetailPage from './pages/study/StudyDetailPage';
 import "./App.css";
 
 function App() {
+  console.log('App 컴포넌트 렌더링')
   return (
     <AuthProvider>
       <Router>
@@ -18,8 +19,14 @@ function App() {
           </header>
           <main>
             <Routes>
+              {console.log('Routes 렌더링')}
               <Route path="/" element={<LoginPage />} />
-              <Route path="/auth/callback" element={<OAuthCallback />} />
+              <Route path="/auth/callback" element={
+                <>
+                  {console.log('Callback 라우트 매칭 시도')}
+                  <OAuthCallback />
+                </>
+              } />
               <Route path="/auth/add" element={<OAuthAddPage />} />
               <Route
                 path="/studies"

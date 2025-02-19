@@ -10,9 +10,11 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
+        console.log('AuthContext - 사용자 정보 조회 시도')
         const { data } = await api.get('/auth/login/user')
         setUser(data)
       } catch (error) {
+        console.log('AuthContext - 에러:', error)
         setUser(null)
       } finally {
         setLoading(false)
