@@ -10,6 +10,7 @@ function SideBar() {
   const currentSection = pathParts[3] || "study-detail";
 
   const menuItems = [
+<<<<<<< HEAD
     { id: "study-detail", label: "스터디 정보" },
     { id: "notices", label: "공지사항" },
     { id: "schedule", label: "일정" },
@@ -18,6 +19,16 @@ function SideBar() {
     { id: "attendance", label: "출석" },
     { id: "manage", label: "관리" },
     { id: "ranking", label: "랭킹&보증금" },
+=======
+    { id: 'study-detail', label: '스터디 정보' },
+    { id: 'notices', label: '공지사항' },
+    { id: 'schedule', label: '일정' },
+    { id: 'assignment', label: '과제' },
+    { id: 'board', label: '게시판' },
+    { id: 'attendance', label: '출석' },
+    { id: 'manage', label: '관리' },
+    { id: 'ranking', label: '랭킹&보증금' },
+>>>>>>> afcffeb517a608c94f70d23e174400b47717dd30
   ];
 
   const handleSectionChange = (sectionId) => {
