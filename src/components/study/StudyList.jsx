@@ -10,7 +10,12 @@ function StudyList({ studies }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+      gap: '2rem',
+      padding: '1rem'
+    }}>
       {studies.map((study) => (
         <StudyCard
           key={study.id}
@@ -26,9 +31,11 @@ StudyList.propTypes = {
   studies: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
+      title: PropTypes.string.isRequired,
       description: PropTypes.string,
-      memberCount: PropTypes.number,
+      currentMembers: PropTypes.number.isRequired,
+      maxMembers: PropTypes.number.isRequired,
+      status: PropTypes.string.isRequired
     })
   ).isRequired
 }

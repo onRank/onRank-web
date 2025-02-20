@@ -25,16 +25,23 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]))
-        console.log('[Auth] 토큰 페이로드:', payload)
+        // 토큰이 있으면 사용자 정보를 API로 가져옴
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login/user`, {
+          credentials: 'include' // 쿠키 포함
+        })
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch user info')
+        }
+        
+        const userData = await response.json()
+        console.log('[Auth] 사용자 정보:', userData)
+        
         if (mounted) {
-          setUser({
-            id: payload.sub,
-            email: payload.email,
-          })
+          setUser(userData)
         }
       } catch (error) {
-        console.error('[Auth] 토큰 파싱 에러:', error)
+        console.error('[Auth] 사용자 정보 가져오기 실패:', error)
         setUser(null)
       } finally {
         if (mounted) {
@@ -62,7 +69,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, logout }}>
+    <AuthContext.Provider value={{ user, setUser, loading, logout }}>
       {children}
     </AuthContext.Provider>
   )

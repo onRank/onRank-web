@@ -5,9 +5,10 @@ import { useAuth } from "../../contexts/AuthContext"
 import { authService } from "../../services/api"
 import LoadingSpinner from "../../components/common/LoadingSpinner"
 import ErrorMessage from "../../components/common/ErrorMessage"
+import StudiesListSidebar from "../../components/study/StudiesListSidebar"
 
 function StudiesPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [studies, setStudies] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -40,7 +41,7 @@ function StudiesPage() {
     }
   }
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return <LoadingSpinner />
   }
 
@@ -48,17 +49,73 @@ function StudiesPage() {
     return <ErrorMessage message={error} />
   }
 
+  if (!user) {
+    return <ErrorMessage message="로그인이 필요합니다." />
+  }
+
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">스터디 목록</h1>
-      <div className="studies-container">
-        <h2>안녕하세요, {user.nickname}님!</h2>
-        <div className="user-info">
-          <p>학과: {user.department}</p>
+    <div style={{
+      display: 'flex',
+      minHeight: 'calc(100vh - 64px)', // Subtract header height
+    }}>
+      <StudiesListSidebar />
+      <main style={{
+        flex: 1,
+        padding: '2rem',
+        backgroundColor: 'var(--main-bg, #ffffff)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            marginBottom: '2rem'
+          }}>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '1rem'
+            }}>
+              스터디 목록
+            </h1>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h2 style={{
+                  fontSize: '1.25rem',
+                  color: 'var(--text-primary)'
+                }}>
+                  안녕하세요, {user.nickname}님!
+                </h2>
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  marginTop: '0.5rem'
+                }}>
+                  학과: {user.department}
+                </p>
+              </div>
+              <button
+                style={{
+                  backgroundColor: '#2563EB',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  fontWeight: '500',
+                  fontSize: '0.875rem'
+                }}
+                onClick={() => {/* TODO: 스터디 생성 페이지로 이동 */}}
+              >
+                스터디 만들기
+              </button>
+            </div>
+          </div>
+          <StudyList studies={studies} />
         </div>
-        <button onClick={handleLogout}>로그아웃</button>
-        <StudyList studies={studies} />
-      </div>
+      </main>
     </div>
   )
 }

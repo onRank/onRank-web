@@ -77,7 +77,6 @@ export const studyService = {
       throw new Error('스터디 ID가 유효하지 않습니다.');
     }
     try {
-      // MSW가 활성화되어 있으면 mock 응답을, 아니면 실제 API 응답을 사용
       const response = await api.get(`/studies/${numericStudyId}/notices`);
       return response.data;
     } catch (error) {
@@ -94,12 +93,26 @@ export const studyService = {
       throw new Error('스터디 ID 또는 공지사항 ID가 유효하지 않습니다.');
     }
     try {
-      // MSW가 활성화되어 있으면 mock 응답을, 아니면 실제 API 응답을 사용
       const response = await api.get(`/studies/${numericStudyId}/notices/${numericNoticeId}`);
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
         throw new Error('공지사항을 찾을 수 없습니다.');
+      }
+      throw error;
+    }
+  },
+  addNotice: async (studyId, noticeData) => {
+    const numericStudyId = parseInt(studyId, 10);
+    if (isNaN(numericStudyId)) {
+      throw new Error('스터디 ID가 유효하지 않습니다.');
+    }
+    try {
+      const response = await api.post(`/studies/${numericStudyId}/notices/add`, noticeData);
+      return response.data;
+    } catch (error) {
+      if (error.response?.status === 404) {
+        throw new Error('스터디를 찾을 수 없습니다.');
       }
       throw error;
     }

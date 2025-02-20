@@ -1,37 +1,99 @@
-import NoticeListItem from "./NoticeListItem";
-import PropTypes from "prop-types";
-import LoadingSpinner from "../../common/LoadingSpinner";
+import PropTypes from 'prop-types';
+import LoadingSpinner from '../../common/LoadingSpinner';
 
-export default function NoticeList({ notices, onNoticeClick, isLoading = false }){
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
-
-  if (!notices) {
-    return (
-      <div className="flex justify-center items-center h-40 text-gray-500">
-        데이터를 불러오는데 실패했습니다.
-      </div>
-    );
-  }
-
-  if (notices.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-40 text-gray-500">
-        등록된 공지사항이 없습니다.
-      </div>
-    );
-  }
+function NoticeList({ notices, onNoticeClick, onCreateClick, isLoading }) {
+  if (isLoading) return <LoadingSpinner />;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {notices.map((notice) => (
-        <NoticeListItem
-          key={notice.noticeId}
-          notice={notice}
-          onClick={() => onNoticeClick(notice.noticeId)}
-        />
-      ))}
+    <div>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '1rem'
+      }}>
+        <h2 style={{
+          fontSize: '1.5rem',
+          fontWeight: '600',
+          color: 'var(--text-primary)'
+        }}>
+          공지사항
+        </h2>
+        <button
+          onClick={onCreateClick}
+          style={{
+            backgroundColor: '#2563EB',
+            color: 'white',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.375rem',
+            fontSize: '0.875rem'
+          }}
+        >
+          새 공지사항
+        </button>
+      </div>
+
+      <div style={{
+        backgroundColor: 'var(--card-bg)',
+        borderRadius: '0.5rem',
+        overflow: 'hidden',
+        border: '1px solid var(--border-color)'
+      }}>
+        {notices.length === 0 ? (
+          <div style={{
+            padding: '2rem',
+            textAlign: 'center',
+            color: 'var(--text-secondary)'
+          }}>
+            등록된 공지사항이 없습니다.
+          </div>
+        ) : (
+          <ul>
+            {notices.map((notice) => (
+              <li
+                key={notice.noticeId}
+                onClick={() => onNoticeClick(notice.noticeId)}
+                style={{
+                  padding: '1rem',
+                  borderBottom: '1px solid var(--border-color)',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s',
+                  ':hover': {
+                    backgroundColor: 'var(--button-hover-bg)'
+                  }
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '500',
+                    color: 'var(--text-primary)'
+                  }}>
+                    {notice.title}
+                  </h3>
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: 'var(--text-secondary)'
+                  }}>
+                    {new Date(notice.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div style={{
+                  marginTop: '0.5rem',
+                  fontSize: '0.875rem',
+                  color: 'var(--text-secondary)'
+                }}>
+                  작성자: {notice.writer}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }
@@ -42,14 +104,12 @@ NoticeList.propTypes = {
       noticeId: PropTypes.number.isRequired,
       title: PropTypes.string.isRequired,
       writer: PropTypes.string.isRequired,
-      createdAt: PropTypes.string.isRequired,
-      content: PropTypes.string,
+      createdAt: PropTypes.string.isRequired
     })
   ).isRequired,
   onNoticeClick: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool
+  onCreateClick: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool.isRequired
 };
 
-NoticeList.defaultProps = {
-  isLoading: false
-};
+export default NoticeList;

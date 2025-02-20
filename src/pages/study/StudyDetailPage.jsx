@@ -1,29 +1,33 @@
-import SideBar from "../../components/study/layout/SideBar";
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { studyService } from "../../services/api";
 import NoticeList from "../../components/study/notice/NoticeList";
 import NoticeDetail from "../../components/study/notice/NoticeDetail";
-import PropTypes from "prop-types";
 import ErrorMessage from "../../components/common/ErrorMessage";
 
 function StudyDetailPage() {
   const { studyId } = useParams();
-  const [activeSection, setActiveSection] = useState("study-detail");
+  const location = useLocation();
   const [selectedNoticeId, setSelectedNoticeId] = useState(null);
   const [notices, setNotices] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // URL에서 현재 섹션 가져오기
+  const getCurrentSection = () => {
+    const pathParts = location.pathname.split('/');
+    return pathParts.length > 3 ? pathParts[3] : 'study-detail';
+  };
 
   useEffect(() => {
     let isMounted = true;
     
     const fetchNotices = async () => {
       setIsLoading(true);
-      setError(null);  // 새로운 요청 시작 시 에러 초기화
+      setError(null);
       try {
         const data = await studyService.getNotices(studyId);
-        if (isMounted) {  // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
+        if (isMounted) {
           setNotices(data);
         }
       } catch (error) {
@@ -38,40 +42,61 @@ function StudyDetailPage() {
       }
     };
 
-    if (activeSection === 'notice') {
+    const currentSection = getCurrentSection();
+    if (currentSection === 'notice') {
       fetchNotices();
     }
 
     return () => {
-      isMounted = false;  // 컴포넌트 언마운트 시 플래그 변경
+      isMounted = false;
     };
-  }, [studyId, activeSection]);
+  }, [studyId, location.pathname]);
+
+  const handleCreateNotice = () => {
+    window.location.href = `/studies/${studyId}/notices/add`;
+  };
+
+  const renderContent = () => {
+    const currentSection = getCurrentSection();
+    
+    switch (currentSection) {
+      case 'notice':
+        return selectedNoticeId ? (
+          <NoticeDetail 
+            studyId={studyId}
+            noticeId={selectedNoticeId} 
+            onBack={() => setSelectedNoticeId(null)}
+          />
+        ) : (
+          <NoticeList 
+            notices={notices} 
+            onNoticeClick={setSelectedNoticeId}
+            onCreateClick={handleCreateNotice}
+            isLoading={isLoading}
+          />
+        );
+      case 'schedule':
+        return <div>일정 컴포넌트가 들어갈 자리입니다</div>;
+      case 'assignment':
+        return <div>과제 컴포넌트가 들어갈 자리입니다</div>;
+      case 'board':
+        return <div>게시판 컴포넌트가 들어갈 자리입니다</div>;
+      case 'attendance':
+        return <div>출석 컴포넌트가 들어갈 자리입니다</div>;
+      case 'manage':
+        return <div>관리 컴포넌트가 들어갈 자리입니다</div>;
+      case 'ranking':
+        return <div>랭킹&보증금 컴포넌트가 들어갈 자리입니다</div>;
+      default:
+        return <div>스터디 정보 컴포넌트가 들어갈 자리입니다</div>;
+    }
+  };
 
   return (
-    <div className="flex">
-      <SideBar
-        onSectionChange={setActiveSection}
-        activeSection={activeSection}
-      />
-      <div className="flex-1 p-6">
-        {error && <ErrorMessage message={error} className="mb-4" />}
-        {activeSection === 'notice' && (
-          selectedNoticeId ? (
-            <NoticeDetail 
-              studyId={studyId}
-              noticeId={selectedNoticeId} 
-              onBack={() => setSelectedNoticeId(null)}
-            />
-          ) : (
-            <NoticeList 
-              notices={notices} 
-              onNoticeClick={setSelectedNoticeId}
-              isLoading={isLoading}
-            />
-          )
-        )}
-      </div>
-    </div>
+    <>
+      {error && <ErrorMessage message={error} />}
+      {renderContent()}
+    </>
   );
 }
 
