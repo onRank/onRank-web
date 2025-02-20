@@ -86,7 +86,6 @@ function AppContent() {
       <main>
         <Routes>
           {/* 스터디 관련 라우트 */}
-<<<<<<< HEAD
           <Route
             path="/studies/:studyId/*"
             element={
@@ -106,24 +105,6 @@ function AppContent() {
             }
           />
 
-=======
-          <Route path="/studies/:studyId/*" element={
-            <StudyLayout>
-              <Routes>
-                <Route index element={<StudyDetailPage />} />
-                <Route path="notices" element={<StudyDetailPage />} />
-                <Route path="schedule" element={<StudyDetailPage />} />
-                <Route path="assignment" element={<StudyDetailPage />} />
-                <Route path="board" element={<StudyDetailPage />} />
-                <Route path="attendance" element={<StudyDetailPage />} />
-                <Route path="manage" element={<StudyDetailPage />} />
-                <Route path="ranking" element={<StudyDetailPage />} />
-                <Route path="notices/add" element={<NoticeAddPage />} />
-              </Routes>
-            </StudyLayout>
-          } />
-          
->>>>>>> afcffeb517a608c94f70d23e174400b47717dd30
           {/* 기타 라우트 */}
           <Route element={<DefaultLayout />}>
             <Route path="/" element={<LoginPage />} />

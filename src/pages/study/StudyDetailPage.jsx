@@ -43,11 +43,7 @@ function StudyDetailPage() {
     };
 
     const currentSection = getCurrentSection();
-<<<<<<< HEAD
     if (currentSection === "notices") {
-=======
-    if (currentSection === 'notices') {
->>>>>>> afcffeb517a608c94f70d23e174400b47717dd30
       fetchNotices();
     }
 
@@ -64,11 +60,7 @@ function StudyDetailPage() {
     const currentSection = getCurrentSection();
 
     switch (currentSection) {
-<<<<<<< HEAD
-      case "notice":
-=======
-      case 'notices':
->>>>>>> afcffeb517a608c94f70d23e174400b47717dd30
+      case "notices":
         return selectedNoticeId ? (
           <NoticeDetail
             studyId={studyId}
