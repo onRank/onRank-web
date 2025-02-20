@@ -15,13 +15,13 @@ function StudyDetailPage() {
 
   // URL에서 현재 섹션 가져오기
   const getCurrentSection = () => {
-    const pathParts = location.pathname.split('/');
-    return pathParts.length > 3 ? pathParts[3] : 'study-detail';
+    const pathParts = location.pathname.split("/");
+    return pathParts.length > 3 ? pathParts[3] : "study-detail";
   };
 
   useEffect(() => {
     let isMounted = true;
-    
+
     const fetchNotices = async () => {
       setIsLoading(true);
       setError(null);
@@ -32,7 +32,7 @@ function StudyDetailPage() {
         }
       } catch (error) {
         if (isMounted) {
-          console.error('공지사항 목록 조회 실패:', error);
+          console.error("공지사항 목록 조회 실패:", error);
           setError(error.message);
         }
       } finally {
@@ -43,7 +43,7 @@ function StudyDetailPage() {
     };
 
     const currentSection = getCurrentSection();
-    if (currentSection === 'notice') {
+    if (currentSection === "notices") {
       fetchNotices();
     }
 
@@ -58,34 +58,34 @@ function StudyDetailPage() {
 
   const renderContent = () => {
     const currentSection = getCurrentSection();
-    
+
     switch (currentSection) {
-      case 'notice':
+      case "notice":
         return selectedNoticeId ? (
-          <NoticeDetail 
+          <NoticeDetail
             studyId={studyId}
-            noticeId={selectedNoticeId} 
+            noticeId={selectedNoticeId}
             onBack={() => setSelectedNoticeId(null)}
           />
         ) : (
-          <NoticeList 
-            notices={notices} 
+          <NoticeList
+            notices={notices}
             onNoticeClick={setSelectedNoticeId}
             onCreateClick={handleCreateNotice}
             isLoading={isLoading}
           />
         );
-      case 'schedule':
+      case "schedule":
         return <div>일정 컴포넌트가 들어갈 자리입니다</div>;
-      case 'assignment':
+      case "assignment":
         return <div>과제 컴포넌트가 들어갈 자리입니다</div>;
-      case 'board':
+      case "board":
         return <div>게시판 컴포넌트가 들어갈 자리입니다</div>;
-      case 'attendance':
+      case "attendance":
         return <div>출석 컴포넌트가 들어갈 자리입니다</div>;
-      case 'manage':
+      case "manage":
         return <div>관리 컴포넌트가 들어갈 자리입니다</div>;
-      case 'ranking':
+      case "ranking":
         return <div>랭킹&보증금 컴포넌트가 들어갈 자리입니다</div>;
       default:
         return <div>스터디 정보 컴포넌트가 들어갈 자리입니다</div>;

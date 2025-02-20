@@ -1,20 +1,20 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { studyService } from '../../../services/api';
-import BackButton from '../../../components/study/notice/BackButton';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { studyService } from "../../../services/api";
+import BackButton from "../../../components/study/notice/BackButton";
 
 function NoticeAddPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !content.trim()) {
-      setError('제목과 내용을 모두 입력해주세요.');
+      setError("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
@@ -25,8 +25,8 @@ function NoticeAddPage() {
       await studyService.addNotice(studyId, { title, content });
       navigate(`/study/${studyId}`);
     } catch (error) {
-      console.error('공지사항 작성 실패:', error);
-      setError(error.message || '공지사항 작성에 실패했습니다.');
+      console.error("공지사항 작성 실패:", error);
+      setError(error.message || "공지사항 작성에 실패했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -35,11 +35,11 @@ function NoticeAddPage() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="mb-6">
-        <BackButton onClick={() => navigate(`/study/${studyId}`)} />
+        <BackButton onClick={() => navigate(`/study/${studyId}/notices`)} />
       </div>
-      
+
       <h1 className="text-2xl font-bold mb-6">새 공지사항 작성</h1>
-      
+
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
           {error}
@@ -48,8 +48,8 @@ function NoticeAddPage() {
 
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
-          <label 
-            htmlFor="title" 
+          <label
+            htmlFor="title"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             제목
@@ -66,8 +66,8 @@ function NoticeAddPage() {
         </div>
 
         <div className="mb-6">
-          <label 
-            htmlFor="content" 
+          <label
+            htmlFor="content"
             className="block text-sm font-medium text-gray-700 mb-2"
           >
             내용
@@ -88,12 +88,12 @@ function NoticeAddPage() {
             type="submit"
             disabled={isSubmitting}
             className={`px-6 py-2 text-white rounded-lg ${
-              isSubmitting 
-                ? 'bg-blue-300 cursor-not-allowed' 
-                : 'bg-blue-500 hover:bg-blue-600'
+              isSubmitting
+                ? "bg-blue-300 cursor-not-allowed"
+                : "bg-blue-500 hover:bg-blue-600"
             }`}
           >
-            {isSubmitting ? '작성 중...' : '작성하기'}
+            {isSubmitting ? "작성 중..." : "작성하기"}
           </button>
         </div>
       </form>
@@ -101,4 +101,4 @@ function NoticeAddPage() {
   );
 }
 
-export default NoticeAddPage; 
+export default NoticeAddPage;
