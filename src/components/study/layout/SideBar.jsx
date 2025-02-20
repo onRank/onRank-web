@@ -11,7 +11,7 @@ function SideBar() {
 
   const menuItems = [
     { id: 'study-detail', label: '스터디 정보' },
-    { id: 'notice', label: '공지사항' },
+    { id: 'notices', label: '공지사항' },
     { id: 'schedule', label: '일정' },
     { id: 'assignment', label: '과제' },
     { id: 'board', label: '게시판' },

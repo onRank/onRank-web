@@ -43,7 +43,7 @@ function StudyDetailPage() {
     };
 
     const currentSection = getCurrentSection();
-    if (currentSection === 'notice') {
+    if (currentSection === 'notices') {
       fetchNotices();
     }
 
@@ -60,7 +60,7 @@ function StudyDetailPage() {
     const currentSection = getCurrentSection();
     
     switch (currentSection) {
-      case 'notice':
+      case 'notices':
         return selectedNoticeId ? (
           <NoticeDetail 
             studyId={studyId}

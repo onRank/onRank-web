@@ -79,7 +79,7 @@ function AppContent() {
             <StudyLayout>
               <Routes>
                 <Route index element={<StudyDetailPage />} />
-                <Route path="notice" element={<StudyDetailPage />} />
+                <Route path="notices" element={<StudyDetailPage />} />
                 <Route path="schedule" element={<StudyDetailPage />} />
                 <Route path="assignment" element={<StudyDetailPage />} />
                 <Route path="board" element={<StudyDetailPage />} />
