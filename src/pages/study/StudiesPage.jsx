@@ -3,25 +3,28 @@ import StudyList from "../../components/study/StudyList"
 import { studyService } from "../../services/api"
 import { useAuth } from "../../contexts/AuthContext"
 import { authService } from "../../services/api"
+import LoadingSpinner from "../../components/common/LoadingSpinner"
+import ErrorMessage from "../../components/common/ErrorMessage"
+import StudiesListSidebar from "../../components/study/StudiesListSidebar"
 
 function StudiesPage() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const [studies, setStudies] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchStudies = async () => {
       try {
-        setLoading(true)
+        setIsLoading(true)
         setError(null)
         const data = await studyService.getStudies()
         setStudies(data)
       } catch (error) {
         console.error("Error fetching studies:", error)
-        setError("스터디 목록을 불러오는데 실패했습니다.")
+        setError(error.message)
       } finally {
-        setLoading(false)
+        setIsLoading(false)
       }
     }
 
@@ -34,22 +37,85 @@ function StudiesPage() {
       // 로그아웃 후 자동으로 홈으로 리다이렉트 (api.js에서 처리)
     } catch (error) {
       console.error('Logout failed:', error)
+      alert('로그아웃에 실패했습니다. 다시 시도해주세요.')
     }
   }
 
-  if (loading) {
-    return <div>Loading studies...</div>
+  if (authLoading || isLoading) {
+    return <LoadingSpinner />
+  }
+
+  if (error) {
+    return <ErrorMessage message={error} />
+  }
+
+  if (!user) {
+    return <ErrorMessage message="로그인이 필요합니다." />
   }
 
   return (
-    <div className="studies-container">
-      <h2>안녕하세요, {user.nickname}님!</h2>
-      <div className="user-info">
-        <p>학과: {user.department}</p>
-      </div>
-      <button onClick={handleLogout}>로그아웃</button>
-      {error && <div className="error-message">{error}</div>}
-      <StudyList studies={studies} />
+    <div style={{
+      display: 'flex',
+      minHeight: 'calc(100vh - 64px)', // Subtract header height
+    }}>
+      <StudiesListSidebar />
+      <main style={{
+        flex: 1,
+        padding: '2rem',
+        backgroundColor: 'var(--main-bg, #ffffff)'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            marginBottom: '2rem'
+          }}>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: '700',
+              color: 'var(--text-primary)',
+              marginBottom: '1rem'
+            }}>
+              스터디 목록
+            </h1>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div>
+                <h2 style={{
+                  fontSize: '1.25rem',
+                  color: 'var(--text-primary)'
+                }}>
+                  안녕하세요, {user.nickname}님!
+                </h2>
+                <p style={{
+                  color: 'var(--text-secondary)',
+                  marginTop: '0.5rem'
+                }}>
+                  학과: {user.department}
+                </p>
+              </div>
+              <button
+                style={{
+                  backgroundColor: '#2563EB',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '0.375rem',
+                  fontWeight: '500',
+                  fontSize: '0.875rem'
+                }}
+                onClick={() => {/* TODO: 스터디 생성 페이지로 이동 */}}
+              >
+                스터디 만들기
+              </button>
+            </div>
+          </div>
+          <StudyList studies={studies} />
+        </div>
+      </main>
     </div>
   )
 }

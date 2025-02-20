@@ -8,7 +8,7 @@ export function useAuth() {
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const { data } = await api.get('/login/user')
+        const { data } = await api.get('/auth/login/user')
         setUser(data)  // { email, nickname, department, phoneNumber, ... }
       } catch (error) {
         if (error.response?.status === 401) {
@@ -24,7 +24,7 @@ export function useAuth() {
   // 사용자 정보 업데이트 함수 제공
   const updateUserInfo = async (newInfo) => {
     try {
-      const { data } = await api.patch('/update', newInfo)
+      const { data } = await api.patch('/auth/update', newInfo)
       setUser(data)
       return true
     } catch (error) {
