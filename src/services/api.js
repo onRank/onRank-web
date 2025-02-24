@@ -7,59 +7,92 @@ if (!import.meta.env.VITE_API_URL) {
 // api 인스턴스 생성
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
-  timeout: 5000  // 5초 타임아웃 추가
+  withCredentials: true, // 쿠키 포함
+  timeout: 5000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
 })
 
 // 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
+    const accessToken = localStorage.getItem('accessToken')
+    if (accessToken) {
+      // 이미 Bearer 형식으로 저장되어 있으므로 그대로 사용
+      config.headers.Authorization = accessToken
+    }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
 // 응답 인터셉터
 api.interceptors.response.use(
-  response => response,
-  error => {
+  (response) => response,
+  async (error) => {
     if (error.response?.status === 401) {
-      // JWT 토큰이 만료된 경우
-      document.cookie = 'jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;'
-      window.location.href = '/'
-    } else if (error.response?.status === 403) {
-      alert('접근 권한이 없습니다.')
-    } else if (error.response?.status >= 500) {
-      alert('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      try {
+        // 토큰 재발급 요청
+        const response = await fetch('http://localhost:8080/auth/reissue', {
+          method: 'POST',
+          credentials: 'include', // 쿠키 포함
+        })
+        
+        if (!response.ok) throw new Error('Token reissue failed')
+        
+        const newAccessToken = response.headers.get('Authorization')
+        if (newAccessToken) {
+          // Bearer 형식 그대로 저장
+          localStorage.setItem('accessToken', newAccessToken)
+          // 원래 요청 재시도
+          error.config.headers.Authorization = newAccessToken
+          return api(error.config)
+        }
+      } catch (refreshError) {
+        localStorage.removeItem('accessToken')
+        window.location.href = '/'
+        return Promise.reject(refreshError)
+      }
     }
     return Promise.reject(error)
   }
 )
 
 export const authService = {
-  // 구글 로그인
-  googleLogin: () => api.post('/auth/login'),
-  
-  // 토큰 재발급
-  reissueToken: () => api.post('/auth/reissue-token'),
-  
-  // 로그아웃 (서버에서 쿠키 제거)
-  logout: async () => {
-    const response = await api.post('/auth/logout')
-    // 로그아웃 성공시 홈으로 리다이렉트
-    if (response.status === 200) {
-      window.location.href = '/'
+  // 회원 정보 등록
+  addUserInfo: async (userData) => {
+    try {
+      const response = await api.post('/auth/add', {
+        studentName: userData.studentName,
+        studentSchool: userData.studentSchool || null,
+        studentDepartment: userData.studentDepartment || null,
+        studentPhoneNumber: userData.studentPhoneNumber
+      })
+      return response.data
+    } catch (error) {
+      console.error('회원정보 등록 실패:', error)
+      throw error
     }
-    return response
+  },
+
+  // 로그아웃
+  logout: async () => {
+    try {
+      await api.post('/auth/logout')
+      localStorage.removeItem('accessToken')
+      window.location.href = '/'
+    } catch (error) {
+      console.error('로그아웃 실패:', error)
+      throw error
+    }
   },
 
   // 사용자 정보 조회
-  getUserInfo: () => api.get('/auth/login/user'),
-  
-  // 추가 정보 입력
-  addUserInfo: (userData) => api.post('/auth/add', userData)
+  getUserInfo: () => {
+    return api.get('/auth/login/user')
+  }
 }
 
 export const studyService = {

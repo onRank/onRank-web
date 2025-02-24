@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import { memo, useMemo } from "react";
 import LoginPage from "./pages/auth/LoginPage";
-import OAuthAddPage from "./pages/auth/OAuthAddPage";
 import StudiesPage from "./pages/study/StudiesPage";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
@@ -17,6 +16,7 @@ import StudyDetailPage from "./pages/study/StudyDetailPage";
 import NoticeAddPage from "./pages/study/notice/NoticeAddPage";
 import Header from "./components/common/Header";
 import SideBar from "./components/study/layout/SideBar";
+import UserInfoForm from './components/auth/UserInfoForm';
 import "./App.css";
 
 // 레이아웃 상수
@@ -105,11 +105,13 @@ function AppContent() {
             }
           />
 
+          {/* 회원가입 라우트 */}
+          <Route path="/auth/add" element={<UserInfoForm />} />
+
           {/* 기타 라우트 */}
           <Route element={<DefaultLayout />}>
             <Route path="/" element={<LoginPage />} />
             <Route path="/auth/callback" element={<OAuthCallback />} />
-            <Route path="/auth/add" element={<OAuthAddPage />} />
             <Route path="/studies" element={<StudiesPage />} />
           </Route>
         </Routes>
