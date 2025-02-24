@@ -4,11 +4,29 @@ if (!import.meta.env.VITE_API_URL) {
   console.error('API URL이 설정되지 않았습니다')
 }
 
+// 토큰 관련 유틸리티 함수
+export const tokenUtils = {
+  getToken: () => localStorage.getItem('accessToken'),
+  setToken: (token) => {
+    if (!token) return;
+    // 이미 저장된 토큰과 같다면 저장하지 않음
+    const currentToken = localStorage.getItem('accessToken');
+    if (currentToken === token) return;
+    
+    // Bearer 접두사가 없는 경우에만 추가
+    const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    localStorage.setItem('accessToken', tokenWithBearer);
+    console.log('New token saved');
+  },
+  removeToken: () => localStorage.removeItem('accessToken'),
+  hasToken: () => !!localStorage.getItem('accessToken')
+};
+
 // api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // 쿠키 포함
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
   timeout: 5000,
+  withCredentials: true,  // CORS 요청에서 쿠키 전송 허용
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -18,41 +36,88 @@ export const api = axios.create({
 // 요청 인터셉터
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem('accessToken')
-    if (accessToken) {
-      // 이미 Bearer 형식으로 저장되어 있으므로 그대로 사용
-      config.headers.Authorization = accessToken
+    const token = tokenUtils.getToken()
+    if (token) {
+      config.headers['Authorization'] = token
     }
+
+    // CORS 관련 헤더 추가
+    config.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
+    config.headers['Access-Control-Allow-Credentials'] = 'true'
+
+    console.log('Request details:', {
+      url: config.url,
+      method: config.method,
+      headers: config.headers,
+      data: config.data
+    })
+
     return config
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    console.error('Request interceptor error:', error)
+    return Promise.reject(error)
+  }
 )
 
 // 응답 인터셉터
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log('Response received:', {
+      status: response.status,
+      headers: response.headers,
+      data: response.data
+    })
+    
+    const authHeader = response.headers['authorization'] || response.headers['Authorization']
+    if (authHeader) {
+      tokenUtils.setToken(authHeader)
+    }
+    return response
+  },
   async (error) => {
-    if (error.response?.status === 401) {
+    console.error('Response error:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      headers: error.response?.headers,
+      url: error.config?.url
+    })
+
+    const originalRequest = error.config;
+
+    // /auth/add 요청에서 401이 발생한 경우 특별 처리
+    if (error.response?.status === 401 && originalRequest.url === '/auth/add') {
+      console.log('회원정보 등록 중 인증 오류 발생')
+      // 토큰만 제거하고 리다이렉트는 하지 않음
+      tokenUtils.removeToken()
+      return Promise.reject(error)
+    }
+
+    // 토큰 재발급 요청 실패 시
+    if (error.response?.status === 401 && originalRequest.url === '/auth/reissue') {
+      console.log('토큰 재발급 실패')
+      tokenUtils.removeToken()
+      // 리다이렉트 하지 않고 에러만 반환
+      return Promise.reject(error)
+    }
+
+    // 401 에러이고 아직 재시도하지 않은 경우에만 토큰 갱신 시도
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
       try {
-        // 토큰 재발급 요청
-        const response = await fetch('http://localhost:8080/auth/reissue', {
-          method: 'POST',
-          credentials: 'include', // 쿠키 포함
-        })
-        
-        if (!response.ok) throw new Error('Token reissue failed')
-        
-        const newAccessToken = response.headers.get('Authorization')
-        if (newAccessToken) {
-          // Bearer 형식 그대로 저장
-          localStorage.setItem('accessToken', newAccessToken)
-          // 원래 요청 재시도
-          error.config.headers.Authorization = newAccessToken
-          return api(error.config)
+        console.log('토큰 갱신 시도')
+        const response = await api.get('/auth/reissue')
+        const newToken = response.headers['authorization'] || response.headers['Authorization']
+        if (newToken) {
+          console.log('새 토큰 발급됨:', newToken)
+          tokenUtils.setToken(newToken)
+          originalRequest.headers['Authorization'] = newToken
+          return api(originalRequest)
         }
       } catch (refreshError) {
-        localStorage.removeItem('accessToken')
-        window.location.href = '/'
+        console.error('토큰 갱신 실패:', refreshError)
+        tokenUtils.removeToken()
+        // 리다이렉트 하지 않고 에러만 반환
         return Promise.reject(refreshError)
       }
     }
@@ -64,15 +129,51 @@ export const authService = {
   // 회원 정보 등록
   addUserInfo: async (userData) => {
     try {
-      const response = await api.post('/auth/add', {
-        studentName: userData.studentName,
-        studentSchool: userData.studentSchool || null,
-        studentDepartment: userData.studentDepartment || null,
-        studentPhoneNumber: userData.studentPhoneNumber
+      console.log('회원정보 등록 시도:', userData)
+      const token = tokenUtils.getToken()
+      console.log('현재 토큰:', token)
+      
+      if (!token) {
+        console.error('토큰이 없음')
+        throw new Error('인증 토큰이 없습니다')
+      }
+
+      // 토큰 형식 검증
+      if (!token.startsWith('Bearer ')) {
+        console.error('토큰 형식이 잘못됨')
+        throw new Error('토큰 형식이 올바르지 않습니다')
+      }
+
+      console.log('API 요청 전송 중...', {
+        url: '/auth/add',
+        headers: {
+          'Authorization': token,
+          'Content-Type': 'application/json'
+        }
       })
+
+      const response = await api.post('/auth/add', {
+        studentName: userData.studentName.trim(),
+        studentSchool: userData.studentSchool?.trim() || null,
+        studentDepartment: userData.studentDepartment?.trim() || null,
+        studentPhoneNumber: userData.studentPhoneNumber.trim()
+      })
+
+      console.log('회원정보 등록 응답:', {
+        status: response.status,
+        headers: response.headers,
+        data: response.data
+      })
+
+      if (response.status === 200 || response.status === 201) {
+        console.log('회원정보 등록 성공')
+        return response.data
+      }
+
       return response.data
     } catch (error) {
       console.error('회원정보 등록 실패:', error)
+      // 에러를 그대로 전파하여 컴포넌트에서 처리하도록 함
       throw error
     }
   },
@@ -81,10 +182,12 @@ export const authService = {
   logout: async () => {
     try {
       await api.post('/auth/logout')
-      localStorage.removeItem('accessToken')
+      tokenUtils.removeToken()
+      // 로그아웃 성공 시에만 리다이렉트
       window.location.href = '/'
     } catch (error) {
       console.error('로그아웃 실패:', error)
+      // 로그아웃 실패 시에는 리다이렉트하지 않고 에러만 전파
       throw error
     }
   },
