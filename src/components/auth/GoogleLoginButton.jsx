@@ -4,7 +4,7 @@ function GoogleLoginButton() {
   const handleLogin = (e) => {
     e.preventDefault()
     const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-    window.location.href = `${backendUrl}/oauth2/authorization/google`
+    window.location.href = `${backendUrl}/oauth2/authorization/google?redirect_uri=http://localhost:3000/auth/callback`
   }
 
   return (

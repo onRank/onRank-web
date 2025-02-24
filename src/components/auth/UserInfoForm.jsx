@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { authService } from '../../services/api';
 
 function UserInfoForm() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
     studentName: user?.name || '',
     studentSchool: '',
@@ -14,27 +16,62 @@ function UserInfoForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Check for tokens in localStorage that might have been set during the callback
-    const accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
-    
-    console.log('[UserInfoForm] Stored tokens:', {
-      accessToken: accessToken ? 'exists' : 'not found',
-      refreshToken: refreshToken ? 'exists' : 'not found'
-    });
-  }, []);
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      navigate('/');
+      return;
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
+    // 폼 데이터 유효성 검사
+    if (!formData.studentName.trim()) {
+      setError('이름을 입력해주세요.');
+      return;
+    }
+    if (!formData.studentPhoneNumber.trim()) {
+      setError('전화번호를 입력해주세요.');
+      return;
+    }
+
     try {
-      const studentId = await authService.addUserInfo(formData);
-      console.log('등록된 학생 ID:', studentId);
-      window.location.href = '/';
+      console.log('Submitting form data:', formData);
+      const token = localStorage.getItem('accessToken');
+      if (!token) {
+        setError('인증 토큰이 없습니다. 다시 로그인해주세요.');
+        navigate('/');
+        return;
+      }
+
+      const response = await authService.addUserInfo({
+        ...formData,
+        studentName: formData.studentName.trim(),
+        studentPhoneNumber: formData.studentPhoneNumber.trim(),
+        studentSchool: formData.studentSchool.trim() || null,
+        studentDepartment: formData.studentDepartment.trim() || null
+      });
+
+      console.log('Registration successful:', response);
+      setUser(response);
+      // 리다이렉트는 api.js에서 처리
     } catch (error) {
       console.error('회원정보 등록 실패:', error);
-      setError(error.response?.data?.message || '회원정보 등록에 실패했습니다.');
+      
+      if (error.message === 'Network Error') {
+        setError('서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.');
+        return;
+      }
+      
+      if (error.response?.status === 401) {
+        setError('인증이 만료되었습니다. 다시 로그인해주세요.');
+        navigate('/');
+        return;
+      }
+
+      setError(error.message || '회원정보 등록에 실패했습니다. 다시 시도해주세요.');
     }
   };
 
@@ -59,8 +96,13 @@ function UserInfoForm() {
             <input
               type="text"
               value={formData.studentName}
-              disabled
-              className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 disabled:opacity-50"
+              onChange={(e) => setFormData({
+                ...formData,
+                studentName: e.target.value
+              })}
+              className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              placeholder="이름을 입력하세요"
+              required
             />
           </div>
 

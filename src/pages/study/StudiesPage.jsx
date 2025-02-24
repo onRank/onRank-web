@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useNavigate } from "react-router-dom"
 import StudyList from "../../components/study/StudyList"
 import { studyService } from "../../services/api"
 import { useAuth } from "../../contexts/AuthContext"
@@ -8,12 +9,19 @@ import ErrorMessage from "../../components/common/ErrorMessage"
 import StudiesListSidebar from "../../components/study/StudiesListSidebar"
 
 function StudiesPage() {
+  const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
   const [studies, setStudies] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    // 인증 상태 확인
+    if (!authLoading && !user) {
+      navigate('/')
+      return
+    }
+
     const fetchStudies = async () => {
       try {
         setIsLoading(true)
@@ -23,13 +31,19 @@ function StudiesPage() {
       } catch (error) {
         console.error("Error fetching studies:", error)
         setError(error.message)
+        // 401 에러인 경우 로그인 페이지로 리다이렉트
+        if (error.response?.status === 401) {
+          navigate('/')
+        }
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchStudies()
-  }, [])
+    if (user) {
+      fetchStudies()
+    }
+  }, [user, authLoading, navigate])
 
   const handleLogout = async () => {
     try {
@@ -50,7 +64,7 @@ function StudiesPage() {
   }
 
   if (!user) {
-    return <ErrorMessage message="로그인이 필요합니다." />
+    return null
   }
 
   return (
