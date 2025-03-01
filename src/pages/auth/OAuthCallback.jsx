@@ -37,11 +37,22 @@ function OAuthCallback() {
         }
 
         console.log('Existing user detected, fetching user info')
+        console.log('[Auth Debug] GET /auth/login/user 요청 시작')
+        console.log('[Auth Debug] 요청 헤더:', {
+          Authorization: authHeader,
+          'Content-Type': 'application/json'
+        })
+        
         const userResponse = await api.get('/auth/login/user', {
           headers: {
             'Authorization': authHeader
           }
         })
+        
+        console.log('[Auth Debug] GET /auth/login/user 응답 수신')
+        console.log('[Auth Debug] 응답 상태:', userResponse.status)
+        console.log('[Auth Debug] 응답 헤더:', userResponse.headers)
+        console.log('[Auth Debug] 응답 데이터:', userResponse.data)
         
         if (!userResponse.data) {
           throw new Error('User data not received')

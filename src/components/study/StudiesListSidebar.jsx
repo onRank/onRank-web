@@ -1,54 +1,67 @@
 import { useNavigate } from 'react-router-dom';
 
-function StudiesListSidebar() {
+function MainNavigation() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { id: 'studies', label: '스터디', onClick: () => navigate('/studies') },
-    { id: 'life-study', label: '생성/참여', onClick: () => {} },
-    { id: 'calendar', label: '캘린더', onClick: () => {} },
-    { id: 'mypage', label: '마이페이지', onClick: () => {} },
+    { 
+      id: 'studies', 
+      label: '스터디', 
+      icon: '📚',
+      onClick: () => navigate('/studies') 
+    },
+    { 
+      id: 'create-join', 
+      label: '생성/참여', 
+      icon: '🔍',
+      onClick: () => {} 
+    },
+    { 
+      id: 'calendar', 
+      label: '캘린더', 
+      icon: '📅',
+      onClick: () => {} 
+    },
+    { 
+      id: 'mypage', 
+      label: '마이페이지', 
+      icon: '👤',
+      onClick: () => {} 
+    },
   ];
 
   return (
-    <aside style={{
-      width: '240px',
-      height: '100%',
-      backgroundColor: 'var(--sidebar-bg, #f3f4f6)',
-      borderRight: '1px solid var(--border-color, #e5e7eb)',
-      padding: '2rem 1rem',
-      position: 'sticky',
-      top: '64px', // Header height
+    <nav style={{
+      width: '100%',
       display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem'
+      justifyContent: 'center',
+      gap: '4rem',
+      padding: '1.5rem',
+      backgroundColor: '#FFFFFF',
+      borderBottom: '1px solid #ABB1B3'
     }}>
       {menuItems.map((item) => (
         <button
           key={item.id}
           onClick={item.onClick}
           style={{
-            width: '100%',
-            padding: '0.75rem 1rem',
-            textAlign: 'left',
-            backgroundColor: item.id === 'studies' ? 'var(--button-active-bg, #e5e7eb)' : 'transparent',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'none',
             border: 'none',
-            borderRadius: '0.375rem',
-            color: 'var(--text-primary)',
-            fontSize: '0.875rem',
-            fontWeight: item.id === 'studies' ? '600' : '400',
             cursor: 'pointer',
-            transition: 'all 0.2s',
-            ':hover': {
-              backgroundColor: 'var(--button-hover-bg, #e5e7eb)'
-            }
+            color: item.id === 'studies' ? '#337BB8' : '#000000',
+            fontSize: '14px'
           }}
         >
+          <span style={{ fontSize: '24px' }}>{item.icon}</span>
           {item.label}
         </button>
       ))}
-    </aside>
+    </nav>
   );
 }
 
-export default StudiesListSidebar; 
+export default MainNavigation; 

@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { authService } from '../../services/api';
-import logoImage from '../../assets/images/logo.png';
 import NotificationPopover from './NotificationPopover';
 
 function Header() {
@@ -23,74 +22,81 @@ function Header() {
   return (
     <header style={{
       width: '100%',
-      backgroundColor: 'var(--header-bg, #1f2937)',
+      backgroundColor: '#FFFFFF',
       height: '64px',
       display: 'flex',
       alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '0 2rem',
       position: 'sticky',
       top: 0,
-      zIndex: 10,
-      borderBottom: '1px solid var(--border-color, #374151)'
+      zIndex: 10
     }}>
+      <div 
+        onClick={handleLogoClick} 
+        style={{ 
+          cursor: 'pointer',
+          fontSize: '24px',
+          fontWeight: 'bold',
+          color: '#337BB8'
+        }}
+      >
+        OnRank
+      </div>
+
       <div style={{
-        maxWidth: '1200px',
-        width: '100%',
-        margin: '0 auto',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '0 max(16px, env(safe-area-inset-left))'
+        gap: '1rem'
       }}>
-        <img
-          style={{
-            height: '28px',
-            cursor: 'pointer',
-            objectFit: 'contain'
-          }}
-          src={logoImage}
-          alt="ONRANK"
-          onClick={handleLogoClick}
-        />
-        <div style={{
-          display: 'flex',
-          gap: '12px',
-          position: 'relative'
-        }}>
-          <button 
-            style={{
-              padding: '8px 16px',
-              backgroundColor: isNotificationOpen ? 'var(--button-active-bg, #4B5563)' : 'var(--button-bg, #374151)',
-              color: 'var(--text-primary, #ffffff)',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              whiteSpace: 'nowrap'
-            }}
+        <div style={{ position: 'relative' }}>
+          <button
             onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-          >
-            알림
-          </button>
-          <NotificationPopover 
-            isOpen={isNotificationOpen}
-            onClose={() => setIsNotificationOpen(false)}
-          />
-          <button 
             style={{
-              padding: '8px 16px',
-              backgroundColor: 'var(--button-bg, #374151)',
-              color: 'var(--text-primary, #ffffff)',
+              background: 'none',
               border: 'none',
-              borderRadius: '4px',
               cursor: 'pointer',
-              fontSize: '14px',
-              whiteSpace: 'nowrap'
+              padding: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
-            onClick={handleLogout}
           >
-            로그아웃
+            <span style={{
+              fontSize: '20px'
+            }}>
+              🔔
+            </span>
           </button>
+          {isNotificationOpen && (
+            <div style={{
+              position: 'absolute',
+              top: '100%',
+              right: 0,
+              marginTop: '8px'
+            }}>
+              <NotificationPopover 
+                isOpen={isNotificationOpen} 
+                onClose={() => setIsNotificationOpen(false)} 
+              />
+            </div>
+          )}
         </div>
+        <button
+          onClick={handleLogout}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '50px',
+            border: '1px solid #337BB8',
+            color: '#337BB8',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+        >
+          로그아웃
+        </button>
       </div>
     </header>
   );

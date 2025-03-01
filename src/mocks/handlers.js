@@ -4,22 +4,20 @@ import { http, HttpResponse } from 'msw'
 const mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken'
 
 export const handlers = [
-  // 구글 로그인 시작 (MSW 테스트용)
-  http.get('http://localhost:8080/auth/login', () => {
-    return HttpResponse.json(
-      {
-        isNewUser: true,
-        redirectUrl: '/auth/callback?isNewUser=false'
-      },
-      {
-        headers: {
-          'Set-Cookie': [
-            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
-            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
-          ]
-        }
+  // 구글 OAuth 인증 모킹
+  http.get('http://localhost:8080/oauth2/authorization/google*', () => {
+    // 구글 로그인 성공 후 콜백 URL로 리다이렉트
+    return HttpResponse.redirect('http://localhost:3000/auth/callback?code=mock_code')
+  }),
+
+  // 구글 OAuth 콜백 처리
+  http.get('http://localhost:8080/auth/reissue', () => {
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Authorization': `Bearer ${mockJwtToken}`,
       }
-    )
+    })
   }),
 
   // 사용자 정보 조회
