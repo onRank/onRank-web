@@ -20,8 +20,9 @@ import MainNavigation from "./components/common/MainNavigation";
 import UserInfoForm from './components/auth/UserInfoForm';
 import CalendarPage from './pages/calendar/CalendarPage';
 import MyPage from './pages/mypage/MyPage';
+import AssignmentDetail from './pages/study/assignment/AssignmentDetail';
 import "./App.css";
-
+  
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
 
@@ -79,9 +80,11 @@ function AppContent() {
   }, [location.pathname]);
 
   const showNavigation = useMemo(() => {
-    // 스터디 관련 경로에서는 네비게이션 바를 숨김
-    return showHeader && !location.pathname.includes('/studies/');
-  }, [location.pathname, showHeader]);
+    // 로그인, 콜백 페이지, 스터디 상세 페이지에서 네비게이션 바를 숨김
+    const hideNavigationPaths = ['/', '/auth/callback'];
+    const isStudyDetailPage = /^\/studies\/[^/]+/.test(location.pathname);
+    return !hideNavigationPaths.includes(location.pathname) && !isStudyDetailPage;
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen">
@@ -107,6 +110,7 @@ function AppContent() {
                   <Route path="notices" element={<StudyDetailPage />} />
                   <Route path="schedule" element={<StudyDetailPage />} />
                   <Route path="assignment" element={<StudyDetailPage />} />
+                  <Route path="assignment/:id" element={<AssignmentDetail />} />
                   <Route path="board" element={<StudyDetailPage />} />
                   <Route path="attendance" element={<StudyDetailPage />} />
                   <Route path="manage" element={<StudyDetailPage />} />
