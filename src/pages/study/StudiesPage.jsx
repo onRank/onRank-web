@@ -20,7 +20,21 @@ function StudiesPage() {
         setIsLoading(true)
         setError(null)
         const data = await studyService.getStudies()
+        
         console.log('[Studies] Studies fetched successfully:', data)
+        if (data && data.length > 0) {
+          console.log('[Studies] First study details:', JSON.stringify(data[0], null, 2))
+          console.log('[Studies] Available keys:', Object.keys(data[0]))
+          
+          const firstStudy = data[0]
+          const nameFields = ['creatorName', 'leaderName', 'creator', 'leader', 'userName', 'participants']
+          nameFields.forEach(field => {
+            if (firstStudy[field]) {
+              console.log(`[Studies] Found name field "${field}":`, firstStudy[field])
+            }
+          })
+        }
+        
         setStudies(data)
       } catch (error) {
         console.error("[Studies] Error fetching studies:", error)

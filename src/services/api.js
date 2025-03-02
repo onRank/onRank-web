@@ -6,20 +6,37 @@ if (!import.meta.env.VITE_API_URL) {
 
 // 토큰 관련 유틸리티 함수
 export const tokenUtils = {
-  getToken: () => localStorage.getItem('accessToken'),
+  getToken: () => {
+    const token = localStorage.getItem('accessToken')
+    console.log('[Token Debug] Retrieved token from localStorage:', token ? 'exists' : 'not found')
+    return token
+  },
   setToken: (token) => {
-    if (!token) return;
+    if (!token) {
+      console.log('[Token Debug] Attempted to save null/undefined token, ignoring')
+      return
+    }
     // 이미 저장된 토큰과 같다면 저장하지 않음
-    const currentToken = localStorage.getItem('accessToken');
-    if (currentToken === token) return;
+    const currentToken = localStorage.getItem('accessToken')
+    if (currentToken === token) {
+      console.log('[Token Debug] Token unchanged, not saving again')
+      return
+    }
     
     // Bearer 접두사가 없는 경우에만 추가
-    const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-    localStorage.setItem('accessToken', tokenWithBearer);
-    console.log('New token saved');
+    const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+    localStorage.setItem('accessToken', tokenWithBearer)
+    console.log('[Token Debug] New token saved to localStorage')
   },
-  removeToken: () => localStorage.removeItem('accessToken'),
-  hasToken: () => !!localStorage.getItem('accessToken')
+  removeToken: () => {
+    console.log('[Token Debug] Removing token from localStorage')
+    localStorage.removeItem('accessToken')
+  },
+  hasToken: () => {
+    const hasToken = !!localStorage.getItem('accessToken')
+    console.log('[Token Debug] Token exists check:', hasToken)
+    return hasToken
+  }
 };
 
 // api 인스턴스 생성
@@ -40,11 +57,18 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = tokenUtils.getToken()
+    
+    // Log whether token exists for all requests
+    if (config.url) {
+      console.log(`[API Debug] Processing request to ${config.url}, token exists: ${!!token}`)
+    }
+    
     if (token) {
       // Bearer 토큰 형식 확인 및 설정
       const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
       config.headers['Authorization'] = tokenWithBearer
       config.headers['Access-Control-Allow-Headers'] = 'Authorization'  // CORS 헤더 추가
+      console.log(`[API Debug] Added Authorization header to request: ${config.url}`)
       
       // 토큰 만료 시간 확인
       try {
@@ -150,13 +174,24 @@ export const authService = {
     try {
       console.log('[Auth] 회원정보 등록 시도:', userData)
 
-      // 회원정보 등록 요청 - 토큰 검증이 백엔드에서 스킵되므로 토큰 관련 로직 제거
+      // 회원정보 등록 요청 - 토큰을 명시적으로 헤더에 추가
+      const token = tokenUtils.getToken();
+      const headers = {};
+      
+      if (token) {
+        const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers['Authorization'] = tokenWithBearer;
+        console.log('[Auth] Including token in request:', tokenWithBearer)
+      } else {
+        console.warn('[Auth] No token found for auth/add request')
+      }
+
       const response = await api.post('/auth/add', {
         studentName: userData.studentName.trim(),
         studentSchool: userData.studentSchool?.trim() || '',
         studentDepartment: userData.studentDepartment?.trim() || '',
         studentPhoneNumber: userData.studentPhoneNumber.trim()
-      })
+      }, { headers })
 
       console.log('[Auth] 회원정보 등록 성공:', response.data)
       return response  // 전체 response 객체 반환
@@ -192,10 +227,54 @@ export const authService = {
 export const studyService = {
   getStudies: async () => {
     const response = await api.get('/studies')
-    return response.data
+    
+    // Log the raw response to understand the data structure
+    console.log('[API Debug] Raw studies response:', response.data)
+    
+    // Transform the data to include creator and participant names if they're missing
+    // This assumes the API returns studies without proper name information
+    const studiesWithNames = response.data.map(study => {
+      // Deep copy to avoid modifying the original response
+      const enhancedStudy = { ...study }
+      
+      // If creator name is missing, add it
+      if (!enhancedStudy.creatorName && enhancedStudy.creatorId) {
+        // Either fetch from user API or use placeholder
+        enhancedStudy.creatorName = '스터디 리더'
+      }
+      
+      // If participant names are missing, add them
+      if (enhancedStudy.participants && Array.isArray(enhancedStudy.participants)) {
+        enhancedStudy.participants = enhancedStudy.participants.map(participant => {
+          if (participant && !participant.name) {
+            return { ...participant, name: participant.nickname || '참여자' }
+          }
+          return participant
+        })
+      }
+      
+      // Log the enhanced study for debugging
+      console.log('[API Debug] Enhanced study:', enhancedStudy)
+      
+      return enhancedStudy
+    })
+    
+    return studiesWithNames
   },
   createStudy: async (studyData) => {
-    const response = await api.post('/studies', studyData)
+    // 명시적으로 토큰 추가
+    const token = tokenUtils.getToken();
+    const headers = {};
+    
+    if (token) {
+      const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      headers['Authorization'] = tokenWithBearer;
+      console.log('[Study] Including token in createStudy request:', tokenWithBearer)
+    } else {
+      console.warn('[Study] No token found for createStudy request')
+    }
+    
+    const response = await api.post('/studies', studyData, { headers })
     return response.data
   },
   getNotices: async (studyId) => {
@@ -235,7 +314,19 @@ export const studyService = {
       throw new Error('스터디 ID가 유효하지 않습니다.');
     }
     try {
-      const response = await api.post(`/studies/${numericStudyId}/notices/add`, noticeData);
+      // 명시적으로 토큰 추가
+      const token = tokenUtils.getToken();
+      const headers = {};
+      
+      if (token) {
+        const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers['Authorization'] = tokenWithBearer;
+        console.log('[Study] Including token in addNotice request:', tokenWithBearer)
+      } else {
+        console.warn('[Study] No token found for addNotice request')
+      }
+      
+      const response = await api.post(`/studies/${numericStudyId}/notices/add`, noticeData, { headers });
       return response.data;
     } catch (error) {
       if (error.response?.status === 404) {
