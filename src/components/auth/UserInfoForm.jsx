@@ -15,16 +15,21 @@ function UserInfoForm() {
   });
 
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // 페이지 새로고침이나 창 닫기 시 토큰 제거
-    const handleBeforeUnload = () => {
-      tokenUtils.removeToken();
+    // 페이지 새로고침이나 창 닫기 시 토큰 제거 (단, 제출 중이 아닐 때만)
+    const handleBeforeUnload = (e) => {
+      if (!isSubmitting) {
+        tokenUtils.removeToken();
+      }
     };
 
-    // 페이지 이동 시 토큰 제거
+    // 페이지 이동 시 토큰 제거 (단, 제출 중이 아닐 때만)
     const handleNavigate = () => {
-      tokenUtils.removeToken();
+      if (!isSubmitting) {
+        tokenUtils.removeToken();
+      }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
@@ -34,10 +39,12 @@ function UserInfoForm() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handleNavigate);
-      // 컴포넌트 언마운트 시 토큰 제거
-      tokenUtils.removeToken();
+      // 컴포넌트 언마운트 시 토큰 제거 (단, 제출 중이 아닐 때만)
+      if (!isSubmitting) {
+        tokenUtils.removeToken();
+      }
     };
-  }, []);
+  }, [isSubmitting]);
 
   useEffect(() => {
     // 토큰에서 사용자 정보 추출
@@ -63,6 +70,7 @@ function UserInfoForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsSubmitting(true);
 
     // 입력값 검증
     const trimmedName = formData.studentName.trim();
@@ -100,15 +108,23 @@ function UserInfoForm() {
       console.log('회원정보 등록 시도:', submitData);
       const response = await authService.addUserInfo(submitData);
 
-      if (!response) {
+      // 201 상태코드면 성공으로 처리
+      if (response.status === 201) {
+        console.log('회원정보 등록 성공');
+        navigate('/studies');
+        return;
+      }
+
+      if (!response.data) {
         throw new Error('서버 응답이 올바르지 않습니다');
       }
 
       console.log('회원정보 등록 성공:', response);
-      setUser(response);
+      setUser(response.data);
       navigate('/studies');
     } catch (error) {
       console.error('회원정보 등록 실패:', error);
+      setIsSubmitting(false);
       
       if (error.message === '서버와 통신할 수 없습니다' || error.message === 'Network Error') {
         setError('서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.');

@@ -30,7 +30,10 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  }
+  },
+  // CORS 설정 추가
+  xsrfCookieName: 'XSRF-TOKEN',
+  xsrfHeaderName: 'X-XSRF-TOKEN'
 })
 
 // 요청 인터셉터
@@ -41,6 +44,7 @@ api.interceptors.request.use(
       // Bearer 토큰 형식 확인 및 설정
       const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
       config.headers['Authorization'] = tokenWithBearer
+      config.headers['Access-Control-Allow-Headers'] = 'Authorization'  // CORS 헤더 추가
       
       // 토큰 만료 시간 확인
       try {
@@ -155,7 +159,7 @@ export const authService = {
       })
 
       console.log('[Auth] 회원정보 등록 성공:', response.data)
-      return response.data
+      return response  // 전체 response 객체 반환
     } catch (error) {
       console.error('[Auth] 회원정보 등록 실패:', error)
       
