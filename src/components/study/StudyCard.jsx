@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
 
 function StudyCard({ study, onClick }) {
+  // Extract or set default for creator name
+  const creatorName = study.creatorName || study.leaderName || '스터디 리더';
+  
   return (
     <div 
       onClick={onClick}
@@ -61,6 +64,13 @@ function StudyCard({ study, onClick }) {
             {study.status}
           </span>
         </div>
+        <div style={{
+          fontSize: '0.8rem',
+          color: '#666666',
+          marginTop: '0.5rem'
+        }}>
+          개설자: {creatorName}
+        </div>
       </div>
     </div>
   );
@@ -73,7 +83,9 @@ StudyCard.propTypes = {
     description: PropTypes.string,
     currentMembers: PropTypes.number.isRequired,
     maxMembers: PropTypes.number.isRequired,
-    status: PropTypes.string.isRequired
+    status: PropTypes.string.isRequired,
+    creatorName: PropTypes.string,
+    leaderName: PropTypes.string
   }).isRequired,
   onClick: PropTypes.func.isRequired
 }
