@@ -38,14 +38,28 @@ api.interceptors.request.use(
   (config) => {
     const token = tokenUtils.getToken()
     if (token) {
-      config.headers['Authorization'] = token
+      // Bearer 토큰 형식 확인 및 설정
+      const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
+      config.headers['Authorization'] = tokenWithBearer
+      
+      // 토큰 만료 시간 확인
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]))
+        const expirationTime = tokenPayload.exp * 1000
+        console.log('[API Debug] Token expiration:', new Date(expirationTime))
+        
+        // 토큰이 만료되었거나 1분 이내로 만료될 예정인 경우
+        if (Date.now() >= expirationTime - 60000) {
+          console.log('[API Debug] Token needs refresh')
+          // 토큰 갱신은 응답 인터셉터에서 처리
+        }
+      } catch (error) {
+        console.error('[API Debug] Token parsing error:', error)
+      }
     }
 
-    // CORS 관련 헤더 추가
-    config.headers['Access-Control-Allow-Origin'] = 'http://localhost:3000'
-    config.headers['Access-Control-Allow-Credentials'] = 'true'
-
-    console.log('Request details:', {
+    // 디버그 로깅
+    console.log('[API Debug] Request config:', {
       url: config.url,
       method: config.method,
       headers: config.headers,
@@ -55,7 +69,7 @@ api.interceptors.request.use(
     return config
   },
   (error) => {
-    console.error('Request interceptor error:', error)
+    console.error('[API Debug] Request interceptor error:', error)
     return Promise.reject(error)
   }
 )
@@ -71,6 +85,7 @@ api.interceptors.response.use(
     
     const authHeader = response.headers['authorization'] || response.headers['Authorization']
     if (authHeader) {
+      console.log('[API Debug] New token received:', authHeader)
       tokenUtils.setToken(authHeader)
     }
     return response
@@ -104,20 +119,20 @@ api.interceptors.response.use(
     // 401 에러이고 아직 재시도하지 않은 경우에만 토큰 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
+      console.log('[API Debug] Token expired, attempting to refresh...')
       try {
-        console.log('토큰 갱신 시도')
         const response = await api.get('/auth/reissue')
         const newToken = response.headers['authorization'] || response.headers['Authorization']
         if (newToken) {
-          console.log('새 토큰 발급됨:', newToken)
+          console.log('[API Debug] Token refresh successful:', newToken)
           tokenUtils.setToken(newToken)
           originalRequest.headers['Authorization'] = newToken
           return api(originalRequest)
         }
       } catch (refreshError) {
-        console.error('토큰 갱신 실패:', refreshError)
+        console.error('[API Debug] Token refresh failed:', refreshError)
         tokenUtils.removeToken()
-        // 리다이렉트 하지 않고 에러만 반환
+        window.location.href = '/'
         return Promise.reject(refreshError)
       }
     }
@@ -129,67 +144,39 @@ export const authService = {
   // 회원 정보 등록
   addUserInfo: async (userData) => {
     try {
-      console.log('회원정보 등록 시도:', userData)
-      const token = tokenUtils.getToken()
-      console.log('현재 토큰:', token)
-      
-      if (!token) {
-        console.error('토큰이 없음')
-        throw new Error('인증 토큰이 없습니다')
-      }
+      console.log('[Auth] 회원정보 등록 시도:', userData)
 
-      // 토큰 형식 검증
-      if (!token.startsWith('Bearer ')) {
-        console.error('토큰 형식이 잘못됨')
-        throw new Error('토큰 형식이 올바르지 않습니다')
-      }
-
-      console.log('API 요청 전송 중...', {
-        url: '/auth/add',
-        headers: {
-          'Authorization': token,
-          'Content-Type': 'application/json'
-        }
-      })
-
+      // 회원정보 등록 요청 - 토큰 검증이 백엔드에서 스킵되므로 토큰 관련 로직 제거
       const response = await api.post('/auth/add', {
         studentName: userData.studentName.trim(),
-        studentSchool: userData.studentSchool?.trim() || null,
-        studentDepartment: userData.studentDepartment?.trim() || null,
+        studentSchool: userData.studentSchool?.trim() || '',
+        studentDepartment: userData.studentDepartment?.trim() || '',
         studentPhoneNumber: userData.studentPhoneNumber.trim()
       })
 
-      console.log('회원정보 등록 응답:', {
-        status: response.status,
-        headers: response.headers,
-        data: response.data
-      })
-
-      if (response.status === 200 || response.status === 201) {
-        console.log('회원정보 등록 성공')
-        return response.data
-      }
-
+      console.log('[Auth] 회원정보 등록 성공:', response.data)
       return response.data
     } catch (error) {
-      console.error('회원정보 등록 실패:', error)
-      // 에러를 그대로 전파하여 컴포넌트에서 처리하도록 함
+      console.error('[Auth] 회원정보 등록 실패:', error)
+      
+      if (error.response?.status === 401) {
+        tokenUtils.removeToken()
+        throw new Error('인증이 만료되었습니다')
+      }
+      
+      if (error.message === 'Network Error') {
+        throw new Error('서버와 통신할 수 없습니다')
+      }
+
       throw error
     }
   },
 
   // 로그아웃
-  logout: async () => {
-    try {
-      await api.post('/auth/logout')
-      tokenUtils.removeToken()
-      // 로그아웃 성공 시에만 리다이렉트
-      window.location.href = '/'
-    } catch (error) {
-      console.error('로그아웃 실패:', error)
-      // 로그아웃 실패 시에는 리다이렉트하지 않고 에러만 전파
-      throw error
-    }
+  logout: () => {
+    console.log('[Auth] 로그아웃 - 토큰 삭제')
+    tokenUtils.removeToken()
+    window.location.href = '/'
   },
 
   // 사용자 정보 조회
