@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { authService } from '../../services/api';
+import { authService, tokenUtils } from '../../services/api';
 
 function UserInfoForm() {
   const navigate = useNavigate();
   const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
-    studentName: user?.name || '',
+    email: '',
+    studentName: '',
     studentSchool: '',
     studentDepartment: '',
     studentPhoneNumber: ''
@@ -16,10 +17,46 @@ function UserInfoForm() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    // 페이지 새로고침이나 창 닫기 시 토큰 제거
+    const handleBeforeUnload = () => {
+      tokenUtils.removeToken();
+    };
+
+    // 페이지 이동 시 토큰 제거
+    const handleNavigate = () => {
+      tokenUtils.removeToken();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('popstate', handleNavigate);
+
+    // cleanup 함수
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('popstate', handleNavigate);
+      // 컴포넌트 언마운트 시 토큰 제거
+      tokenUtils.removeToken();
+    };
+  }, []);
+
+  useEffect(() => {
+    // 토큰에서 사용자 정보 추출
+    const token = tokenUtils.getToken();
     if (!token) {
       navigate('/');
       return;
+    }
+
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      setFormData(prev => ({
+        ...prev,
+        email: tokenPayload.email || ''
+      }));
+    } catch (error) {
+      console.error('토큰 파싱 실패:', error);
+      tokenUtils.removeToken();
+      navigate('/');
     }
   }, [navigate]);
 
@@ -27,46 +64,59 @@ function UserInfoForm() {
     e.preventDefault();
     setError('');
 
-    // 폼 데이터 유효성 검사
-    if (!formData.studentName.trim()) {
+    // 입력값 검증
+    const trimmedName = formData.studentName.trim();
+    const trimmedPhone = formData.studentPhoneNumber.trim();
+
+    if (!trimmedName) {
       setError('이름을 입력해주세요.');
       return;
     }
-    if (!formData.studentPhoneNumber.trim()) {
+    if (!trimmedPhone) {
       setError('전화번호를 입력해주세요.');
+      return;
+    }
+    if (!/^[0-9]{11}$/.test(trimmedPhone)) {
+      setError('전화번호는 11자리 숫자여야 합니다.');
       return;
     }
 
     try {
-      console.log('Submitting form data:', formData);
-      const token = localStorage.getItem('accessToken');
+      const token = tokenUtils.getToken();
       if (!token) {
         setError('인증 토큰이 없습니다. 다시 로그인해주세요.');
         navigate('/');
         return;
       }
 
-      const response = await authService.addUserInfo({
+      const submitData = {
         ...formData,
-        studentName: formData.studentName.trim(),
-        studentPhoneNumber: formData.studentPhoneNumber.trim(),
-        studentSchool: formData.studentSchool.trim() || null,
-        studentDepartment: formData.studentDepartment.trim() || null
-      });
+        studentName: trimmedName,
+        studentPhoneNumber: trimmedPhone,
+        studentSchool: formData.studentSchool.trim(),
+        studentDepartment: formData.studentDepartment.trim()
+      };
 
-      console.log('Registration successful:', response);
+      console.log('회원정보 등록 시도:', submitData);
+      const response = await authService.addUserInfo(submitData);
+
+      if (!response) {
+        throw new Error('서버 응답이 올바르지 않습니다');
+      }
+
+      console.log('회원정보 등록 성공:', response);
       setUser(response);
-      // 리다이렉트는 api.js에서 처리
+      navigate('/studies');
     } catch (error) {
       console.error('회원정보 등록 실패:', error);
       
-      if (error.message === 'Network Error') {
+      if (error.message === '서버와 통신할 수 없습니다' || error.message === 'Network Error') {
         setError('서버와 통신할 수 없습니다. 잠시 후 다시 시도해주세요.');
         return;
       }
       
-      if (error.response?.status === 401) {
-        setError('인증이 만료되었습니다. 다시 로그인해주세요.');
+      if (error.message === '인증이 만료되었습니다') {
+        setError(error.message);
         navigate('/');
         return;
       }
@@ -76,99 +126,102 @@ function UserInfoForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#1E1E1E] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#2D2D2D] rounded-xl shadow-2xl p-8">
-        <h1 className="text-3xl font-bold text-white text-center mb-8">
-          회원정보입력
-        </h1>
-        
-        {error && (
-          <div className="mb-6 p-4 bg-red-500/20 border border-red-500/50 text-red-200 rounded-lg text-sm">
-            {error}
-          </div>
-        )}
+    <div className="oauth-add-container">
+      <h2>회원정보입력</h2>
+      
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-gray-200 text-sm font-medium mb-2">
-              이름
-            </label>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>이메일</label>
+          <input
+            type="email"
+            value={formData.email}
+            disabled
+            className="disabled-input"
+          />
+        </div>
+
+        <div className="form-group">
+          <label>
+            이름 <span className="required">(필수)</span>
+          </label>
+          <input
+            type="text"
+            value={formData.studentName}
+            onChange={(e) => setFormData({
+              ...formData,
+              studentName: e.target.value
+            })}
+            placeholder="이름을 입력해주세요"
+            required
+          />
+        </div>
+
+        <div className="form-group">
+          <label>
+            전화번호 <span className="required">(필수)</span>
+          </label>
+          <input
+            type="tel"
+            value={formData.studentPhoneNumber}
+            onChange={(e) => {
+              // 숫자만 입력 가능하도록
+              const value = e.target.value.replace(/[^0-9]/g, '');
+              setFormData({
+                ...formData,
+                studentPhoneNumber: value
+              });
+            }}
+            placeholder="01012345678 형식으로 입력해주세요"
+            required
+            pattern="[0-9]{11}"
+            maxLength={11}
+          />
+        </div>
+
+        <div className="form-section">
+          <h3>소속(선택)</h3>
+          
+          <div className="form-group">
+            <label>학교</label>
             <input
               type="text"
-              value={formData.studentName}
+              value={formData.studentSchool}
               onChange={(e) => setFormData({
                 ...formData,
-                studentName: e.target.value
+                studentSchool: e.target.value
               })}
-              className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              placeholder="이름을 입력하세요"
-              required
+              placeholder="학교를 입력해주세요"
             />
           </div>
 
-          <div>
-            <label className="block text-gray-200 text-sm font-medium mb-2">
-              전화번호
-            </label>
+          <div className="form-group">
+            <label>학과</label>
             <input
-              type="tel"
-              value={formData.studentPhoneNumber}
+              type="text"
+              value={formData.studentDepartment}
               onChange={(e) => setFormData({
                 ...formData,
-                studentPhoneNumber: e.target.value
+                studentDepartment: e.target.value
               })}
-              className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-              placeholder="01012345678"
-              required
-              pattern="[0-9]{3}[0-9]{4}[0-9]{4}"
+              placeholder="학과를 입력해주세요"
             />
           </div>
+        </div>
 
-          <div className="border-t border-[#404040] pt-6 mt-6">
-            <h2 className="text-gray-200 text-lg font-medium mb-4">소속(선택)</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-200 text-sm font-medium mb-2">
-                  학교
-                </label>
-                <input
-                  type="text"
-                  value={formData.studentSchool}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    studentSchool: e.target.value
-                  })}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                  placeholder="학교명을 입력하세요"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-200 text-sm font-medium mb-2">
-                  학과
-                </label>
-                <input
-                  type="text"
-                  value={formData.studentDepartment}
-                  onChange={(e) => setFormData({
-                    ...formData,
-                    studentDepartment: e.target.value
-                  })}
-                  className="w-full px-4 py-3 bg-[#1E1E1E] border border-[#404040] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
-                  placeholder="학과명을 입력하세요"
-                />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="w-full mt-8 bg-blue-600 text-white font-medium py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[#2D2D2D]"
-          >
-            완료
-          </button>
-        </form>
-      </div>
+        <button 
+          type="submit" 
+          className="submit-button"
+          disabled={!formData.studentName.trim() || !/^[0-9]{11}$/.test(formData.studentPhoneNumber)}
+        >
+          완료
+        </button>
+      </form>
     </div>
   );
 }

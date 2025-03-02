@@ -16,14 +16,17 @@ function StudiesPage() {
   useEffect(() => {
     const fetchStudies = async () => {
       try {
+        console.log('[Studies] Fetching studies...')
         setIsLoading(true)
         setError(null)
         const data = await studyService.getStudies()
+        console.log('[Studies] Studies fetched successfully:', data)
         setStudies(data)
       } catch (error) {
-        console.error("Error fetching studies:", error)
+        console.error("[Studies] Error fetching studies:", error)
         setError(error.message)
         if (error.response?.status === 401) {
+          console.log('[Studies] Authentication failed, redirecting to login')
           navigate('/')
         }
       } finally {
@@ -31,8 +34,14 @@ function StudiesPage() {
       }
     }
 
+    if (!user) {
+      console.log('[Studies] No user found, redirecting to login')
+      navigate('/')
+      return
+    }
+
     fetchStudies()
-  }, [navigate])
+  }, [navigate, user])
 
   if (isLoading) {
     return <LoadingSpinner />

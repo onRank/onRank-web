@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import { useAuth } from '../../contexts/AuthContext'
-import { tokenUtils, api } from '../../services/api'
+import { tokenUtils, api, authService } from '../../services/api'
 
 function OAuthCallback() {
   const navigate = useNavigate()
@@ -12,10 +12,41 @@ function OAuthCallback() {
   useEffect(() => {
     const getTokens = async () => {
       try {
+        // 현재 토큰이 있는지 확인
+        const currentToken = tokenUtils.getToken()
+        if (currentToken) {
+          // JWT 토큰에서 만료 시간 확인
+          const tokenPayload = JSON.parse(atob(currentToken.split('.')[1]))
+          const expirationTime = tokenPayload.exp * 1000 // convert to milliseconds
+          
+          if (expirationTime > Date.now()) {
+            console.log('Valid token exists, skipping reissue')
+            // isNewUser 파라미터 확인
+            const isNewUser = searchParams.get('isNewUser') === 'true'
+            
+            if (isNewUser) {
+              console.log('New user detected, redirecting to /auth/add')
+              navigate('/auth/add')
+              return
+            }
+
+            console.log('Existing user detected, redirecting to /studies')
+            navigate('/studies')
+            return
+          }
+        }
+
         console.log('Sending request to /auth/reissue')
+        console.log('[Auth Debug] Request headers:', {
+          'Content-Type': 'application/json',
+          'withCredentials': true
+        })
+        
         const response = await api.get('/auth/reissue', {
           withCredentials: true
         })
+        
+        console.log('[Auth Debug] Response headers:', response.headers)
         
         const authHeader = response.headers['authorization'] || response.headers['Authorization']
         if (!authHeader) {
@@ -27,6 +58,16 @@ function OAuthCallback() {
         tokenUtils.setToken(authHeader)
         console.log('Token stored successfully:', authHeader)
 
+        // JWT 토큰에서 사용자 정보 추출
+        const tokenPayload = JSON.parse(atob(authHeader.split('.')[1]))
+        console.log('Token payload:', tokenPayload)
+        
+        // 사용자 정보 설정
+        setUser({
+          email: tokenPayload.email,
+          username: tokenPayload.username
+        })
+
         // isNewUser 파라미터 확인
         const isNewUser = searchParams.get('isNewUser') === 'true'
         
@@ -36,31 +77,8 @@ function OAuthCallback() {
           return
         }
 
-        console.log('Existing user detected, fetching user info')
-        console.log('[Auth Debug] GET /auth/login/user 요청 시작')
-        console.log('[Auth Debug] 요청 헤더:', {
-          Authorization: authHeader,
-          'Content-Type': 'application/json'
-        })
-        
-        const userResponse = await api.get('/auth/login/user', {
-          headers: {
-            'Authorization': authHeader
-          }
-        })
-        
-        console.log('[Auth Debug] GET /auth/login/user 응답 수신')
-        console.log('[Auth Debug] 응답 상태:', userResponse.status)
-        console.log('[Auth Debug] 응답 헤더:', userResponse.headers)
-        console.log('[Auth Debug] 응답 데이터:', userResponse.data)
-        
-        if (!userResponse.data) {
-          throw new Error('User data not received')
-        }
-        
-        const userData = userResponse.data
-        console.log('User info received:', userData)
-        setUser(userData)
+        // 기존 사용자는 바로 studies 페이지로 리다이렉트
+        console.log('Existing user detected, redirecting to /studies')
         navigate('/studies')
       } catch (error) {
         console.error('Failed to process OAuth callback:', error)
@@ -70,6 +88,10 @@ function OAuthCallback() {
           console.log('Method not allowed error, check API endpoint configuration')
         } else if (error.message === 'Network Error') {
           console.log('Network error occurred')
+          console.log('[Auth Debug] Network error details:', {
+            config: error.config,
+            headers: error.config?.headers
+          })
         }
         tokenUtils.removeToken()
         navigate('/')
