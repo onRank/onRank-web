@@ -16,18 +16,19 @@ function UserInfoForm() {
 
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegistrationComplete, setIsRegistrationComplete] = useState(false);
 
   useEffect(() => {
-    // 페이지 새로고침이나 창 닫기 시 토큰 제거 (단, 제출 중이 아닐 때만)
+    // 페이지 새로고침이나 창 닫기 시 토큰 제거 (단, 제출 중이거나 등록 완료가 아닐 때만)
     const handleBeforeUnload = (e) => {
-      if (!isSubmitting) {
+      if (!isSubmitting && !isRegistrationComplete) {
         tokenUtils.removeToken();
       }
     };
 
-    // 페이지 이동 시 토큰 제거 (단, 제출 중이 아닐 때만)
+    // 페이지 이동 시 토큰 제거 (단, 제출 중이거나 등록 완료가 아닐 때만)
     const handleNavigate = () => {
-      if (!isSubmitting) {
+      if (!isSubmitting && !isRegistrationComplete) {
         tokenUtils.removeToken();
       }
     };
@@ -39,12 +40,12 @@ function UserInfoForm() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handleNavigate);
-      // 컴포넌트 언마운트 시 토큰 제거 (단, 제출 중이 아닐 때만)
-      if (!isSubmitting) {
+      // 컴포넌트 언마운트 시 토큰 제거 (단, 제출 중이거나 등록 완료가 아닐 때만)
+      if (!isSubmitting && !isRegistrationComplete) {
         tokenUtils.removeToken();
       }
     };
-  }, [isSubmitting]);
+  }, [isSubmitting, isRegistrationComplete]);
 
   useEffect(() => {
     // 토큰에서 사용자 정보 추출
@@ -111,7 +112,73 @@ function UserInfoForm() {
       // 201 상태코드면 성공으로 처리
       if (response.status === 201) {
         console.log('회원정보 등록 성공');
-        navigate('/studies');
+        
+        // 등록 완료 상태 설정
+        setIsRegistrationComplete(true);
+        
+        // 새 토큰이 있으면 저장
+        const newToken = response.headers['authorization'] || response.headers['Authorization'];
+        if (newToken) {
+          console.log('등록 응답에서 새 토큰 발견, 저장 중...');
+          
+          // 토큰 저장 (백업 포함)
+          tokenUtils.setToken(newToken);
+          
+          // 토큰이 localStorage에 완전히 저장되도록 지연
+          console.log('토큰 저장 확인 및 페이지 이동 준비 중...');
+          
+          // 토큰이 실제로 저장되었는지 확인하는 함수
+          const checkTokenSaved = async () => {
+            // 최대 10번까지 100ms 간격으로 확인 (총 1초)
+            for (let i = 0; i < 10; i++) {
+              const savedToken = localStorage.getItem('accessToken');
+              if (savedToken) {
+                console.log('토큰이 성공적으로 저장됨:', savedToken.substring(0, 15) + '...');
+                return true;
+              }
+              console.log(`토큰 저장 확인 중... (시도 ${i+1}/10)`);
+              await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            console.warn('토큰 저장 확인 실패, 직접 저장 시도');
+            // 직접 저장 시도
+            try {
+              tokenUtils.setToken(newToken);
+              console.log('토큰 직접 저장 시도 완료');
+              return !!localStorage.getItem('accessToken');
+            } catch (e) {
+              console.error('토큰 직접 저장 실패:', e);
+              return false;
+            }
+          };
+          
+          const tokenSaved = await checkTokenSaved();
+          
+          // 토큰 저장 성공 여부에 따라 다른 방식으로 처리
+          if (tokenSaved) {
+            console.log('토큰 저장 확인됨, 정상적인 페이지 이동 준비');
+          } else {
+            console.warn('토큰 저장 실패, 대체 방법으로 진행');
+          }
+        }
+        
+        // sessionStorage에도 토큰을 임시 저장 (페이지 이동 간 보존)
+        const finalToken = localStorage.getItem('accessToken');
+        if (finalToken) {
+          // 이미 tokenUtils.setToken에서 백업 저장을 했으므로 추가 저장은 필요 없음
+          console.log('토큰 확인됨, 스터디 페이지로 이동');
+          
+          // URL 쿼리 파라미터로도 토큰 전달 (극단적인 대비책)
+          const tokenParam = encodeURIComponent(finalToken);
+          console.log('회원가입 완료, 토큰과 함께 /studies로 이동');
+          setIsSubmitting(false); // 이동 전에 상태 업데이트
+          navigate(`/studies?token=${tokenParam}`);
+        } else {
+          // 토큰이 없는 경우 그냥 이동
+          console.log('토큰 없이 /studies로 이동');
+          setIsSubmitting(false);
+          navigate('/studies');
+        }
         return;
       }
 

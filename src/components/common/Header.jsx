@@ -19,6 +19,10 @@ function Header() {
     }
   };
 
+  const handleProfileClick = () => {
+    navigate('/mypage');
+  };
+
   return (
     <header style={{
       width: '100%',
@@ -82,6 +86,22 @@ function Header() {
             </div>
           )}
         </div>
+        <button
+          onClick={handleProfileClick}
+          style={{
+            padding: '8px 16px',
+            borderRadius: '50px',
+            border: '1px solid #337BB8',
+            color: '#337BB8',
+            backgroundColor: 'transparent',
+            cursor: 'pointer',
+            fontSize: '14px',
+            transition: 'all 0.2s',
+            marginRight: '8px'
+          }}
+        >
+          내 프로필
+        </button>
         <button
           onClick={handleLogout}
           style={{

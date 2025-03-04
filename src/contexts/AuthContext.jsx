@@ -3,9 +3,61 @@ import { api, tokenUtils } from '../services/api'
 
 const AuthContext = createContext()
 
+// 사용자 정보 캐싱을 위한 유틸리티 함수
+const userCache = {
+  getUser: () => {
+    try {
+      const cachedUser = sessionStorage.getItem('cachedUserInfo')
+      return cachedUser ? JSON.parse(cachedUser) : null
+    } catch (error) {
+      console.error('[Auth] 캐시된 사용자 정보 파싱 오류:', error)
+      return null
+    }
+  },
+  setUser: (userData) => {
+    try {
+      if (userData) {
+        sessionStorage.setItem('cachedUserInfo', JSON.stringify(userData))
+        console.log('[Auth] 사용자 정보 캐시 저장됨')
+      }
+    } catch (error) {
+      console.error('[Auth] 사용자 정보 캐시 저장 오류:', error)
+    }
+  },
+  clearUser: () => {
+    sessionStorage.removeItem('cachedUserInfo')
+    console.log('[Auth] 사용자 정보 캐시 삭제됨')
+  }
+}
+
+// 토큰에서 기본 사용자 정보 추출하는 함수
+const extractBasicUserInfo = (tokenPayload) => {
+  return {
+    email: tokenPayload.email || '',
+    nickname: tokenPayload.nickname || tokenPayload.name || '사용자',
+    department: tokenPayload.department || '학과 정보 없음',
+    // JWT 토큰에 포함된 다른 기본 정보가 있다면 여기에 추가
+    username: tokenPayload.username || tokenPayload.sub || '',
+    isTokenBasedInfo: true // 이 정보가 토큰에서 추출되었음을 표시
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [isDetailedUserInfo, setIsDetailedUserInfo] = useState(false)
+
+  // 사용자 정보 설정 함수 (내부 상태와 캐시 모두 업데이트)
+  const updateUser = (userData) => {
+    setUser(userData)
+    if (userData) {
+      userCache.setUser(userData)
+      setIsDetailedUserInfo(!userData.isTokenBasedInfo)
+    } else {
+      userCache.clearUser()
+      setIsDetailedUserInfo(false)
+    }
+  }
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -29,43 +81,57 @@ export function AuthProvider({ children }) {
         // 토큰 만료 확인
         const expirationTime = tokenPayload.exp * 1000 // convert to milliseconds
         if (expirationTime <= Date.now()) {
-          console.log('[Auth] 토큰이 만료됨')
-          tokenUtils.removeToken()
+          console.log('[Auth] 토큰이 만료됨, 재발급 시도')
+          
+          try {
+            // 토큰 재발급 시도
+            const response = await api.get('/auth/reissue')
+            const newToken = response.headers['authorization'] || response.headers['Authorization']
+            
+            if (newToken) {
+              console.log('[Auth] 토큰 재발급 성공')
+              tokenUtils.setToken(newToken)
+              
+              // 새 토큰에서 페이로드 추출
+              const newTokenPayload = JSON.parse(atob(newToken.split('.')[1]))
+              // 기본 사용자 정보 설정
+              const basicUserInfo = extractBasicUserInfo(newTokenPayload)
+              updateUser(basicUserInfo)
+            } else {
+              console.log('[Auth] 토큰 재발급 실패: 새 토큰 없음')
+              tokenUtils.removeToken()
+              userCache.clearUser()
+              setLoading(false)
+              return
+            }
+          } catch (refreshError) {
+            console.log('[Auth] 토큰 재발급 실패:', refreshError)
+            tokenUtils.removeToken()
+            userCache.clearUser()
+            setLoading(false)
+            return
+          }
+        }
+
+        // 캐시된 사용자 정보 확인
+        const cachedUser = userCache.getUser()
+        if (cachedUser) {
+          console.log('[Auth] 캐시된 사용자 정보 사용:', cachedUser)
+          setUser(cachedUser)
+          setIsDetailedUserInfo(!cachedUser.isTokenBasedInfo)
           setLoading(false)
           return
         }
 
-        // 사용자 정보 조회
-        try {
-          console.log('[Auth] 사용자 정보 조회 시도')
-          const response = await api.get('/auth/login/user')
-          const userData = response.data
-          
-          // 필수 회원 정보가 있는지 확인
-          if (!userData.studentName || !userData.studentPhoneNumber) {
-            console.log('[Auth] 회원정보 미입력 상태')
-            tokenUtils.removeToken() // 토큰 제거
-            setUser(null)
-          } else {
-            console.log('[Auth] 회원정보 확인됨:', userData)
-            setUser(userData)
-          }
-        } catch (error) {
-          console.error('[Auth] 사용자 정보 조회 실패:', error)
-          if (error.response?.status === 404) {
-            console.log('[Auth] 회원정보 없음')
-            tokenUtils.removeToken()
-            setUser(null)
-          }
-          // 다른 에러의 경우도 토큰 제거
-          tokenUtils.removeToken()
-          setUser(null)
-        }
+        // 캐시된 정보가 없는 경우 토큰에서 기본 정보 추출하여 사용
+        console.log('[Auth] 캐시된 정보 없음, 토큰에서 기본 정보 사용')
+        const basicUserInfo = extractBasicUserInfo(tokenPayload)
+        updateUser(basicUserInfo)
+        setLoading(false)
       } catch (error) {
         console.error('[Auth] 토큰 처리 중 오류:', error)
         tokenUtils.removeToken()
-        setUser(null)
-      } finally {
+        updateUser(null)
         setLoading(false)
       }
     }
@@ -73,14 +139,59 @@ export function AuthProvider({ children }) {
     initializeAuth()
   }, [])
 
+  // 사용자 정보를 강제로 새로고침하는 함수 추가 (프로필 페이지 등에서 사용)
+  const refreshUserInfo = async () => {
+    try {
+      console.log('[Auth] 사용자 정보 강제 새로고침')
+      const response = await api.get('/auth/login/user')
+      const userData = { ...response.data, isTokenBasedInfo: false }
+      updateUser(userData)
+      setIsDetailedUserInfo(true)
+      return userData
+    } catch (error) {
+      console.error('[Auth] 사용자 정보 새로고침 실패:', error)
+      
+      // 401 오류인 경우 토큰 재발급 시도
+      if (error.response?.status === 401) {
+        try {
+          // 토큰 재발급 시도
+          const response = await api.get('/auth/reissue')
+          const newToken = response.headers['authorization'] || response.headers['Authorization']
+          
+          if (newToken) {
+            console.log('[Auth] 토큰 재발급 성공, 사용자 정보 재조회')
+            tokenUtils.setToken(newToken)
+            
+            // 사용자 정보 재조회
+            const userResponse = await api.get('/auth/login/user')
+            const userData = { ...userResponse.data, isTokenBasedInfo: false }
+            updateUser(userData)
+            setIsDetailedUserInfo(true)
+            return userData
+          }
+        } catch (refreshError) {
+          console.log('[Auth] 토큰 재발급 실패:', refreshError)
+        }
+        
+        // 토큰 재발급 실패 또는 사용자 정보 조회 실패
+        tokenUtils.removeToken()
+        updateUser(null)
+      }
+      
+      throw error
+    }
+  }
+
   const value = {
     user,
-    setUser,
-    loading
+    setUser: updateUser,
+    loading,
+    refreshUserInfo, // 사용자 정보를 강제로 새로고침하는 함수 노출
+    isDetailedUserInfo // 상세 사용자 정보 여부 (프로필 페이지 등에서 사용)
   }
 
   console.log('[Auth] Provider 렌더링')
-  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading)
+  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading, 'isDetailedUserInfo:', isDetailedUserInfo)
 
   return (
     <AuthContext.Provider value={value}>

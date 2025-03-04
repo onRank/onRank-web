@@ -6,7 +6,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { memo, useMemo } from "react";
+import { memo, useMemo, useEffect } from "react";
 import LoginPage from "./pages/auth/LoginPage";
 import StudiesPage from "./pages/study/StudiesPage";
 import CreateJoinPage from "./pages/study/CreateJoinPage";
@@ -20,7 +20,7 @@ import Header from "./components/common/Header";
 import MainNavigation from "./components/common/MainNavigation";
 import UserInfoForm from './components/auth/UserInfoForm';
 import CalendarPage from './pages/calendar/CalendarPage';
-import MyPage from './pages/mypage/MyPage';
+import MyPage from './pages/user/MyPage';
 import AssignmentDetail from './pages/study/assignment/AssignmentDetail';
 import "./App.css";
   
@@ -81,27 +81,51 @@ const PublicRoute = ({ children }) => {
     return <div>Loading...</div>;
   }
 
-  // 토큰이 있고 user 정보도 있는 경우에만 /studies로 리다이렉트
-  if (token && user) {
+  // 토큰이 있는 경우 토큰 유효성 검사
+  if (token) {
     try {
       const tokenPayload = JSON.parse(atob(token.split('.')[1]));
       const expirationTime = tokenPayload.exp * 1000;
       
       if (expirationTime > Date.now()) {
+        // 토큰이 유효하면 /studies로 리다이렉트
+        console.log('[PublicRoute] 유효한 토큰 발견, /studies로 리다이렉트');
         return <Navigate to="/studies" replace />;
+      } else {
+        // 토큰이 만료된 경우 제거
+        console.log('[PublicRoute] 만료된 토큰 발견, 제거');
+        tokenUtils.removeToken(true);
+        sessionStorage.removeItem('cachedUserInfo');
       }
     } catch (error) {
-      console.error('Token validation error:', error);
-      tokenUtils.removeToken();
+      console.error('[PublicRoute] 토큰 검증 오류:', error);
+      tokenUtils.removeToken(true);
+      sessionStorage.removeItem('cachedUserInfo');
     }
   }
 
-  // 그 외의 경우(토큰이 없거나, user 정보가 없거나, 토큰이 만료된 경우)
+  // 토큰이 없거나 유효하지 않은 경우 로그인 페이지 표시
   return children;
 };
 
 function AppContent() {
   const location = useLocation();
+
+  // 페이지 로드 시 토큰 복원 시도 (한 번만 실행)
+  useEffect(() => {
+    const accessToken = localStorage.getItem('accessToken')
+    if (!accessToken) {
+      console.log('[App] localStorage에 토큰이 없음, 백업에서 복원 시도')
+      const restoredToken = tokenUtils.restoreTokenFromBackup()
+      if (restoredToken) {
+        console.log('[App] 백업에서 토큰 복원 성공:', restoredToken.substring(0, 10) + '...')
+      } else {
+        console.log('[App] 백업 토큰도 없음, 로그인 필요')
+      }
+    } else {
+      console.log('[App] 토큰 확인됨:', accessToken.substring(0, 10) + '...')
+    }
+  }, [])
 
   // showHeader와 showNavigation 조건을 useMemo로 최적화
   const showHeader = useMemo(() => {
@@ -126,28 +150,32 @@ function AppContent() {
           <Route
             path="/studies"
             element={
-              <StudyLayout>
-                <StudiesPage />
-              </StudyLayout>
+              <ProtectedRoute>
+                <StudyLayout>
+                  <StudiesPage />
+                </StudyLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/studies/:studyId/*"
             element={
-              <StudyLayout>
-                <Routes>
-                  <Route index element={<StudyDetailPage />} />
-                  <Route path="notices" element={<StudyDetailPage />} />
-                  <Route path="schedule" element={<StudyDetailPage />} />
-                  <Route path="assignment" element={<StudyDetailPage />} />
-                  <Route path="assignment/:id" element={<AssignmentDetail />} />
-                  <Route path="board" element={<StudyDetailPage />} />
-                  <Route path="attendance" element={<StudyDetailPage />} />
-                  <Route path="manage" element={<StudyDetailPage />} />
-                  <Route path="ranking" element={<StudyDetailPage />} />
-                  <Route path="notices/add" element={<NoticeAddPage />} />
-                </Routes>
-              </StudyLayout>
+              <ProtectedRoute>
+                <StudyLayout>
+                  <Routes>
+                    <Route index element={<StudyDetailPage />} />
+                    <Route path="notices" element={<StudyDetailPage />} />
+                    <Route path="schedule" element={<StudyDetailPage />} />
+                    <Route path="assignment" element={<StudyDetailPage />} />
+                    <Route path="assignment/:id" element={<AssignmentDetail />} />
+                    <Route path="board" element={<StudyDetailPage />} />
+                    <Route path="attendance" element={<StudyDetailPage />} />
+                    <Route path="manage" element={<StudyDetailPage />} />
+                    <Route path="ranking" element={<StudyDetailPage />} />
+                    <Route path="notices/add" element={<NoticeAddPage />} />
+                  </Routes>
+                </StudyLayout>
+              </ProtectedRoute>
             }
           />
 
@@ -155,25 +183,31 @@ function AppContent() {
           <Route
             path="/create"
             element={
-              <StudyLayout>
-                <CreateJoinPage />
-              </StudyLayout>
+              <ProtectedRoute>
+                <StudyLayout>
+                  <CreateJoinPage />
+                </StudyLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/calendar"
             element={
-              <StudyLayout>
-                <CalendarPage />
-              </StudyLayout>
+              <ProtectedRoute>
+                <StudyLayout>
+                  <CalendarPage />
+                </StudyLayout>
+              </ProtectedRoute>
             }
           />
           <Route
             path="/mypage"
             element={
-              <StudyLayout>
-                <MyPage />
-              </StudyLayout>
+              <ProtectedRoute>
+                <StudyLayout>
+                  <MyPage />
+                </StudyLayout>
+              </ProtectedRoute>
             }
           />
 
