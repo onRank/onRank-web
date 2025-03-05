@@ -90,8 +90,18 @@ function StudiesPage() {
         
         // 스터디 목록 로드
         const data = await studyService.getStudies()
-        console.log('[StudiesPage] 스터디 목록 로드 성공:', data.length)
-        setStudies(data)
+        console.log('[StudiesPage] 스터디 목록 로드 결과:', data);
+        
+        // 데이터가 없는 경우 처리
+        if (!data || !Array.isArray(data) || data.length === 0) {
+          console.log('[StudiesPage] 스터디 데이터가 없거나 빈 배열입니다.');
+          setStudies([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log('[StudiesPage] 스터디 목록 로드 성공:', data.length, '개의 스터디');
+        setStudies(data);
         setIsLoading(false)
       } catch (error) {
         console.error("[StudiesPage] 스터디 목록 로드 실패:", error)

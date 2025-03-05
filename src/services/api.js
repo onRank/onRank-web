@@ -396,6 +396,57 @@ export const authService = {
       console.error('[Auth] 회원정보 등록 실패:', error)
       throw error
     }
+  },
+  
+  // 로그아웃
+  logout: async () => {
+    try {
+      console.log('[Auth] 로그아웃 시도');
+      
+      // 토큰 제거 전 확인
+      const tokenBefore = tokenUtils.getToken();
+      console.log('[Auth] 로그아웃 전 토큰 존재 여부:', !!tokenBefore);
+      
+      // 백엔드 API 구현 전까지는 주석 처리
+      /*
+      // 토큰 가져오기
+      const token = tokenUtils.getToken();
+      const headers = {};
+      
+      if (token) {
+        const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+        headers['Authorization'] = tokenWithBearer;
+      }
+      
+      // 로그아웃 요청
+      const response = await api.post('/auth/logout', {}, { 
+        headers,
+        withCredentials: true 
+      });
+      */
+      
+      // 로컬 스토리지에서 토큰 제거 (모든 백업 토큰도 함께 제거)
+      tokenUtils.removeToken(true);
+      
+      // 토큰 제거 후 확인
+      const tokenAfter = tokenUtils.getToken();
+      console.log('[Auth] 로그아웃 후 토큰 존재 여부:', !!tokenAfter);
+      
+      // 세션 스토리지도 정리
+      sessionStorage.removeItem('temp_token');
+      sessionStorage.removeItem('accessTokenBackup');
+      if (window.tempAuthToken) {
+        window.tempAuthToken = null;
+      }
+      
+      console.log('[Auth] 로그아웃 성공 (토큰만 삭제)');
+      return { success: true }; // 임시 응답 객체
+    } catch (error) {
+      console.error('[Auth] 로그아웃 실패:', error);
+      // 오류가 발생해도 로컬 토큰은 제거
+      tokenUtils.removeToken(true);
+      throw error;
+    }
   }
 }
 
@@ -441,10 +492,52 @@ export const studyService = {
       });
       
       console.log('[StudyService] 스터디 목록 조회 성공:', response.data);
-      return response.data;
+      
+      // 응답이 문자열인 경우 안전하게 처리
+      let data = response.data;
+      if (typeof data === 'string') {
+        try {
+          console.log('[StudyService] 문자열 응답 처리 시도');
+          
+          // 정규식을 사용하여 필요한 데이터만 추출
+          const extractedData = [];
+          
+          // 각 스터디 객체를 추출하기 위한 정규식 패턴
+          const studyPattern = /"studyId":(\d+),"studyName":"([^"]+)","studyContent":"([^"]+)","studyImage":"([^"]+)"/g;
+          
+          let match;
+          while ((match = studyPattern.exec(data)) !== null) {
+            extractedData.push({
+              studyId: parseInt(match[1]),
+              studyName: match[2],
+              studyContent: match[3],
+              studyImage: match[4],
+              members: [] // 멤버 정보는 단순화
+            });
+          }
+          
+          console.log('[StudyService] 데이터 추출 성공:', extractedData);
+          
+          // 추출된 데이터가 없으면 빈 배열 반환
+          if (extractedData.length === 0) {
+            console.log('[StudyService] 추출된 데이터가 없음, 빈 배열 반환');
+            return [];
+          }
+          
+          return extractedData;
+        } catch (parseError) {
+          console.error('[StudyService] 데이터 추출 실패:', parseError);
+          // 오류 발생 시 빈 배열 반환
+          return [];
+        }
+      }
+      
+      // 이미 객체인 경우 그대로 반환
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('[StudyService] 스터디 목록 조회 오류:', error);
-      throw error;
+      // 오류 발생 시 빈 배열 반환
+      return [];
     }
   },
   

@@ -5,8 +5,44 @@ import StudyCard from './StudyCard'
 function StudyList({ studies }) {
   const navigate = useNavigate()
 
-  if (!studies.length) {
-    return <p>등록된 스터디가 없습니다.</p>
+  // 디버깅 정보 추가
+  console.log('[StudyList] 받은 데이터 타입:', typeof studies);
+  console.log('[StudyList] 배열 여부:', Array.isArray(studies));
+  console.log('[StudyList] 데이터 길이:', studies?.length);
+  
+  if (!studies || !studies.length) {
+    return (
+      <div style={{
+        padding: '2rem',
+        textAlign: 'center',
+        backgroundColor: '#f8f9fa',
+        borderRadius: '8px',
+        margin: '1rem 0'
+      }}>
+        <h3 style={{ marginBottom: '1rem', color: '#495057' }}>등록된 스터디가 없습니다</h3>
+        <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
+          참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
+        </p>
+        <button
+          onClick={() => navigate('/studies/create')}
+          style={{
+            backgroundColor: '#4263eb',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s',
+            ':hover': {
+              backgroundColor: '#3b5bdb'
+            }
+          }}
+        >
+          스터디 생성하기
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -16,13 +52,26 @@ function StudyList({ studies }) {
       gap: '2rem',
       padding: '1rem'
     }}>
-      {studies.map((study) => (
-        <StudyCard
-          key={study.id}
-          study={study}
-          onClick={() => navigate(`/studies/${study.id}`)}
-        />
-      ))}
+      {studies.map((study) => {
+        // 백엔드 필드명을 프론트엔드 필드명으로 매핑
+        const mappedStudy = {
+          id: study.studyId,
+          title: study.studyName,
+          description: study.studyContent,
+          currentMembers: study.members?.length || 0,
+          maxMembers: 10, // 백엔드에서 제공하지 않는 경우 기본값 설정
+          status: '모집중', // 백엔드에서 제공하지 않는 경우 기본값 설정
+          imageUrl: study.studyImage
+        };
+        
+        return (
+          <StudyCard
+            key={mappedStudy.id}
+            study={mappedStudy}
+            onClick={() => navigate(`/studies/${mappedStudy.id}`)}
+          />
+        );
+      })}
     </div>
   )
 }
@@ -30,12 +79,11 @@ function StudyList({ studies }) {
 StudyList.propTypes = {
   studies: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      title: PropTypes.string.isRequired,
-      description: PropTypes.string,
-      currentMembers: PropTypes.number.isRequired,
-      maxMembers: PropTypes.number.isRequired,
-      status: PropTypes.string.isRequired
+      studyId: PropTypes.number,
+      studyName: PropTypes.string,
+      studyContent: PropTypes.string,
+      studyImage: PropTypes.string,
+      members: PropTypes.array
     })
   ).isRequired
 }
