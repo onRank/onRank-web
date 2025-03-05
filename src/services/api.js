@@ -8,9 +8,26 @@ if (!import.meta.env.VITE_API_URL) {
 export const tokenUtils = {
   getToken: () => {
     const token = localStorage.getItem('accessToken')
-    console.log('[Token Debug] Retrieved token from localStorage:', token ? 'exists' : 'not found')
-    return token
+    if (token) {
+      console.log('[Token Debug] Retrieved token from localStorage:', token.substring(0, 15) + '...')
+      return token
+    }
+    
+    // 백업 소스에서 확인
+    const backupToken = sessionStorage.getItem('temp_token') || 
+                        sessionStorage.getItem('accessTokenBackup') || 
+                        window.tempAuthToken
+    
+    if (backupToken) {
+      console.log('[Token Debug] Token found in backup storage, restoring to localStorage')
+      localStorage.setItem('accessToken', backupToken)
+      return backupToken
+    }
+    
+    console.log('[Token Debug] No token found in any storage')
+    return null
   },
+  
   setToken: (token) => {
     if (!token) {
       console.log('[Token Debug] Attempted to save null/undefined token, ignoring')
@@ -30,58 +47,34 @@ export const tokenUtils = {
     const storageEvent = new Event('pre-tokensave')
     window.dispatchEvent(storageEvent)
     
-    try {
-      // 토큰 저장
-      localStorage.setItem('accessToken', tokenWithBearer)
-      console.log('[Token Debug] New token saved to localStorage')
-      
-      // 백업 저장 - 페이지 새로고침 시에도 유지
-      sessionStorage.setItem('temp_token', tokenWithBearer)
-      sessionStorage.setItem('accessTokenBackup', tokenWithBearer)
-      
-      // 전역 변수에도 임시 저장 (메모리 내 백업)
-      window.tempAuthToken = tokenWithBearer
-      
-      // 토큰 저장 후 이벤트 발행
-      const postStorageEvent = new Event('post-tokensave')
-      window.dispatchEvent(postStorageEvent)
-      
-      return tokenWithBearer
-    } catch (error) {
-      console.error('[Token Debug] Error saving token:', error)
-      
-      // localStorage 저장 실패 시 sessionStorage에 시도
-      try {
-        sessionStorage.setItem('temp_token', tokenWithBearer)
-        sessionStorage.setItem('accessTokenBackup', tokenWithBearer)
-        window.tempAuthToken = tokenWithBearer
-        console.log('[Token Debug] Token saved to backup storage after localStorage failure')
-      } catch (sessionError) {
-        console.error('[Token Debug] Complete storage failure:', sessionError)
-      }
-      
-      return null
-    }
+    // localStorage에 저장
+    localStorage.setItem('accessToken', tokenWithBearer)
+    
+    // 백업 저장
+    sessionStorage.setItem('accessTokenBackup', tokenWithBearer)
+    
+    // 토큰 저장 후 이벤트 발행
+    const postStorageEvent = new Event('post-tokensave')
+    window.dispatchEvent(postStorageEvent)
+    
+    console.log('[Token Debug] Token saved successfully')
   },
+  
   removeToken: (force = false) => {
-    console.log('[Token Debug] Removing token from localStorage')
     localStorage.removeItem('accessToken')
     
-    // force가 true인 경우 백업 토큰도 함께 제거
     if (force) {
-      console.log('[Token Debug] Force mode: removing backup tokens too')
+      // 모든 백업 토큰도 제거
       sessionStorage.removeItem('temp_token')
       sessionStorage.removeItem('accessTokenBackup')
       if (window.tempAuthToken) {
         window.tempAuthToken = null
       }
     }
+    
+    console.log('[Token Debug] Token removed' + (force ? ' (including backups)' : ''))
   },
-  hasToken: () => {
-    const hasToken = !!localStorage.getItem('accessToken')
-    console.log('[Token Debug] Token exists check:', hasToken)
-    return hasToken
-  },
+  
   // 세션 스토리지의 백업 토큰을 복원하는 함수
   restoreTokenFromBackup: () => {
     console.log('[Token Debug] Attempting to restore token from backup')
@@ -99,27 +92,8 @@ export const tokenUtils = {
     console.log('[Token Debug] No backup token found')
     return null
   },
-  // 토큰이 저장될 때까지 기다리는 함수
-  waitForToken: async (timeout = 1000) => {
-    console.log('[Token Debug] Waiting for token to be available...')
-    // 먼저 localStorage에서 확인
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      console.log('[Token Debug] Token already available in localStorage')
-      return token
-    }
-    
-    // 백업 소스에서 확인
-    const backupToken = sessionStorage.getItem('temp_token') || 
-                        sessionStorage.getItem('accessTokenBackup') || 
-                        window.tempAuthToken
-    
-    if (backupToken) {
-      console.log('[Token Debug] Token found in backup storage, restoring to localStorage')
-      localStorage.setItem('accessToken', backupToken)
-      return backupToken
-    }
-    
+  
+  waitForToken: (timeout = 1000) => {
     return new Promise((resolve, reject) => {
       const timeoutId = setTimeout(() => {
         window.removeEventListener('post-tokensave', tokenHandler)
@@ -146,28 +120,60 @@ export const tokenUtils = {
       
       const tokenHandler = () => {
         clearTimeout(timeoutId)
-        const newToken = localStorage.getItem('accessToken')
-        console.log('[Token Debug] Token became available')
-        resolve(newToken)
+        const token = localStorage.getItem('accessToken')
+        console.log('[Token Debug] Token saved event detected, token:', token ? 'exists' : 'not found')
+        if (token) {
+          resolve(token)
+        } else {
+          reject(new Error('Token save event fired but token not found'))
+        }
       }
       
-      window.addEventListener('post-tokensave', tokenHandler, { once: true })
+      window.addEventListener('post-tokensave', tokenHandler)
+      
+      // 이미 토큰이 있는지 확인
+      const existingToken = localStorage.getItem('accessToken')
+      if (existingToken) {
+        clearTimeout(timeoutId)
+        window.removeEventListener('post-tokensave', tokenHandler)
+        console.log('[Token Debug] Token already exists, no need to wait')
+        resolve(existingToken)
+      }
     })
+  },
+  
+  isTokenValid: (token) => {
+    if (!token) return false
+    
+    try {
+      // JWT 토큰 디코딩
+      const base64Url = token.split('.')[1]
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      }).join(''))
+      
+      const payload = JSON.parse(jsonPayload)
+      const expirationTime = payload.exp * 1000 // 밀리초로 변환
+      
+      // 현재 시간과 비교
+      return Date.now() < expirationTime
+    } catch (error) {
+      console.error('[Token Debug] Token validation error:', error)
+      return false
+    }
   }
-};
+}
 
 // api 인스턴스 생성
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
-  timeout: 5000,
+  timeout: 10000, // 타임아웃 증가
   withCredentials: true,  // CORS 요청에서 쿠키 전송 허용
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
-  },
-  // CORS 설정 추가
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN'
+  }
 })
 
 // 요청 인터셉터
@@ -220,7 +226,6 @@ api.interceptors.request.use(
       // Bearer 토큰 형식 확인 및 설정
       const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
       config.headers['Authorization'] = tokenWithBearer
-      config.headers['Access-Control-Allow-Headers'] = 'Authorization'  // CORS 헤더 추가
       console.log(`[API Debug] Added Authorization header to request: ${config.url}`)
       
       // 토큰 만료 시간 확인
@@ -247,8 +252,8 @@ api.interceptors.request.use(
     console.log('[API Debug] Request config:', {
       url: config.url,
       method: config.method,
-      headers: config.headers,
-      data: config.data
+      hasAuthHeader: !!hasAuthHeader,
+      withCredentials: config.withCredentials
     })
 
     return config
@@ -377,232 +382,115 @@ export const authService = {
           console.warn('[Auth] Token was not saved to localStorage')
           // 마지막 시도: 직접 저장
           try {
-            const tokenWithBearer = newToken.startsWith('Bearer ') ? newToken : `Bearer ${newToken}`
-            localStorage.setItem('accessToken', tokenWithBearer)
-            console.log('[Auth] Direct token save attempt completed')
-            
-            // 저장 확인
-            const finalCheck = localStorage.getItem('accessToken')
-            if (finalCheck) {
-              console.log('[Auth] Token confirmed after direct save')
-            } else {
-              console.error('[Auth] Token still not saved after direct attempt')
-              
-              // 세션 스토리지에 백업
-              sessionStorage.setItem('temp_token', tokenWithBearer)
-              console.log('[Auth] Token backed up to sessionStorage as last resort')
-              
-              // 전역 변수에 백업 (극단적인 대비책)
-              window.tempAuthToken = tokenWithBearer
-              console.log('[Auth] Token backed up to window.tempAuthToken as emergency measure')
-            }
+            const tokenWithBearer = newToken.startsWith('Bearer ') ? newToken : `Bearer ${newToken}`;
+            localStorage.setItem('accessToken', tokenWithBearer);
+            console.log('[Auth] Direct token save attempt completed');
           } catch (storageError) {
-            console.error('[Auth] Error during direct token save:', storageError)
-            
-            // 세션 스토리지에 백업
-            try {
-              const tokenWithBearer = newToken.startsWith('Bearer ') ? newToken : `Bearer ${newToken}`
-              sessionStorage.setItem('temp_token', tokenWithBearer)
-              console.log('[Auth] Token backed up to sessionStorage after localStorage failure')
-              
-              // 전역 변수에 백업 (극단적인 대비책)
-              window.tempAuthToken = tokenWithBearer
-              console.log('[Auth] Token backed up to window.tempAuthToken as emergency measure')
-            } catch (backupError) {
-              console.error('[Auth] Complete failure to save token anywhere:', backupError)
-            }
+            console.error('[Auth] Error saving token directly:', storageError);
           }
         }
       }
       
-      return response  // 전체 response 객체 반환
+      return response.data
     } catch (error) {
       console.error('[Auth] 회원정보 등록 실패:', error)
-      
-      if (error.response?.status === 401) {
-        tokenUtils.removeToken()
-        throw new Error('인증이 만료되었습니다')
-      }
-      
-      if (error.message === 'Network Error') {
-        throw new Error('서버와 통신할 수 없습니다')
-      }
-
       throw error
     }
-  },
-
-  // 로그아웃
-  logout: () => {
-    console.log('[Auth] 로그아웃 - 토큰 삭제')
-    tokenUtils.removeToken(true) // force=true로 모든 백업 토큰도 제거
-    
-    // 사용자 정보 캐시 제거
-    sessionStorage.removeItem('cachedUserInfo')
-    
-    window.location.href = '/'
-  },
-
-  // 사용자 정보 조회
-  getUserInfo: () => {
-    return api.get('/auth/login/user')
   }
 }
 
+// 스터디 관련 API 서비스
 export const studyService = {
-  getStudies: async (retryCount = 0) => {
-    try {
-      // 토큰이 있는지 확인하고, 없으면 가능한 경우 토큰이 저장될 때까지 기다림
-      let token = null;
-      try {
-        token = tokenUtils.getToken() || await tokenUtils.waitForToken(800)
-        console.log('[Studies API] Token for studies API call:', token ? 'available' : 'not available')
-      } catch (tokenError) {
-        console.warn('[Studies API] Proceeding without waiting for token:', tokenError.message)
-      }
-      
-      // 토큰이 없으면 백업 소스에서도 확인
-      if (!token) {
-        const tempToken = sessionStorage.getItem('temp_token') || 
-                          sessionStorage.getItem('accessTokenBackup') || 
-                          window.tempAuthToken
-        if (tempToken) {
-          console.log('[Studies API] Found token in backup storage, using it')
-          localStorage.setItem('accessToken', tempToken)
-          token = tempToken
-        } else {
-          console.warn('[Studies API] No token available, attempting to proceed anyway')
-        }
-      }
-      
-      // 명시적으로 헤더에 토큰 추가
-      const headers = {};
-      if (token) {
-        const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        headers['Authorization'] = tokenWithBearer;
-        console.log('[Studies API] Explicitly including token in request headers')
-      } else {
-        console.warn('[Studies API] No token available for request to /studies')
-      }
-      
-      try {
-        const response = await api.get('/studies', { headers })
-        console.log('[Studies API] Studies fetched successfully:', response.data)
-        return response.data
-      } catch (error) {
-        // 401 오류이고 아직 최대 재시도 횟수에 도달하지 않은 경우 재시도
-        if (error.response?.status === 401 && retryCount < 3) {
-          console.log(`[Studies API] 인증 오류, ${retryCount + 1}번째 재시도 중...`)
-          
-          // 재시도 간격을 점진적으로 늘림 (300ms, 600ms, 900ms)
-          const delay = 300 * (retryCount + 1)
-          await new Promise(resolve => setTimeout(resolve, delay))
-          
-          // 토큰 재확인 및 갱신 시도
-          try {
-            // 토큰 재발급 시도
-            console.log('[Studies API] 토큰 재발급 시도 중...')
-            await api.get('/auth/reissue').catch(e => {
-              console.log('[Studies API] 토큰 재발급 실패:', e.message)
-            })
-          } catch (refreshError) {
-            console.log('[Studies API] 토큰 재발급 중 오류:', refreshError.message)
-          }
-          
-          // 토큰 재확인
-          const refreshedToken = localStorage.getItem('accessToken')
-          if (refreshedToken) {
-            console.log('[Studies API] 재시도 전 새 토큰 발견:', refreshedToken.substring(0, 15) + '...')
-          }
-          
-          return studyService.getStudies(retryCount + 1)
-        } else if (error.message === 'Network Error' && retryCount < 2) {
-          // 네트워크 오류의 경우 짧은 지연 후 재시도
-          console.log(`[Studies API] 네트워크 오류, ${retryCount + 1}번째 재시도 중...`)
-          const delay = 500 * (retryCount + 1)
-          await new Promise(resolve => setTimeout(resolve, delay))
-          return studyService.getStudies(retryCount + 1)
-        }
-        
-        throw error
-      }
-    } catch (error) {
-      console.error('[Studies API] Error fetching studies:', error)
-      throw error
-    }
-  },
+  // 스터디 생성
   createStudy: async (studyData) => {
-    // 명시적으로 토큰 추가
-    const token = tokenUtils.getToken();
-    const headers = {};
-    
-    if (token) {
-      const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-      headers['Authorization'] = tokenWithBearer;
-      console.log('[Study] Including token in createStudy request:', tokenWithBearer)
-    } else {
-      console.warn('[Study] No token found for createStudy request')
-    }
-    
-    const response = await api.post('/studies', studyData, { headers })
-    return response.data
-  },
-  getNotices: async (studyId) => {
-    const numericStudyId = parseInt(studyId, 10);
-    if (isNaN(numericStudyId)) {
-      throw new Error('스터디 ID가 유효하지 않습니다.');
-    }
     try {
-      const response = await api.get(`/studies/${numericStudyId}/notices`);
-      return response.data;
-    } catch (error) {
-      if (error.response?.status === 404) {
-        throw new Error('스터디를 찾을 수 없습니다.');
-      }
-      throw error;
-    }
-  },
-  getNoticeDetail: async (studyId, noticeId) => {
-    const numericStudyId = parseInt(studyId, 10);
-    const numericNoticeId = parseInt(noticeId, 10);
-    if (isNaN(numericStudyId) || isNaN(numericNoticeId)) {
-      throw new Error('스터디 ID 또는 공지사항 ID가 유효하지 않습니다.');
-    }
-    try {
-      const response = await api.get(`/studies/${numericStudyId}/notices/${numericNoticeId}`);
-      return response.data;
-    } catch (error) {
-      if (error.response?.status === 404) {
-        throw new Error('공지사항을 찾을 수 없습니다.');
-      }
-      throw error;
-    }
-  },
-  addNotice: async (studyId, noticeData) => {
-    const numericStudyId = parseInt(studyId, 10);
-    if (isNaN(numericStudyId)) {
-      throw new Error('스터디 ID가 유효하지 않습니다.');
-    }
-    try {
-      // 명시적으로 토큰 추가
+      console.log('[StudyService] 스터디 생성 요청:', studyData);
+      
+      // 토큰 확인
       const token = tokenUtils.getToken();
-      const headers = {};
-      
-      if (token) {
-        const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-        headers['Authorization'] = tokenWithBearer;
-        console.log('[Study] Including token in addNotice request:', tokenWithBearer)
-      } else {
-        console.warn('[Study] No token found for addNotice request')
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 스터디 생성 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
       }
       
-      const response = await api.post(`/studies/${numericStudyId}/notices/add`, noticeData, { headers });
+      // API 요청
+      const response = await api.post('/studies/add', studyData, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 스터디 생성 성공:', response.data);
       return response.data;
     } catch (error) {
-      if (error.response?.status === 404) {
-        throw new Error('스터디를 찾을 수 없습니다.');
+      console.error('[StudyService] 스터디 생성 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 스터디 목록 조회
+  getStudies: async (params = {}) => {
+    try {
+      console.log('[StudyService] 스터디 목록 조회 요청');
+      
+      const response = await api.get('/studies', { 
+        params,
+        withCredentials: true 
+      });
+      
+      console.log('[StudyService] 스터디 목록 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 스터디 목록 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 스터디 상세 조회
+  getStudyById: async (studyId) => {
+    try {
+      console.log(`[StudyService] 스터디 상세 조회 요청: ${studyId}`);
+      
+      const response = await api.get(`/studies/${studyId}`, {
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 스터디 상세 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 스터디 상세 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 스터디 참여 신청
+  applyToStudy: async (studyId, applicationData) => {
+    try {
+      console.log(`[StudyService] 스터디 참여 신청 요청: ${studyId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 스터디 참여 신청 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
       }
+      
+      // API 요청
+      const response = await api.post(`/studies/${studyId}/apply`, applicationData, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 스터디 참여 신청 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 스터디 참여 신청 오류:', error);
       throw error;
     }
   }
-}
+};

@@ -187,11 +187,12 @@ export function AuthProvider({ children }) {
     setUser: updateUser,
     loading,
     refreshUserInfo, // 사용자 정보를 강제로 새로고침하는 함수 노출
-    isDetailedUserInfo // 상세 사용자 정보 여부 (프로필 페이지 등에서 사용)
+    isDetailedUserInfo, // 상세 사용자 정보 여부 (프로필 페이지 등에서 사용)
+    isAuthenticated: !!user // user 객체가 존재하면 true, 아니면 false
   }
 
   console.log('[Auth] Provider 렌더링')
-  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading, 'isDetailedUserInfo:', isDetailedUserInfo)
+  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading, 'isDetailedUserInfo:', isDetailedUserInfo, 'isAuthenticated:', !!user)
 
   return (
     <AuthContext.Provider value={value}>
