@@ -14,9 +14,9 @@ function MainNavigation() {
     },
     { 
       id: 'create-join', 
-      label: '생성/참여', 
+      label: '스터디 생성', 
       icon: IoSearchOutline,
-      path: '/create'
+      path: '/studies/create'
     },
     { 
       id: 'calendar', 

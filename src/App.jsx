@@ -9,7 +9,7 @@ import {
 import { memo, useMemo, useEffect } from "react";
 import LoginPage from "./pages/auth/LoginPage";
 import StudiesPage from "./pages/study/StudiesPage";
-import CreateJoinPage from "./pages/study/CreateJoinPage";
+import CreateStudyPage from "./pages/study/CreateStudyPage";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -136,7 +136,11 @@ function AppContent() {
   const showNavigation = useMemo(() => {
     // 로그인, 콜백 페이지, 회원정보 입력, 스터디 상세 페이지에서 네비게이션 바를 숨김
     const hideNavigationPaths = ['/', '/auth/callback', '/auth/add'];
-    const isStudyDetailPage = /^\/studies\/[^/]+/.test(location.pathname);
+    
+    // /studies/create 경로는 제외하고 스터디 상세 페이지 패턴 확인
+    const isStudyDetailPage = /^\/studies\/[^/]+/.test(location.pathname) && 
+                             location.pathname !== '/studies/create';
+    
     return !hideNavigationPaths.includes(location.pathname) && !isStudyDetailPage;
   }, [location.pathname]);
 
@@ -181,11 +185,11 @@ function AppContent() {
 
           {/* 메인 네비게이션 라우트 */}
           <Route
-            path="/create"
+            path="/studies/create"
             element={
               <ProtectedRoute>
                 <StudyLayout>
-                  <CreateJoinPage />
+                  <CreateStudyPage />
                 </StudyLayout>
               </ProtectedRoute>
             }
