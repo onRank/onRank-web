@@ -18,6 +18,9 @@ function StudyDetailPage() {
     const path = location.pathname;
     const section = path.split('/').pop();
     
+    console.log('Current path:', path);
+    console.log('Section:', section);
+    
     // studyId로 끝나는 경우 (기본 화면)
     if (section === studyId) {
       setActiveTab('');
@@ -30,11 +33,17 @@ function StudyDetailPage() {
       'assignment': '과제',
       'board': '게시판',
       'attendance': '출석',
-      'manage': '관리',
+      'management': '관리',
       'ranking': '랭킹'
     };
+    
+    console.log('Tab mapping:', tabMap[section]);
+    
     if (tabMap[section]) {
       setActiveTab(tabMap[section]);
+      console.log('Active tab set to:', tabMap[section]);
+    } else {
+      console.log('No matching tab for section:', section);
     }
   }, [location.pathname, studyId]);
 

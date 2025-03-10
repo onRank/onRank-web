@@ -11,7 +11,7 @@ function StudySidebar({ activeTab }) {
     { id: 'assignment', label: '과제', path: 'assignment' },
     { id: 'board', label: '게시판', path: 'board' },
     { id: 'attendance', label: '출석', path: 'attendance' },
-    { id: 'manage', label: '관리', path: 'manage' },
+    { id: 'manage', label: '관리', path: 'management' },
     { id: 'ranking', label: '랭킹', path: 'ranking' },
   ];
 

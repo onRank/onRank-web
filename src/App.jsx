@@ -174,7 +174,7 @@ function AppContent() {
                     <Route path="assignment/:id" element={<AssignmentDetail />} />
                     <Route path="board" element={<StudyDetailPage />} />
                     <Route path="attendance" element={<StudyDetailPage />} />
-                    <Route path="manage" element={<StudyDetailPage />} />
+                    <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
                     <Route path="notices/add" element={<NoticeAddPage />} />
                   </Routes>
