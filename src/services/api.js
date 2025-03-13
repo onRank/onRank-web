@@ -9,6 +9,17 @@ export const tokenUtils = {
   getToken: () => {
     const token = localStorage.getItem('accessToken')
     if (token) {
+      // 토큰 유효성 간단 검사 추가
+      try {
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          console.warn('[Token Debug] Invalid token format (not a JWT):', token.substring(0, 15) + '...');
+          return null;
+        }
+      } catch (e) {
+        console.warn('[Token Debug] Error checking token format:', e);
+      }
+      
       console.log('[Token Debug] Retrieved token from localStorage:', token.substring(0, 15) + '...')
       return token
     }
@@ -162,6 +173,28 @@ export const tokenUtils = {
       console.error('[Token Debug] Token validation error:', error)
       return false
     }
+  },
+  
+  isTokenExpired: (token) => {
+    if (!token) return true
+    
+    try {
+      // JWT 토큰 디코딩
+      const base64Url = token.split('.')[1]
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+      }).join(''))
+      
+      const payload = JSON.parse(jsonPayload)
+      const expirationTime = payload.exp * 1000 // 밀리초로 변환
+      
+      // 현재 시간과 비교
+      return Date.now() >= expirationTime
+    } catch (error) {
+      console.error('[Token Debug] Token expiration check error:', error)
+      return true
+    }
   }
 }
 
@@ -172,7 +205,8 @@ export const api = axios.create({
   withCredentials: true,  // CORS 요청에서 쿠키 전송 허용
   headers: {
     'Content-Type': 'application/json',
-    'Accept': 'application/json'
+    'Accept': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest' // CSRF 방지 및 브라우저 호환성 향상
   }
 })
 
@@ -227,6 +261,9 @@ api.interceptors.request.use(
       const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`
       config.headers['Authorization'] = tokenWithBearer
       console.log(`[API Debug] Added Authorization header to request: ${config.url}`)
+      
+      // 쿠키에도 토큰 설정 (백엔드가 쿠키에서 토큰을 읽는 경우를 대비)
+      document.cookie = `Authorization=${tokenWithBearer}; path=/; SameSite=Lax;`
       
       // 토큰 만료 시간 확인
       try {
@@ -457,6 +494,16 @@ export const studyService = {
     try {
       console.log('[StudyService] 스터디 생성 요청:', studyData);
       
+      // 백엔드 DTO 구조에 맞게 데이터 변환
+      const requestData = {
+        studyName: studyData.studyName || '',
+        studyContent: studyData.studyContent || '',
+        studyImageUrl: studyData.studyImageUrl || null,
+        studyGoogleFormUrl: studyData.studyGoogleFormUrl || null
+      };
+      
+      console.log('[StudyService] 변환된 요청 데이터:', requestData);
+      
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
@@ -464,19 +511,88 @@ export const studyService = {
         throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
       }
       
+      // 토큰 형식 확인
+      const tokenWithBearer = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+      
       // API 요청
-      const response = await api.post('/studies/add', studyData, {
+      const response = await api.post('/studies/add', requestData, {
         headers: {
-          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
-          'Content-Type': 'application/json'
+          'Authorization': tokenWithBearer,
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest', // CSRF 방지 및 브라우저 호환성 향상
+          'Accept': 'application/json' // JSON 응답 요청
         },
         withCredentials: true
       });
+      
+      // 응답이 HTML인 경우 (로그인 페이지 등)
+      if (typeof response.data === 'string' && response.data.includes('<!DOCTYPE html>')) {
+        console.warn('[StudyService] HTML 응답 감지, 인증 문제 가능성:', response.data.substring(0, 100) + '...');
+        
+        // 토큰 만료 여부 확인
+        const isTokenExpired = tokenUtils.isTokenExpired(token);
+        
+        // 토큰이 만료된 경우에만 재발급 시도
+        if (isTokenExpired) {
+          try {
+            console.log('[StudyService] 토큰 만료됨, 재발급 시도');
+            const refreshResponse = await api.get('/auth/reissue');
+            const newToken = refreshResponse.headers['authorization'] || refreshResponse.headers['Authorization'];
+            
+            if (newToken) {
+              console.log('[StudyService] 토큰 재발급 성공, 요청 재시도');
+              tokenUtils.setToken(newToken);
+              
+              // 새 토큰으로 요청 재시도
+              const retryResponse = await api.post('/studies/add', requestData, {
+                headers: {
+                  'Authorization': newToken,
+                  'Content-Type': 'application/json',
+                  'X-Requested-With': 'XMLHttpRequest',
+                  'Accept': 'application/json'
+                },
+                withCredentials: true
+              });
+              
+              console.log('[StudyService] 스터디 생성 재시도 결과:', retryResponse.data);
+              return retryResponse.data;
+            }
+          } catch (refreshError) {
+            console.error('[StudyService] 토큰 재발급 실패:', refreshError);
+            // 토큰 재발급 실패 시 로그인 페이지로 리다이렉트
+            //window.location.href = '/';
+            return { success: false, message: '인증이 만료되었습니다. 다시 로그인해주세요.' };
+          }
+        } else {
+          console.log('[StudyService] 토큰이 유효하지만 권한 문제 발생, 로그아웃 후 재로그인 필요');
+          // 토큰이 유효하지만 권한 문제가 있는 경우 로그아웃 처리
+          tokenUtils.removeToken(true);
+          // 로그인 페이지로 리다이렉트하지 않고 오류 메시지 반환
+          return { 
+            success: false, 
+            message: '권한이 없습니다. 로그아웃 후 다시 로그인해주세요.',
+            requireRelogin: true
+          };
+        }
+      }
       
       console.log('[StudyService] 스터디 생성 성공:', response.data);
       return response.data;
     } catch (error) {
       console.error('[StudyService] 스터디 생성 오류:', error);
+      
+      // 인증 오류인 경우 (401, 403)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.error('[StudyService] 인증 오류:', error.response.status);
+        // 토큰만 제거하고 리다이렉트는 하지 않음
+        tokenUtils.removeToken(true);
+        return {
+          success: false,
+          message: '인증에 실패했습니다. 다시 로그인해주세요.',
+          requireRelogin: true
+        };
+      }
+      
       throw error;
     }
   },
@@ -486,9 +602,18 @@ export const studyService = {
     try {
       console.log('[StudyService] 스터디 목록 조회 요청');
       
+      // 토큰 확인 및 갱신
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.warn('[StudyService] 토큰 없음, 스터디 목록 조회 시 인증 문제 가능성');
+      }
+      
       const response = await api.get('/studies', { 
         params,
-        withCredentials: true 
+        withCredentials: true,
+        headers: {
+          'Accept': 'application/json'
+        }
       });
       
       console.log('[StudyService] 스터디 목록 조회 성공:', response.data);
@@ -499,41 +624,69 @@ export const studyService = {
         try {
           console.log('[StudyService] 문자열 응답 처리 시도');
           
-          // 정규식을 사용하여 필요한 데이터만 추출
-          const extractedData = [];
-          
-          // 각 스터디 객체를 추출하기 위한 정규식 패턴
-          const studyPattern = /"studyId":(\d+),"studyName":"([^"]+)","studyContent":"([^"]+)","studyImage":"([^"]+)"/g;
-          
-          let match;
-          while ((match = studyPattern.exec(data)) !== null) {
-            extractedData.push({
-              studyId: parseInt(match[1]),
-              studyName: match[2],
-              studyContent: match[3],
-              studyImage: match[4],
-              members: [] // 멤버 정보는 단순화
-            });
-          }
-          
-          console.log('[StudyService] 데이터 추출 성공:', extractedData);
-          
-          // 추출된 데이터가 없으면 빈 배열 반환
-          if (extractedData.length === 0) {
-            console.log('[StudyService] 추출된 데이터가 없음, 빈 배열 반환');
+          // HTML 응답인 경우 빈 배열 반환
+          if (data.includes('<!DOCTYPE html>')) {
+            console.warn('[StudyService] HTML 응답 감지, 빈 배열 반환');
             return [];
           }
           
-          return extractedData;
-        } catch (parseError) {
-          console.error('[StudyService] 데이터 추출 실패:', parseError);
-          // 오류 발생 시 빈 배열 반환
+          // JSON 문자열인 경우 파싱 시도
+          try {
+            return JSON.parse(data);
+          } catch (parseError) {
+            console.error('[StudyService] 데이터 파싱 실패:', parseError);
+            return [];
+          }
+        } catch (error) {
+          console.error('[StudyService] 응답 처리 오류:', error);
           return [];
         }
       }
       
-      // 이미 객체인 경우 그대로 반환
-      return Array.isArray(data) ? data : [];
+      // 배열이 아닌 경우 배열로 변환
+      if (!Array.isArray(data)) {
+        console.warn('[StudyService] 응답이 배열이 아님, 배열로 변환:', data);
+        return data ? [data] : [];
+      }
+      
+      // 각 스터디 객체의 필드 확인 및 로깅
+      if (data.length > 0) {
+        console.log('[StudyService] 첫 번째 스터디 객체 필드:', Object.keys(data[0]));
+        
+        // 필드명 확인 - 백엔드 DTO 구조에 맞게 확인
+        console.log('[StudyService] studyName 존재 여부:', 'studyName' in data[0]);
+        console.log('[StudyService] studyContent 존재 여부:', 'studyContent' in data[0]);
+        console.log('[StudyService] studyImageUrl 존재 여부:', 'studyImageUrl' in data[0]);
+        
+        // 데이터 유효성 검사
+        data = data.map(study => {
+          // 필수 필드가 없는 경우 기본값 설정
+          if (!study.studyName) {
+            console.warn('[StudyService] studyName 필드 없음, 기본값 설정');
+            study.studyName = '제목 없음';
+          }
+          
+          if (!study.studyContent) {
+            console.warn('[StudyService] studyContent 필드 없음, 기본값 설정');
+            study.studyContent = '설명 없음';
+          }
+          
+          // studyImageUrl 필드가 존재하지만 값이 null이거나 빈 문자열인 경우 처리
+          if ('studyImageUrl' in study) {
+            if (study.studyImageUrl === null || study.studyImageUrl === '') {
+              console.log('[StudyService] studyImageUrl 필드가 비어있어 기본값(빈 문자열)으로 설정합니다');
+              study.studyImageUrl = '';
+            }
+          } else {
+            console.log('[StudyService] studyImageUrl 필드가 없어 기본값(빈 문자열)으로 설정합니다');
+            study.studyImageUrl = '';
+          }
+          
+          return study;
+        });
+      }
+      
+      return data;
     } catch (error) {
       console.error('[StudyService] 스터디 목록 조회 오류:', error);
       // 오류 발생 시 빈 배열 반환

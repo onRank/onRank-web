@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
 
 function StudyCard({ study, onClick }) {
+  // 디버깅 로그 추가
+  console.log('[StudyCard] 렌더링:', study);
+  
   // Extract or set default for creator name
   const creatorName = study.creatorName || study.leaderName || '스터디 리더';
   
@@ -8,8 +11,8 @@ function StudyCard({ study, onClick }) {
   const handleImageError = (e) => {
     // 더 안정적인 대체 이미지 URL 사용
     e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E';
-    // 오류 로깅 제거
-    console.log('[StudyCard] 이미지 로딩 실패, 대체 이미지 사용');
+    // 오류 로깅
+    console.log('[StudyCard] 이미지 로딩 실패, 대체 이미지 사용:', study.imageUrl);
   };
   
   return (
@@ -63,14 +66,14 @@ function StudyCard({ study, onClick }) {
           fontWeight: '600',
           color: '#000000'
         }}>
-          {study.title}
+          {study.title || '제목 없음'}
         </h3>
         <p style={{
           fontSize: '0.875rem',
           color: '#ABB1B3',
           flex: 1
         }}>
-          {study.description}
+          {study.description || '설명 없음'}
         </p>
         <div style={{
           display: 'flex',
@@ -82,14 +85,14 @@ function StudyCard({ study, onClick }) {
             fontSize: '0.875rem',
             color: '#000000'
           }}>
-            멤버: {study.currentMembers}/{study.maxMembers}명
+            멤버: {study.currentMembers || 0}/{study.maxMembers || 10}명
           </span>
           <span style={{
             fontSize: '0.875rem',
             color: study.status === '모집중' ? '#337BB8' : '#F9A955',
             fontWeight: '500'
           }}>
-            {study.status}
+            {study.status || '모집중'}
           </span>
         </div>
         <div style={{
@@ -106,12 +109,12 @@ function StudyCard({ study, onClick }) {
 
 StudyCard.propTypes = {
   study: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string,
-    currentMembers: PropTypes.number.isRequired,
-    maxMembers: PropTypes.number.isRequired,
-    status: PropTypes.string.isRequired,
+    currentMembers: PropTypes.number,
+    maxMembers: PropTypes.number,
+    status: PropTypes.string,
     creatorName: PropTypes.string,
     leaderName: PropTypes.string,
     imageUrl: PropTypes.string

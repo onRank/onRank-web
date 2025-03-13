@@ -84,11 +84,82 @@ function CreateStudyForm({ onSuccess, onError }) {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
-
+  
   // 이미지 업로드 핸들러
   const handleImageChange = (newImage, newPreviewUrl) => {
-    setImage(newImage);
-    setPreviewUrl(newPreviewUrl);
+    try {
+      console.log('[CreateStudyForm] 이미지 변경:', { 
+        imageExists: !!newImage, 
+        previewUrlExists: !!newPreviewUrl,
+        imageType: newImage ? newImage.type : 'none'
+      });
+      
+      // 이미지 크기 제한 및 압축
+      if (newImage && newPreviewUrl) {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          // 더 작은 크기로 제한 (300x200)
+          const MAX_WIDTH = 300;
+          const MAX_HEIGHT = 200;
+          let width = img.width;
+          let height = img.height;
+          
+          // 이미지 크기 조정
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          // 배경을 흰색으로 설정 (투명 배경 제거)
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // 항상 JPEG 형식으로 변환하고 품질을 30%로 낮춤
+          const compressedImageUrl = canvas.toDataURL('image/jpeg', 0.3);
+          console.log('[CreateStudyForm] 이미지 압축 완료:', {
+            originalSize: newPreviewUrl.length,
+            compressedSize: compressedImageUrl.length,
+            compressionRatio: (compressedImageUrl.length / newPreviewUrl.length * 100).toFixed(2) + '%'
+          });
+          
+          setImage(newImage);
+          setPreviewUrl(compressedImageUrl);
+        };
+        img.src = newPreviewUrl;
+      } else {
+        setImage(newImage);
+        setPreviewUrl(newPreviewUrl);
+      }
+    } catch (error) {
+      console.error('[CreateStudyForm] 이미지 처리 오류:', error);
+      setError('이미지 처리 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 이미지 제거 핸들러
+  const handleRemoveImage = () => {
+    try {
+      console.log('[CreateStudyForm] 이미지 제거');
+      setImage(null);
+      setPreviewUrl(null);
+    } catch (error) {
+      console.error('[CreateStudyForm] 이미지 제거 오류:', error);
+      // 오류가 발생해도 이미지를 제거하려고 시도
+      setImage(null);
+      setPreviewUrl(null);
+    }
   };
 
   // 스터디 생성 핸들러
@@ -118,20 +189,40 @@ function CreateStudyForm({ onSuccess, onError }) {
         throw new Error(tokenValidation.errorMessage || '인증에 문제가 발생했습니다. 다시 로그인해주세요.');
       }
       
-      // API 요청 데이터 준비
-      const studyData = {
+      // API 요청 데이터 준비 - API 문서에 맞게 구성
+      const studyData = { 
         studyName: studyName,
-        content: content,
-        image: previewUrl, // 이미지가 있는 경우 base64 문자열로 전송
-        googleFormLink: googleFormLink || null,
-        createdAt: new Date().toISOString() // 현재 시간을 ISO 문자열로 변환
+        studyContent: content, // 백엔드 변경에 맞춰 필드명 수정 (content -> studyContent)
+        studyImageUrl: previewUrl || null, // 백엔드 변경에 맞춰 필드명 수정 (image -> studyImageUrl)
+        studyGoogleFormUrl: googleFormLink || null // 백엔드 변경에 맞춰 필드명 수정 (GoogleForm -> studyGoogleFormUrl)
       };
       
-      console.log('[CreateStudyForm] 요청 데이터:', studyData);
+      // 디버깅을 위한 로그 추가
+      console.log('[CreateStudyForm] API 문서 형식으로 변환된 요청 데이터:', {
+        studyName: studyData.studyName,
+        studyContent: studyData.studyContent,
+        studyImageUrl: studyData.studyImageUrl ? studyData.studyImageUrl.substring(0, 30) + '...' : '(없음)',
+        studyGoogleFormUrl: studyData.studyGoogleFormUrl,
+      });
       
       // 스터디 생성 API 호출
       const response = await studyService.createStudy(studyData);
       console.log('[CreateStudyForm] 스터디 생성 성공:', response);
+      
+      // 응답이 성공이 아닌 경우 처리
+      if (response && response.success === false) {
+        setError(response.message || '스터디 생성에 실패했습니다.');
+        if (onError) onError(response.message || '스터디 생성에 실패했습니다.');
+        
+        // 재로그인이 필요한 경우
+        if (response.requireRelogin) {
+          // 사용자에게 메시지만 표시하고 자동 리다이렉트는 하지 않음
+          console.log('[CreateStudyForm] 재로그인이 필요합니다. 로그인 페이지로 이동해주세요.');
+          setError(response.message + ' (로그인 페이지로 직접 이동해주세요)');
+        }
+        
+        return;
+      }
       
       // 성공 콜백 호출
       if (onSuccess) onSuccess(response);
@@ -214,8 +305,8 @@ function CreateStudyForm({ onSuccess, onError }) {
           </label>
           <ImageUploader 
             onImageChange={handleImageChange}
-            initialImage={image}
-            initialPreviewUrl={previewUrl}
+            onRemoveImage={handleRemoveImage}
+            previewUrl={previewUrl}
           />
         </div>
 

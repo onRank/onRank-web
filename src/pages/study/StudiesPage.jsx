@@ -14,6 +14,7 @@ function StudiesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [pageInitialized, setPageInitialized] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   // URL 쿼리 파라미터에서 토큰 확인 및 처리
   useEffect(() => {
@@ -58,7 +59,7 @@ function StudiesPage() {
 
   // 스터디 목록 로드 (페이지 초기화 후 한 번만 실행)
   useEffect(() => {
-    if (!pageInitialized) return;
+    if (!pageInitialized || dataLoaded) return;
     
     const fetchStudies = async () => {
       try {
@@ -97,17 +98,27 @@ function StudiesPage() {
           console.log('[StudiesPage] 스터디 데이터가 없거나 빈 배열입니다.');
           setStudies([]);
           setIsLoading(false);
+          setDataLoaded(true);
           return;
         }
         
         console.log('[StudiesPage] 스터디 목록 로드 성공:', data.length, '개의 스터디');
+        
+        // 데이터 구조 확인 및 로깅
+        if (data.length > 0) {
+          console.log('[StudiesPage] 첫 번째 스터디 객체:', data[0]);
+          console.log('[StudiesPage] 필드 목록:', Object.keys(data[0]));
+        }
+        
         setStudies(data);
-        setIsLoading(false)
+        setIsLoading(false);
+        setDataLoaded(true);
       } catch (error) {
         console.error("[StudiesPage] 스터디 목록 로드 실패:", error)
         
         setError(error.message || '스터디 목록을 불러오는데 실패했습니다.')
         setIsLoading(false)
+        setDataLoaded(true);
         
         if (error.response?.status === 401) {
           console.log('[StudiesPage] 인증 실패, 로그인 페이지로 이동')
@@ -125,7 +136,13 @@ function StudiesPage() {
     }
 
     fetchStudies()
-  }, [navigate, pageInitialized]) // user 의존성 제거, pageInitialized로 대체
+  }, [navigate, pageInitialized, dataLoaded])
+
+  // 수동 새로고침 기능 추가
+  const handleRefresh = async () => {
+    console.log('[StudiesPage] 수동 새로고침 시도');
+    setDataLoaded(false);
+  };
 
   // 토큰에서 사용자 정보 추출 (백업 방법)
   const extractUserInfoFromToken = () => {
@@ -187,8 +204,52 @@ function StudiesPage() {
             <p style={{ color: '#ABB1B3' }}>학과: {userDepartment}</p>
           </div>
         </div>
+        
+        <button 
+          onClick={handleRefresh}
+          style={{
+            backgroundColor: '#f8f9fa',
+            border: '1px solid #dee2e6',
+            borderRadius: '4px',
+            padding: '0.5rem 1rem',
+            cursor: 'pointer'
+          }}
+        >
+          새로고침
+        </button>
       </div>
-      <StudyList studies={studies} />
+      
+      {studies.length > 0 ? (
+        <StudyList studies={studies} />
+      ) : (
+        <div style={{
+          padding: '2rem',
+          textAlign: 'center',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '8px',
+          margin: '1rem 0'
+        }}>
+          <h3 style={{ marginBottom: '1rem', color: '#495057' }}>등록된 스터디가 없습니다</h3>
+          <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
+            참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
+          </p>
+          <button
+            onClick={() => navigate('/studies/create')}
+            style={{
+              backgroundColor: '#4263eb',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              padding: '0.75rem 1.5rem',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s'
+            }}
+          >
+            스터디 생성하기
+          </button>
+        </div>
+      )}
     </div>
   )
 }

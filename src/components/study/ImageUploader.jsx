@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 const styles = {
   container: {
@@ -50,7 +50,9 @@ const styles = {
   }
 };
 
-function ImageUploader({ previewUrl, onImageChange, onRemoveImage, fileInputRef }) {
+function ImageUploader({ previewUrl, onImageChange, onRemoveImage }) {
+  const internalFileInputRef = useRef(null);
+
   const handleDragOver = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -82,7 +84,11 @@ function ImageUploader({ previewUrl, onImageChange, onRemoveImage, fileInputRef 
   };
 
   const handleClick = () => {
-    fileInputRef.current.click();
+    if (internalFileInputRef && internalFileInputRef.current) {
+      internalFileInputRef.current.click();
+    } else {
+      console.error('[ImageUploader] fileInputRef is not properly initialized');
+    }
   };
 
   return (
@@ -93,7 +99,7 @@ function ImageUploader({ previewUrl, onImageChange, onRemoveImage, fileInputRef 
       style={styles.container}
     >
       <input
-        ref={fileInputRef}
+        ref={internalFileInputRef}
         type="file"
         accept="image/*"
         onChange={handleFileSelect}

@@ -9,6 +9,21 @@ function StudyList({ studies }) {
   console.log('[StudyList] 받은 데이터 타입:', typeof studies);
   console.log('[StudyList] 배열 여부:', Array.isArray(studies));
   console.log('[StudyList] 데이터 길이:', studies?.length);
+  console.log('[StudyList] 데이터 내용:', studies);
+  
+  // 첫 번째 스터디 객체의 구조 자세히 로깅
+  if (studies && studies.length > 0) {
+    console.log('[StudyList] 첫 번째 스터디 객체:', studies[0]);
+    console.log('[StudyList] 첫 번째 스터디 필드들:', Object.keys(studies[0]));
+    console.log('[StudyList] studyName 존재 여부:', 'studyName' in studies[0]);
+    console.log('[StudyList] studyContent 존재 여부:', 'studyContent' in studies[0]);
+    console.log('[StudyList] studyImageUrl 존재 여부:', 'studyImageUrl' in studies[0]);
+    
+    // 추가 디버깅: snake_case 필드명 확인 (DB 필드명과 일치할 수 있음)
+    console.log('[StudyList] study_name 존재 여부:', 'study_name' in studies[0]);
+    console.log('[StudyList] study_content 존재 여부:', 'study_content' in studies[0]);
+    console.log('[StudyList] study_image_url 존재 여부:', 'study_image_url' in studies[0]);
+  }
   
   if (!studies || !studies.length) {
     return (
@@ -52,21 +67,28 @@ function StudyList({ studies }) {
       gap: '2rem',
       padding: '1rem'
     }}>
-      {studies.map((study) => {
+      {studies.map((study, index) => {
         // 백엔드 필드명을 프론트엔드 필드명으로 매핑
+        // MainpageStudyResponseDto 클래스 구조에 맞게 수정
         const mappedStudy = {
-          id: study.studyId,
-          title: study.studyName,
-          description: study.studyContent,
+          id: index, // studyId 필드가 없으므로 인덱스를 ID로 사용
+          title: study.studyName || '제목 없음',
+          description: study.studyContent || '설명 없음',
           currentMembers: study.members?.length || 0,
           maxMembers: 10, // 백엔드에서 제공하지 않는 경우 기본값 설정
           status: '모집중', // 백엔드에서 제공하지 않는 경우 기본값 설정
-          imageUrl: study.studyImage
+          imageUrl: study.studyImageUrl || '' // studyImageUrl 필드만 사용
         };
+        
+        // 매핑된 스터디 객체 로깅
+        console.log(`[StudyList] 스터디 ${index} 매핑 결과:`, mappedStudy);
+        
+        // 고유한 키 생성 (인덱스 사용)
+        const uniqueKey = `study-${index}`;
         
         return (
           <StudyCard
-            key={mappedStudy.id}
+            key={uniqueKey}
             study={mappedStudy}
             onClick={() => navigate(`/studies/${mappedStudy.id}`)}
           />
@@ -79,10 +101,9 @@ function StudyList({ studies }) {
 StudyList.propTypes = {
   studies: PropTypes.arrayOf(
     PropTypes.shape({
-      studyId: PropTypes.number,
       studyName: PropTypes.string,
       studyContent: PropTypes.string,
-      studyImage: PropTypes.string,
+      studyImageUrl: PropTypes.string,
       members: PropTypes.array
     })
   ).isRequired
