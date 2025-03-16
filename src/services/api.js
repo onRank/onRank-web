@@ -428,7 +428,7 @@ export const authService = {
         }
       }
       
-      return response.data
+      return response // 전체 response 객체 반환
     } catch (error) {
       console.error('[Auth] 회원정보 등록 실패:', error)
       throw error

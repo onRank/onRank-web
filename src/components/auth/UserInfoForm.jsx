@@ -108,6 +108,15 @@ function UserInfoForm() {
 
       console.log('회원정보 등록 시도:', submitData);
       const response = await authService.addUserInfo(submitData);
+      
+      // 디버그 로그 추가
+      console.log('서버 응답 구조:', {
+        status: response.status,
+        statusText: response.statusText,
+        hasData: !!response.data,
+        hasHeaders: !!response.headers,
+        headers: response.headers ? Object.keys(response.headers) : null
+      });
 
       // 201 상태코드면 성공으로 처리
       if (response.status === 201) {
