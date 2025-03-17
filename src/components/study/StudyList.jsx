@@ -90,7 +90,9 @@ function StudyList({ studies }) {
           <StudyCard
             key={uniqueKey}
             study={mappedStudy}
-            onClick={() => navigate(`/studies/${mappedStudy.id}`)}
+            onClick={() => navigate(`/studies/${mappedStudy.id}`, {
+              state: { studyData: mappedStudy }
+            })}
           />
         );
       })}
@@ -99,14 +101,7 @@ function StudyList({ studies }) {
 }
 
 StudyList.propTypes = {
-  studies: PropTypes.arrayOf(
-    PropTypes.shape({
-      studyName: PropTypes.string,
-      studyContent: PropTypes.string,
-      studyImageUrl: PropTypes.string,
-      members: PropTypes.array
-    })
-  ).isRequired
+  studies: PropTypes.array.isRequired
 }
 
 export default StudyList 
