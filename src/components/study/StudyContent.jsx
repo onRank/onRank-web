@@ -2,35 +2,11 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../services/api';
+import { format } from 'date-fns';
 
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
-  const [schedules, setSchedules] = useState([
-    { 
-      id: 1, 
-      round: 1,
-      date: '2024.03.25',
-      content: '1회차 - React 기초 학습\n- React 소개\n- Component와 Props\n- State와 생명주기' 
-    },
-    { 
-      id: 2, 
-      round: 2,
-      date: '2024.04.01',
-      content: '2회차 - React Hooks\n- useState\n- useEffect\n- Custom Hooks 만들기' 
-    },
-    { 
-      id: 3, 
-      round: 3,
-      date: '2024.04.08',
-      content: '3회차 - React Router\n- Router 설정\n- Route와 Link\n- URL 파라미터와 쿼리스트링' 
-    },
-    { 
-      id: 4, 
-      round: 4,
-      date: '2024.04.15',
-      content: '4회차 - 상태 관리\n- Context API\n- Redux 기초\n- Redux Toolkit 사용법' 
-    }
-  ]);
+  const [schedules, setSchedules] = useState([]);
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -40,6 +16,12 @@ function StudyContent({ activeTab, studyData }) {
   const [addMemberError, setAddMemberError] = useState(null);
   const { studyId } = useParams();
   const [managementTab, setManagementTab] = useState('회원'); // 관리 탭 내부 탭 (회원, 스터디, 보증금)
+  
+  // 일정 추가 상태
+  const [showAddSchedulePopup, setShowAddSchedulePopup] = useState(false);
+  const [scheduleTitle, setScheduleTitle] = useState('');
+  const [scheduleDescription, setScheduleDescription] = useState('');
+  const [scheduleRound, setScheduleRound] = useState(1);
 
   useEffect(() => {
     if (activeTab === '과제') {
@@ -135,54 +117,317 @@ function StudyContent({ activeTab, studyData }) {
     setAddMemberError(null);
   };
 
+  // 일정 추가 팝업 열기
+  const handleOpenAddSchedulePopup = () => {
+    setShowAddSchedulePopup(true);
+    setScheduleRound(schedules.length > 0 ? schedules[schedules.length - 1].round + 1 : 1);
+  };
+
+  // 일정 추가 팝업 닫기
+  const handleCloseAddSchedulePopup = () => {
+    setShowAddSchedulePopup(false);
+    setScheduleTitle('');
+    setScheduleDescription('');
+  };
+
+  // 일정 추가 제출
+  const handleSubmitSchedule = () => {
+    // 새 일정 객체 생성
+    const newSchedule = {
+      id: schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) + 1 : 1,
+      round: scheduleRound,
+      date: format(new Date(), 'yyyy.MM.dd'),
+      content: `${scheduleRound}회차 - ${scheduleTitle}\n${scheduleDescription}`
+    };
+
+    // 일정 목록에 추가
+    setSchedules([...schedules, newSchedule]);
+    
+    // 팝업 닫기
+    handleCloseAddSchedulePopup();
+  };
+
   const renderScheduleContent = () => (
-    <div style={{ width: '100%' }}>
-      {schedules.map((schedule) => (
-        <div 
-          key={schedule.id}
+    <div style={{ width: '100%', position: 'relative', marginTop: '3rem' }}>
+      {/* 일정 추가 버튼 */}
+      <div style={{
+        position: 'absolute',
+        top: '-3rem',
+        right: 0,
+        zIndex: 1
+      }}>
+        <button
+          onClick={handleOpenAddSchedulePopup}
           style={{
-            marginBottom: '2rem',
-            width: '100%',
-            border: '1px solid #E5E5E5',
+            padding: '0.5rem 1rem',
+            backgroundColor: '#FF0000',
+            color: 'white',
+            border: 'none',
             borderRadius: '4px',
-            padding: '1.5rem'
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
           }}
         >
+          일정 추가
+        </button>
+      </div>
+      
+      {schedules.length === 0 ? (
+        <div style={{
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#666666',
+          border: '1px dashed #E5E5E5',
+          borderRadius: '4px'
+        }}>
+          등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
+        </div>
+      ) : (
+        <>
+          {schedules.map((schedule) => (
+            <div 
+              key={schedule.id}
+              style={{
+                marginBottom: '2rem',
+                width: '100%',
+                border: '1px solid #E5E5E5',
+                borderRadius: '4px',
+                padding: '1.5rem'
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                marginBottom: '1rem'
+              }}>
+                <div style={{
+                  width: '1px',
+                  height: '16px',
+                  backgroundColor: '#FF0000',
+                  marginRight: '0.5rem'
+                }} />
+                <span style={{
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}>
+                  {schedule.round}회차
+                </span>
+                <span style={{
+                  fontSize: '14px',
+                  color: '#666666',
+                  marginLeft: '1rem'
+                }}>
+                  {schedule.date}
+                </span>
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: '#333333',
+                whiteSpace: 'pre-line',
+                lineHeight: '1.6'
+              }}>
+                {schedule.content}
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+      
+      {/* 일정 추가 모달 */}
+      {showAddSchedulePopup && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000
+        }}>
           <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            marginBottom: '1rem'
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '2rem',
+            width: '500px',
+            maxWidth: '90%',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
           }}>
-            <div style={{
-              width: '1px',
-              height: '16px',
-              backgroundColor: '#FF0000',
-              marginRight: '0.5rem'
-            }} />
-            <span style={{
-              fontSize: '16px',
+            <h3 style={{ 
+              marginTop: 0, 
+              marginBottom: '1.5rem',
+              fontSize: '18px',
               fontWeight: 'bold'
             }}>
-              {schedule.round}회차
-            </span>
-            <span style={{
-              fontSize: '14px',
-              color: '#666666',
-              marginLeft: '1rem'
+              일정 추가
+            </h3>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                일정 제목
+              </label>
+              <input
+                type="text"
+                value={scheduleTitle}
+                onChange={(e) => setScheduleTitle(e.target.value)}
+                placeholder="일정 제목을 입력하세요"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                일정 설명
+              </label>
+              <textarea
+                value={scheduleDescription}
+                onChange={(e) => setScheduleDescription(e.target.value)}
+                placeholder="일정에 대한 설명을 입력하세요"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  minHeight: '100px',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                날짜
+              </label>
+              <input
+                type="text"
+                value={format(new Date(), 'yyyy.MM.dd')}
+                disabled
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#666'
+                }}
+              />
+            </div>
+            
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                fontSize: '14px'
+              }}>
+                회차
+              </label>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}>
+                <button
+                  onClick={() => setScheduleRound(Math.max(1, scheduleRound - 1))}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    width: '120px'
+                  }}
+                >
+                  - 이전 회차
+                </button>
+                <div style={{
+                  padding: '0.75rem',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}>
+                  {scheduleRound} 회차
+                </div>
+                <button
+                  onClick={() => setScheduleRound(scheduleRound + 1)}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    backgroundColor: 'white',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    width: '120px'
+                  }}
+                >
+                  다음 회차 +
+                </button>
+              </div>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: '1rem',
+              marginTop: '2rem'
             }}>
-              {schedule.date}
-            </span>
-          </div>
-          <div style={{
-            fontSize: '14px',
-            color: '#333333',
-            whiteSpace: 'pre-line',
-            lineHeight: '1.6'
-          }}>
-            {schedule.content}
+              <button
+                onClick={handleCloseAddSchedulePopup}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  backgroundColor: 'white',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                취소하기
+              </button>
+              <button
+                onClick={handleSubmitSchedule}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  border: 'none',
+                  borderRadius: '4px',
+                  backgroundColor: '#FF0000',
+                  color: 'white',
+                  cursor: 'pointer',
+                  fontSize: '14px'
+                }}
+              >
+                추가하기
+              </button>
+            </div>
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 
