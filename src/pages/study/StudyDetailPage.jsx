@@ -32,7 +32,7 @@ function StudyDetailPage() {
     } else {
       // 전달받은 데이터가 없으면 기본값 설정 (스터디 뒤에 ID 추가하지 않고 스터디 이름만 표시)
       setStudyData({
-        title: `스터디 ${studyId}`, // 실제 환경에서는 API로 스터디 이름을 가져와야 함
+        title: `${studyId}번 스터디`, // "스터디 {id}" 형식에서 "{id}번 스터디" 형식으로 변경
         description: "스터디 설명이 없습니다."
       });
       
