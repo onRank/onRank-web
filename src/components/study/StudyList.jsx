@@ -18,11 +18,13 @@ function StudyList({ studies }) {
     console.log('[StudyList] studyName 존재 여부:', 'studyName' in studies[0]);
     console.log('[StudyList] studyContent 존재 여부:', 'studyContent' in studies[0]);
     console.log('[StudyList] studyImageUrl 존재 여부:', 'studyImageUrl' in studies[0]);
+    console.log('[StudyList] studyId 존재 여부:', 'studyId' in studies[0]);
     
     // 추가 디버깅: snake_case 필드명 확인 (DB 필드명과 일치할 수 있음)
     console.log('[StudyList] study_name 존재 여부:', 'study_name' in studies[0]);
     console.log('[StudyList] study_content 존재 여부:', 'study_content' in studies[0]);
     console.log('[StudyList] study_image_url 존재 여부:', 'study_image_url' in studies[0]);
+    console.log('[StudyList] study_id 존재 여부:', 'study_id' in studies[0]);
   }
   
   if (!studies || !studies.length) {
@@ -69,9 +71,15 @@ function StudyList({ studies }) {
     }}>
       {studies.map((study, index) => {
         // 백엔드 필드명을 프론트엔드 필드명으로 매핑
-        // MainpageStudyResponseDto 클래스 구조에 맞게 수정
+        // studyId가 0인 경우도 유효한 ID로 처리하도록 수정
+        const hasValidStudyId = study.studyId !== undefined && study.studyId !== null;
+        
+        // studyId가 있는지 확인하고 로그
+        console.log(`[StudyList] 스터디 ${index}의 studyId:`, study.studyId);
+        
         const mappedStudy = {
-          id: index, // studyId 필드가 없으므로 인덱스를 ID로 사용
+          // studyId가 0을 포함한 모든 숫자값을 유효한 ID로 처리 (index를 fallback으로 사용하지 않음)
+          id: hasValidStudyId ? study.studyId : index,
           title: study.studyName || '제목 없음',
           description: study.studyContent || '설명 없음',
           currentMembers: study.members?.length || 0,
@@ -82,9 +90,10 @@ function StudyList({ studies }) {
         
         // 매핑된 스터디 객체 로깅
         console.log(`[StudyList] 스터디 ${index} 매핑 결과:`, mappedStudy);
+        console.log(`[StudyList] 스터디 ${index} 실제 ID:`, study.studyId);
         
-        // 고유한 키 생성 (인덱스 사용)
-        const uniqueKey = `study-${index}`;
+        // 고유한 키 생성 (가능하면 studyId 사용, 없으면 인덱스 사용)
+        const uniqueKey = hasValidStudyId ? `study-${study.studyId}` : `study-index-${index}`;
         
         return (
           <StudyCard

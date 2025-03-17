@@ -1,47 +1,106 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { IoHomeOutline } from 'react-icons/io5';
 import StudySidebar from '../../components/study/StudySidebar';
 import StudyContent from '../../components/study/StudyContent';
+import { studyService } from '../../services/api';
+import LoadingSpinner from '../../components/common/LoadingSpinner';
+import ErrorMessage from '../../components/common/ErrorMessage';
 
 function StudyDetailPage() {
   const { studyId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('');
   const [studyData, setStudyData] = useState({
     title: "로딩 중...",
     description: "스터디 정보를 불러오는 중입니다."
   });
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   // 이미 로드된 스터디 데이터를 추적하기 위한 ref
   const studyDataLoaded = useRef(false);
 
-  // location state에서 스터디 데이터 가져오기 - 초기에 한 번만 실행
+  // 스터디 데이터 로드
   useEffect(() => {
     // 이미 로드된 경우 다시 실행하지 않음
     if (studyDataLoaded.current) return;
     
-    // 이전 페이지에서 전달받은 스터디 데이터 확인
-    const passedStudyData = location.state?.studyData;
+    const fetchStudyData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // 이전 페이지에서 전달받은 스터디 데이터 확인
+        const passedStudyData = location.state?.studyData;
+        
+        console.log('[StudyDetailPage] 전달받은 스터디 데이터:', passedStudyData);
+        console.log('[StudyDetailPage] URL에서 추출한 studyId:', studyId);
+        
+        if (passedStudyData) {
+          // 전달받은 데이터가 있으면 사용
+          setStudyData(passedStudyData);
+          setIsLoading(false);
+        } else {
+          // 전달받은 데이터가 없으면 API에서 studyId로 조회 시도
+          console.log('[StudyDetailPage] API를 통해 스터디 데이터 조회 시도');
+          
+          try {
+            // studyId를 사용하여 API 호출
+            const data = await studyService.getStudyById(studyId);
+            
+            console.log('[StudyDetailPage] API 응답 데이터:', data);
+            
+            if (data) {
+              // 백엔드 필드명을 프론트엔드 필드명으로 매핑
+              const mappedData = {
+                id: data.studyId,
+                title: data.studyName || '제목 없음',
+                description: data.studyContent || '설명 없음',
+                currentMembers: data.members?.length || 0,
+                maxMembers: 10,
+                status: '모집중',
+                imageUrl: data.studyImageUrl || ''
+              };
+              
+              setStudyData(mappedData);
+            } else {
+              // 데이터가 없으면 기본값 설정
+              setStudyData({
+                title: `스터디 (ID: ${studyId})`,
+                description: "스터디 정보를 찾을 수 없습니다."
+              });
+              
+              setError("스터디 정보를 찾을 수 없습니다.");
+            }
+          } catch (apiError) {
+            console.error('[StudyDetailPage] API 호출 중 오류:', apiError);
+            
+            // 오류 발생 시 기본값 설정
+            setStudyData({
+              title: `스터디 (ID: ${studyId})`,
+              description: "스터디 정보를 불러오는 중 오류가 발생했습니다."
+            });
+            
+            setError(`스터디 정보를 불러오는 중 오류가 발생했습니다: ${apiError.message || '알 수 없는 오류'}`);
+          }
+          
+          setIsLoading(false);
+        }
+        
+        // 데이터가 로드되었음을 표시
+        studyDataLoaded.current = true;
+      } catch (error) {
+        console.error('[StudyDetailPage] 데이터 로드 중 오류:', error);
+        setIsLoading(false);
+        setError(`데이터 로드 중 오류가 발생했습니다: ${error.message || '알 수 없는 오류'}`);
+        studyDataLoaded.current = true;
+      }
+    };
     
-    console.log('[StudyDetailPage] 전달받은 스터디 데이터:', passedStudyData);
-    
-    if (passedStudyData) {
-      // 전달받은 데이터가 있으면 사용
-      setStudyData(passedStudyData);
-    } else {
-      // 전달받은 데이터가 없으면 기본값 설정 (스터디 뒤에 ID 추가하지 않고 스터디 이름만 표시)
-      setStudyData({
-        title: `${studyId}번 스터디`, // "스터디 {id}" 형식에서 "{id}번 스터디" 형식으로 변경
-        description: "스터디 설명이 없습니다."
-      });
-      
-      console.log('[StudyDetailPage] 전달받은 스터디 데이터가 없어 기본값 사용');
-    }
-    
-    // 데이터가 로드되었음을 표시
-    studyDataLoaded.current = true;
-  }, [studyId]); // location.state 의존성 제거
+    fetchStudyData();
+  }, [studyId, location.state]);
 
   // URL에서 현재 섹션 가져오기
   useEffect(() => {
@@ -76,6 +135,11 @@ function StudyDetailPage() {
       console.log('No matching tab for section:', section);
     }
   }, [location.pathname, studyId]);
+
+  // 로딩 중 표시
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div style={{
@@ -146,6 +210,9 @@ function StudyDetailPage() {
           </>
         )}
       </div>
+
+      {/* 오류 메시지 표시 */}
+      {error && <ErrorMessage message={error} />}
 
       {/* 메인 컨텐츠 */}
       <div style={{
