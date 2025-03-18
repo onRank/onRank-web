@@ -234,7 +234,7 @@ function StudiesPage() {
             참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
           </p>
           <button
-            onClick={() => navigate('/studies/create')}
+            onClick={() => navigate('/studies/add')}
             style={{
               backgroundColor: '#4263eb',
               color: 'white',

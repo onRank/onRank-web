@@ -34,8 +34,11 @@ function OAuthCallback() {
             navigate('/studies')
             return
           }
+          // 여기까지 코드가 실행된다면 토큰이 만료된 상태
+          console.log('Token expired, requesting new token')
         }
 
+        // 토큰이 없거나 만료된 경우에만 reissue 요청
         console.log('Sending request to /auth/reissue')
         console.log('[Auth Debug] Request headers:', {
           'Content-Type': 'application/json',
@@ -61,6 +64,13 @@ function OAuthCallback() {
         // JWT 토큰에서 사용자 정보 추출
         const tokenPayload = JSON.parse(atob(authHeader.split('.')[1]))
         console.log('Token payload:', tokenPayload)
+        
+        // 리프레시 토큰 쿠키 확인 - 이 부분의 로직 변경
+        // HttpOnly 쿠키는 document.cookie로 접근할 수 없으므로 이 검사는 제거
+        console.log('[Auth Debug] Refresh token cookie check - HttpOnly cookies cannot be read directly')
+        
+        // 백엔드에서 성공적으로 토큰을 받았다면 리프레시 토큰이 제대로 설정되었다고 가정
+        console.log('[Auth Debug] Server provided a valid token, assuming refresh token cookie is set')
         
         // 사용자 정보 설정
         setUser({

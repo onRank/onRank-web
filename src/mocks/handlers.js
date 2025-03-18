@@ -1,7 +1,8 @@
 import { http, HttpResponse } from 'msw'
 
 // 가짜 JWT 토큰 생성
-const mockJwtToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.mockToken'
+const mockAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.accessToken'
+const mockRefreshToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refreshToken'
 
 export const handlers = [
   // 구글 OAuth 인증 모킹
@@ -10,12 +11,15 @@ export const handlers = [
     return HttpResponse.redirect('http://localhost:3000/auth/callback?code=mock_code')
   }),
 
-  // 구글 OAuth 콜백 처리
+  // 토큰 재발급 처리
   http.get('http://localhost:8080/auth/reissue', () => {
     return new HttpResponse(null, {
       status: 200,
       headers: {
-        'Authorization': `Bearer ${mockJwtToken}`,
+        // 액세스 토큰은 응답 헤더로 반환
+        'Authorization': `Bearer ${mockAccessToken}`,
+        // 리프레시 토큰은 HttpOnly 쿠키로 설정
+        'Set-Cookie': `refreshToken=${mockRefreshToken}; HttpOnly; Secure; SameSite=Strict; Path=/`
       }
     })
   }),
@@ -63,10 +67,10 @@ export const handlers = [
       },
       {
         headers: {
-          'Set-Cookie': [
-            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
-            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
-          ]
+          // 액세스 토큰은 응답 헤더로 반환
+          'Authorization': `Bearer ${mockAccessToken}`,
+          // 리프레시 토큰은 HttpOnly 쿠키로 설정
+          'Set-Cookie': `refreshToken=${mockRefreshToken}; HttpOnly; Secure; SameSite=Strict; Path=/`
         }
       }
     )
@@ -78,10 +82,10 @@ export const handlers = [
       { message: 'Token refreshed' },
       {
         headers: {
-          'Set-Cookie': [
-            `Authorization=${mockJwtToken}; HttpOnly; Secure; SameSite=Strict`,
-            `JSESSIONID=mock-session-id; HttpOnly; Secure; SameSite=Strict`
-          ]
+          // 액세스 토큰은 응답 헤더로 반환
+          'Authorization': `Bearer ${mockAccessToken}`,
+          // 리프레시 토큰은 HttpOnly 쿠키로 설정
+          'Set-Cookie': `refreshToken=${mockRefreshToken}; HttpOnly; Secure; SameSite=Strict; Path=/`
         }
       }
     )
@@ -93,10 +97,7 @@ export const handlers = [
       status: 200,
       headers: {
         // 쿠키 삭제
-        'Set-Cookie': [
-          'Authorization=; HttpOnly; Secure; SameSite=Strict; Max-Age=0',
-          'JSESSIONID=; HttpOnly; Secure; SameSite=Strict; Max-Age=0'
-        ]
+        'Set-Cookie': 'refreshToken=; HttpOnly; Secure; SameSite=Strict; Max-Age=0; Path=/'
       }
     })
   }),

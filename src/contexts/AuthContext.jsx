@@ -85,7 +85,9 @@ export function AuthProvider({ children }) {
           
           try {
             // 토큰 재발급 시도
-            const response = await api.get('/auth/reissue')
+            const response = await api.get('/auth/reissue', {
+              withCredentials: true // HttpOnly 쿠키의 리프레시 토큰을 사용하기 위한 옵션
+            })
             const newToken = response.headers['authorization'] || response.headers['Authorization']
             
             if (newToken) {
@@ -155,7 +157,9 @@ export function AuthProvider({ children }) {
       if (error.response?.status === 401) {
         try {
           // 토큰 재발급 시도
-          const response = await api.get('/auth/reissue')
+          const response = await api.get('/auth/reissue', {
+            withCredentials: true // HttpOnly 쿠키의 리프레시 토큰을 사용하기 위한 옵션
+          })
           const newToken = response.headers['authorization'] || response.headers['Authorization']
           
           if (newToken) {
