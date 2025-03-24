@@ -19,25 +19,14 @@ function GoogleLoginButton() {
       return
     }
 
-    // 백엔드 URL과 프론트엔드 URL을 환경 변수에서 가져옴
+    // 백엔드 URL을 환경 변수에서 가져옴
     const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-    const frontendUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000'
     
-    // CloudFront 환경에서는 Google에 등록된 정확한 URI 사용
-    // 실제 프로덕션 환경에서는 정확한 URI 사용 (Google에 등록된 경로 그대로)
-    const callbackPath = '/oauth2/callback/google'
+    // 직접 EC2 서버의 Google OAuth 인증 URL로 리다이렉트
+    console.log(`[Auth Debug] EC2 서버로 직접 로그인 시도: ${backendUrl}/oauth2/authorization/google`)
     
-    // 전체 리다이렉트 URI 구성
-    const redirectUri = `${frontendUrl}${callbackPath}`
-    console.log(`[Auth Debug] 구글 로그인 시도중...`)
-    console.log(`[Auth Debug] 백엔드 URL: ${backendUrl}`)
-    console.log(`[Auth Debug] 프론트엔드 URL: ${frontendUrl}`)
-    console.log(`[Auth Debug] 리다이렉트 URI: ${redirectUri}`)
-    
-    const authorizationUrl = `${backendUrl}/oauth2/authorization/google?redirect_uri=${encodeURIComponent(redirectUri)}`
-    console.log(`[Auth Debug] 최종 인증 URL: ${authorizationUrl}`)
-    
-    window.location.href = authorizationUrl
+    // 백엔드 서버의 OAuth 엔드포인트로 직접 이동
+    window.location.href = `${backendUrl}/oauth2/authorization/google`
   }
 
   return (
