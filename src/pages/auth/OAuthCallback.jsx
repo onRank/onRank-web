@@ -11,6 +11,19 @@ function OAuthCallback() {
   
   useEffect(() => {
     const getTokens = async () => {
+      // URL 파라미터 로깅
+      console.log('[OAuth Debug] 콜백 URL 파라미터:', {
+        code: searchParams.get('code'),
+        state: searchParams.get('state'),
+        error: searchParams.get('error'),
+        isNewUser: searchParams.get('isNewUser'),
+        raw: window.location.search
+      })
+      
+      // localStorage에서 state 값 확인 (추적용)
+      const savedState = localStorage.getItem('oauth_state')
+      console.log(`[OAuth Debug] 저장된 state: ${savedState}, URL state: ${searchParams.get('state')}`)
+      
       try {
         // isNewUser 파라미터 미리 확인 - 여러 곳에서 사용하므로 상단에 정의
         const isNewUser = searchParams.get('isNewUser') === 'true'
