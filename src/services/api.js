@@ -284,6 +284,25 @@ export const api = axios.create({
   }
 })
 
+// 쿠키 디버깅 유틸리티 함수 추가
+export const checkCookiesDebug = () => {
+  console.log('[Cookie Debug] 현재 문서 쿠키:', document.cookie);
+  console.log('[Cookie Debug] 쿠키 도메인:', window.location.hostname);
+  console.log('[Cookie Debug] 현재 프로토콜:', window.location.protocol);
+  
+  // HttpOnly 쿠키는 JavaScript에서 직접 접근할 수 없으므로 
+  // 백엔드에 검증 요청을 보내는 것이 좋습니다
+  return api.get('/auth/validate', { withCredentials: true })
+    .then(response => {
+      console.log('[Cookie Debug] 쿠키 검증 응답:', response.data);
+      return true;
+    })
+    .catch(error => {
+      console.error('[Cookie Debug] 쿠키 검증 실패:', error);
+      return false;
+    });
+};
+
 // 요청 인터셉터
 api.interceptors.request.use(
   async (config) => {
@@ -496,6 +515,17 @@ api.interceptors.response.use(
       headers: response.headers,
       data: response.data
     })
+    
+    // Set-Cookie 헤더 검사
+    const setCookieHeader = response.headers['set-cookie'];
+    if (setCookieHeader) {
+      console.log('[Cookie Debug] 서버에서 Set-Cookie 헤더 발견:', setCookieHeader);
+    } else {
+      console.log('[Cookie Debug] 서버에서 Set-Cookie 헤더 없음');
+    }
+    
+    // 모든 헤더를 출력
+    console.log('[Cookie Debug] 모든 응답 헤더:', response.headers);
     
     const authHeader = response.headers['authorization'] || response.headers['Authorization']
     if (authHeader) {

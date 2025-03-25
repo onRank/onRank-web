@@ -60,10 +60,19 @@ function OAuthCallback() {
           'withCredentials': true
         })
         
+        // 쿠키 디버그 정보 출력
+        console.log('[Cookie Debug] Document cookies before request:', document.cookie);
+        console.log('[Cookie Debug] 현재 도메인:', window.location.hostname);
+        console.log('[Cookie Debug] 현재 프로토콜:', window.location.protocol);
+        
         try {
           const response = await api.get('/auth/reissue', {
             withCredentials: true
           })
+          
+          // 응답 후 쿠키 상태 확인
+          console.log('[Cookie Debug] Document cookies after response:', document.cookie);
+          console.log('[Cookie Debug] 응답 후 쿠키 변경 여부:', document.cookie.includes('refresh_token'));
           
           console.log('[Auth Debug] Response headers:', response.headers)
           
@@ -114,6 +123,10 @@ function OAuthCallback() {
           navigate('/studies')
         } catch (error) {
           console.error('Failed to process OAuth callback:', error)
+          
+          // 에러 응답의 헤더와 쿠키 정보 출력
+          console.log('[Cookie Debug] Error response headers:', error.response?.headers);
+          console.log('[Cookie Debug] Cookies after error:', document.cookie);
           
           // *** 핵심 수정 부분: 신규 사용자는 오류가 발생해도 회원정보 등록 페이지로 이동 ***
           if (isNewUser) {
