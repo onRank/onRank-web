@@ -20,11 +20,11 @@ function GoogleLoginButton() {
     }
 
     // 혼합 콘텐츠(Mixed Content) 문제 해결을 위해 
-    // 사용자를 완전히 EC2 서버로 리다이렉트
-    console.log('[Auth Debug] EC2 서버로 직접 리다이렉트 (혼합 콘텐츠 문제 해결)')
+    // 사용자를 완전히 백엔드 서버로 리다이렉트
+    console.log('[Auth Debug] 백엔드 서버로 직접 리다이렉트 (혼합 콘텐츠 문제 해결)')
     
-    // EC2 서버의 전체 URL 사용 - 직접 EC2 서버의 OAuth 페이지로 이동
-    window.location.href = 'http://ec2-3-34-56-12.ap-northeast-2.compute.amazonaws.com/oauth2/authorization/google'
+    // 도메인 사용 - SSL이 적용된 도메인의 OAuth 페이지로 이동
+    window.location.href = 'https://onrank.kr/oauth2/authorization/google'
   }
 
   return (
