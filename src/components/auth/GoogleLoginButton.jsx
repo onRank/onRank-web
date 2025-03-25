@@ -19,27 +19,12 @@ function GoogleLoginButton() {
       return
     }
 
-    // 백엔드 URL과 프론트엔드 URL을 환경 변수에서 가져옴
-    const backendUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080'
-    const frontendUrl = import.meta.env.VITE_FRONTEND_URL || 'http://localhost:3000'
+    // 혼합 콘텐츠(Mixed Content) 문제 해결을 위해 
+    // 사용자를 완전히 EC2 서버로 리다이렉트
+    console.log('[Auth Debug] EC2 서버로 직접 리다이렉트 (혼합 콘텐츠 문제 해결)')
     
-    // 랜덤 state 값 생성 (세션 식별용)
-    const stateValue = Math.random().toString(36).substring(2, 15)
-    // localStorage에 state 값 저장 (추적용)
-    localStorage.setItem('oauth_state', stateValue)
-    
-    // 리다이렉트 URI 생성
-    const redirectUri = `${frontendUrl}/oauth2/callback/google`
-    
-    console.log(`[Auth Debug] 구글 로그인 시도 (state 파라미터 추가)`)
-    console.log(`[Auth Debug] state 값: ${stateValue}`)
-    console.log(`[Auth Debug] 리다이렉트 URI: ${redirectUri}`)
-    
-    // state 파라미터를 추가한 인증 URL
-    const authorizationUrl = `${backendUrl}/oauth2/authorization/google?redirect_uri=${encodeURIComponent(redirectUri)}&state=${stateValue}`
-    
-    console.log(`[Auth Debug] 최종 인증 URL: ${authorizationUrl}`)
-    window.location.href = authorizationUrl
+    // EC2 서버의 전체 URL 사용 - 직접 EC2 서버의 OAuth 페이지로 이동
+    window.location.href = 'http://ec2-3-34-56-12.ap-northeast-2.compute.amazonaws.com/oauth2/authorization/google'
   }
 
   return (
