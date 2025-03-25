@@ -26,7 +26,7 @@ export const tokenUtils = {
     try {
       console.log('[Token Debug] Validating refresh token with server');
       const api = axios.create({
-        baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+        baseURL: import.meta.env.PROD ? 'https://onrank.kr' : (import.meta.env.VITE_API_URL || 'http://localhost:8080'),
         timeout: 5000,
         withCredentials: true
       });
@@ -274,7 +274,7 @@ export const tokenUtils = {
 
 // api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.PROD ? 'https://onrank.kr' : (import.meta.env.VITE_API_URL || 'http://localhost:8080'),
   timeout: 10000, // 타임아웃 증가
   withCredentials: true,  // CORS 요청에서 쿠키 전송 허용 (리프레시 토큰 쿠키 사용을 위해 필수)
   headers: {
