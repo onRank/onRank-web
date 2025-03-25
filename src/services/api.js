@@ -468,6 +468,18 @@ api.interceptors.request.use(
       withCredentials: config.withCredentials
     })
 
+    // 모든 요청에 credentials 강제 적용
+    config.withCredentials = true;
+    
+    // 디버그 로깅
+    console.log('[API Debug] Final request config:', {
+      url: config.url,
+      baseURL: config.baseURL,
+      method: config.method,
+      withCredentials: config.withCredentials,
+      headers: config.headers
+    });
+
     return config
   },
   (error) => {
