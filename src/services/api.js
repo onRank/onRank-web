@@ -275,12 +275,13 @@ export const tokenUtils = {
 // api 인스턴스 생성
 export const api = axios.create({
   baseURL: import.meta.env.PROD ? 'https://onrank.kr' : (import.meta.env.VITE_API_URL || 'http://localhost:8080'),
-  timeout: 10000, // 타임아웃 증가
-  withCredentials: true,  // CORS 요청에서 쿠키 전송 허용 (리프레시 토큰 쿠키 사용을 위해 필수)
+  timeout: 10000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
-    'X-Requested-With': 'XMLHttpRequest' // CSRF 방지 및 브라우저 호환성 향상
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-Forwarded-Proto': 'https'
   }
 })
 
