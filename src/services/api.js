@@ -515,6 +515,11 @@ api.interceptors.response.use(
     // 모든 헤더를 출력
     console.log('[Cookie Debug] 모든 응답 헤더:', response.headers);
     
+    // Location 헤더가 있다면 로깅
+    if (response.headers['location']) {
+      console.log('[Redirect Debug] Location 헤더 발견:', response.headers['location']);
+    }
+    
     const authHeader = response.headers['authorization'] || response.headers['Authorization']
     if (authHeader) {
       console.log('[API Debug] New token received:', authHeader)
@@ -529,6 +534,19 @@ api.interceptors.response.use(
       headers: error.response?.headers,
       url: error.config?.url
     })
+
+    // 에러 응답의 헤더에서 리다이렉션 URL 확인
+    if (error.response?.headers) {
+      console.log('[Redirect Debug] 에러 응답 헤더:', error.response.headers);
+      
+      // Location 헤더 확인
+      if (error.response.headers['location']) {
+        console.log('[Redirect Debug] 에러 응답의 Location 헤더:', error.response.headers['location']);
+      }
+      
+      // 모든 헤더 출력
+      console.log('[Redirect Debug] 에러 응답의 모든 헤더:', Object.keys(error.response.headers));
+    }
 
     const originalRequest = error.config;
 
