@@ -213,12 +213,25 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
       if (response && response.studyId) {
         console.log('[CreateStudyForm] 스터디 생성 성공:', response.studyId);
         
+        // 프론트엔드 스터디 데이터 형식에 맞게 변환
+        const formattedStudyData = {
+          id: response.studyId,
+          title: studyName,
+          description: content,
+          imageUrl: previewUrl || '',
+          currentMembers: 1,
+          maxMembers: 10,
+          status: '모집중'
+        };
+        
+        console.log('[CreateStudyForm] 페이지 이동 시 전달할 스터디 데이터:', formattedStudyData);
+        
         // 성공 콜백 호출 (스터디 ID 포함)
         if (onSuccess) onSuccess(response);
         
         // 스터디 ID가 있으면 상세 페이지로 리다이렉트
         if (response.studyId && onNavigate) {
-          onNavigate(`/studies/${response.studyId}`);
+          onNavigate(`/studies/${response.studyId}`, { state: { studyData: formattedStudyData } });
         }
         
         return;
