@@ -552,55 +552,66 @@ api.interceptors.response.use(
 
     // /auth/add 요청에서 401이 발생한 경우 특별 처리
     if (error.response?.status === 401 && originalRequest.url === '/auth/add') {
-      console.log('회원정보 등록 중 인증 오류 발생')
-      // 토큰만 제거하고 리다이렉트는 하지 않음
-      tokenUtils.removeToken()
-      return Promise.reject(error)
+      console.log('[API Debug] 회원정보 등록 중 인증 오류 발생, 토큰 재발급 시도');
+      try {
+        // 토큰 재발급 시도
+        const refreshResponse = await api.get('/auth/reissue', {
+          withCredentials: true
+        });
+        
+        const newToken = refreshResponse.headers['authorization'] || refreshResponse.headers['Authorization'];
+        if (newToken) {
+          console.log('[API Debug] 토큰 재발급 성공, 원래 요청 재시도');
+          tokenUtils.setToken(newToken);
+          originalRequest.headers['Authorization'] = newToken;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error('[API Debug] 토큰 재발급 실패:', refreshError);
+        tokenUtils.removeToken();
+        return Promise.reject(error);
+      }
     }
 
     // 토큰 재발급 요청 실패 시
     if (error.response?.status === 401 && originalRequest.url === '/auth/reissue') {
-      console.log('토큰 재발급 실패')
+      console.log('[API Debug] 토큰 재발급 실패');
       // 특정 에러 메시지인 경우 처리
       if (error.response?.data && typeof error.response.data === 'string' && 
           error.response.data.includes('만료되지 않은 access token과 함께 refresh token이 전달되었습니다')) {
-        console.log('유효한 액세스 토큰이 있으므로 재발급 요청이 거부됨 - 정상적인 상황')
-        // 이 경우는 정상적인 상황이므로 토큰을 유지하고 원래 요청 진행
-        return Promise.reject(error)
+        console.log('[API Debug] 유효한 액세스 토큰이 있으므로 재발급 요청이 거부됨 - 정상적인 상황');
+        return Promise.reject(error);
       }
       
       // 다른 401 오류는 토큰 제거
-      tokenUtils.removeToken()
-      // 리다이렉트 하지 않고 에러만 반환
-      return Promise.reject(error)
+      tokenUtils.removeToken();
+      return Promise.reject(error);
     }
 
     // 401 에러이고 아직 재시도하지 않은 경우에만 토큰 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true
-      console.log('[API Debug] Token expired, attempting to refresh...')
+      originalRequest._retry = true;
+      console.log('[API Debug] 인증 오류 발생, 토큰 재발급 시도...');
       try {
         // HttpOnly 쿠키에 저장된 리프레시 토큰을 사용하여 새 토큰 요청
-        // withCredentials: true로 쿠키를 포함하여 요청
         const response = await api.get('/auth/reissue', {
           withCredentials: true
-        })
+        });
         
-        const newToken = response.headers['authorization'] || response.headers['Authorization']
+        const newToken = response.headers['authorization'] || response.headers['Authorization'];
         if (newToken) {
-          console.log('[API Debug] Token refresh successful:', newToken)
-          tokenUtils.setToken(newToken)
-          originalRequest.headers['Authorization'] = newToken
-          return api(originalRequest)
+          console.log('[API Debug] 토큰 재발급 성공, 원래 요청 재시도');
+          tokenUtils.setToken(newToken);
+          originalRequest.headers['Authorization'] = newToken;
+          return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error('[API Debug] Token refresh failed:', refreshError)
-        tokenUtils.removeToken()
-        // 리다이렉트하지 않고 에러만 반환
-        return Promise.reject(refreshError)
+        console.error('[API Debug] 토큰 재발급 실패:', refreshError);
+        tokenUtils.removeToken();
+        return Promise.reject(refreshError);
       }
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
 )
 
