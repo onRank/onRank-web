@@ -1091,5 +1091,192 @@ export const studyService = {
       
       throw error;
     }
+  },
+  
+  // 일정 목록 조회
+  getSchedules: async (studyId) => {
+    try {
+      console.log(`[StudyService] 일정 목록 조회 요청: 스터디 ${studyId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 일정 목록 조회 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      // API 요청
+      const response = await api.get(`/studies/${studyId}/schedules`, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 일정 목록 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 일정 목록 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 일정 상세 조회
+  getScheduleById: async (studyId, scheduleId) => {
+    try {
+      console.log(`[StudyService] 일정 상세 조회 요청: 스터디 ${studyId}, 일정 ${scheduleId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 일정 상세 조회 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      // API 요청
+      const response = await api.get(`/studies/${studyId}/schedules/${scheduleId}`, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 일정 상세 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 일정 상세 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 일정 추가
+  addSchedule: async (studyId, scheduleData) => {
+    try {
+      console.log(`[StudyService] 일정 추가 요청: 스터디 ${studyId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 일정 추가 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      // API 요청
+      const response = await api.post(`/studies/${studyId}/schedules/add`, scheduleData, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      // 201 상태코드 및 Location 헤더 처리
+      if (response.status === 201) {
+        const locationUrl = response.headers['location'];
+        console.log('[StudyService] 추가된 일정 URL:', locationUrl);
+        
+        // 생성된 일정 ID 추출 (선택적)
+        const scheduleId = locationUrl ? locationUrl.split('/').pop() : null;
+        if (scheduleId) {
+          console.log('[StudyService] 생성된 일정 ID:', scheduleId);
+          // response.data에 scheduleId 추가
+          if (!response.data) response.data = {};
+          response.data.scheduleId = scheduleId;
+        }
+      }
+      
+      console.log('[StudyService] 일정 추가 성공:', response.data);
+      return response.data || { success: true };
+    } catch (error) {
+      console.error('[StudyService] 일정 추가 오류:', error);
+      
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || '일정 추가에 실패했습니다.';
+        throw new Error(errorMessage);
+      }
+      
+      throw error;
+    }
+  },
+  
+  // 일정 수정
+  updateSchedule: async (studyId, scheduleId, scheduleData) => {
+    try {
+      console.log(`[StudyService] 일정 수정 요청: 스터디 ${studyId}, 일정 ${scheduleId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 일정 수정 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      // API 요청
+      const response = await api.put(`/studies/${studyId}/schedules/${scheduleId}`, scheduleData, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 일정 수정 성공:', response.data);
+      return response.data || { success: true };
+    } catch (error) {
+      console.error('[StudyService] 일정 수정 오류:', error);
+      
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || '일정 수정에 실패했습니다.';
+        throw new Error(errorMessage);
+      }
+      
+      throw error;
+    }
+  },
+  
+  // 일정 삭제
+  deleteSchedule: async (studyId, scheduleId) => {
+    try {
+      console.log(`[StudyService] 일정 삭제 요청: 스터디 ${studyId}, 일정 ${scheduleId}`);
+      
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[StudyService] 토큰 없음, 일정 삭제 불가');
+        throw new Error('인증 토큰이 없습니다. 로그인이 필요합니다.');
+      }
+      
+      // API 요청
+      const response = await api.delete(`/studies/${studyId}/schedules/${scheduleId}`, {
+        headers: {
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 일정 삭제 성공:', response.status);
+      return true; // 삭제 성공 시 true 반환
+    } catch (error) {
+      console.error('[StudyService] 일정 삭제 오류:', error);
+      
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage = typeof error.response.data === 'string' 
+          ? error.response.data 
+          : error.response.data.message || '일정 삭제에 실패했습니다.';
+        throw new Error(errorMessage);
+      }
+      
+      throw error;
+    }
   }
 };

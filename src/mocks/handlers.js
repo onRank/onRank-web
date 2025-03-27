@@ -227,4 +227,100 @@ export const handlers = [
       }
     });
   }),
+
+  // 일정 목록 조회
+  http.get('http://localhost:8080/studies/:studyId/schedules', ({ params }) => {
+    const { studyId } = params;
+    
+    console.log(`[MSW] 스터디 ${studyId}의 일정 목록 조회`);
+    
+    // 더미 일정 데이터 반환
+    return HttpResponse.json([
+      {
+        scheduleId: 1,
+        round: 1,
+        title: '첫 번째 모임',
+        content: '첫 번째 모임 - 자기소개\n서로 인사하고 스터디 방향성에 대해 논의합니다.',
+        date: '2024.03.15'
+      },
+      {
+        scheduleId: 2,
+        round: 2,
+        title: '두 번째 모임',
+        content: '두 번째 모임 - 주제 선정\n프로젝트 주제를 선정하고 역할을 분담합니다.',
+        date: '2024.03.22'
+      },
+      {
+        scheduleId: 3,
+        round: 3,
+        title: '세 번째 모임',
+        content: '세 번째 모임 - 중간 발표\n지금까지의 진행 상황을 공유하고 피드백을 주고받습니다.',
+        date: '2024.03.29'
+      }
+    ]);
+  }),
+
+  // 일정 상세 조회
+  http.get('http://localhost:8080/studies/:studyId/schedules/:scheduleId', ({ params }) => {
+    const { studyId, scheduleId } = params;
+    
+    console.log(`[MSW] 스터디 ${studyId}의 일정 ${scheduleId} 상세 조회`);
+    
+    // 더미 일정 상세 데이터 반환
+    return HttpResponse.json({
+      scheduleId: parseInt(scheduleId),
+      round: parseInt(scheduleId),
+      title: `${scheduleId}번째 모임`,
+      content: `${scheduleId}번째 모임 상세 내용입니다. 이 모임에서는 스터디 진행 상황을 점검하고 다음 단계를 계획합니다.`,
+      date: '2024.04.05'
+    });
+  }),
+
+  // 일정 추가
+  http.post('http://localhost:8080/studies/:studyId/schedules/add', async ({ params, request }) => {
+    const { studyId } = params;
+    const scheduleData = await request.json();
+    
+    console.log(`[MSW] 스터디 ${studyId}에 일정 추가:`, scheduleData);
+    
+    // 새 일정 ID는 현재 시간을 사용하여 임의로 생성
+    const newScheduleId = Date.now();
+    
+    // 생성된 리소스의 위치를 Location 헤더로 반환
+    return new HttpResponse(null, {
+      status: 201,
+      headers: {
+        'Location': `http://localhost:8080/studies/${studyId}/schedules/${newScheduleId}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  }),
+
+  // 일정 수정
+  http.put('http://localhost:8080/studies/:studyId/schedules/:scheduleId', async ({ params, request }) => {
+    const { studyId, scheduleId } = params;
+    const scheduleData = await request.json();
+    
+    console.log(`[MSW] 스터디 ${studyId}의 일정 ${scheduleId} 수정:`, scheduleData);
+    
+    // 수정 성공 응답
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  }),
+
+  // 일정 삭제
+  http.delete('http://localhost:8080/studies/:studyId/schedules/:scheduleId', ({ params }) => {
+    const { studyId, scheduleId } = params;
+    
+    console.log(`[MSW] 스터디 ${studyId}의 일정 ${scheduleId} 삭제`);
+    
+    // 삭제 성공 응답
+    return new HttpResponse(null, {
+      status: 204
+    });
+  }),
 ] 
