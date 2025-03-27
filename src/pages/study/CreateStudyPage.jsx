@@ -41,13 +41,23 @@ function CreateStudyPage() {
   // 스터디 생성 성공 시 처리
   const handleCreateSuccess = (response) => {
     console.log('[CreateStudyPage] 스터디 생성 성공:', response);
-    navigate('/studies');
+    // studyId가 있으면 해당 스터디 페이지로, 없으면 목록으로 이동
+    if (response && response.studyId) {
+      navigate(`/studies/${response.studyId}`);
+    } else {
+      navigate('/studies');
+    }
   };
 
   // 스터디 생성 실패 시 처리
   const handleCreateError = (errorMessage) => {
     console.error('[CreateStudyPage] 스터디 생성 실패:', errorMessage);
     setError(errorMessage);
+  };
+
+  // 페이지 이동 처리
+  const handleNavigate = (path) => {
+    navigate(path);
   };
 
   return (
@@ -65,6 +75,7 @@ function CreateStudyPage() {
       <CreateStudyForm 
         onSuccess={handleCreateSuccess}
         onError={handleCreateError}
+        onNavigate={handleNavigate}
       />
     </div>
   );

@@ -170,5 +170,61 @@ export const handlers = [
       createdAt: '2024-03-19',
       updatedAt: '2024-03-19'
     })
-  })
+  }),
+
+  // 스터디 멤버 조회
+  http.get('http://localhost:8080/studies/:studyId/management/members', () => {
+    return HttpResponse.json([
+      { studentId: 1, studentName: '홍길동', studentEmail: 'hong@example.com', role: 'LEADER' },
+      { studentId: 2, studentName: '김철수', studentEmail: 'kim@example.com', role: 'MEMBER' },
+      { studentId: 3, studentName: '이영희', studentEmail: 'lee@example.com', role: 'MEMBER' },
+      { studentId: 4, studentName: '박지성', studentEmail: 'park@example.com', role: 'MEMBER' }
+    ])
+  }),
+
+  // 스터디 멤버 역할 변경
+  http.put('http://localhost:8080/studies/:studyId/management/members/:memberId/role', async ({ params, request }) => {
+    const { studyId, memberId } = params
+    const { role } = await request.json()
+    
+    console.log(`[MSW] 스터디 ${studyId}의 멤버 ${memberId} 역할을 ${role}로 변경`)
+    
+    return new HttpResponse(null, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+  }),
+
+  // 스터디 멤버 삭제
+  http.delete('http://localhost:8080/studies/:studyId/management/members/:memberId', ({ params }) => {
+    const { studyId, memberId } = params
+    
+    console.log(`[MSW] 스터디 ${studyId}에서 멤버 ${memberId} 삭제`)
+    
+    return new HttpResponse(null, {
+      status: 204
+    })
+  }),
+
+  // 스터디 멤버 추가
+  http.post('http://localhost:8080/studies/:studyId/management/members', async ({ params, request }) => {
+    const { studyId } = params;
+    const requestData = await request.json();
+    
+    console.log(`[MSW] 스터디 ${studyId}에 멤버 추가: ${requestData.studentEmail}`);
+    
+    // 새 멤버 ID는 현재 시간을 사용하여 임의로 생성
+    const newMemberId = Date.now();
+    
+    // 생성된 리소스의 위치를 Location 헤더로 반환 (RESTful API 관행)
+    return new HttpResponse(null, {
+      status: 201,
+      headers: {
+        'Location': `http://localhost:8080/studies/${studyId}/management/members/${newMemberId}`,
+        'Content-Type': 'application/json'
+      }
+    });
+  }),
 ] 

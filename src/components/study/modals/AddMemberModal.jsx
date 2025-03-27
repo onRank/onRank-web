@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { api } from '../../../services/api';
+import { studyService } from '../../../services/api';
 import { useParams } from 'react-router-dom';
 
 function AddMemberModal({ onClose, onSuccess }) {
@@ -25,11 +25,10 @@ function AddMemberModal({ onClose, onSuccess }) {
     setAddMemberError(null);
     
     try {
-      const response = await api.post(`/studies/${studyId}/management/member/add`, {
+      // 새로운 API 서비스 함수 사용하여 멤버 추가
+      await studyService.addMember(studyId, {
         studentEmail: newMemberEmail.trim()
       });
-      
-      console.log('회원 추가 결과:', response.data);
       
       // 성공 콜백 호출
       if (onSuccess) {
@@ -40,7 +39,7 @@ function AddMemberModal({ onClose, onSuccess }) {
       onClose();
     } catch (err) {
       console.error('회원 추가 오류:', err);
-      setAddMemberError('회원 추가에 실패했습니다. 다시 시도해주세요.');
+      setAddMemberError(err.message || '회원 추가에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setAddingMember(false);
     }

@@ -1,13 +1,81 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useParams } from 'react-router-dom';
 import AddMemberModal from '../../modals/AddMemberModal';
+import { studyService } from '../../../../services/api';
 
 function MemberManagement({ members, loading, error, fetchMembers }) {
+  const { studyId } = useParams();
   const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
+  const [processingMemberId, setProcessingMemberId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({ show: false, type: null, memberId: null });
+  const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
 
   // 팝업 닫기 함수
   const handleClosePopup = () => {
     setShowAddMemberPopup(false);
+  };
+
+  // 역할 변경 처리 함수
+  const handleChangeRole = async (memberId, newRole) => {
+    if (!memberId || !newRole) return;
+    
+    try {
+      setProcessingMemberId(memberId);
+      setStatusMessage({ text: '처리 중...', type: 'info' });
+      
+      await studyService.changeMemberRole(studyId, memberId, { role: newRole });
+      
+      setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
+      fetchMembers(); // 멤버 목록 갱신
+    } catch (error) {
+      console.error('[MemberManagement] 역할 변경 실패:', error);
+      setStatusMessage({ 
+        text: error.message || '역할 변경에 실패했습니다.', 
+        type: 'error' 
+      });
+    } finally {
+      setProcessingMemberId(null);
+      // 3초 후 상태 메시지 초기화
+      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
+    }
+  };
+
+  // 멤버 삭제 확인 모달 표시
+  const handleShowDeleteConfirm = (memberId) => {
+    setConfirmModal({ show: true, type: 'delete', memberId });
+  };
+
+  // 멤버 삭제 처리 함수
+  const handleDeleteMember = async () => {
+    const { memberId } = confirmModal;
+    if (!memberId) return;
+    
+    try {
+      setProcessingMemberId(memberId);
+      setStatusMessage({ text: '처리 중...', type: 'info' });
+      
+      await studyService.removeMember(studyId, memberId);
+      
+      setStatusMessage({ text: '멤버가 삭제되었습니다.', type: 'success' });
+      fetchMembers(); // 멤버 목록 갱신
+    } catch (error) {
+      console.error('[MemberManagement] 멤버 삭제 실패:', error);
+      setStatusMessage({ 
+        text: error.message || '멤버 삭제에 실패했습니다.', 
+        type: 'error' 
+      });
+    } finally {
+      setProcessingMemberId(null);
+      setConfirmModal({ show: false, type: null, memberId: null });
+      // 3초 후 상태 메시지 초기화
+      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
+    }
+  };
+
+  // 확인 모달 닫기
+  const handleCloseConfirmModal = () => {
+    setConfirmModal({ show: false, type: null, memberId: null });
   };
 
   return (
@@ -41,27 +109,77 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
             </button>
           </div>
           
+          {/* 상태 메시지 표시 */}
+          {statusMessage.text && (
+            <div 
+              style={{ 
+                marginBottom: '1rem', 
+                padding: '0.5rem 1rem', 
+                backgroundColor: statusMessage.type === 'success' ? '#e6f7e6' : 
+                                 statusMessage.type === 'error' ? '#ffebee' : '#e3f2fd',
+                color: statusMessage.type === 'success' ? '#2e7d32' : 
+                       statusMessage.type === 'error' ? '#c62828' : '#1565c0',
+                borderRadius: '4px',
+                fontSize: '0.9rem'
+              }}
+            >
+              {statusMessage.text}
+            </div>
+          )}
+          
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '2px solid #E5E5E5' }}>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>이름</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>이메일</th>
+                <th style={{ padding: '0.75rem', textAlign: 'left' }}>역할</th>
+                <th style={{ padding: '0.75rem', textAlign: 'center' }}>관리</th>
+              </tr>
+            </thead>
             <tbody>
               {members.map((member) => (
-                <tr key={member.studentId} style={{ borderBottom: '1px solid #E5E5E5' }}>
-                  <td style={{ padding: '1rem', verticalAlign: 'middle' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>{member.studentName}</div>
-                      <div style={{ display: 'flex', gap: '1rem' }}>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16 11C17.66 11 18.99 9.66 18.99 8C18.99 6.34 17.66 5 16 5C14.34 5 13 6.34 13 8C13 9.66 14.34 11 16 11ZM8 11C9.66 11 10.99 9.66 10.99 8C10.99 6.34 9.66 5 8 5C6.34 5 5 6.34 5 8C5 9.66 6.34 11 8 11ZM8 13C5.67 13 1 14.17 1 16.5V19H15V16.5C15 14.17 10.33 13 8 13ZM16 13C15.71 13 15.38 13.02 15.03 13.05C16.19 13.89 17 15.02 17 16.5V19H23V16.5C23 14.17 18.33 13 16 13Z" fill="#5C6BC0"/>
-                          </svg>
-                        </button>
-                        <button style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M6 9H18V10.5H6V9ZM3.5 11.5L6 14L8.5 11.5H7V8H5V11.5H3.5ZM6 13.5H18V15H6V13.5Z" fill="#E53935"/>
-                            <path d="M19 3L5 3C3.9 3 3 3.9 3 5L3 19C3 20.1 3.9 21 5 21L19 21C20.1 21 21 20.1 21 19L21 5C21 3.9 20.1 3 19 3ZM19 19L5 19L5 5L19 5L19 19Z" fill="#E53935"/>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
+                <tr key={member.studentId} style={{ 
+                  borderBottom: '1px solid #E5E5E5',
+                  backgroundColor: processingMemberId === member.studentId ? '#fafafa' : 'transparent'
+                }}>
+                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                    {member.studentName}
+                  </td>
+                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                    {member.studentEmail}
+                  </td>
+                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                    <select 
+                      value={member.role || 'MEMBER'} 
+                      onChange={(e) => handleChangeRole(member.studentId, e.target.value)}
+                      disabled={processingMemberId === member.studentId}
+                      style={{ 
+                        padding: '0.25rem 0.5rem', 
+                        borderRadius: '4px',
+                        border: '1px solid #ddd',
+                        backgroundColor: member.role === 'LEADER' ? '#e3f2fd' : 'white'
+                      }}
+                    >
+                      <option value="LEADER">리더</option>
+                      <option value="MEMBER">일반 멤버</option>
+                    </select>
+                  </td>
+                  <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
+                    <button 
+                      onClick={() => handleShowDeleteConfirm(member.studentId)}
+                      disabled={processingMemberId === member.studentId || member.role === 'LEADER'}
+                      style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        cursor: member.role === 'LEADER' ? 'not-allowed' : 'pointer',
+                        opacity: member.role === 'LEADER' ? 0.5 : 1
+                      }}
+                      title={member.role === 'LEADER' ? '리더는 삭제할 수 없습니다' : '멤버 삭제'}
+                    >
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
+                      </svg>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -74,6 +192,62 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
               onClose={handleClosePopup}
               onSuccess={fetchMembers}
             />
+          )}
+          
+          {/* 멤버 삭제 확인 모달 */}
+          {confirmModal.show && confirmModal.type === 'delete' && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000
+            }}>
+              <div style={{
+                backgroundColor: 'white',
+                padding: '2rem',
+                borderRadius: '8px',
+                width: '400px',
+                maxWidth: '90%'
+              }}>
+                <h3 style={{ marginTop: 0 }}>멤버 삭제 확인</h3>
+                <p>이 멤버를 정말 삭제하시겠습니까?</p>
+                <p>이 작업은 되돌릴 수 없습니다.</p>
+                
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
+                  <button 
+                    onClick={handleCloseConfirmModal}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    취소
+                  </button>
+                  <button 
+                    onClick={handleDeleteMember}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: '#f44336',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </>
       )}

@@ -76,7 +76,7 @@ const styles = {
   }
 };
 
-function CreateStudyForm({ onSuccess, onError }) {
+function CreateStudyForm({ onSuccess, onError, onNavigate }) {
   const [studyName, setStudyName] = useState('');
   const [content, setContent] = useState('');
   const [googleFormLink, setGoogleFormLink] = useState('');
@@ -207,7 +207,22 @@ function CreateStudyForm({ onSuccess, onError }) {
       
       // 스터디 생성 API 호출
       const response = await studyService.createStudy(studyData);
-      console.log('[CreateStudyForm] 스터디 생성 성공:', response);
+      console.log('[CreateStudyForm] 스터디 생성 응답:', response);
+      
+      // 성공 여부 확인 (201 상태코드 또는 studyId가 있는 경우)
+      if (response && response.studyId) {
+        console.log('[CreateStudyForm] 스터디 생성 성공:', response.studyId);
+        
+        // 성공 콜백 호출 (스터디 ID 포함)
+        if (onSuccess) onSuccess(response);
+        
+        // 스터디 ID가 있으면 상세 페이지로 리다이렉트
+        if (response.studyId && onNavigate) {
+          onNavigate(`/studies/${response.studyId}`);
+        }
+        
+        return;
+      }
       
       // 응답이 성공이 아닌 경우 처리
       if (response && response.success === false) {
@@ -223,9 +238,6 @@ function CreateStudyForm({ onSuccess, onError }) {
         
         return;
       }
-      
-      // 성공 콜백 호출
-      if (onSuccess) onSuccess(response);
     } catch (error) {
       console.error('[CreateStudyForm] 스터디 생성 실패:', error);
       

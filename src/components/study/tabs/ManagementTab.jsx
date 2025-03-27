@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
-import { api } from '../../../services/api';
+import { studyService } from '../../../services/api';
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import DepositManagement from './management/DepositManagement';
@@ -25,18 +25,19 @@ function ManagementTab({ studyData }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/studies/${studyId}/management/member`);
-      console.log('회원 목록 조회 결과:', response.data);
-      setMembers(response.data || []);
+      // studyService를 사용하여 멤버 목록 조회
+      const response = await studyService.getStudyMembers(studyId);
+      console.log('회원 목록 조회 결과:', response);
+      setMembers(response || []);
     } catch (err) {
       console.error('회원 목록 조회 오류:', err);
       setError('회원 목록을 불러오는데 실패했습니다.');
       // 개발 중에는 임시 데이터 사용
       setMembers([
-        { studentId: 1, studentName: '회원1', studentEmail: 'member1@example.com' },
-        { studentId: 2, studentName: '회원2', studentEmail: 'member2@example.com' },
-        { studentId: 3, studentName: '회원3', studentEmail: 'member3@example.com' },
-        { studentId: 4, studentName: '회원4', studentEmail: 'member4@example.com' }
+        { studentId: 1, studentName: '회원1', studentEmail: 'member1@example.com', role: 'LEADER' },
+        { studentId: 2, studentName: '회원2', studentEmail: 'member2@example.com', role: 'MEMBER' },
+        { studentId: 3, studentName: '회원3', studentEmail: 'member3@example.com', role: 'MEMBER' },
+        { studentId: 4, studentName: '회원4', studentEmail: 'member4@example.com', role: 'MEMBER' }
       ]);
     } finally {
       setLoading(false);
