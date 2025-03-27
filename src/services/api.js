@@ -346,8 +346,7 @@ api.interceptors.request.use(
     }
     
     // 페이지 새로고침 후 첫 API 요청에서 토큰 유효성 강제 검증
-    if (window._shouldRevalidateToken && 
-        !config.url?.includes('/auth/login')) {
+    if (window._shouldRevalidateToken) {
       window._shouldRevalidateToken = false; // 플래그 초기화
       console.log('[API Debug] First request after refresh, checking token validity');
       
@@ -400,18 +399,6 @@ api.interceptors.request.use(
               // 검증 실패 시 로컬 토큰 제거 (리프레시 토큰이 유효하지 않음)
               tokenUtils.removeToken();
             }
-          } else {
-            // 토큰이 곧 만료되지만 아직 유효하면 현재 요청은 그대로 진행
-            console.log('[API Debug] Token still valid but expires soon (' + 
-              Math.round(timeToExpiration / 60000) + ' mins), using current token for this request');
-            
-            // Bearer 토큰 형식 확인 및 설정
-            if (!config.headers['Authorization'] && !config.headers['authorization']) {
-              const tokenWithBearer = currentToken.startsWith('Bearer ') ? currentToken : `Bearer ${currentToken}`;
-              config.headers['Authorization'] = tokenWithBearer;
-            }
-            
-            return config;
           }
         } catch (err) {
           console.error('[API Debug] Error parsing token:', err);
@@ -430,8 +417,8 @@ api.interceptors.request.use(
       console.log(`[API Debug] Processing request to ${config.url}, token exists: ${!!token}`)
     }
     
-    // 토큰이 없고 리프레시/로그인 요청이 아닌 경우 리프레시 토큰으로 새 토큰 요청
-    if (!token && !config.url?.includes('/auth/reissue') && !config.url?.includes('/auth/login')) {
+    // 토큰이 없고 리프레시 요청이 아닌 경우 리프레시 토큰으로 새 토큰 요청
+    if (!token && !config.url?.includes('/auth/reissue')) {
       try {
         console.log(`[API Debug] No token for ${config.url}, attempting to refresh...`)
         
