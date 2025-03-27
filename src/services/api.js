@@ -1295,5 +1295,56 @@ export const studyService = {
       
       throw error;
     }
+  },
+
+  // 출석 목록 조회
+  getAttendances: async (studyId) => {
+    try {
+      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
+      
+      const response = await api.get(`/studies/${studyId}/attendances`, {
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 출석 목록 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 출석 목록 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // HOST 권한으로 특정 일정의 출석 상세 정보 조회
+  getHostAttendancesBySchedule: async (studyId, scheduleId) => {
+    try {
+      console.log(`[StudyService] HOST 권한으로 일정별 출석 상세 조회 요청: ${studyId}, 일정: ${scheduleId}`);
+      
+      const response = await api.get(`/studies/${studyId}/attendances/${scheduleId}`, {
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] HOST 권한으로 일정별 출석 상세 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] HOST 권한으로 일정별 출석 상세 조회 오류:', error);
+      throw error;
+    }
+  },
+  
+  // 출석 상태 변경 (변경 권한 있는 사용자만 가능)
+  updateAttendance: async (studyId, attendanceId, status) => {
+    try {
+      console.log(`[StudyService] 출석 상태 변경 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${status}`);
+      
+      const response = await api.put(`/studies/${studyId}/attendances/${attendanceId}`, { status }, {
+        withCredentials: true
+      });
+      
+      console.log('[StudyService] 출석 상태 변경 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 출석 상태 변경 오류:', error);
+      throw error;
+    }
   }
 };
