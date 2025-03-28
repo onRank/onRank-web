@@ -6,7 +6,7 @@ import {
 } from "../../../components/study/notice/NoticeProvider";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import Button from "../component/Button";
+import Button from "../../../components/common/Button";
 import { formatDate } from "../../../utils/dateUtils";
 
 function NoticeDetailUserContent() {

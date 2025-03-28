@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { noticeService } from "../../../services/api";
-import Button from "../../../components/study/notice/Button";
+import Button from "../../../components/common/Button";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
