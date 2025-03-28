@@ -4,7 +4,7 @@ import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
-import Button from "./Button";
+import Button from "../../common/Button";
 
 function NoticeDetail({ studyId, noticeId, handleBack }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
