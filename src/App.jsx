@@ -6,7 +6,7 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { memo, useMemo, useEffect } from "react";
+import { memo, useMemo, useEffect, useState } from "react";
 import LoginPage from "./pages/auth/LoginPage";
 import StudiesPage from "./pages/study/StudiesPage";
 import CreateStudyPage from "./pages/study/CreateStudyPage";
@@ -114,6 +114,22 @@ const PublicRoute = ({ children }) => {
 
 function AppContent() {
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // 페이지 로드 시 관리자 권한 확인
+  useEffect(() => {
+    // TODO: 실제 관리자 권한 확인 로직 구현 필요
+    const checkAdminStatus = async () => {
+      try {
+        const response = await api.get('/auth/check-role');
+        setIsAdmin(response.data.isAdmin);
+      } catch (error) {
+        console.error('권한 확인 중 오류:', error);
+        setIsAdmin(false);
+      }
+    };
+    checkAdminStatus();
+  }, []);
 
   // 페이지 로드 시 토큰 확인 (한 번만 실행)
   useEffect(() => {
@@ -361,7 +377,7 @@ function AppContent() {
                     <Route
                       path="notices"
                       element={
-                        isAdmin ? <NoticeUserPage /> : <NoticeManagerPage />
+                        isAdmin ? <NoticeManagerPage /> : <NoticeUserPage />
                       }
                     />
                     <Route path="notices/add" element={<NoticeFormPage />} />
@@ -369,9 +385,9 @@ function AppContent() {
                       path="notices/:noticeId"
                       element={
                         isAdmin ? (
-                          <NoticeDetailUserPage />
-                        ) : (
                           <NoticeDetailManagerPage />
+                        ) : (
+                          <NoticeDetailUserPage />
                         )
                       }
                     />
