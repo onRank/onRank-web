@@ -5,6 +5,7 @@ import ScheduleTab from './tabs/ScheduleTab';
 import AssignmentTab from './tabs/AssignmentTab';
 import DefaultContent from './tabs/DefaultContent';
 import ManagementTab from './tabs/ManagementTab';
+import AttendanceTab from './tabs/AttendanceTab';
 import { studyService } from '../../services/api';
 
 function StudyContent({ activeTab, studyData }) {
@@ -135,9 +136,11 @@ function StudyContent({ activeTab, studyData }) {
       case '관리':
         console.log('Rendering management content');
         return <ManagementTab studyData={studyData} />;
+      case '출석':
+        console.log('Rendering attendance content');
+        return <AttendanceTab />;
       case '공지사항':
       case '게시판':
-      case '출석':
       case '랭킹':
         return (
           <div style={{ padding: '2rem', textAlign: 'center', color: '#666666' }}>

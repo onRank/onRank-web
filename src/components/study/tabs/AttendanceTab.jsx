@@ -73,10 +73,10 @@ function AttendanceTab() {
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
+      setIsLoading(true);
+      setError(null);
+      
       try {
-        setIsLoading(true);
-        setError(null);
-        
         // 백엔드 API 호출
         const data = await studyService.getAttendances(studyId);
         console.log('[AttendanceTab] 출석 데이터 응답:', data);
@@ -93,6 +93,12 @@ function AttendanceTab() {
       } catch (error) {
         console.error('[AttendanceTab] 출석 데이터 조회 실패:', error);
         setError('출석 정보를 불러오는 중 오류가 발생했습니다.');
+        
+        // 에러 발생해도 빈 배열로 설정하여 UI는 그려지도록 함
+        setAttendance(prev => ({
+          ...prev,
+          records: []
+        }));
       } finally {
         setIsLoading(false);
       }
@@ -160,10 +166,6 @@ function AttendanceTab() {
     return <div>로딩 중...</div>;
   }
 
-  if (error) {
-    return <div style={{ color: 'red' }}>{error}</div>;
-  }
-
   // 다음 일정 정보가 있는 경우에만 진행 상태 표시
   const hasUpcomingSession = attendance.records.length > 0 && 
                             attendance.records.some(r => r.status === 'unknown');
@@ -171,6 +173,19 @@ function AttendanceTab() {
   return (
     <div style={styles.container}>
       <h1 style={styles.title}>출석</h1>
+      
+      {/* 에러 메시지가 있으면 표시하지만 나머지 UI는 계속 렌더링 */}
+      {error && (
+        <div style={{ 
+          padding: '1rem', 
+          marginBottom: '1rem',
+          backgroundColor: '#ffeeee', 
+          borderRadius: '4px',
+          color: '#990000'
+        }}>
+          {error}
+        </div>
+      )}
       
       {hasUpcomingSession && (
         <>
@@ -237,7 +252,7 @@ function AttendanceTab() {
         </table>
       ) : (
         <div style={{ textAlign: 'center', margin: '2rem 0', color: '#666' }}>
-          출석 기록이 없습니다.
+          {error ? '출석 정보를 불러올 수 없습니다.' : '출석 기록이 없습니다.'}
         </div>
       )}
     </div>
