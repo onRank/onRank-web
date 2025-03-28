@@ -115,12 +115,19 @@ function UserInfoForm() {
         statusText: response.statusText,
         hasData: !!response.data,
         hasHeaders: !!response.headers,
-        headers: response.headers ? Object.keys(response.headers) : null
+        headers: response.headers ? Object.keys(response.headers) : null,
+        location: response.headers?.location
       });
 
       // 201 상태코드면 성공으로 처리
       if (response.status === 201) {
         console.log('회원정보 등록 성공');
+        
+        // Location 헤더가 있으면 로그
+        const resourceUrl = response.headers?.location;
+        if (resourceUrl) {
+          console.log('생성된 리소스 URL:', resourceUrl);
+        }
         
         // 등록 완료 상태 설정
         setIsRegistrationComplete(true);

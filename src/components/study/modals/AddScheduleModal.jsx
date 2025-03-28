@@ -2,19 +2,25 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 
-function AddScheduleModal({ onClose, onSubmit, initialRound }) {
+function AddScheduleModal({ onClose, onSubmit, initialRound, isSubmitting }) {
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleDescription, setScheduleDescription] = useState('');
   const [scheduleRound, setScheduleRound] = useState(initialRound || 1);
+  const [scheduleDate] = useState(format(new Date(), 'yyyy.MM.dd'));
+  
+  // 폼 유효성 검증
+  const isFormValid = scheduleTitle.trim() !== '';
 
   // 일정 추가 제출
   const handleSubmitSchedule = () => {
+    if (!isFormValid) return;
+    
     // 새 일정 객체 생성
     const newSchedule = {
-      id: Date.now(), // 임시 ID 생성
       round: scheduleRound,
-      date: format(new Date(), 'yyyy.MM.dd'),
-      content: `${scheduleRound}회차 - ${scheduleTitle}\n${scheduleDescription}`
+      title: scheduleTitle.trim(),
+      description: scheduleDescription.trim(),
+      date: scheduleDate
     };
 
     // 부모 컴포넌트에 전달
@@ -58,19 +64,21 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
             fontWeight: 'bold',
             fontSize: '14px'
           }}>
-            일정 제목
+            일정 제목 <span style={{ color: '#FF0000' }}>*</span>
           </label>
           <input
             type="text"
             value={scheduleTitle}
             onChange={(e) => setScheduleTitle(e.target.value)}
             placeholder="일정 제목을 입력하세요"
+            disabled={isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
               border: '1px solid #ddd',
               borderRadius: '4px',
-              fontSize: '14px'
+              fontSize: '14px',
+              backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
             }}
           />
         </div>
@@ -88,6 +96,7 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
             value={scheduleDescription}
             onChange={(e) => setScheduleDescription(e.target.value)}
             placeholder="일정에 대한 설명을 입력하세요"
+            disabled={isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -95,7 +104,8 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
               borderRadius: '4px',
               fontSize: '14px',
               minHeight: '100px',
-              resize: 'vertical'
+              resize: 'vertical',
+              backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
             }}
           />
         </div>
@@ -111,7 +121,7 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
           </label>
           <input
             type="text"
-            value={format(new Date(), 'yyyy.MM.dd')}
+            value={scheduleDate}
             disabled
             style={{
               width: '100%',
@@ -141,12 +151,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
           }}>
             <button
               onClick={() => setScheduleRound(Math.max(1, scheduleRound - 1))}
+              disabled={isSubmitting || scheduleRound <= 1}
               style={{
                 padding: '0.75rem 1.5rem',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
-                backgroundColor: 'white',
-                cursor: 'pointer',
+                backgroundColor: isSubmitting || scheduleRound <= 1 ? '#f5f5f5' : 'white',
+                cursor: isSubmitting || scheduleRound <= 1 ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
                 width: '120px'
               }}
@@ -162,12 +173,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
             </div>
             <button
               onClick={() => setScheduleRound(scheduleRound + 1)}
+              disabled={isSubmitting}
               style={{
                 padding: '0.75rem 1.5rem',
                 border: '1px solid #ddd',
                 borderRadius: '4px',
-                backgroundColor: 'white',
-                cursor: 'pointer',
+                backgroundColor: isSubmitting ? '#f5f5f5' : 'white',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
                 width: '120px'
               }}
@@ -185,12 +197,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
         }}>
           <button
             onClick={onClose}
+            disabled={isSubmitting}
             style={{
               padding: '0.75rem 1.5rem',
               border: '1px solid #ddd',
               borderRadius: '4px',
               backgroundColor: 'white',
-              cursor: 'pointer',
+              cursor: isSubmitting ? 'not-allowed' : 'pointer',
               fontSize: '14px'
             }}
           >
@@ -198,17 +211,21 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
           </button>
           <button
             onClick={handleSubmitSchedule}
+            disabled={isSubmitting || !isFormValid}
             style={{
               padding: '0.75rem 1.5rem',
               border: 'none',
               borderRadius: '4px',
-              backgroundColor: '#FF0000',
+              backgroundColor: isSubmitting || !isFormValid ? '#cccccc' : '#FF0000',
               color: 'white',
-              cursor: 'pointer',
-              fontSize: '14px'
+              cursor: isSubmitting || !isFormValid ? 'not-allowed' : 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            추가하기
+            {isSubmitting ? '처리 중...' : '추가하기'}
           </button>
         </div>
       </div>
@@ -219,7 +236,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound }) {
 AddScheduleModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-  initialRound: PropTypes.number
+  initialRound: PropTypes.number,
+  isSubmitting: PropTypes.bool
+};
+
+AddScheduleModal.defaultProps = {
+  initialRound: 1,
+  isSubmitting: false
 };
 
 export default AddScheduleModal; 

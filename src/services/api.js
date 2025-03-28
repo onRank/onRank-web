@@ -26,7 +26,9 @@ export const tokenUtils = {
     try {
       console.log("[Token Debug] Validating refresh token with server");
       const api = axios.create({
-        baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+        baseURL: import.meta.env.PROD
+          ? "https://onrank.kr"
+          : import.meta.env.VITE_API_URL || "http://localhost:8080",
         timeout: 5000,
         withCredentials: true,
       });
@@ -313,15 +315,38 @@ export const tokenUtils = {
 
 // api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
-  timeout: 10000, // 타임아웃 증가
-  withCredentials: true, // CORS 요청에서 쿠키 전송 허용 (리프레시 토큰 쿠키 사용을 위해 필수)
+  baseURL: import.meta.env.PROD
+    ? "https://onrank.kr"
+    : import.meta.env.VITE_API_URL || "http://localhost:8080",
+  timeout: 10000,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
     Accept: "application/json",
-    "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
+    "X-Requested-With": "XMLHttpRequest",
+    "X-Forwarded-Proto": "https",
   },
 });
+
+// 쿠키 디버깅 유틸리티 함수 추가
+export const checkCookiesDebug = () => {
+  console.log("[Cookie Debug] 현재 문서 쿠키:", document.cookie);
+  console.log("[Cookie Debug] 쿠키 도메인:", window.location.hostname);
+  console.log("[Cookie Debug] 현재 프로토콜:", window.location.protocol);
+
+  // HttpOnly 쿠키는 JavaScript에서 직접 접근할 수 없으므로
+  // 백엔드에 검증 요청을 보내는 것이 좋습니다
+  return api
+    .get("/auth/validate", { withCredentials: true })
+    .then((response) => {
+      console.log("[Cookie Debug] 쿠키 검증 응답:", response.data);
+      return true;
+    })
+    .catch((error) => {
+      console.error("[Cookie Debug] 쿠키 검증 실패:", error);
+      return false;
+    });
+};
 
 // 요청 인터셉터
 api.interceptors.request.use(
@@ -371,7 +396,7 @@ api.interceptors.request.use(
     }
 
     // 페이지 새로고침 후 첫 API 요청에서 토큰 유효성 강제 검증
-    if (window._shouldRevalidateToken && !config.url?.includes("/auth/login")) {
+    if (window._shouldRevalidateToken) {
       window._shouldRevalidateToken = false; // 플래그 초기화
       console.log(
         "[API Debug] First request after refresh, checking token validity"
@@ -446,26 +471,6 @@ api.interceptors.request.use(
               // 검증 실패 시 로컬 토큰 제거 (리프레시 토큰이 유효하지 않음)
               tokenUtils.removeToken();
             }
-          } else {
-            // 토큰이 곧 만료되지만 아직 유효하면 현재 요청은 그대로 진행
-            console.log(
-              "[API Debug] Token still valid but expires soon (" +
-                Math.round(timeToExpiration / 60000) +
-                " mins), using current token for this request"
-            );
-
-            // Bearer 토큰 형식 확인 및 설정
-            if (
-              !config.headers["Authorization"] &&
-              !config.headers["authorization"]
-            ) {
-              const tokenWithBearer = currentToken.startsWith("Bearer ")
-                ? currentToken
-                : `Bearer ${currentToken}`;
-              config.headers["Authorization"] = tokenWithBearer;
-            }
-
-            return config;
           }
         } catch (err) {
           console.error("[API Debug] Error parsing token:", err);
@@ -488,12 +493,8 @@ api.interceptors.request.use(
       );
     }
 
-    // 토큰이 없고 리프레시/로그인 요청이 아닌 경우 리프레시 토큰으로 새 토큰 요청
-    if (
-      !token &&
-      !config.url?.includes("/auth/reissue") &&
-      !config.url?.includes("/auth/login")
-    ) {
+    // 토큰이 없고 리프레시 요청이 아닌 경우 리프레시 토큰으로 새 토큰 요청
+    if (!token && !config.url?.includes("/auth/reissue")) {
       try {
         console.log(
           `[API Debug] No token for ${config.url}, attempting to refresh...`
@@ -565,6 +566,18 @@ api.interceptors.request.use(
       withCredentials: config.withCredentials,
     });
 
+    // 모든 요청에 credentials 강제 적용
+    config.withCredentials = true;
+
+    // 디버그 로깅
+    console.log("[API Debug] Final request config:", {
+      url: config.url,
+      baseURL: config.baseURL,
+      method: config.method,
+      withCredentials: config.withCredentials,
+      headers: config.headers,
+    });
+
     return config;
   },
   (error) => {
@@ -582,6 +595,28 @@ api.interceptors.response.use(
       data: response.data,
     });
 
+    // Set-Cookie 헤더 검사
+    const setCookieHeader = response.headers["set-cookie"];
+    if (setCookieHeader) {
+      console.log(
+        "[Cookie Debug] 서버에서 Set-Cookie 헤더 발견:",
+        setCookieHeader
+      );
+    } else {
+      console.log("[Cookie Debug] 서버에서 Set-Cookie 헤더 없음");
+    }
+
+    // 모든 헤더를 출력
+    console.log("[Cookie Debug] 모든 응답 헤더:", response.headers);
+
+    // Location 헤더가 있다면 로깅
+    if (response.headers["location"]) {
+      console.log(
+        "[Redirect Debug] Location 헤더 발견:",
+        response.headers["location"]
+      );
+    }
+
     const authHeader =
       response.headers["authorization"] || response.headers["Authorization"];
     if (authHeader) {
@@ -598,14 +633,52 @@ api.interceptors.response.use(
       url: error.config?.url,
     });
 
+    // 에러 응답의 헤더에서 리다이렉션 URL 확인
+    if (error.response?.headers) {
+      console.log("[Redirect Debug] 에러 응답 헤더:", error.response.headers);
+
+      // Location 헤더 확인
+      if (error.response.headers["location"]) {
+        console.log(
+          "[Redirect Debug] 에러 응답의 Location 헤더:",
+          error.response.headers["location"]
+        );
+      }
+
+      // 모든 헤더 출력
+      console.log(
+        "[Redirect Debug] 에러 응답의 모든 헤더:",
+        Object.keys(error.response.headers)
+      );
+    }
+
     const originalRequest = error.config;
 
     // /auth/add 요청에서 401이 발생한 경우 특별 처리
     if (error.response?.status === 401 && originalRequest.url === "/auth/add") {
-      console.log("회원정보 등록 중 인증 오류 발생");
-      // 토큰만 제거하고 리다이렉트는 하지 않음
-      tokenUtils.removeToken();
-      return Promise.reject(error);
+      console.log(
+        "[API Debug] 회원정보 등록 중 인증 오류 발생, 토큰 재발급 시도"
+      );
+      try {
+        // 토큰 재발급 시도
+        const refreshResponse = await api.get("/auth/reissue", {
+          withCredentials: true,
+        });
+
+        const newToken =
+          refreshResponse.headers["authorization"] ||
+          refreshResponse.headers["Authorization"];
+        if (newToken) {
+          console.log("[API Debug] 토큰 재발급 성공, 원래 요청 재시도");
+          tokenUtils.setToken(newToken);
+          originalRequest.headers["Authorization"] = newToken;
+          return api(originalRequest);
+        }
+      } catch (refreshError) {
+        console.error("[API Debug] 토큰 재발급 실패:", refreshError);
+        tokenUtils.removeToken();
+        return Promise.reject(error);
+      }
     }
 
     // 토큰 재발급 요청 실패 시
@@ -613,7 +686,7 @@ api.interceptors.response.use(
       error.response?.status === 401 &&
       originalRequest.url === "/auth/reissue"
     ) {
-      console.log("토큰 재발급 실패");
+      console.log("[API Debug] 토큰 재발급 실패");
       // 특정 에러 메시지인 경우 처리
       if (
         error.response?.data &&
@@ -623,25 +696,22 @@ api.interceptors.response.use(
         )
       ) {
         console.log(
-          "유효한 액세스 토큰이 있으므로 재발급 요청이 거부됨 - 정상적인 상황"
+          "[API Debug] 유효한 액세스 토큰이 있으므로 재발급 요청이 거부됨 - 정상적인 상황"
         );
-        // 이 경우는 정상적인 상황이므로 토큰을 유지하고 원래 요청 진행
         return Promise.reject(error);
       }
 
       // 다른 401 오류는 토큰 제거
       tokenUtils.removeToken();
-      // 리다이렉트 하지 않고 에러만 반환
       return Promise.reject(error);
     }
 
     // 401 에러이고 아직 재시도하지 않은 경우에만 토큰 갱신 시도
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      console.log("[API Debug] Token expired, attempting to refresh...");
+      console.log("[API Debug] 인증 오류 발생, 토큰 재발급 시도...");
       try {
         // HttpOnly 쿠키에 저장된 리프레시 토큰을 사용하여 새 토큰 요청
-        // withCredentials: true로 쿠키를 포함하여 요청
         const response = await api.get("/auth/reissue", {
           withCredentials: true,
         });
@@ -650,15 +720,14 @@ api.interceptors.response.use(
           response.headers["authorization"] ||
           response.headers["Authorization"];
         if (newToken) {
-          console.log("[API Debug] Token refresh successful:", newToken);
+          console.log("[API Debug] 토큰 재발급 성공, 원래 요청 재시도");
           tokenUtils.setToken(newToken);
           originalRequest.headers["Authorization"] = newToken;
           return api(originalRequest);
         }
       } catch (refreshError) {
-        console.error("[API Debug] Token refresh failed:", refreshError);
+        console.error("[API Debug] 토큰 재발급 실패:", refreshError);
         tokenUtils.removeToken();
-        // 리다이렉트하지 않고 에러만 반환
         return Promise.reject(refreshError);
       }
     }
@@ -686,6 +755,7 @@ export const authService = {
         console.warn("[Auth] No token found for auth/add request");
       }
 
+      // API 경로는 백엔드와 일치시키기: /members -> /auth/add (Swagger UI 기준)
       const response = await api.post(
         "/auth/add",
         {
@@ -697,7 +767,13 @@ export const authService = {
         { headers }
       );
 
-      console.log("[Auth] 회원정보 등록 성공:", response.data);
+      console.log("[Auth] 회원정보 등록 성공:", response);
+
+      // 201 상태코드 및 Location 헤더 처리
+      if (response.status === 201) {
+        const locationUrl = response.headers["location"];
+        console.log("[Auth] 생성된 리소스 URL:", locationUrl);
+      }
 
       // 토큰 추출 및 저장
       const newToken =
@@ -836,7 +912,7 @@ export const studyService = {
         ? token
         : `Bearer ${token}`;
 
-      // API 요청
+      // API 요청 - 백엔드와 일치시키기 위해 경로 다시 변경: /studies -> /studies/add (Swagger UI 기준)
       const response = await api.post("/studies/add", requestData, {
         headers: {
           Authorization: tokenWithBearer,
@@ -847,123 +923,19 @@ export const studyService = {
         withCredentials: true,
       });
 
-      // 응답이 HTML인 경우 (로그인 페이지 등)
-      if (
-        typeof response.data === "string" &&
-        response.data.includes("<!DOCTYPE html>")
-      ) {
-        console.warn(
-          "[StudyService] HTML 응답 감지, 인증 문제 가능성:",
-          response.data.substring(0, 100) + "..."
-        );
+      // 201 상태코드 및 Location 헤더 처리
+      if (response.status === 201) {
+        const locationUrl = response.headers["location"];
+        console.log("[StudyService] 생성된 스터디 URL:", locationUrl);
 
-        // 토큰 재발급 시도 (만료 여부와 관계없이)
-        try {
-          console.log("[StudyService] 토큰 재발급 시도");
-          const refreshResponse = await api.get("/auth/reissue", {
-            withCredentials: true,
-            headers: {
-              Accept: "application/json",
-            },
-          });
-
-          // 응답 확인 및 로깅
-          console.log(
-            "[StudyService] 토큰 재발급 응답 상태:",
-            refreshResponse.status
-          );
-          console.log(
-            "[StudyService] 토큰 재발급 응답 헤더:",
-            refreshResponse.headers
-          );
-
-          // 헤더에서 새 토큰 확인
-          const newToken =
-            refreshResponse.headers["authorization"] ||
-            refreshResponse.headers["Authorization"];
-
-          // 응답 데이터에서도 토큰 확인 (서버 구현에 따라 다름)
-          let dataToken = null;
-          if (refreshResponse.data) {
-            if (typeof refreshResponse.data === "object") {
-              dataToken =
-                refreshResponse.data.token || refreshResponse.data.accessToken;
-            } else if (
-              typeof refreshResponse.data === "string" &&
-              refreshResponse.data.includes(".") &&
-              refreshResponse.data.split(".").length === 3
-            ) {
-              dataToken = refreshResponse.data;
-            }
-          }
-
-          // 헤더 또는 데이터에서 토큰을 찾은 경우
-          if (newToken || dataToken) {
-            const tokenToUse = newToken || dataToken;
-            console.log("[StudyService] 토큰 재발급 성공, 요청 재시도");
-            tokenUtils.setToken(tokenToUse);
-
-            // 새 토큰으로 요청 재시도
-            const retryResponse = await api.post("/studies/add", requestData, {
-              headers: {
-                Authorization: tokenToUse.startsWith("Bearer ")
-                  ? tokenToUse
-                  : `Bearer ${tokenToUse}`,
-                "Content-Type": "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                Accept: "application/json",
-              },
-              withCredentials: true,
-            });
-
-            console.log(
-              "[StudyService] 스터디 생성 재시도 결과:",
-              retryResponse.data
-            );
-            return retryResponse.data;
-          } else if (refreshResponse.status === 200) {
-            // 토큰은 없지만 200 응답인 경우 재시도
-            console.log(
-              "[StudyService] 토큰 재발급은 성공했으나 새 토큰을 찾을 수 없음, 요청 재시도"
-            );
-
-            // 다시 원래 요청 시도
-            const retryResponse = await api.post("/studies/add", requestData, {
-              headers: {
-                Authorization: tokenWithBearer,
-                "Content-Type": "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                Accept: "application/json",
-              },
-              withCredentials: true,
-            });
-
-            console.log(
-              "[StudyService] 스터디 생성 재시도 결과:",
-              retryResponse.data
-            );
-            return retryResponse.data;
-          }
-        } catch (refreshError) {
-          console.error("[StudyService] 토큰 재발급 실패:", refreshError);
-          // 토큰 재발급 실패 시 액세스 토큰만 제거 (리프레시 토큰 쿠키는 유지)
-          tokenUtils.removeTokenKeepCookies();
-          return {
-            success: false,
-            message: "인증이 만료되었습니다. 다시 로그인해주세요.",
-            requireRelogin: true,
-          };
+        // 생성된 스터디 ID 추출 (선택적)
+        const studyId = locationUrl ? locationUrl.split("/").pop() : null;
+        if (studyId) {
+          console.log("[StudyService] 생성된 스터디 ID:", studyId);
+          // response.data에 studyId 추가
+          if (!response.data) response.data = {};
+          response.data.studyId = studyId;
         }
-
-        // 토큰 재발급이 실패했거나 유효한 응답을 받지 못한 경우
-        console.log(
-          "[StudyService] HTML 응답 처리 후 fallback: 권한 문제 가능성"
-        );
-        return {
-          success: false,
-          message: "권한이 없거나 세션이 만료되었습니다. 다시 로그인해주세요.",
-          requireRelogin: true,
-        };
       }
 
       console.log("[StudyService] 스터디 생성 성공:", response.data);
@@ -1156,55 +1128,473 @@ export const studyService = {
       throw error;
     }
   },
-};
 
-// 파일 업로드 내부 헬퍼 함수
-async function handleFileUpload(responseData, files) {
-  if (
-    !responseData.uploadUrls ||
-    !Array.isArray(responseData.uploadUrls) ||
-    !files.length
-  ) {
-    return;
-  }
-
-  const uploadPromises = responseData.uploadUrls.map(async (urlInfo) => {
-    // 파일명과 일치하는 파일 찾기
-    const file = files.find((f) => f.name === urlInfo.fileName);
-    if (!file) {
-      console.warn(
-        `[NoticeService] 파일 "${urlInfo.fileName}"을 찾을 수 없습니다.`
-      );
-      return null;
-    }
-
-    console.log(`[NoticeService] 파일 업로드 시작: ${file.name}`);
+  // 스터디 멤버 조회
+  getStudyMembers: async (studyId) => {
     try {
-      const uploadResponse = await fetch(urlInfo.uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: {
-          "Content-Type": file.type || "application/octet-stream",
-        },
-      });
+      console.log(`[StudyService] 스터디 멤버 조회 요청: ${studyId}`);
 
-      if (!uploadResponse.ok) {
-        throw new Error(
-          `파일 업로드 실패: ${uploadResponse.status} ${uploadResponse.statusText}`
-        );
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 스터디 멤버 조회 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
-      console.log(`[NoticeService] 파일 업로드 성공: ${file.name}`);
-      return true;
+      // API 요청
+      const response = await api.get(`/studies/${studyId}/management/members`, {
+        headers: {
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log("[StudyService] 스터디 멤버 조회 성공:", response.data);
+      return response.data;
     } catch (error) {
-      console.error(`[NoticeService] 파일 "${file.name}" 업로드 오류:`, error);
+      console.error("[StudyService] 스터디 멤버 조회 오류:", error);
       throw error;
     }
-  });
+  },
 
-  // 모든 파일 업로드가 완료될 때까지 대기
-  await Promise.all(uploadPromises);
-}
+  // 스터디 멤버 역할 변경
+  changeMemberRole: async (studyId, memberId, roleData) => {
+    try {
+      console.log(
+        `[StudyService] 스터디 멤버 역할 변경 요청: 스터디 ${studyId}, 멤버 ${memberId}, 역할 ${roleData.role}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 스터디 멤버 역할 변경 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.put(
+        `/studies/${studyId}/management/members/${memberId}/role`,
+        roleData,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 스터디 멤버 역할 변경 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("[StudyService] 스터디 멤버 역할 변경 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message ||
+              "스터디 멤버 역할 변경에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 스터디 멤버 삭제
+  removeMember: async (studyId, memberId) => {
+    try {
+      console.log(
+        `[StudyService] 스터디 멤버 삭제 요청: 스터디 ${studyId}, 멤버 ${memberId}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 스터디 멤버 삭제 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.delete(
+        `/studies/${studyId}/management/members/${memberId}`,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 스터디 멤버 삭제 성공:", response.status);
+      return true; // 삭제 성공 시 true 반환
+    } catch (error) {
+      console.error("[StudyService] 스터디 멤버 삭제 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "스터디 멤버 삭제에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 스터디 멤버 추가
+  addMember: async (studyId, memberData) => {
+    try {
+      console.log(
+        `[StudyService] 스터디 멤버 추가 요청: 스터디 ${studyId}, 이메일 ${memberData.studentEmail}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 스터디 멤버 추가 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.post(
+        `/studies/${studyId}/management/members`,
+        memberData,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      // 201 상태코드 및 Location 헤더 처리
+      if (response.status === 201) {
+        const locationUrl = response.headers["location"];
+        console.log("[StudyService] 추가된 멤버 URL:", locationUrl);
+      }
+
+      console.log("[StudyService] 스터디 멤버 추가 성공:", response.data);
+      return response.data || true;
+    } catch (error) {
+      console.error("[StudyService] 스터디 멤버 추가 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "스터디 멤버 추가에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 일정 목록 조회
+  getSchedules: async (studyId) => {
+    try {
+      console.log(`[StudyService] 일정 목록 조회 요청: 스터디 ${studyId}`);
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 일정 목록 조회 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.get(`/studies/${studyId}/schedules`, {
+        headers: {
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log("[StudyService] 일정 목록 조회 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("[StudyService] 일정 목록 조회 오류:", error);
+      throw error;
+    }
+  },
+
+  // 일정 상세 조회
+  getScheduleById: async (studyId, scheduleId) => {
+    try {
+      console.log(
+        `[StudyService] 일정 상세 조회 요청: 스터디 ${studyId}, 일정 ${scheduleId}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 일정 상세 조회 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.get(
+        `/studies/${studyId}/schedules/${scheduleId}`,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 일정 상세 조회 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("[StudyService] 일정 상세 조회 오류:", error);
+      throw error;
+    }
+  },
+
+  // 일정 추가
+  addSchedule: async (studyId, scheduleData) => {
+    try {
+      console.log(`[StudyService] 일정 추가 요청: 스터디 ${studyId}`);
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 일정 추가 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.post(
+        `/studies/${studyId}/schedules/add`,
+        scheduleData,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      // 201 상태코드 및 Location 헤더 처리
+      if (response.status === 201) {
+        const locationUrl = response.headers["location"];
+        console.log("[StudyService] 추가된 일정 URL:", locationUrl);
+
+        // 생성된 일정 ID 추출 (선택적)
+        const scheduleId = locationUrl ? locationUrl.split("/").pop() : null;
+        if (scheduleId) {
+          console.log("[StudyService] 생성된 일정 ID:", scheduleId);
+          // response.data에 scheduleId 추가
+          if (!response.data) response.data = {};
+          response.data.scheduleId = scheduleId;
+        }
+      }
+
+      console.log("[StudyService] 일정 추가 성공:", response.data);
+      return response.data || { success: true };
+    } catch (error) {
+      console.error("[StudyService] 일정 추가 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "일정 추가에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 일정 수정
+  updateSchedule: async (studyId, scheduleId, scheduleData) => {
+    try {
+      console.log(
+        `[StudyService] 일정 수정 요청: 스터디 ${studyId}, 일정 ${scheduleId}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 일정 수정 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.put(
+        `/studies/${studyId}/schedules/${scheduleId}`,
+        scheduleData,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 일정 수정 성공:", response.data);
+      return response.data || { success: true };
+    } catch (error) {
+      console.error("[StudyService] 일정 수정 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "일정 수정에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 일정 삭제
+  deleteSchedule: async (studyId, scheduleId) => {
+    try {
+      console.log(
+        `[StudyService] 일정 삭제 요청: 스터디 ${studyId}, 일정 ${scheduleId}`
+      );
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 일정 삭제 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.delete(
+        `/studies/${studyId}/schedules/${scheduleId}`,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 일정 삭제 성공:", response.status);
+      return true; // 삭제 성공 시 true 반환
+    } catch (error) {
+      console.error("[StudyService] 일정 삭제 오류:", error);
+
+      // 오류 메시지 추출 및 반환
+      if (error.response && error.response.data) {
+        const errorMessage =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data.message || "일정 삭제에 실패했습니다.";
+        throw new Error(errorMessage);
+      }
+
+      throw error;
+    }
+  },
+
+  // 출석 목록 조회
+  getAttendances: async (studyId) => {
+    try {
+      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
+
+      const response = await api.get(`/studies/${studyId}/attendances`, {
+        withCredentials: true,
+      });
+
+      console.log("[StudyService] 출석 목록 조회 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("[StudyService] 출석 목록 조회 오류:", error);
+      throw error;
+    }
+  },
+
+  // HOST 권한으로 특정 일정의 출석 상세 정보 조회
+  getHostAttendancesBySchedule: async (studyId, scheduleId) => {
+    try {
+      console.log(
+        `[StudyService] HOST 권한으로 일정별 출석 상세 조회 요청: ${studyId}, 일정: ${scheduleId}`
+      );
+
+      const response = await api.get(
+        `/studies/${studyId}/attendances/${scheduleId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log(
+        "[StudyService] HOST 권한으로 일정별 출석 상세 조회 성공:",
+        response.data
+      );
+      return response.data;
+    } catch (error) {
+      console.error(
+        "[StudyService] HOST 권한으로 일정별 출석 상세 조회 오류:",
+        error
+      );
+      throw error;
+    }
+  },
+
+  // 출석 상태 변경 (변경 권한 있는 사용자만 가능)
+  updateAttendance: async (studyId, attendanceId, status) => {
+    try {
+      console.log(
+        `[StudyService] 출석 상태 변경 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${status}`
+      );
+
+      const response = await api.put(
+        `/studies/${studyId}/attendances/${attendanceId}`,
+        { status },
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("[StudyService] 출석 상태 변경 성공:", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("[StudyService] 출석 상태 변경 오류:", error);
+      throw error;
+    }
+  },
+};
 
 export const noticeService = {
   // 공지사항 목록 조회

@@ -437,6 +437,7 @@ function AppContent() {
               }
             />
             <Route path="/auth/callback" element={<OAuthCallback />} />
+            <Route path="/oauth2/callback/google" element={<OAuthCallback />} />
           </Route>
         </Routes>
       </main>

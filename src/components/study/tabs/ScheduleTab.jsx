@@ -2,8 +2,9 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import AddScheduleModal from '../modals/AddScheduleModal';
 
-function ScheduleTab({ schedules, setSchedules }) {
+function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, isLoading, error }) {
   const [showAddSchedulePopup, setShowAddSchedulePopup] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
 
   // 일정 추가 팝업 열기
   const handleOpenAddSchedulePopup = () => {
@@ -13,6 +14,36 @@ function ScheduleTab({ schedules, setSchedules }) {
   // 일정 추가 팝업 닫기
   const handleCloseAddSchedulePopup = () => {
     setShowAddSchedulePopup(false);
+  };
+  
+  // 일정 추가 처리
+  const handleSubmitSchedule = async (newSchedule) => {
+    setIsAdding(true);
+    
+    try {
+      // API 요청을 통한 일정 추가
+      const success = await onAddSchedule(newSchedule);
+      
+      if (success) {
+        // 성공 시 모달 닫기
+        handleCloseAddSchedulePopup();
+      }
+    } catch (error) {
+      console.error('[ScheduleTab] 일정 추가 실패:', error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+  
+  // 일정 삭제 처리
+  const handleDeleteSchedule = async (scheduleId) => {
+    if (window.confirm('정말로 이 일정을 삭제하시겠습니까?')) {
+      try {
+        await onDeleteSchedule(scheduleId);
+      } catch (error) {
+        console.error('[ScheduleTab] 일정 삭제 실패:', error);
+      }
+    }
   };
 
   return (
@@ -26,22 +57,49 @@ function ScheduleTab({ schedules, setSchedules }) {
       }}>
         <button
           onClick={handleOpenAddSchedulePopup}
+          disabled={isLoading || isAdding}
           style={{
             padding: '0.5rem 1rem',
-            backgroundColor: '#FF0000',
+            backgroundColor: isLoading || isAdding ? '#cccccc' : '#FF0000',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: 'pointer',
+            cursor: isLoading || isAdding ? 'not-allowed' : 'pointer',
             fontSize: '14px',
             fontWeight: 'bold'
           }}
         >
-          일정 추가
+          {isLoading || isAdding ? '처리중...' : '일정 추가'}
         </button>
       </div>
       
-      {schedules.length === 0 ? (
+      {/* 오류 메시지 표시 */}
+      {error && (
+        <div style={{
+          marginBottom: '1rem',
+          padding: '0.75rem',
+          backgroundColor: '#FFEBEE',
+          color: '#D32F2F',
+          borderRadius: '4px',
+          fontSize: '14px'
+        }}>
+          {error}
+        </div>
+      )}
+      
+      {/* 로딩 상태 표시 */}
+      {isLoading && (
+        <div style={{
+          padding: '2rem',
+          textAlign: 'center',
+          color: '#666666'
+        }}>
+          일정을 불러오는 중입니다...
+        </div>
+      )}
+      
+      {/* 일정 목록 표시 */}
+      {!isLoading && schedules.length === 0 ? (
         <div style={{
           padding: '2rem',
           textAlign: 'center',
@@ -53,17 +111,36 @@ function ScheduleTab({ schedules, setSchedules }) {
         </div>
       ) : (
         <>
-          {schedules.map((schedule) => (
+          {!isLoading && schedules.map((schedule) => (
             <div 
-              key={schedule.id}
+              key={schedule.scheduleId || schedule.id}
               style={{
                 marginBottom: '2rem',
                 width: '100%',
                 border: '1px solid #E5E5E5',
                 borderRadius: '4px',
-                padding: '1.5rem'
+                padding: '1.5rem',
+                position: 'relative'
               }}
             >
+              {/* 삭제 버튼 */}
+              <button
+                onClick={() => handleDeleteSchedule(schedule.scheduleId || schedule.id)}
+                style={{
+                  position: 'absolute',
+                  top: '1rem',
+                  right: '1rem',
+                  background: 'none',
+                  border: 'none',
+                  color: '#666666',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                  padding: '0.25rem 0.5rem'
+                }}
+              >
+                삭제
+              </button>
+              
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -88,6 +165,15 @@ function ScheduleTab({ schedules, setSchedules }) {
                 }}>
                   {schedule.date}
                 </span>
+                {schedule.title && (
+                  <span style={{
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    marginLeft: '1rem'
+                  }}>
+                    - {schedule.title}
+                  </span>
+                )}
               </div>
               <div style={{
                 fontSize: '14px',
@@ -106,11 +192,9 @@ function ScheduleTab({ schedules, setSchedules }) {
       {showAddSchedulePopup && (
         <AddScheduleModal
           onClose={handleCloseAddSchedulePopup}
-          onSubmit={(newSchedule) => {
-            setSchedules([...schedules, newSchedule]);
-            handleCloseAddSchedulePopup();
-          }}
-          initialRound={schedules.length > 0 ? schedules[schedules.length - 1].round + 1 : 1}
+          onSubmit={handleSubmitSchedule}
+          initialRound={schedules.length > 0 ? Math.max(...schedules.map(s => s.round)) + 1 : 1}
+          isSubmitting={isAdding}
         />
       )}
     </div>
@@ -119,7 +203,15 @@ function ScheduleTab({ schedules, setSchedules }) {
 
 ScheduleTab.propTypes = {
   schedules: PropTypes.array.isRequired,
-  setSchedules: PropTypes.func.isRequired
+  onAddSchedule: PropTypes.func.isRequired,
+  onDeleteSchedule: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+  error: PropTypes.string
+};
+
+ScheduleTab.defaultProps = {
+  isLoading: false,
+  error: null
 };
 
 export default ScheduleTab; 
