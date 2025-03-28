@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { studyService } from "../../../services/api";
-import BackButton from "../../../components/study/notice/BackButton";
+import { noticeService } from "../../../services/api";
+import Button from "../../../components/study/notice/Button";
 
-function NoticeAddPage() {
+function NoticeFormPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
@@ -22,8 +22,8 @@ function NoticeAddPage() {
     setError(null);
 
     try {
-      await studyService.addNotice(studyId, { title, content });
-      navigate(`/study/${studyId}`);
+      await noticeService.createNotice(studyId, { title, content });
+      navigate(`/study/${studyId}/notices`);
     } catch (error) {
       console.error("공지사항 작성 실패:", error);
       setError(error.message || "공지사항 작성에 실패했습니다.");
@@ -35,7 +35,10 @@ function NoticeAddPage() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <div className="mb-6">
-        <BackButton onClick={() => navigate(`/study/${studyId}/notices`)} />
+        <Button
+          onClick={() => navigate(`/study/${studyId}/notices`)}
+          variant="back"
+        />
       </div>
 
       <h1 className="text-2xl font-bold mb-6">새 공지사항 작성</h1>
@@ -101,4 +104,4 @@ function NoticeAddPage() {
   );
 }
 
-export default NoticeAddPage;
+export default NoticeFormPage;

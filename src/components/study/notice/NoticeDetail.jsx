@@ -1,70 +1,54 @@
-import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
-import { studyService } from '../../../services/api';
-import LoadingSpinner from '../../common/LoadingSpinner';
-import { formatDate } from '../../../utils/dateUtils';
-import ErrorMessage from '../../common/ErrorMessage';
-import BackButton from './BackButton';
+import PropTypes from "prop-types";
+import { useEffect } from "react";
+import { useNotice } from "./NoticeProvider";
+import LoadingSpinner from "../../common/LoadingSpinner";
+import { formatDate } from "../../../utils/dateUtils";
+import ErrorMessage from "../../common/ErrorMessage";
+import Button from "./Button";
 
-function NoticeDetail({ studyId, noticeId, onBack }) {
-  const [notice, setNotice] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+function NoticeDetail({ studyId, noticeId, handleBack }) {
+  const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
 
   useEffect(() => {
-    const fetchNoticeDetail = async () => {
-      try {
-        const data = await studyService.getNoticeDetail(studyId, noticeId);
-        setNotice(data);
-      } catch (error) {
-        console.error('공지사항 상세 조회 실패:', error);
-        setError(error.message);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    getNoticeById(studyId, noticeId);
+  }, [studyId, noticeId, getNoticeById]);
 
-    fetchNoticeDetail();
-  }, [studyId, noticeId]);
-
-  if (isLoading) {
-    return <LoadingSpinner />;
-  }
+  if (isLoading) return <LoadingSpinner />;
 
   if (error) {
     return (
       <div className="p-6">
-        <BackButton onClick={onBack} className="mb-4" />
+        <Button onClick={handleBack} variant="back" />
         <ErrorMessage message={error} />
       </div>
     );
   }
 
-  if (!notice || !notice.title || !notice.content) {
+  if (
+    !selectedNotice ||
+    !selectedNotice.noticeTitle ||
+    !selectedNotice.noticeContent
+  ) {
     return (
       <div className="p-6">
-        <BackButton onClick={onBack} className="mb-4" />
-        <ErrorMessage 
-          message="잘못된 공지사항 데이터입니다." 
-          type="warning" 
-        />
+        <Button onClick={handleBack} variant="back" />
+        <ErrorMessage message="잘못된 공지사항 데이터입니다." type="warning" />
       </div>
     );
   }
 
   return (
     <div className="p-6">
-      <BackButton onClick={onBack} className="mb-4" />
+      <Button onClick={handleBack} variant="back" />
       <div className="border rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">{notice.title}</h1>
+        <h1 className="text-2xl font-bold mb-4">
+          {selectedNotice.noticeTitle}
+        </h1>
         <div className="flex items-center text-gray-600 mb-6">
-          <span>{notice.writer}</span>
           <span className="mx-2">•</span>
-          <span>{formatDate(notice.createdAt)}</span>
+          <span>{formatDate(selectedNotice.noticeCreatedAt)}</span>
         </div>
-        <div className="prose max-w-none">
-          {notice.content}
-        </div>
+        <div className="prose max-w-none">{selectedNotice.noticeContent}</div>
       </div>
     </div>
   );
@@ -73,7 +57,7 @@ function NoticeDetail({ studyId, noticeId, onBack }) {
 NoticeDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
   noticeId: PropTypes.number.isRequired,
-  onBack: PropTypes.func.isRequired,
+  handleBack: PropTypes.func.isRequired,
 };
 
 export default NoticeDetail;
