@@ -7,6 +7,7 @@ import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
+import Button from "../../../components/common/Button";
 
 function NoticeManagerPage() {
   const navigate = useNavigate();
@@ -124,6 +125,98 @@ function NoticeManagerPage() {
     setSelectedNotice(null);
   };
 
+  const styles = {
+    outerContainer: {
+      width: "100%",
+      maxWidth: "100%",
+      overflowX: "hidden",
+    },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+      padding: "0 20px",
+    },
+    container: {
+      display: "flex",
+      minHeight: "100vh",
+    },
+    sidebarArea: {
+      width: "200px",
+      backgroundColor: "#f9f9f9",
+      borderRight: "1px solid #e5e5e5",
+    },
+    contentArea: {
+      flex: 1,
+      padding: "20px",
+    },
+    title: {
+      fontSize: "22px",
+      fontWeight: "bold",
+      marginBottom: "20px",
+    },
+    addNoticeCard: {
+      backgroundColor: "#fff",
+      border: "1px solid #e5e5e5",
+      borderRadius: "6px",
+      padding: "20px",
+      marginBottom: "24px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    addNoticeText: {
+      fontWeight: "normal",
+    },
+    addNoticeSubtext: {
+      color: "#777",
+      fontSize: "14px",
+      marginTop: "5px",
+    },
+    createButton: {
+      backgroundColor: "#DC3545",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      padding: "8px 16px",
+      cursor: "pointer",
+      fontSize: "14px",
+    },
+    noticeCard: {
+      backgroundColor: "#fff",
+      border: "1px solid #e5e5e5",
+      borderRadius: "6px",
+      padding: "15px",
+      marginBottom: "12px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      cursor: "pointer",
+    },
+    noticeIcon: {
+      marginRight: "10px",
+      color: "#666",
+    },
+    noticeTitle: {
+      fontSize: "15px",
+      fontWeight: "500",
+    },
+    noticeDate: {
+      fontSize: "14px",
+      color: "#888",
+    },
+    studyTitle: {
+      fontSize: "14px",
+      color: "#999",
+      marginBottom: "12px",
+      padding: "0 16px",
+    },
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -133,19 +226,9 @@ function NoticeManagerPage() {
   }
 
   return (
-    <div style={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+    <div style={styles.outerContainer}>
       {/* 경로 표시 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          fontSize: "14px",
-          color: "#666666",
-          width: "100%",
-        }}
-      >
+      <div style={styles.breadcrumb}>
         <Link
           to="/studies"
           style={{
@@ -208,10 +291,25 @@ function NoticeManagerPage() {
         </Link>
       </div>
 
-      {/* 메인 컨텐츠 */}
-      <div style={{ display: "flex" }}>
-        <StudySidebar activeTab="공지사항" />
-        <div style={{ flex: 1, padding: "20px" }}>
+      <div style={styles.container}>
+        <div style={styles.sidebarArea}>
+          <div style={styles.studyTitle}>스터디 이름</div>
+          <StudySidebar activeTab="공지사항" />
+        </div>
+
+        <div style={styles.contentArea}>
+          <h1 style={styles.title}>공지사항</h1>
+
+          <div style={styles.addNoticeCard}>
+            <div>
+              <div style={styles.addNoticeText}>공지사항 추가</div>
+              <div style={styles.addNoticeSubtext}>
+                공지사항을 추가해주세요.
+              </div>
+            </div>
+            <Button variant="create" onClick={handleCreate} />
+          </div>
+
           {selectedNoticeId ? (
             <NoticeDetail
               studyId={studyId}

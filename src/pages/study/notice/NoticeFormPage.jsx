@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { noticeService } from "../../../services/api";
 import Button from "../../../components/common/Button";
+import Header from "../../../components/common/Header";
+import StudySidebar from "../../../components/study/StudySidebar";
+import { studyService } from "../../../services/api";
+import { useEffect } from "react";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
@@ -10,6 +14,26 @@ function NoticeFormPage() {
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const [studyData, setStudyData] = useState({ title: "로딩 중..." });
+  const maxLength = 10000;
+
+  // 스터디 정보 가져오기
+  useEffect(() => {
+    const fetchStudyData = async () => {
+      try {
+        const data = await studyService.getStudyById(studyId);
+        if (data) {
+          setStudyData({
+            title: data.studyName || "제목 없음",
+          });
+        }
+      } catch (err) {
+        console.error("스터디 정보 로드 오류:", err);
+      }
+    };
+
+    fetchStudyData();
+  }, [studyId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +47,7 @@ function NoticeFormPage() {
 
     try {
       await noticeService.createNotice(studyId, { title, content });
-      navigate(`/study/${studyId}/notices`);
+      navigate(`/studies/${studyId}/notices`);
     } catch (error) {
       console.error("공지사항 작성 실패:", error);
       setError(error.message || "공지사항 작성에 실패했습니다.");
@@ -32,72 +56,191 @@ function NoticeFormPage() {
     }
   };
 
+  const handleFileUpload = () => {
+    alert("파일 첨부 기능은 아직 개발 중입니다.");
+  };
+
+  const styles = {
+    wrapper: {
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      backgroundColor: "#fff",
+      display: "flex",
+      flexDirection: "column",
+    },
+    main: {
+      display: "flex",
+      flex: 1,
+    },
+    sidebar: {
+      width: "220px",
+      padding: "16px",
+      borderRight: "1px solid #eee",
+    },
+    content: {
+      flex: 1,
+      padding: "48px 64px",
+    },
+    title: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "32px",
+    },
+    inputGroup: {
+      marginBottom: "24px",
+    },
+    label: {
+      display: "block",
+      fontWeight: "bold",
+      marginBottom: "8px",
+    },
+    input: {
+      width: "100%",
+      padding: "10px",
+      borderRadius: "6px",
+      border: "1px solid #ccc",
+      fontSize: "14px",
+    },
+    textarea: {
+      width: "100%",
+      minHeight: "200px",
+      padding: "10px",
+      borderRadius: "8px",
+      border: "1px solid #ccc",
+      resize: "none",
+      fontSize: "14px",
+    },
+    charCount: {
+      textAlign: "right",
+      fontSize: "12px",
+      color: "#888",
+      marginTop: "4px",
+    },
+    fileUploadRow: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: "8px",
+      marginBottom: "32px",
+    },
+    fileUploadButton: {
+      backgroundColor: "#e74c3c",
+      color: "#fff",
+      border: "none",
+      borderRadius: "6px",
+      padding: "6px 12px",
+      cursor: "pointer",
+      fontSize: "14px",
+    },
+    actionButtons: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: "24px",
+    },
+    leftButtons: {
+      display: "flex",
+      gap: "12px",
+    },
+    rightButton: {
+      backgroundColor: "#eee",
+      border: "none",
+      borderRadius: "6px",
+      padding: "8px 16px",
+      cursor: "pointer",
+    },
+    backButton: {
+      backgroundColor: "#eee",
+      color: "#000",
+      border: "none",
+      borderRadius: "6px",
+      padding: "8px 16px",
+      cursor: "pointer",
+    },
+    errorMessage: {
+      backgroundColor: "#fdecea",
+      color: "#e74c3c",
+      padding: "12px",
+      borderRadius: "6px",
+      marginBottom: "16px",
+    },
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <div className="mb-6">
-        <Button
-          onClick={() => navigate(`/studies/${studyId}/notices`)}
-          variant="back"
-        />
+    <div style={styles.wrapper}>
+      <Header />
+
+      <div style={styles.main}>
+        <aside style={styles.sidebar}>
+          <div
+            style={{ fontSize: "14px", color: "#999", marginBottom: "16px" }}
+          >
+            {studyData.title}
+          </div>
+          <StudySidebar activeTab="공지사항" />
+        </aside>
+
+        <main style={styles.content}>
+          <h1 style={styles.title}>공지사항</h1>
+
+          {error && <div style={styles.errorMessage}>{error}</div>}
+
+          <form onSubmit={handleSubmit}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>제목</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={styles.input}
+                disabled={isSubmitting}
+                placeholder="공지사항 제목을 입력하세요"
+              />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>내용을 입력해주세요.</label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                style={styles.textarea}
+                maxLength={maxLength}
+                disabled={isSubmitting}
+                placeholder="공지사항 내용을 입력하세요"
+              />
+              <div style={styles.charCount}>
+                {content.length}/{maxLength}
+              </div>
+            </div>
+
+            <div style={styles.fileUploadRow}>
+              <button
+                type="button"
+                style={styles.fileUploadButton}
+                onClick={handleFileUpload}
+                disabled={isSubmitting}
+              >
+                파일 첨부
+              </button>
+            </div>
+
+            <div style={styles.actionButtons}>
+              <div style={styles.leftButtons}>
+                <Button
+                  type="submit"
+                  variant="upload"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <Button
+                type="button"
+                onClick={() => navigate(`/studies/${studyId}/notices`)}
+                style={styles.backButton}
+                variant="back"
+                disabled={isSubmitting}
+              />
+            </div>
+          </form>
+        </main>
       </div>
-
-      {error && (
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit}>
-        <div className="mb-6">
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            제목
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="공지사항 제목을 입력하세요"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="mb-6">
-          <label
-            htmlFor="content"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            내용
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            rows="10"
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            placeholder="공지사항 내용을 입력하세요"
-            disabled={isSubmitting}
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`px-6 py-2 text-white rounded-lg ${
-              isSubmitting
-                ? "bg-blue-300 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            }`}
-          >
-            {isSubmitting ? "작성 중..." : "작성하기"}
-          </button>
-        </div>
-      </form>
     </div>
   );
 }
