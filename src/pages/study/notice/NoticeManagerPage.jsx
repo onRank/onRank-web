@@ -8,6 +8,8 @@ import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
+import StudySidebar from "../../../components/study/StudySidebar";
+import Header from "../../../components/common/Header";
 
 function NoticeManagerPageContent() {
   const navigate = useNavigate();
@@ -49,27 +51,31 @@ function NoticeManagerPageContent() {
     return <ErrorMessage message={error} />;
   }
 
-  // 공지사항 상세 보기
-  if (selectedNoticeId) {
-    return (
-      <NoticeDetail
-        studyId={studyId}
-        noticeId={selectedNoticeId}
-        handleBack={handleBack}
-      />
-    );
-  }
-
-  // 공지사항 목록 보기
   return (
     <div>
-      <h1 className="text-xl font-bold mb-6">공지사항 관리</h1>
-      <NoticeList
-        notices={notices}
-        onNoticeClick={handleNoticeClick}
-        handleCreate={handleCreate}
-        isLoading={isLoading}
-      />
+      <Header />
+      <div style={{ display: "flex" }}>
+        <StudySidebar activeTab="공지사항" />
+        <div style={{ flex: 1, padding: "20px" }}>
+          {selectedNoticeId ? (
+            <NoticeDetail
+              studyId={studyId}
+              noticeId={selectedNoticeId}
+              handleBack={handleBack}
+            />
+          ) : (
+            <>
+              <h1 className="text-xl font-bold mb-6">공지사항 관리</h1>
+              <NoticeList
+                notices={notices}
+                onNoticeClick={handleNoticeClick}
+                handleCreate={handleCreate}
+                isLoading={isLoading}
+              />
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

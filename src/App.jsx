@@ -360,20 +360,22 @@ function AppContent() {
                     <Route index element={<StudyDetailPage />} />
                     <Route
                       path="notices"
-                      element={
-                        isAdmin ? <NoticeUserPage /> : <NoticeManagerPage />
-                      }
+                      // element={ //일단 관리자 페이지로 설정
+                      //   isAdmin ? <NoticeUserPage /> : <NoticeManagerPage />
+                      // }
+                      element={<NoticeManagerPage />}
                     />
                     <Route path="notices/add" element={<NoticeFormPage />} />
                     <Route
                       path="notices/:noticeId"
-                      element={
-                        isAdmin ? (
-                          <NoticeDetailUserPage />
-                        ) : (
-                          <NoticeDetailManagerPage />
-                        )
-                      }
+                      // element={ //일단 관리자 페이지로 설정
+                      //   isAdmin ? (
+                      //     <NoticeDetailUserPage />
+                      //   ) : (
+                      //     <NoticeDetailManagerPage />
+                      //   )
+                      // }
+                      element={<NoticeDetailManagerPage />}
                     />
                     <Route path="schedule" element={<StudyDetailPage />} />
                     <Route path="assignment" element={<StudyDetailPage />} />

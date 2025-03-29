@@ -31,6 +31,10 @@ function Header() {
       textDecoration: "none",
       color: "#333",
       fontSize: "14px",
+      background: "none",
+      border: "none",
+      padding: "0",
+      cursor: "pointer",
     },
     right: {
       display: "flex",
@@ -51,8 +55,16 @@ function Header() {
   const { setUser } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  const handleLogoClick = () => {
+  const handleStudylistClick = () => {
     navigate("/studies");
+  };
+
+  const handleProfileClick = () => {
+    navigate("/mypage");
+  };
+
+  const handleCalendarClick = () => {
+    navigate("/calendar");
   };
 
   const handleLogout = async (e) => {
@@ -83,22 +95,20 @@ function Header() {
     }
   };
 
-  const handleProfileClick = () => {
-    navigate("/mypage");
-  };
-
   return (
     <header style={styles.header}>
       <div style={styles.left}>
-        <img
-          src="/path-to-your-logo.png"
-          alt="StudyMate"
-          style={styles.logo}
-          onClick={handleLogoClick}
-        />
+        <img src="/path-to-your-logo.png" alt="onRank" style={styles.logo} />
         <nav style={styles.nav}>
-          <button style={styles.navLink}>스터디 목록</button>
-          <button style={styles.navLink}>스터디 모집</button>
+          <button style={styles.navLink} onClick={handleStudylistClick}>
+            스터디 목록
+          </button>
+          <button style={styles.navLink} onClick={handleCalendarClick}>
+            캘린더
+          </button>
+          <button style={styles.navLink} onClick={handleProfileClick}>
+            마이페이지
+          </button>
         </nav>
       </div>
       <div style={styles.right}>
@@ -106,9 +116,6 @@ function Header() {
           isOpen={isNotificationOpen}
           setIsOpen={setIsNotificationOpen}
         />
-        <button onClick={handleProfileClick} style={styles.navLink}>
-          마이페이지
-        </button>
         <button onClick={handleLogout} style={styles.logoutBtn}>
           로그아웃
         </button>
