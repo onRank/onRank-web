@@ -138,9 +138,9 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
             </thead>
             <tbody>
               {members.map((member) => (
-                <tr key={member.studentId} style={{ 
+                <tr key={member.memberId} style={{ 
                   borderBottom: '1px solid #E5E5E5',
-                  backgroundColor: processingMemberId === member.studentId ? '#fafafa' : 'transparent'
+                  backgroundColor: processingMemberId === member.memberId ? '#fafafa' : 'transparent'
                 }}>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
                     {member.studentName}
@@ -151,31 +151,31 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
                     <select 
                       value={member.role || '로딩 안됨'} 
-                      onChange={(e) => handleChangeRole(member.studentId, e.target.value)}
-                      disabled={processingMemberId === member.studentId}
+                      onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
+                      disabled={processingMemberId === member.memberId}
                       style={{ 
                         padding: '0.25rem 0.5rem', 
                         borderRadius: '4px',
                         border: '1px solid #ddd',
-                        backgroundColor: member.role === 'LEADER' ? '#e3f2fd' : 'white'
+                        backgroundColor: member.role === 'HOST' ? '#e3f2fd' : 'white'
                       }}
                     >
                       {!member.role && <option value="로딩 안됨">로딩 안됨</option>}
-                      <option value="LEADER">리더</option>
-                      <option value="MEMBER">일반 멤버</option>
+                      <option value="HOST">스터디장</option>
+                      <option value="PARTICIPANT">참여자</option>
                     </select>
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
                     <button 
-                      onClick={() => handleShowDeleteConfirm(member.studentId)}
-                      disabled={processingMemberId === member.studentId || member.role === 'LEADER'}
+                      onClick={() => handleShowDeleteConfirm(member.memberId)}
+                      disabled={processingMemberId === member.memberId || member.role === 'HOST'}
                       style={{ 
                         background: 'none', 
                         border: 'none', 
-                        cursor: member.role === 'LEADER' ? 'not-allowed' : 'pointer',
-                        opacity: member.role === 'LEADER' ? 0.5 : 1
+                        cursor: member.role === 'HOST' ? 'not-allowed' : 'pointer',
+                        opacity: member.role === 'HOST' ? 0.5 : 1
                       }}
-                      title={member.role === 'LEADER' ? '리더는 삭제할 수 없습니다' : '멤버 삭제'}
+                      title={member.role === 'HOST' ? '스터디장은 삭제할 수 없습니다' : '멤버 삭제'}
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
@@ -257,7 +257,14 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
 }
 
 MemberManagement.propTypes = {
-  members: PropTypes.array.isRequired,
+  members: PropTypes.arrayOf(
+    PropTypes.shape({
+      memberId: PropTypes.number.isRequired,
+      studentName: PropTypes.string.isRequired,
+      studentEmail: PropTypes.string.isRequired,
+      role: PropTypes.string.isRequired
+    })
+  ).isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
   fetchMembers: PropTypes.func.isRequired

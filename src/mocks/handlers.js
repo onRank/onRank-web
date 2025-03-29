@@ -179,28 +179,28 @@ export const handlers = [
   http.get("http://localhost:8080/studies/:studyId/management/members", () => {
     return HttpResponse.json([
       {
-        studentId: 1,
+        memberId: 1,
         studentName: "홍길동",
         studentEmail: "hong@example.com",
-        role: "LEADER",
+        role: "HOST",
       },
       {
-        studentId: 2,
+        memberId: 2,
         studentName: "김철수",
         studentEmail: "kim@example.com",
-        role: "MEMBER",
+        role: "PARTICIPANT",
       },
       {
-        studentId: 3,
+        memberId: 3,
         studentName: "이영희",
         studentEmail: "lee@example.com",
-        role: "MEMBER",
+        role: "PARTICIPANT",
       },
       {
-        studentId: 4,
+        memberId: 4,
         studentName: "박지성",
         studentEmail: "park@example.com",
-        role: "MEMBER",
+        role: "PARTICIPANT",
       },
     ]);
   }),

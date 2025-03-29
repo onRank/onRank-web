@@ -34,10 +34,10 @@ function ManagementTab({ studyData }) {
       setError('회원 목록을 불러오는데 실패했습니다.');
       // 개발 중에는 임시 데이터 사용
       setMembers([
-        { studentId: 1, studentName: '회원1', studentEmail: 'member1@example.com', role: 'LEADER' },
-        { studentId: 2, studentName: '회원2', studentEmail: 'member2@example.com', role: 'MEMBER' },
-        { studentId: 3, studentName: '회원3', studentEmail: 'member3@example.com', role: 'MEMBER' },
-        { studentId: 4, studentName: '회원4', studentEmail: 'member4@example.com', role: 'MEMBER' }
+        { memberId: 1, studentName: '회원1', studentEmail: 'member1@example.com', role: 'HOST' },
+        { memberId: 2, studentName: '회원2', studentEmail: 'member2@example.com', role: 'PARTICIPANT' },
+        { memberId: 3, studentName: '회원3', studentEmail: 'member3@example.com', role: 'PARTICIPANT' },
+        { memberId: 4, studentName: '회원4', studentEmail: 'member4@example.com', role: 'PARTICIPANT' }
       ]);
     } finally {
       setLoading(false);
