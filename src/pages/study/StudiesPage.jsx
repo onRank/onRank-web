@@ -206,16 +206,20 @@ function StudiesPage() {
         </div>
         
         <button 
-          onClick={handleRefresh}
+          onClick={() => navigate('/studies/add')}
           style={{
-            backgroundColor: '#f8f9fa',
-            border: '1px solid #dee2e6',
+            backgroundColor: '#4263eb',
+            color: 'white',
+            border: 'none',
             borderRadius: '4px',
             padding: '0.5rem 1rem',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.25rem'
           }}
         >
-          새로고침
+          <span>+</span> 스터디 생성
         </button>
       </div>
       
