@@ -131,25 +131,6 @@ function NoticeManagerPage() {
       maxWidth: "100%",
       overflowX: "hidden",
     },
-    breadcrumb: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      marginBottom: "2rem",
-      fontSize: "14px",
-      color: "#666666",
-      width: "100%",
-      padding: "0 20px",
-    },
-    container: {
-      display: "flex",
-      minHeight: "100vh",
-    },
-    sidebarArea: {
-      width: "200px",
-      backgroundColor: "#f9f9f9",
-      borderRight: "1px solid #e5e5e5",
-    },
     contentArea: {
       flex: 1,
       padding: "20px",
@@ -176,15 +157,6 @@ function NoticeManagerPage() {
       color: "#777",
       fontSize: "14px",
       marginTop: "5px",
-    },
-    createButton: {
-      backgroundColor: "#DC3545",
-      color: "white",
-      border: "none",
-      borderRadius: "4px",
-      padding: "8px 16px",
-      cursor: "pointer",
-      fontSize: "14px",
     },
     noticeCard: {
       backgroundColor: "#fff",
@@ -226,9 +198,25 @@ function NoticeManagerPage() {
   }
 
   return (
-    <div style={styles.outerContainer}>
+    <div
+      style={{
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+      }}
+    >
       {/* 경로 표시 */}
-      <div style={styles.breadcrumb}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          marginBottom: "2rem",
+          fontSize: "14px",
+          color: "#666666",
+          width: "100%",
+        }}
+      >
         <Link
           to="/studies"
           style={{
@@ -251,7 +239,7 @@ function NoticeManagerPage() {
         </Link>
         <span>{">"}</span>
         <Link
-          to={`/studies/${studyId}`}
+          to={`/studies/${studyId}/notices`}
           style={{
             color: "#FF0000",
             textDecoration: "none",
@@ -270,64 +258,50 @@ function NoticeManagerPage() {
           {studyData.title}
         </Link>
         <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}/notices`}
+        <span
           style={{
             color: "#FF0000",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
             fontWeight: "bold",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
+            padding: "2px 4px",
           }}
         >
           공지사항
-        </Link>
+        </span>
       </div>
 
-      <div style={styles.container}>
-        <div style={styles.sidebarArea}>
-          <div style={styles.studyTitle}>스터디 이름</div>
-          <StudySidebar activeTab="공지사항" />
-        </div>
+      <aside>
+        <div>{studyData.title}</div>
+        <StudySidebar activeTab="공지사항" />
+      </aside>
 
-        <div style={styles.contentArea}>
-          <h1 style={styles.title}>공지사항</h1>
+      <div style={styles.contentArea}>
+        <h1 style={styles.title}>공지사항</h1>
 
-          <div style={styles.addNoticeCard}>
-            <div>
-              <div style={styles.addNoticeText}>공지사항 추가</div>
-              <div style={styles.addNoticeSubtext}>
-                공지사항을 추가해주세요.
-              </div>
-            </div>
-            <Button variant="create" onClick={handleCreate} />
+        <div style={styles.addNoticeCard}>
+          <div>
+            <div style={styles.addNoticeText}>공지사항 추가</div>
+            <div style={styles.addNoticeSubtext}>공지사항을 추가해주세요.</div>
           </div>
-
-          {selectedNoticeId ? (
-            <NoticeDetail
-              studyId={studyId}
-              noticeId={selectedNoticeId}
-              selectedNotice={selectedNotice}
-              handleBack={handleBack}
-              isLoading={isLoading}
-              error={error}
-            />
-          ) : (
-            <NoticeList
-              notices={notices}
-              onNoticeClick={handleNoticeClick}
-              handleCreate={handleCreate}
-              isLoading={isLoading}
-            />
-          )}
+          <Button variant="create" onClick={handleCreate} />
         </div>
+
+        {selectedNoticeId ? (
+          <NoticeDetail
+            studyId={studyId}
+            noticeId={selectedNoticeId}
+            selectedNotice={selectedNotice}
+            handleBack={handleBack}
+            isLoading={isLoading}
+            error={error}
+          />
+        ) : (
+          <NoticeList
+            notices={notices}
+            onNoticeClick={handleNoticeClick}
+            handleCreate={handleCreate}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     </div>
   );
