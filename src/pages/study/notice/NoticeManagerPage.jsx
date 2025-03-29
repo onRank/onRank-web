@@ -150,7 +150,7 @@ function NoticeManagerPage() {
         </Link>
         <span>{">"}</span>
         <Link
-          to={`/studies/${studyId}/notices`}
+          to={`/studies/${studyId}`}
           style={{
             color: "#FF0000",
             textDecoration: "none",
