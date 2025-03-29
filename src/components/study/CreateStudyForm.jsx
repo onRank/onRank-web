@@ -189,27 +189,24 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         throw new Error(tokenValidation.errorMessage || '인증에 문제가 발생했습니다. 다시 로그인해주세요.');
       }
       
-      // API 요청 데이터 준비 - API 문서에 맞게 구성
+      // API 요청 데이터 준비
       const studyData = { 
         studyName: studyName,
-        studyContent: content, // 백엔드 변경에 맞춰 필드명 수정 (content -> studyContent)
-        studyImageUrl: previewUrl || null, // 백엔드 변경에 맞춰 필드명 수정 (image -> studyImageUrl)
-        studyGoogleFormUrl: googleFormLink || null // 백엔드 변경에 맞춰 필드명 수정 (GoogleForm -> studyGoogleFormUrl)
+        studyContent: content,
+        studyGoogleFormUrl: googleFormLink || null
       };
       
-      // 디버깅을 위한 로그 추가
-      console.log('[CreateStudyForm] API 문서 형식으로 변환된 요청 데이터:', {
-        studyName: studyData.studyName,
-        studyContent: studyData.studyContent,
-        studyImageUrl: studyData.studyImageUrl ? studyData.studyImageUrl.substring(0, 30) + '...' : '(없음)',
-        studyGoogleFormUrl: studyData.studyGoogleFormUrl,
-      });
-      
-      // 스터디 생성 API 호출
-      const response = await studyService.createStudy(studyData);
+      // 스터디 생성 API 호출 (이미지 포함)
+      const response = await studyService.createStudyWithImage(studyData, image);
       console.log('[CreateStudyForm] 스터디 생성 응답:', response);
       
-      // 성공 여부 확인 (201 상태코드 또는 studyId가 있는 경우)
+      // 경고 메시지가 있는 경우 표시
+      if (response.warning) {
+        console.warn('[CreateStudyForm] 경고:', response.warning);
+        // 사용자에게 경고 메시지 표시 (선택적)
+      }
+      
+      // 성공 여부 확인 (studyId가 있는 경우)
       if (response && response.studyId) {
         console.log('[CreateStudyForm] 스터디 생성 성공:', response.studyId);
         
@@ -226,11 +223,11 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         
         console.log('[CreateStudyForm] 페이지 이동 시 전달할 스터디 데이터:', formattedStudyData);
         
-        // 성공 콜백 호출 (스터디 ID 포함)
+        // 성공 콜백 호출
         if (onSuccess) onSuccess(response);
         
-        // 스터디 ID가 있으면 상세 페이지로 리다이렉트
-        if (response.studyId && onNavigate) {
+        // 스터디 상세 페이지로 리다이렉트
+        if (onNavigate) {
           onNavigate(`/studies/${response.studyId}`, { state: { studyData: formattedStudyData } });
         }
         
@@ -244,31 +241,16 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         
         // 재로그인이 필요한 경우
         if (response.requireRelogin) {
-          // 사용자에게 메시지만 표시하고 자동 리다이렉트는 하지 않음
-          console.log('[CreateStudyForm] 재로그인이 필요합니다. 로그인 페이지로 이동해주세요.');
-          setError(response.message + ' (로그인 페이지로 직접 이동해주세요)');
+          console.log('[CreateStudyForm] 재로그인이 필요합니다.');
+          setError(response.message + ' (로그인 페이지로 이동해주세요)');
         }
         
         return;
       }
+      
     } catch (error) {
-      console.error('[CreateStudyForm] 스터디 생성 실패:', error);
-      
-      let errorMessage = '스터디 생성에 실패했습니다.';
-      
-      if (error.response) {
-        // 서버 응답이 있는 경우
-        console.error('서버 응답:', error.response);
-        errorMessage = error.response.data?.message || error.response.data?.error || errorMessage;
-      } else if (error.request) {
-        // 요청은 보냈지만 응답이 없는 경우
-        console.error('요청 정보:', error.request);
-        errorMessage = '서버에서 응답이 없습니다. 네트워크 연결을 확인해주세요.';
-      } else {
-        // 요청 설정 중 오류 발생
-        errorMessage = error.message || errorMessage;
-      }
-      
+      console.error('[CreateStudyForm] 스터디 생성 중 오류:', error);
+      const errorMessage = error.message || '스터디 생성 중 오류가 발생했습니다.';
       setError(errorMessage);
       if (onError) onError(errorMessage);
     } finally {

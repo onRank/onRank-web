@@ -1094,41 +1094,7 @@ export const studyService = {
     }
   },
 
-  // 스터디 참여 신청
-  applyToStudy: async (studyId, applicationData) => {
-    try {
-      console.log(`[StudyService] 스터디 참여 신청 요청: ${studyId}`);
-
-      // 토큰 확인
-      const token = tokenUtils.getToken();
-      if (!token) {
-        console.error("[StudyService] 토큰 없음, 스터디 참여 신청 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
-      }
-
-      // API 요청
-      const response = await api.post(
-        `/studies/${studyId}/apply`,
-        applicationData,
-        {
-          headers: {
-            Authorization: token.startsWith("Bearer ")
-              ? token
-              : `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("[StudyService] 스터디 참여 신청 성공:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("[StudyService] 스터디 참여 신청 오류:", error);
-      throw error;
-    }
-  },
-
+  
   // 스터디 멤버 조회
   getStudyMembers: async (studyId) => {
     try {
@@ -1592,6 +1558,90 @@ export const studyService = {
     } catch (error) {
       console.error("[StudyService] 출석 상태 변경 오류:", error);
       throw error;
+    }
+  },
+
+  // 스터디 생성 (이미지 업로드 포함)
+  createStudyWithImage: async (studyData, imageFile) => {
+    try {
+      console.log("[StudyService] 스터디 생성 및 이미지 업로드 요청:", {
+        studyData,
+        imageFileName: imageFile?.name
+      });
+
+      // 1. 스터디 생성 및 Pre-signed URL 요청
+      const requestData = {
+        studyName: studyData.studyName || "",
+        studyContent: studyData.studyContent || "",
+        studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
+        fileName: imageFile?.name  // 파일 이름 전송
+      };
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.post("/studies/add", requestData, {
+        headers: {
+          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          Accept: "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log("[StudyService] 스터디 생성 응답:", response.data);
+
+      // 2. Pre-signed URL이 있고 이미지 파일이 있는 경우 S3에 업로드
+      if (response.data.uploadUrl && imageFile) {
+        try {
+          await studyService.uploadImageToS3(response.data.uploadUrl, imageFile);
+          console.log("[StudyService] 이미지 업로드 성공");
+        } catch (uploadError) {
+          console.error("[StudyService] 이미지 업로드 실패:", uploadError);
+          // 이미지 업로드 실패 시에도 스터디 생성은 완료된 것으로 처리
+          return {
+            ...response.data,
+            warning: "스터디는 생성되었으나 이미지 업로드에 실패했습니다."
+          };
+        }
+      }
+
+      // 3. 최종 응답 반환
+      return response.data;
+
+    } catch (error) {
+      console.error("[StudyService] 스터디 생성 오류:", error);
+      throw error;
+    }
+  },
+
+  // S3에 이미지 직접 업로드
+  uploadImageToS3: async (uploadUrl, imageFile) => {
+    try {
+      console.log("[StudyService] S3 이미지 업로드 시작:", {
+        uploadUrl: uploadUrl.substring(0, 100) + "...",
+        fileName: imageFile.name,
+        fileSize: imageFile.size
+      });
+
+      await axios.put(uploadUrl, imageFile, {
+        headers: {
+          "Content-Type": imageFile.type,
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      });
+
+      console.log("[StudyService] S3 이미지 업로드 완료");
+      return true;
+    } catch (error) {
+      console.error("[StudyService] S3 이미지 업로드 실패:", error);
+      throw new Error("이미지 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류"));
     }
   },
 };
