@@ -131,6 +131,10 @@ function NoticeManagerPage() {
       maxWidth: "100%",
       overflowX: "hidden",
     },
+    container: {
+      display: "flex",
+      minHeight: "100vh",
+    },
     contentArea: {
       flex: 1,
       padding: "20px",
@@ -157,6 +161,15 @@ function NoticeManagerPage() {
       color: "#777",
       fontSize: "14px",
       marginTop: "5px",
+    },
+    createButton: {
+      backgroundColor: "#DC3545",
+      color: "white",
+      border: "none",
+      borderRadius: "4px",
+      padding: "8px 16px",
+      cursor: "pointer",
+      fontSize: "14px",
     },
     noticeCard: {
       backgroundColor: "#fff",
@@ -198,77 +211,7 @@ function NoticeManagerPage() {
   }
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "100%",
-        overflowX: "hidden",
-      }}
-    >
-      {/* 경로 표시 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          fontSize: "14px",
-          color: "#666666",
-          width: "100%",
-        }}
-      >
-        <Link
-          to="/studies"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            color: "#666666",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}/notices`}
-          style={{
-            color: "#FF0000",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontWeight: "bold",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          {studyData.title}
-        </Link>
-        <span>{">"}</span>
-        <span
-          style={{
-            color: "#FF0000",
-            fontWeight: "bold",
-            padding: "2px 4px",
-          }}
-        >
-          공지사항
-        </span>
-      </div>
-
+    <div style={styles.container}>
       <aside>
         <div>{studyData.title}</div>
         <StudySidebar activeTab="공지사항" />
@@ -300,6 +243,12 @@ function NoticeManagerPage() {
             onNoticeClick={handleNoticeClick}
             handleCreate={handleCreate}
             isLoading={isLoading}
+            styles={{
+              noticeCard: styles.noticeCard,
+              noticeIcon: styles.noticeIcon,
+              noticeTitle: styles.noticeTitle,
+              noticeDate: styles.noticeDate,
+            }}
           />
         )}
       </div>

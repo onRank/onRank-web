@@ -166,147 +166,75 @@ function NoticeFormPage() {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "100%",
-        overflowX: "hidden",
-      }}
-    >
-      {/* 경로 표시 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          fontSize: "14px",
-          color: "#666666",
-          width: "100%",
-        }}
-      >
-        <Link
-          to="/studies"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            color: "#666666",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}/notices`}
-          style={{
-            color: "#FF0000",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontWeight: "bold",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          {studyData.title}
-        </Link>
-        <span>{">"}</span>
-        <span
-          style={{
-            color: "#FF0000",
-            fontWeight: "bold",
-            padding: "2px 4px",
-          }}
-        >
-          공지사항
-        </span>
-      </div>
+    <div style={styles.wrapper}>
+      <div style={styles.main}>
+        <aside>
+          <div>{studyData.title}</div>
+          <StudySidebar activeTab="공지사항" />
+        </aside>
 
-      <div style={styles.wrapper}>
-        <div style={styles.main}>
-          <aside>
-            <div>{studyData.title}</div>
-            <StudySidebar activeTab="공지사항" />
-          </aside>
+        <main style={styles.content}>
+          <h1 style={styles.title}>공지사항</h1>
 
-          <main style={styles.content}>
-            <h1 style={styles.title}>공지사항</h1>
+          {error && <div style={styles.errorMessage}>{error}</div>}
 
-            {error && <div style={styles.errorMessage}>{error}</div>}
+          <form onSubmit={handleSubmit}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>제목</label>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                style={styles.input}
+                disabled={isSubmitting}
+                placeholder="공지사항 제목을 입력하세요"
+              />
+            </div>
 
-            <form onSubmit={handleSubmit}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>제목</label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  style={styles.input}
-                  disabled={isSubmitting}
-                  placeholder="공지사항 제목을 입력하세요"
-                />
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>내용을 입력해주세요.</label>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                style={styles.textarea}
+                maxLength={maxLength}
+                disabled={isSubmitting}
+                placeholder="공지사항 내용을 입력하세요"
+              />
+              <div style={styles.charCount}>
+                {content.length}/{maxLength}
               </div>
+            </div>
 
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>내용을 입력해주세요.</label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  style={styles.textarea}
-                  maxLength={maxLength}
-                  disabled={isSubmitting}
-                  placeholder="공지사항 내용을 입력하세요"
-                />
-                <div style={styles.charCount}>
-                  {content.length}/{maxLength}
-                </div>
-              </div>
+            <div style={styles.fileUploadRow}>
+              <button
+                type="button"
+                style={styles.fileUploadButton}
+                onClick={handleFileUpload}
+                disabled={isSubmitting}
+              >
+                파일 첨부
+              </button>
+            </div>
 
-              <div style={styles.fileUploadRow}>
-                <button
-                  type="button"
-                  style={styles.fileUploadButton}
-                  onClick={handleFileUpload}
-                  disabled={isSubmitting}
-                >
-                  파일 첨부
-                </button>
-              </div>
-
-              <div style={styles.actionButtons}>
-                <div style={styles.leftButtons}>
-                  <Button
-                    type="submit"
-                    variant="upload"
-                    disabled={isSubmitting}
-                  />
-                </div>
+            <div style={styles.actionButtons}>
+              <div style={styles.leftButtons}>
                 <Button
-                  type="button"
-                  onClick={() => navigate(`/studies/${studyId}/notices`)}
-                  style={styles.backButton}
-                  variant="back"
+                  type="submit"
+                  variant="upload"
                   disabled={isSubmitting}
                 />
               </div>
-            </form>
-          </main>
-        </div>
+              <Button
+                type="button"
+                onClick={() => navigate(`/studies/${studyId}/notices`)}
+                style={styles.backButton}
+                variant="back"
+                disabled={isSubmitting}
+              />
+            </div>
+          </form>
+        </main>
       </div>
     </div>
   );

@@ -8,13 +8,6 @@ function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold text-gray-800">공지사항</h2>
-        <Button onClick={handleCreate} variant="primary">
-          공지사항 작성
-        </Button>
-      </div>
-
       <div className="bg-white border rounded-lg overflow-hidden">
         {notices.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
