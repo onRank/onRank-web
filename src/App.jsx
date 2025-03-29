@@ -21,7 +21,6 @@ import NoticeManagerPage from "./pages/study/notice/NoticeManagerPage";
 import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
 import Header from "./components/common/Header";
-import MainNavigation from "./components/common/MainNavigation";
 import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
@@ -33,9 +32,6 @@ const HEADER_HEIGHT = "64px";
 
 // 헤더 컴포넌트 메모이제이션
 const MemoizedHeader = memo(Header);
-
-// 메인 네비게이션 컴포넌트 메모이제이션
-const MemoizedMainNavigation = memo(MainNavigation);
 
 // 스터디 레이아웃 컴포넌트
 const StudyLayout = memo(({ children }) => {
@@ -353,7 +349,6 @@ function AppContent() {
   return (
     <div className="min-h-screen">
       {showHeader && <MemoizedHeader />}
-      {showNavigation && <MemoizedMainNavigation />}
       <main>
         <Routes>
           {/* 스터디 관련 라우트 */}
