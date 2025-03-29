@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import Button from "./Button";
+import Button from "../../common/Button";
 
 const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
   const [noticeTitle, setNoticeTitle] = useState("");

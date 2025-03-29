@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import Button from "./Button";
+import Button from "../../common/Button";
 import NoticeListItem from "./NoticeListItem";
 
 function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
@@ -10,7 +10,9 @@ function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-800">공지사항</h2>
-        <Button onClick={handleCreate} variant="create" />
+        <Button onClick={handleCreate} variant="primary">
+          공지사항 작성
+        </Button>
       </div>
 
       <div className="bg-white border rounded-lg overflow-hidden">
