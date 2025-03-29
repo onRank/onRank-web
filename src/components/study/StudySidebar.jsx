@@ -21,14 +21,14 @@ function StudySidebar({ activeTab }) {
 
   return (
     <div
-    // style={{
-    //   width: "200px",
-    //   borderRight: "1px solid #E5E5E5",
-    //   flexShrink: 0,
-    //   position: "sticky",
-    //   top: 0,
-    //   height: "fit-content",
-    // }}
+      style={{
+        width: "200px",
+        borderRight: "1px solid #E5E5E5",
+        flexShrink: 0,
+        position: "sticky",
+        top: 0,
+        height: "fit-content",
+      }}
     >
       {menuItems.map((item) => (
         <button
