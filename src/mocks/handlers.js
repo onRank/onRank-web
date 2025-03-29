@@ -250,6 +250,16 @@ export const handlers = [
         `[MSW] 스터디 ${studyId}에 멤버 추가: ${requestData.studentEmail}`
       );
 
+      // 회원가입이 안 된 이메일인 경우 404 응답
+      if (requestData.studentEmail === 'unregistered@example.com') {
+        return new HttpResponse(null, {
+          status: 404,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+      }
+
       // 새 멤버 ID는 현재 시간을 사용하여 임의로 생성
       const newMemberId = Date.now();
 

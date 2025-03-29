@@ -1410,7 +1410,12 @@ export const studyService = {
     } catch (error) {
       console.error("[StudyService] 스터디 멤버 추가 오류:", error);
 
-      // 오류 메시지 추출 및 반환
+      // 404 에러인 경우 회원가입하지 않은 이메일 메시지 반환
+      if (error.response && error.response.status === 404) {
+        throw new Error("회원가입 하지 않은 이메일입니다.");
+      }
+      
+      // 그 외 오류 메시지 추출 및 반환
       if (error.response && error.response.data) {
         const errorMessage =
           typeof error.response.data === "string"
