@@ -55,7 +55,7 @@ function NoticeManagerPageContent() {
 
   return (
     <div style={{ display: "flex" }}>
-      <StudySidebar activeTab="공지사항" />
+      <StudySidebar />
       <div style={{ flex: 1, padding: "20px" }}>
         {selectedNoticeId ? (
           <NoticeDetail
@@ -173,12 +173,12 @@ function NoticeManagerPage() {
         <Link
           to={`/studies/${studyId}/notices`}
           style={{
-            color: activeTab ? "#666666" : "#FF0000",
+            color: "#FF0000",
             textDecoration: "none",
             transition: "color 0.2s ease",
             padding: "4px 8px",
             borderRadius: "4px",
-            fontWeight: activeTab ? "normal" : "bold",
+            fontWeight: "bold",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F8F9FA";
