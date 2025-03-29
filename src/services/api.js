@@ -315,9 +315,19 @@ export const tokenUtils = {
 
 // api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.PROD
-    ? "https://onrank.kr"
-    : import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: (() => {
+    const url = import.meta.env.PROD
+      ? "https://onrank.kr"
+      : import.meta.env.VITE_API_URL || "http://localhost:8080";
+    
+    // 프로덕션에서는 항상 HTTPS 사용
+    if (import.meta.env.PROD && url.startsWith('http:')) {
+      console.warn('[API Config] HTTP URL detected in production, forcing HTTPS');
+      return url.replace('http:', 'https:');
+    }
+    
+    return url;
+  })(),
   timeout: 10000,
   withCredentials: true,
   headers: {
@@ -512,9 +522,38 @@ api.interceptors.request.use(
           console.log("[API Debug] Token refresh successful, using new token");
           tokenUtils.setToken(newToken);
           token = newToken;
+        } else {
+          console.error("[API Debug] Token refresh response missing authorization header");
+          // 토큰 없이 응답이 왔을 경우 인증 에러로 처리
+          tokenUtils.removeToken(); // 액세스 토큰 제거
+          
+          // 로그인 페이지가 아닐 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/login')) {
+            console.log("[API Debug] Redirecting to login page due to authentication failure");
+            window.location.href = '/login';
+          }
+          
+          // API 요청 취소
+          const cancelTokenSource = axios.CancelToken.source();
+          config.cancelToken = cancelTokenSource.token;
+          cancelTokenSource.cancel("Authentication required");
         }
       } catch (error) {
-        console.log(`[API Debug] Failed to refresh token: ${error.message}`);
+        console.error(`[API Debug] Failed to refresh token: ${error.message}`);
+        
+        // 토큰 갱신 실패 시 액세스 토큰 제거
+        tokenUtils.removeToken();
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[API Debug] Redirecting to login page due to token refresh failure");
+          window.location.href = '/login';
+        }
+        
+        // API 요청 취소
+        const cancelTokenSource = axios.CancelToken.source();
+        config.cancelToken = cancelTokenSource.token;
+        cancelTokenSource.cancel("Authentication required");
       }
     }
 
@@ -724,11 +763,29 @@ api.interceptors.response.use(
           tokenUtils.setToken(newToken);
           originalRequest.headers["Authorization"] = newToken;
           return api(originalRequest);
+        } else {
+          console.error("[API Debug] 토큰 재발급 응답에 Authorization 헤더가 없음");
+          tokenUtils.removeToken();
+          
+          // 로그인 페이지가 아닐 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/login')) {
+            console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
+            window.location.href = '/login';
+          }
+          
+          return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
         }
       } catch (refreshError) {
         console.error("[API Debug] 토큰 재발급 실패:", refreshError);
         tokenUtils.removeToken();
-        return Promise.reject(refreshError);
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
+          window.location.href = '/login';
+        }
+        
+        return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
       }
     }
     return Promise.reject(error);
@@ -1094,41 +1151,7 @@ export const studyService = {
     }
   },
 
-  // 스터디 참여 신청
-  applyToStudy: async (studyId, applicationData) => {
-    try {
-      console.log(`[StudyService] 스터디 참여 신청 요청: ${studyId}`);
-
-      // 토큰 확인
-      const token = tokenUtils.getToken();
-      if (!token) {
-        console.error("[StudyService] 토큰 없음, 스터디 참여 신청 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
-      }
-
-      // API 요청
-      const response = await api.post(
-        `/studies/${studyId}/apply`,
-        applicationData,
-        {
-          headers: {
-            Authorization: token.startsWith("Bearer ")
-              ? token
-              : `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-
-      console.log("[StudyService] 스터디 참여 신청 성공:", response.data);
-      return response.data;
-    } catch (error) {
-      console.error("[StudyService] 스터디 참여 신청 오류:", error);
-      throw error;
-    }
-  },
-
+  
   // 스터디 멤버 조회
   getStudyMembers: async (studyId) => {
     try {
@@ -1592,6 +1615,120 @@ export const studyService = {
     } catch (error) {
       console.error("[StudyService] 출석 상태 변경 오류:", error);
       throw error;
+    }
+  },
+
+  // 스터디 생성 (이미지 업로드 포함)
+  createStudyWithImage: async (studyData, imageFile) => {
+    try {
+      console.log("[StudyService] 스터디 생성 및 이미지 업로드 요청:", {
+        studyData,
+        imageFileName: imageFile?.name
+      });
+
+      // 1. 스터디 생성 및 Pre-signed URL 요청
+      const requestData = {
+        studyName: studyData.studyName || "",
+        studyContent: studyData.studyContent || "",
+        studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
+        fileName: imageFile?.name  // 파일 이름 전송
+      };
+
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 인증 토큰 없음, 스터디 생성 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
+      // API 요청
+      const response = await api.post("/studies/add", requestData, {
+        headers: {
+          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          Accept: "application/json",
+        },
+        withCredentials: true,
+      });
+
+      console.log("[StudyService] 스터디 생성 응답:", response.data);
+
+      // 2. Pre-signed URL이 있고 이미지 파일이 있는 경우 S3에 업로드
+      if (response.data.uploadUrl && imageFile) {
+        try {
+          await studyService.uploadImageToS3(response.data.uploadUrl, imageFile);
+          console.log("[StudyService] 이미지 업로드 성공");
+        } catch (uploadError) {
+          console.error("[StudyService] 이미지 업로드 실패:", uploadError);
+          // 이미지 업로드 실패 시에도 스터디 생성은 완료된 것으로 처리
+          return {
+            ...response.data,
+            warning: "스터디는 생성되었으나 이미지 업로드에 실패했습니다."
+          };
+        }
+      }
+
+      // 3. 최종 응답 반환
+      return response.data;
+
+    } catch (error) {
+      console.error("[StudyService] 스터디 생성 오류:", error);
+      
+      // 인증 오류인 경우 (401, 403)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.error("[StudyService] 인증 오류 발생:", error.response.status);
+        
+        // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
+        const authError = new Error("인증에 실패했습니다. 다시 로그인이 필요합니다.");
+        authError.type = "AUTH_ERROR";
+        authError.requireRelogin = true;
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 500); // 약간의 지연을 두어 에러 메시지가 UI에 표시될 시간을 줌
+        }
+        
+        throw authError;
+      }
+      
+      // 네트워크 에러 처리
+      if (error.message && error.message.includes('Network Error')) {
+        const networkError = new Error("네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.");
+        networkError.type = "NETWORK_ERROR";
+        throw networkError;
+      }
+      
+      // 기타 에러
+      throw error;
+    }
+  },
+
+  // S3에 이미지 직접 업로드
+  uploadImageToS3: async (uploadUrl, imageFile) => {
+    try {
+      console.log("[StudyService] S3 이미지 업로드 시작:", {
+        uploadUrl: uploadUrl.substring(0, 100) + "...",
+        fileName: imageFile.name,
+        fileSize: imageFile.size
+      });
+
+      await axios.put(uploadUrl, imageFile, {
+        headers: {
+          "Content-Type": imageFile.type,
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      });
+
+      console.log("[StudyService] S3 이미지 업로드 완료");
+      return true;
+    } catch (error) {
+      console.error("[StudyService] S3 이미지 업로드 실패:", error);
+      throw new Error("이미지 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류"));
     }
   },
 };
