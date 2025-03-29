@@ -41,8 +41,6 @@ function NoticeFormPage() {
         />
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">새 공지사항 작성</h1>
-
       {error && (
         <div className="bg-red-50 text-red-600 p-4 rounded-lg mb-6">
           {error}

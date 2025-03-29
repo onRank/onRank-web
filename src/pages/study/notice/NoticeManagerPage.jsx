@@ -150,27 +150,6 @@ function NoticeManagerPage() {
         </Link>
         <span>{">"}</span>
         <Link
-          to={`/studies/${studyId}`}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            color: "#666666",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{">"}</span>
-        <Link
           to={`/studies/${studyId}/notices`}
           style={{
             color: "#FF0000",
