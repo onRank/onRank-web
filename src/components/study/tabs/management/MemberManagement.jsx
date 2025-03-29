@@ -150,7 +150,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
                     <select 
-                      value={member.role || 'MEMBER'} 
+                      value={member.role || '로딩 안됨'} 
                       onChange={(e) => handleChangeRole(member.studentId, e.target.value)}
                       disabled={processingMemberId === member.studentId}
                       style={{ 
@@ -160,6 +160,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                         backgroundColor: member.role === 'LEADER' ? '#e3f2fd' : 'white'
                       }}
                     >
+                      {!member.role && <option value="로딩 안됨">로딩 안됨</option>}
                       <option value="LEADER">리더</option>
                       <option value="MEMBER">일반 멤버</option>
                     </select>
