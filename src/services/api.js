@@ -1121,14 +1121,54 @@ export const studyService = {
             );
             study.file = { fileId: null, fileName: null, fileUrl: "" };
           }
+          
+          // 개별 스터디 데이터를 localStorage에 캐싱 (상세 페이지 접근 시 사용)
+          if (study.studyId) {
+            try {
+              const mappedStudy = {
+                id: study.studyId,
+                title: study.studyName || '제목 없음',
+                description: study.studyContent || '설명 없음',
+                currentMembers: study.members?.length || 0,
+                maxMembers: 10,
+                status: '모집중',
+                imageUrl: study.file && study.file.fileUrl ? study.file.fileUrl : ''
+              };
+              
+              localStorage.setItem(`study_${study.studyId}`, JSON.stringify(mappedStudy));
+              console.log(`[StudyService] 스터디 ID:${study.studyId} 데이터를 localStorage에 캐싱했습니다.`);
+            } catch (cacheError) {
+              console.warn(`[StudyService] 스터디 ID:${study.studyId} 캐싱 실패:`, cacheError);
+            }
+          }
 
           return study;
         });
+        
+        // 전체 스터디 목록도 캐싱 (네트워크 오류 시 사용)
+        try {
+          localStorage.setItem('studies_list', JSON.stringify(data));
+          console.log('[StudyService] 전체 스터디 목록을 localStorage에 캐싱했습니다.');
+        } catch (cacheError) {
+          console.warn('[StudyService] 전체 스터디 목록 캐싱 실패:', cacheError);
+        }
       }
 
       return data;
     } catch (error) {
       console.error("[StudyService] 스터디 목록 조회 오류:", error);
+      
+      // API 호출 실패 시 localStorage에서 캐시된 목록 조회
+      try {
+        const cachedListStr = localStorage.getItem('studies_list');
+        if (cachedListStr) {
+          console.log("[StudyService] API 호출 실패로 localStorage에서 캐시된 스터디 목록 사용");
+          return JSON.parse(cachedListStr);
+        }
+      } catch (cacheError) {
+        console.error("[StudyService] 캐시된 스터디 목록 사용 중 오류:", cacheError);
+      }
+      
       // 오류 발생 시 빈 배열 반환
       return [];
     }
@@ -1154,11 +1194,52 @@ export const studyService = {
           console.log("[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정");
           data.file = { fileId: null, fileName: null, fileUrl: "" };
         }
+        
+        // 스터디 데이터 캐싱 (백업용)
+        try {
+          const mappedData = {
+            id: data.studyId,
+            title: data.studyName || '제목 없음',
+            description: data.studyContent || '설명 없음',
+            currentMembers: data.members?.length || 0,
+            maxMembers: 10,
+            status: '모집중',
+            imageUrl: data.file && data.file.fileUrl ? data.file.fileUrl : ''
+          };
+          
+          localStorage.setItem(`study_${studyId}`, JSON.stringify(mappedData));
+          console.log("[StudyService] 스터디 데이터를 localStorage에 캐싱했습니다.");
+        } catch (cacheError) {
+          console.warn("[StudyService] 스터디 데이터 캐싱 실패:", cacheError);
+        }
       }
       
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 상세 조회 오류:", error);
+      
+      // API 호출 실패 시 localStorage에서 캐시된 데이터 확인
+      try {
+        const cachedDataStr = localStorage.getItem(`study_${studyId}`);
+        if (cachedDataStr) {
+          console.log("[StudyService] API 호출 실패로 localStorage에서 캐시된 데이터 사용");
+          const cachedData = JSON.parse(cachedDataStr);
+          
+          // 캐시된 데이터를 원래 API 응답 형식으로 변환
+          return {
+            studyId: cachedData.id,
+            studyName: cachedData.title,
+            studyContent: cachedData.description,
+            file: {
+              fileUrl: cachedData.imageUrl
+            }
+          };
+        }
+      } catch (cacheError) {
+        console.error("[StudyService] 캐시된 데이터 사용 중 오류:", cacheError);
+      }
+      
+      // 캐시된 데이터도 없으면 원래 오류 전달
       throw error;
     }
   },
