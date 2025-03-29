@@ -36,7 +36,7 @@ function NoticeFormPage() {
     <div className="max-w-3xl mx-auto p-6">
       <div className="mb-6">
         <Button
-          onClick={() => navigate(`/study/${studyId}/notices`)}
+          onClick={() => navigate(`/studies/${studyId}/notices`)}
           variant="back"
         />
       </div>

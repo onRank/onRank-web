@@ -168,16 +168,25 @@ function NoticeManagerPage() {
         >
           {studyData.title}
         </Link>
-        <span>{">"}</span>
-        <span
+        <Link
+          to={`/studies/${studyId}/notices`}
           style={{
             color: "#FF0000",
+            textDecoration: "none",
+            transition: "color 0.2s ease",
+            padding: "4px 8px",
+            borderRadius: "4px",
             fontWeight: "bold",
-            padding: "2px 4px",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
           }}
         >
           공지사항
-        </span>
+        </Link>
       </div>
 
       {/* 오류 메시지 표시 */}
