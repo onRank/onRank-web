@@ -12,6 +12,116 @@ function NoticeManagerPage() {
   const navigate = useNavigate();
   const { studyId } = useParams();
 
+  // 스타일 정의
+  const styles = {
+    wrapper: {
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      backgroundColor: "#f9f9f9",
+      color: "#333",
+      width: "100%",
+      maxWidth: "100%",
+      overflowX: "hidden",
+    },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+    },
+    breadcrumbLink: {
+      display: "flex",
+      alignItems: "center",
+      color: "#666666",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+    },
+    breadcrumbLinkActive: {
+      color: "#FF0000",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+      fontWeight: "bold",
+    },
+    mainArea: {
+      display: "flex",
+    },
+    sidebar: {
+      width: "220px",
+      padding: "16px",
+      backgroundColor: "#fff",
+      borderRight: "1px solid #eee",
+    },
+    studyTitle: {
+      fontSize: "14px",
+      color: "#999",
+      marginBottom: "12px",
+    },
+    content: {
+      flex: 1,
+      padding: "32px",
+    },
+    noticeTitle: {
+      fontSize: "20px",
+      fontWeight: "bold",
+      marginBottom: "24px",
+    },
+    createCard: {
+      backgroundColor: "#fff",
+      border: "1px solid #e0e0e0",
+      borderRadius: "8px",
+      padding: "16px",
+      marginBottom: "24px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    },
+    createText: {
+      fontWeight: "bold",
+      marginBottom: "4px",
+    },
+    createSubText: {
+      fontSize: "14px",
+      color: "#888",
+    },
+    noticeList: {
+      listStyle: "none",
+      padding: 0,
+      margin: 0,
+    },
+    noticeItem: {
+      backgroundColor: "#fff",
+      padding: "16px",
+      borderRadius: "8px",
+      marginBottom: "12px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+      cursor: "pointer",
+    },
+    noticeInfo: {
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+    },
+    noticeIcon: {
+      backgroundColor: "#f0f0f0",
+      padding: "8px",
+      borderRadius: "6px",
+    },
+    noticeDate: {
+      fontSize: "14px",
+      color: "#999",
+    },
+  };
+
   // 스터디 정보 관련 상태
   const [studyData, setStudyData] = useState({ title: "로딩 중..." });
 
@@ -133,30 +243,12 @@ function NoticeManagerPage() {
   }
 
   return (
-    <div style={{ width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+    <div style={styles.wrapper}>
       {/* 경로 표시 */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "0.5rem",
-          marginBottom: "2rem",
-          fontSize: "14px",
-          color: "#666666",
-          width: "100%",
-        }}
-      >
+      <div style={styles.breadcrumb}>
         <Link
           to="/studies"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            color: "#666666",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-          }}
+          style={styles.breadcrumbLink}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F8F9FA";
           }}
@@ -169,14 +261,7 @@ function NoticeManagerPage() {
         <span>{">"}</span>
         <Link
           to={`/studies/${studyId}`}
-          style={{
-            color: "#FF0000",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontWeight: "bold",
-          }}
+          style={styles.breadcrumbLinkActive}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F8F9FA";
           }}
@@ -189,14 +274,7 @@ function NoticeManagerPage() {
         <span>{">"}</span>
         <Link
           to={`/studies/${studyId}/notices`}
-          style={{
-            color: "#FF0000",
-            textDecoration: "none",
-            transition: "color 0.2s ease",
-            padding: "4px 8px",
-            borderRadius: "4px",
-            fontWeight: "bold",
-          }}
+          style={styles.breadcrumbLinkActive}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F8F9FA";
           }}
@@ -209,9 +287,9 @@ function NoticeManagerPage() {
       </div>
 
       {/* 메인 컨텐츠 */}
-      <div style={{ display: "flex" }}>
+      <div style={styles.mainArea}>
         <StudySidebar activeTab="공지사항" />
-        <div style={{ flex: 1, padding: "20px" }}>
+        <div style={styles.content}>
           {selectedNoticeId ? (
             <NoticeDetail
               studyId={studyId}
@@ -222,12 +300,15 @@ function NoticeManagerPage() {
               error={error}
             />
           ) : (
-            <NoticeList
-              notices={notices}
-              onNoticeClick={handleNoticeClick}
-              handleCreate={handleCreate}
-              isLoading={isLoading}
-            />
+            <>
+              <h2 style={styles.noticeTitle}>공지사항 관리</h2>
+              <NoticeList
+                notices={notices}
+                onNoticeClick={handleNoticeClick}
+                handleCreate={handleCreate}
+                isLoading={isLoading}
+              />
+            </>
           )}
         </div>
       </div>
