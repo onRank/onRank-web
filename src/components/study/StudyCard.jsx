@@ -4,9 +4,6 @@ function StudyCard({ study, onClick }) {
   // 디버깅 로그 추가
   console.log('[StudyCard] 렌더링:', study);
   
-  // Extract or set default for creator name
-  const creatorName = study.creatorName || study.leaderName || '스터디 리더';
-  
   // 이미지 로딩 오류 처리
   const handleImageError = (e) => {
     // 더 안정적인 대체 이미지 URL 사용
@@ -20,8 +17,8 @@ function StudyCard({ study, onClick }) {
       onClick={onClick}
       style={{
         backgroundColor: '#FFFFFF',
-        borderRadius: '25px',
-        border: '1px solid #ABB1B3',
+        borderRadius: '15px',
+        border: '1px solid #EEEEEE',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -35,12 +32,12 @@ function StudyCard({ study, onClick }) {
         }
       }}
     >
-      {/* 스터디 이미지 추가 */}
+      {/* 스터디 이미지 */}
       <div style={{
         width: '100%',
-        height: '150px',
+        height: '180px',
         overflow: 'hidden',
-        backgroundColor: '#f0f0f0'
+        backgroundColor: '#f5f5f5'
       }}>
         <img 
           src={study.imageUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E'} 
@@ -55,53 +52,28 @@ function StudyCard({ study, onClick }) {
       </div>
       
       <div style={{
-        padding: '1.5rem',
-        flex: 1,
+        padding: '16px',
         display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem'
+        flexDirection: 'column'
       }}>
         <h3 style={{
-          fontSize: '1.25rem',
+          fontSize: '16px',
           fontWeight: '600',
-          color: '#000000'
+          color: '#333333',
+          marginBottom: '8px'
         }}>
           {study.title || '제목 없음'}
         </h3>
         <p style={{
-          fontSize: '0.875rem',
-          color: '#ABB1B3',
-          flex: 1
+          fontSize: '14px',
+          color: '#666666',
+          margin: 0,
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
         }}>
           {study.description || '설명 없음'}
         </p>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 'auto'
-        }}>
-          <span style={{
-            fontSize: '0.875rem',
-            color: '#000000'
-          }}>
-            멤버: {study.currentMembers || 0}/{study.maxMembers || 10}명
-          </span>
-          <span style={{
-            fontSize: '0.875rem',
-            color: study.status === '모집중' ? '#337BB8' : '#F9A955',
-            fontWeight: '500'
-          }}>
-            {study.status || '모집중'}
-          </span>
-        </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: '#666666',
-          marginTop: '0.5rem'
-        }}>
-          개설자: {creatorName}
-        </div>
       </div>
     </div>
   );
@@ -112,11 +84,6 @@ StudyCard.propTypes = {
     id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string,
-    currentMembers: PropTypes.number,
-    maxMembers: PropTypes.number,
-    status: PropTypes.string,
-    creatorName: PropTypes.string,
-    leaderName: PropTypes.string,
     imageUrl: PropTypes.string
   }).isRequired,
   onClick: PropTypes.func.isRequired
