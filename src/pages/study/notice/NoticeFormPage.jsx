@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { noticeService } from "../../../services/api";
 import Button from "../../../components/common/Button";
-import Header from "../../../components/common/Header";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { studyService } from "../../../services/api";
 import { useEffect } from "react";
@@ -72,11 +71,11 @@ function NoticeFormPage() {
       display: "flex",
       flex: 1,
     },
-    sidebar: {
-      width: "220px",
-      padding: "16px",
-      borderRight: "1px solid #eee",
-    },
+    // sidebar: {
+    //   width: "220px",
+    //   padding: "16px",
+    //   borderRight: "1px solid #eee",
+    // },
     content: {
       flex: 1,
       padding: "48px 64px",
@@ -166,15 +165,9 @@ function NoticeFormPage() {
 
   return (
     <div style={styles.wrapper}>
-      <Header />
-
       <div style={styles.main}>
-        <aside style={styles.sidebar}>
-          <div
-            style={{ fontSize: "14px", color: "#999", marginBottom: "16px" }}
-          >
-            {studyData.title}
-          </div>
+        <aside>
+          <div>{studyData.title}</div>
           <StudySidebar activeTab="공지사항" />
         </aside>
 

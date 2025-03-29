@@ -144,11 +144,10 @@ function NoticeManagerPage() {
     container: {
       display: "flex",
       minHeight: "100vh",
+      flexDirection: "row",
     },
     sidebarArea: {
       width: "200px",
-      backgroundColor: "#f9f9f9",
-      borderRight: "1px solid #e5e5e5",
     },
     contentArea: {
       flex: 1,
