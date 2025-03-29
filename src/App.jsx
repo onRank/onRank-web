@@ -376,7 +376,7 @@ function AppContent() {
                       element={<NoticeDetailManagerPage />}
                     />
 
-                    <Route path="schedule" element={<StudyDetailPage />} />
+                    <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="assignment" element={<StudyDetailPage />} />
                     <Route
                       path="assignment/:id"

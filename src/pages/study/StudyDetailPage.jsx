@@ -159,7 +159,7 @@ function StudyDetailPage() {
 
     const tabMap = {
       'notices': '공지사항',
-      'schedule': '일정',
+      'schedules': '일정',
       'assignment': '과제',
       'board': '게시판',
       'attendance': '출석',
