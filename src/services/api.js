@@ -1386,7 +1386,7 @@ export const studyService = {
 
       // API 요청
       const response = await api.post(
-        `/studies/${studyId}/management/members`,
+        `/studies/${studyId}management/members/add`,
         memberData,
         {
           headers: {

@@ -25,7 +25,7 @@ function AddMemberModal({ onClose, onSuccess }) {
     setAddMemberError(null);
     
     try {
-      // 새로운 API 서비스 함수 사용하여 멤버 추가
+      // 새로운 API 서비스 함수 사용하여 멤버 추가 - studentEmail만 전송
       await studyService.addMember(studyId, {
         studentEmail: newMemberEmail.trim()
       });
