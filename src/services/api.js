@@ -1632,8 +1632,7 @@ export const studyService = {
         studyName: studyData.studyName || "",
         studyContent: studyData.studyContent || "",
         studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
-        fileName: imageFile?.name || null,  // 파일 이름이 없으면 명시적으로 null 전송
-        studyImage: null  // 이미지 없는 경우에도 명시적으로 null 전송
+        fileName: imageFile?.name || null  // 파일 이름이 없으면 명시적으로 null 전송
       };
 
       console.log("[StudyService] 백엔드 요청 데이터:", requestData);
