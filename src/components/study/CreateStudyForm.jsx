@@ -196,7 +196,13 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         studyGoogleFormUrl: googleFormLink || null
       };
       
-      // 스터디 생성 API 호출 (이미지 포함)
+      console.log('[CreateStudyForm] 스터디 생성 요청 데이터:', {
+        ...studyData,
+        hasImage: !!image,
+        imageSize: image ? `${Math.round(image.size / 1024)}KB` : '없음'
+      });
+      
+      // 스터디 생성 API 호출 (이미지 있거나 없거나 같은 함수 사용)
       const response = await studyService.createStudyWithImage(studyData, image);
       console.log('[CreateStudyForm] 스터디 생성 응답:', response);
       
@@ -250,9 +256,30 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
       
     } catch (error) {
       console.error('[CreateStudyForm] 스터디 생성 중 오류:', error);
-      const errorMessage = error.message || '스터디 생성 중 오류가 발생했습니다.';
-      setError(errorMessage);
-      if (onError) onError(errorMessage);
+      
+      // 에러 유형에 따른 분기 처리
+      if (error.type === 'AUTH_ERROR') {
+        const errorMessage = '인증에 실패했습니다. 다시 로그인해주세요.';
+        setError(errorMessage);
+        if (onError) onError(errorMessage);
+        
+        // 인증 오류 시 로그인 페이지로 리다이렉트 (5초 지연)
+        setTimeout(() => {
+          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
+          window.location.href = loginUrl;
+        }, 5000);
+        
+      } else if (error.type === 'NETWORK_ERROR') {
+        const errorMessage = '네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.';
+        setError(errorMessage);
+        if (onError) onError(errorMessage);
+        
+      } else {
+        // 기타 오류
+        const errorMessage = error.message || '스터디 생성 중 오류가 발생했습니다.';
+        setError(errorMessage);
+        if (onError) onError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
