@@ -3,6 +3,7 @@ import { useState } from "react";
 import { authService } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
 import NotificationPopover from "./NotificationPopover";
+import { Bell } from "lucide-react";
 
 function Header() {
   const styles = {
@@ -42,6 +43,7 @@ function Header() {
       gap: "12px",
     },
     logoutBtn: {
+      color: "#fff",
       padding: "6px 12px",
       border: "1px solid #ccc",
       borderRadius: "6px",
@@ -104,7 +106,7 @@ function Header() {
   return (
     <header style={styles.header}>
       <div style={styles.left}>
-        <img src="/path-to-your-logo.png" alt="onRank" style={styles.logo} />
+        <span style={styles.logo}>onRank</span>
         <nav style={styles.nav}>
           <a
             href="/studies"
@@ -126,6 +128,7 @@ function Header() {
         </nav>
       </div>
       <div style={styles.right}>
+        <Bell size={20} />
         <NotificationPopover
           isOpen={isNotificationOpen}
           setIsOpen={setIsNotificationOpen}
