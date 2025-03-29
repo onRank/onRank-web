@@ -150,17 +150,17 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
                     <select 
-                      value={member.role || '로딩 안됨'} 
+                      value={member.memberRole || '로딩 안됨'} 
                       onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
                       disabled={processingMemberId === member.memberId}
                       style={{ 
                         padding: '0.25rem 0.5rem', 
                         borderRadius: '4px',
                         border: '1px solid #ddd',
-                        backgroundColor: member.role === 'HOST' ? '#e3f2fd' : 'white'
+                        backgroundColor: member.memberRole === 'HOST' ? '#e3f2fd' : 'white'
                       }}
                     >
-                      {!member.role && <option value="로딩 안됨">로딩 안됨</option>}
+                      {!member.memberRole && <option value="로딩 안됨">로딩 안됨</option>}
                       <option value="HOST">스터디장</option>
                       <option value="PARTICIPANT">참여자</option>
                     </select>
@@ -168,14 +168,14 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
                     <button 
                       onClick={() => handleShowDeleteConfirm(member.memberId)}
-                      disabled={processingMemberId === member.memberId || member.role === 'HOST'}
+                      disabled={processingMemberId === member.memberId || member.memberRole === 'HOST'}
                       style={{ 
                         background: 'none', 
                         border: 'none', 
-                        cursor: member.role === 'HOST' ? 'not-allowed' : 'pointer',
-                        opacity: member.role === 'HOST' ? 0.5 : 1
+                        cursor: member.memberRole === 'HOST' ? 'not-allowed' : 'pointer',
+                        opacity: member.memberRole === 'HOST' ? 0.5 : 1
                       }}
-                      title={member.role === 'HOST' ? '스터디장은 삭제할 수 없습니다' : '멤버 삭제'}
+                      title={member.memberRole === 'HOST' ? '스터디장은 삭제할 수 없습니다' : '멤버 삭제'}
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
@@ -262,7 +262,7 @@ MemberManagement.propTypes = {
       memberId: PropTypes.number.isRequired,
       studentName: PropTypes.string.isRequired,
       studentEmail: PropTypes.string.isRequired,
-      role: PropTypes.string.isRequired
+      memberRole: PropTypes.string.isRequired
     })
   ).isRequired,
   loading: PropTypes.bool.isRequired,
