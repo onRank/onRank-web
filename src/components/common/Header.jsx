@@ -3,7 +3,6 @@ import { useState } from "react";
 import { authService } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
 import NotificationPopover from "./NotificationPopover";
-import { Bell } from "lucide-react";
 
 function Header() {
   const styles = {
@@ -128,7 +127,6 @@ function Header() {
         </nav>
       </div>
       <div style={styles.right}>
-        <Bell size={20} />
         <NotificationPopover
           isOpen={isNotificationOpen}
           setIsOpen={setIsNotificationOpen}

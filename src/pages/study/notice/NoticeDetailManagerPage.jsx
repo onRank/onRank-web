@@ -12,7 +12,8 @@ import { formatDate } from "../../../utils/dateUtils";
 function NoticeDetailManagerContent() {
   const { studyId, noticeId } = useParams();
   const navigate = useNavigate();
-  const { selectedNotice, isLoading, error, getNoticeById, deleteNotice } = useNotice();
+  const { selectedNotice, isLoading, error, getNoticeById, deleteNotice } =
+    useNotice();
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -22,15 +23,15 @@ function NoticeDetailManagerContent() {
   }, [studyId, noticeId, getNoticeById]);
 
   const handleBack = () => {
-    navigate(`/studies/${studyId}/notices/manage`);
+    navigate(`/studies/${studyId}/notices`);
   };
 
-  const handleEdit = () => {
-    navigate(`/studies/${studyId}/notices/edit/${noticeId}`);
-  };
+  // const handleEdit = () => {
+  //   navigate(`/studies/${studyId}/notices/edit/${noticeId}`);
+  // };
 
   const handleDelete = async () => {
-    if (!window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
+    if (!window.confirm("공지사항을 삭제하시겠습니까?")) {
       return;
     }
 
@@ -38,7 +39,7 @@ function NoticeDetailManagerContent() {
     try {
       const result = await deleteNotice(studyId, parseInt(noticeId, 10));
       if (result.success) {
-        navigate(`/studies/${studyId}/notices/manage`);
+        navigate(`/studies/${studyId}/notices`);
       } else {
         alert(result.message || "공지사항 삭제에 실패했습니다.");
       }
@@ -56,9 +57,7 @@ function NoticeDetailManagerContent() {
   if (error) {
     return (
       <div className="p-6">
-        <Button onClick={handleBack} variant="back">
-          뒤로 가기
-        </Button>
+        <Button onClick={handleBack} variant="back" />
         <ErrorMessage message={error} />
       </div>
     );
@@ -67,9 +66,7 @@ function NoticeDetailManagerContent() {
   if (!selectedNotice) {
     return (
       <div className="p-6">
-        <Button onClick={handleBack} variant="back">
-          뒤로 가기
-        </Button>
+        <Button onClick={handleBack} variant="back" />
         <div className="mt-4">해당 공지사항을 찾을 수 없습니다.</div>
       </div>
     );
@@ -78,24 +75,21 @@ function NoticeDetailManagerContent() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <Button onClick={handleBack} variant="back">
-          뒤로 가기
-        </Button>
+        <Button onClick={handleBack} variant="back" />
         <div className="space-x-2">
-          <Button onClick={handleEdit} variant="secondary">
-            수정
-          </Button>
-          <Button onClick={handleDelete} variant="danger">
-            삭제
-          </Button>
+          <Button onClick={handleEdit} variant="edit" />
+          <Button onClick={handleDelete} variant="delete" />
         </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold mb-2">{selectedNotice.noticeTitle}</h1>
+        <h1 className="text-2xl font-bold mb-2">
+          {selectedNotice.noticeTitle}
+        </h1>
         <div className="text-gray-600 mb-6">
           작성일: {formatDate(selectedNotice.noticeCreatedAt)}
-          {selectedNotice.noticeModifiedAt !== selectedNotice.noticeCreatedAt && (
+          {selectedNotice.noticeModifiedAt !==
+            selectedNotice.noticeCreatedAt && (
             <span className="ml-4">
               수정일: {formatDate(selectedNotice.noticeModifiedAt)}
             </span>
