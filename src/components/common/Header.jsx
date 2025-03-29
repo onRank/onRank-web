@@ -55,15 +55,21 @@ function Header() {
   const { setUser } = useAuth();
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
-  const handleStudylistClick = () => {
+  const handleStudylistClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate("/studies");
   };
 
-  const handleProfileClick = () => {
+  const handleProfileClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate("/mypage");
   };
 
-  const handleCalendarClick = () => {
+  const handleCalendarClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
     navigate("/calendar");
   };
 
@@ -100,15 +106,23 @@ function Header() {
       <div style={styles.left}>
         <img src="/path-to-your-logo.png" alt="onRank" style={styles.logo} />
         <nav style={styles.nav}>
-          <button style={styles.navLink} onClick={handleStudylistClick}>
+          <a
+            href="/studies"
+            style={styles.navLink}
+            onClick={handleStudylistClick}
+          >
             스터디 목록
-          </button>
-          <button style={styles.navLink} onClick={handleCalendarClick}>
+          </a>
+          <a
+            href="/calendar"
+            style={styles.navLink}
+            onClick={handleCalendarClick}
+          >
             캘린더
-          </button>
-          <button style={styles.navLink} onClick={handleProfileClick}>
+          </a>
+          <a href="/mypage" style={styles.navLink} onClick={handleProfileClick}>
             마이페이지
-          </button>
+          </a>
         </nav>
       </div>
       <div style={styles.right}>
