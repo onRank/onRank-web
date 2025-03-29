@@ -315,9 +315,19 @@ export const tokenUtils = {
 
 // api 인스턴스 생성
 export const api = axios.create({
-  baseURL: import.meta.env.PROD
-    ? "https://onrank.kr"
-    : import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: (() => {
+    const url = import.meta.env.PROD
+      ? "https://onrank.kr"
+      : import.meta.env.VITE_API_URL || "http://localhost:8080";
+    
+    // 프로덕션에서는 항상 HTTPS 사용
+    if (import.meta.env.PROD && url.startsWith('http:')) {
+      console.warn('[API Config] HTTP URL detected in production, forcing HTTPS');
+      return url.replace('http:', 'https:');
+    }
+    
+    return url;
+  })(),
   timeout: 10000,
   withCredentials: true,
   headers: {
@@ -512,9 +522,38 @@ api.interceptors.request.use(
           console.log("[API Debug] Token refresh successful, using new token");
           tokenUtils.setToken(newToken);
           token = newToken;
+        } else {
+          console.error("[API Debug] Token refresh response missing authorization header");
+          // 토큰 없이 응답이 왔을 경우 인증 에러로 처리
+          tokenUtils.removeToken(); // 액세스 토큰 제거
+          
+          // 로그인 페이지가 아닐 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/login')) {
+            console.log("[API Debug] Redirecting to login page due to authentication failure");
+            window.location.href = '/login';
+          }
+          
+          // API 요청 취소
+          const cancelTokenSource = axios.CancelToken.source();
+          config.cancelToken = cancelTokenSource.token;
+          cancelTokenSource.cancel("Authentication required");
         }
       } catch (error) {
-        console.log(`[API Debug] Failed to refresh token: ${error.message}`);
+        console.error(`[API Debug] Failed to refresh token: ${error.message}`);
+        
+        // 토큰 갱신 실패 시 액세스 토큰 제거
+        tokenUtils.removeToken();
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[API Debug] Redirecting to login page due to token refresh failure");
+          window.location.href = '/login';
+        }
+        
+        // API 요청 취소
+        const cancelTokenSource = axios.CancelToken.source();
+        config.cancelToken = cancelTokenSource.token;
+        cancelTokenSource.cancel("Authentication required");
       }
     }
 
@@ -724,11 +763,29 @@ api.interceptors.response.use(
           tokenUtils.setToken(newToken);
           originalRequest.headers["Authorization"] = newToken;
           return api(originalRequest);
+        } else {
+          console.error("[API Debug] 토큰 재발급 응답에 Authorization 헤더가 없음");
+          tokenUtils.removeToken();
+          
+          // 로그인 페이지가 아닐 경우에만 리다이렉트
+          if (!window.location.pathname.includes('/login')) {
+            console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
+            window.location.href = '/login';
+          }
+          
+          return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
         }
       } catch (refreshError) {
         console.error("[API Debug] 토큰 재발급 실패:", refreshError);
         tokenUtils.removeToken();
-        return Promise.reject(refreshError);
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
+          window.location.href = '/login';
+        }
+        
+        return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
       }
     }
     return Promise.reject(error);
@@ -1580,6 +1637,7 @@ export const studyService = {
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
+        console.error("[StudyService] 인증 토큰 없음, 스터디 생성 불가");
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
@@ -1616,6 +1674,35 @@ export const studyService = {
 
     } catch (error) {
       console.error("[StudyService] 스터디 생성 오류:", error);
+      
+      // 인증 오류인 경우 (401, 403)
+      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+        console.error("[StudyService] 인증 오류 발생:", error.response.status);
+        
+        // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
+        const authError = new Error("인증에 실패했습니다. 다시 로그인이 필요합니다.");
+        authError.type = "AUTH_ERROR";
+        authError.requireRelogin = true;
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 500); // 약간의 지연을 두어 에러 메시지가 UI에 표시될 시간을 줌
+        }
+        
+        throw authError;
+      }
+      
+      // 네트워크 에러 처리
+      if (error.message && error.message.includes('Network Error')) {
+        const networkError = new Error("네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.");
+        networkError.type = "NETWORK_ERROR";
+        throw networkError;
+      }
+      
+      // 기타 에러
       throw error;
     }
   },
