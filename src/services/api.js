@@ -1623,7 +1623,8 @@ export const studyService = {
     try {
       console.log("[StudyService] 스터디 생성 및 이미지 업로드 요청:", {
         studyData,
-        imageFileName: imageFile?.name
+        imageFileName: imageFile?.name || "이미지 없음",
+        hasImage: !!imageFile
       });
 
       // 1. 스터디 생성 및 Pre-signed URL 요청
@@ -1631,14 +1632,29 @@ export const studyService = {
         studyName: studyData.studyName || "",
         studyContent: studyData.studyContent || "",
         studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
-        fileName: imageFile?.name  // 파일 이름 전송
+        fileName: imageFile?.name || null,  // 파일 이름이 없으면 명시적으로 null 전송
+        studyImage: null  // 이미지 없는 경우에도 명시적으로 null 전송
       };
+
+      console.log("[StudyService] 백엔드 요청 데이터:", requestData);
 
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
         console.error("[StudyService] 인증 토큰 없음, 스터디 생성 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        const authError = new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        authError.type = "AUTH_ERROR";
+        
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes('/login')) {
+          console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
+          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
+          setTimeout(() => {
+            window.location.href = loginUrl;
+          }, 500);
+        }
+        
+        throw authError;
       }
 
       // API 요청
