@@ -1090,8 +1090,8 @@ export const studyService = {
           "studyContent" in data[0]
         );
         console.log(
-          "[StudyService] studyImageUrl 존재 여부:",
-          "studyImageUrl" in data[0]
+          "[StudyService] file 존재 여부:",
+          "file" in data[0]
         );
 
         // 데이터 유효성 검사
@@ -1107,19 +1107,19 @@ export const studyService = {
             study.studyContent = "설명 없음";
           }
 
-          // studyImageUrl 필드가 존재하지만 값이 null이거나 빈 문자열인 경우 처리
-          if ("studyImageUrl" in study) {
-            if (study.studyImageUrl === null || study.studyImageUrl === "") {
+          // file 객체 확인 및 처리
+          if ("file" in study) {
+            if (!study.file || !study.file.fileUrl) {
               console.log(
-                "[StudyService] studyImageUrl 필드가 비어있어 기본값(빈 문자열)으로 설정합니다"
+                "[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정"
               );
-              study.studyImageUrl = "";
+              study.file = { fileId: null, fileName: null, fileUrl: "" };
             }
           } else {
             console.log(
-              "[StudyService] studyImageUrl 필드가 없어 기본값(빈 문자열)으로 설정합니다"
+              "[StudyService] file 필드가 없음, 빈 file 객체 설정"
             );
-            study.studyImageUrl = "";
+            study.file = { fileId: null, fileName: null, fileUrl: "" };
           }
 
           return study;
@@ -1144,6 +1144,18 @@ export const studyService = {
       });
 
       console.log("[StudyService] 스터디 상세 조회 성공:", response.data);
+      
+      // 응답 데이터가 있는 경우
+      if (response.data) {
+        const data = response.data;
+        
+        // file 객체 확인 및 처리
+        if (!("file" in data) || !data.file || !data.file.fileUrl) {
+          console.log("[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정");
+          data.file = { fileId: null, fileName: null, fileUrl: "" };
+        }
+      }
+      
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 상세 조회 오류:", error);

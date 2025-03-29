@@ -17,8 +17,14 @@ function StudyList({ studies }) {
     console.log('[StudyList] 첫 번째 스터디 필드들:', Object.keys(studies[0]));
     console.log('[StudyList] studyName 존재 여부:', 'studyName' in studies[0]);
     console.log('[StudyList] studyContent 존재 여부:', 'studyContent' in studies[0]);
-    console.log('[StudyList] studyImageUrl 존재 여부:', 'studyImageUrl' in studies[0]);
+    console.log('[StudyList] file 존재 여부:', 'file' in studies[0]);
     console.log('[StudyList] studyId 존재 여부:', 'studyId' in studies[0]);
+    
+    // file 객체가 있는 경우 추가 로깅
+    if (studies[0].file) {
+      console.log('[StudyList] file 객체:', studies[0].file);
+      console.log('[StudyList] fileUrl 존재 여부:', 'fileUrl' in studies[0].file);
+    }
   }
   
   if (!studies || !studies.length) {
@@ -68,12 +74,15 @@ function StudyList({ studies }) {
         // studyId가 0인 경우도 유효한 ID로 처리하도록 수정
         const hasValidStudyId = study.studyId !== undefined && study.studyId !== null;
         
+        // file 객체에서 이미지 URL 추출
+        const fileUrl = study.file && study.file.fileUrl ? study.file.fileUrl : '';
+        
         // 필요한 정보만 매핑
         const mappedStudy = {
           id: hasValidStudyId ? study.studyId : index,
           title: study.studyName || '제목 없음',
           description: study.studyContent || '설명 없음',
-          imageUrl: study.studyImageUrl || '' // 이미지 URL만 사용
+          imageUrl: fileUrl || '' // file 객체의 fileUrl 사용
         };
         
         // 매핑된 스터디 객체 로깅

@@ -61,7 +61,7 @@ function StudyDetailPage() {
                 currentMembers: data.members?.length || 0,
                 maxMembers: 10,
                 status: '모집중',
-                imageUrl: data.studyImageUrl || ''
+                imageUrl: data.file && data.file.fileUrl ? data.file.fileUrl : ''
               };
               
               setStudyData(mappedData);
