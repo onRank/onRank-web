@@ -42,7 +42,6 @@ function Header() {
       gap: "12px",
     },
     logoutBtn: {
-      color: "#fff",
       padding: "6px 12px",
       border: "1px solid #ccc",
       borderRadius: "6px",
