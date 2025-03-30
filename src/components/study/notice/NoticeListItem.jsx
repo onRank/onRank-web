@@ -21,6 +21,12 @@ function NoticeListItem({ notice, onClick }) {
         transform: "translateY(-2px)",
       },
     },
+    noticeLeft: {
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      overflow: "hidden",
+    },
     noticeTitle: {
       fontSize: "16px",
       fontWeight: "600",
@@ -63,10 +69,11 @@ function NoticeListItem({ notice, onClick }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
-      <span style={styles.noticeDate}>
-        {formatDate(notice.noticeCreatedAt)}
-      </span>
+      <div style={styles.noticeLeft}>
+        <div style={styles.noticeIcon}>📢</div>
+        <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
+      </div>
+      <div style={styles.noticeDate}>{formatDate(notice.noticeCreatedAt)}</div>
     </div>
   );
 }
