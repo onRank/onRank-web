@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { noticeService } from "../../../services/api";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";

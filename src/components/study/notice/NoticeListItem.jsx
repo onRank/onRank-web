@@ -9,11 +9,9 @@ function NoticeListItem({ notice, onClick }) {
       borderRadius: "10px",
       marginBottom: "16px",
       display: "flex",
-      overflow: "hidden",
       justifyContent: "space-between",
       alignItems: "center",
       border: "1px solid #eee",
-      flexDirection: "column",
       boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
@@ -22,6 +20,11 @@ function NoticeListItem({ notice, onClick }) {
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         transform: "translateY(-2px)",
       },
+    },
+    noticeContentBlock: {
+      display: "flex",
+      flexDirection: "column",
+      overflow: "hidden",
     },
     noticeLeft: {
       display: "flex",
@@ -54,7 +57,7 @@ function NoticeListItem({ notice, onClick }) {
       marginLeft: "auto",
     },
     noticeText: {
-      fontSize: "8px",
+      fontSize: "12px",
       color: "#666",
       marginTop: "4px",
       whiteSpace: "nowrap",
@@ -82,8 +85,10 @@ function NoticeListItem({ notice, onClick }) {
     >
       <div style={styles.noticeLeft}>
         <div style={styles.noticeIcon}>📢</div>
-        <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
-        <div style={styles.noticeText}>{notice.noticeContent}</div>
+        <div style={styles.noticeContentBlock}>
+          <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
+          <div style={styles.noticeText}>{notice.noticeContent}</div>
+        </div>
       </div>
       <div style={styles.noticeDate}>{formatDate(notice.noticeCreatedAt)}</div>
     </div>
