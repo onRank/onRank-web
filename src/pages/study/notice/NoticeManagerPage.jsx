@@ -61,6 +61,8 @@ function NoticeContent() {
     contentArea: {
       flex: 1,
       padding: "20px",
+      minWidth: 0, // 중요: 플렉스 아이템이 너비를 초과하지 않도록 설정
+      overflow: "auto", // 필요한 경우에만 스크롤 표시
     },
     title: {
       fontSize: "22px",
@@ -84,29 +86,6 @@ function NoticeContent() {
       color: "#777",
       fontSize: "14px",
       marginTop: "5px",
-    },
-    noticeCard: {
-      backgroundColor: "#fff",
-      border: "1px solid #e5e5e5",
-      borderRadius: "6px",
-      padding: "15px",
-      marginBottom: "12px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      cursor: "pointer",
-    },
-    noticeIcon: {
-      marginRight: "10px",
-      color: "#666",
-    },
-    noticeTitle: {
-      fontSize: "15px",
-      fontWeight: "500",
-    },
-    noticeDate: {
-      fontSize: "14px",
-      color: "#888",
     },
   };
 
@@ -145,12 +124,12 @@ function NoticeContent() {
           onNoticeClick={handleNoticeClick}
           handleCreate={handleCreate}
           isLoading={isLoading}
-          styles={{
-            noticeCard: styles.noticeCard,
-            noticeIcon: styles.noticeIcon,
-            noticeTitle: styles.noticeTitle,
-            noticeDate: styles.noticeDate,
-          }}
+          // styles={{
+          //   noticeCard: styles.noticeCard,
+          //   noticeIcon: styles.noticeIcon,
+          //   noticeTitle: styles.noticeTitle,
+          //   noticeDate: styles.noticeDate,
+          // }}
         />
       )}
     </div>
