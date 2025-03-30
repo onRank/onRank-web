@@ -319,13 +319,15 @@ export const api = axios.create({
     const url = import.meta.env.PROD
       ? "https://onrank.kr"
       : import.meta.env.VITE_API_URL || "http://localhost:8080";
-    
+
     // 프로덕션에서는 항상 HTTPS 사용
-    if (import.meta.env.PROD && url.startsWith('http:')) {
-      console.warn('[API Config] HTTP URL detected in production, forcing HTTPS');
-      return url.replace('http:', 'https:');
+    if (import.meta.env.PROD && url.startsWith("http:")) {
+      console.warn(
+        "[API Config] HTTP URL detected in production, forcing HTTPS"
+      );
+      return url.replace("http:", "https:");
     }
-    
+
     return url;
   })(),
   timeout: 10000,
@@ -523,16 +525,20 @@ api.interceptors.request.use(
           tokenUtils.setToken(newToken);
           token = newToken;
         } else {
-          console.error("[API Debug] Token refresh response missing authorization header");
+          console.error(
+            "[API Debug] Token refresh response missing authorization header"
+          );
           // 토큰 없이 응답이 왔을 경우 인증 에러로 처리
           tokenUtils.removeToken(); // 액세스 토큰 제거
-          
+
           // 로그인 페이지가 아닐 경우에만 리다이렉트
-          if (!window.location.pathname.includes('/login')) {
-            console.log("[API Debug] Redirecting to login page due to authentication failure");
-            window.location.href = '/login';
+          if (!window.location.pathname.includes("/login")) {
+            console.log(
+              "[API Debug] Redirecting to login page due to authentication failure"
+            );
+            window.location.href = "/login";
           }
-          
+
           // API 요청 취소
           const cancelTokenSource = axios.CancelToken.source();
           config.cancelToken = cancelTokenSource.token;
@@ -540,16 +546,18 @@ api.interceptors.request.use(
         }
       } catch (error) {
         console.error(`[API Debug] Failed to refresh token: ${error.message}`);
-        
+
         // 토큰 갱신 실패 시 액세스 토큰 제거
         tokenUtils.removeToken();
-        
+
         // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes('/login')) {
-          console.log("[API Debug] Redirecting to login page due to token refresh failure");
-          window.location.href = '/login';
+        if (!window.location.pathname.includes("/login")) {
+          console.log(
+            "[API Debug] Redirecting to login page due to token refresh failure"
+          );
+          window.location.href = "/login";
         }
-        
+
         // API 요청 취소
         const cancelTokenSource = axios.CancelToken.source();
         config.cancelToken = cancelTokenSource.token;
@@ -764,28 +772,34 @@ api.interceptors.response.use(
           originalRequest.headers["Authorization"] = newToken;
           return api(originalRequest);
         } else {
-          console.error("[API Debug] 토큰 재발급 응답에 Authorization 헤더가 없음");
+          console.error(
+            "[API Debug] 토큰 재발급 응답에 Authorization 헤더가 없음"
+          );
           tokenUtils.removeToken();
-          
+
           // 로그인 페이지가 아닐 경우에만 리다이렉트
-          if (!window.location.pathname.includes('/login')) {
+          if (!window.location.pathname.includes("/login")) {
             console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
-            window.location.href = '/login';
+            window.location.href = "/login";
           }
-          
-          return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
+
+          return Promise.reject(
+            new Error("인증에 실패했습니다. 다시 로그인해주세요.")
+          );
         }
       } catch (refreshError) {
         console.error("[API Debug] 토큰 재발급 실패:", refreshError);
         tokenUtils.removeToken();
-        
+
         // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
-          window.location.href = '/login';
+          window.location.href = "/login";
         }
-        
-        return Promise.reject(new Error("인증에 실패했습니다. 다시 로그인해주세요."));
+
+        return Promise.reject(
+          new Error("인증에 실패했습니다. 다시 로그인해주세요.")
+        );
       }
     }
     return Promise.reject(error);
@@ -1089,10 +1103,7 @@ export const studyService = {
           "[StudyService] studyContent 존재 여부:",
           "studyContent" in data[0]
         );
-        console.log(
-          "[StudyService] file 존재 여부:",
-          "file" in data[0]
-        );
+        console.log("[StudyService] file 존재 여부:", "file" in data[0]);
 
         // 데이터 유효성 검사
         data = data.map((study) => {
@@ -1116,59 +1127,76 @@ export const studyService = {
               study.file = { fileId: null, fileName: null, fileUrl: "" };
             }
           } else {
-            console.log(
-              "[StudyService] file 필드가 없음, 빈 file 객체 설정"
-            );
+            console.log("[StudyService] file 필드가 없음, 빈 file 객체 설정");
             study.file = { fileId: null, fileName: null, fileUrl: "" };
           }
-          
+
           // 개별 스터디 데이터를 localStorage에 캐싱 (상세 페이지 접근 시 사용)
           if (study.studyId) {
             try {
               const mappedStudy = {
                 id: study.studyId,
-                title: study.studyName || '제목 없음',
-                description: study.studyContent || '설명 없음',
+                title: study.studyName || "제목 없음",
+                description: study.studyContent || "설명 없음",
                 currentMembers: study.members?.length || 0,
                 maxMembers: 10,
-                status: '모집중',
-                imageUrl: study.file && study.file.fileUrl ? study.file.fileUrl : ''
+                status: "모집중",
+                imageUrl:
+                  study.file && study.file.fileUrl ? study.file.fileUrl : "",
               };
-              
-              localStorage.setItem(`study_${study.studyId}`, JSON.stringify(mappedStudy));
-              console.log(`[StudyService] 스터디 ID:${study.studyId} 데이터를 localStorage에 캐싱했습니다.`);
+
+              localStorage.setItem(
+                `study_${study.studyId}`,
+                JSON.stringify(mappedStudy)
+              );
+              console.log(
+                `[StudyService] 스터디 ID:${study.studyId} 데이터를 localStorage에 캐싱했습니다.`
+              );
             } catch (cacheError) {
-              console.warn(`[StudyService] 스터디 ID:${study.studyId} 캐싱 실패:`, cacheError);
+              console.warn(
+                `[StudyService] 스터디 ID:${study.studyId} 캐싱 실패:`,
+                cacheError
+              );
             }
           }
 
           return study;
         });
-        
+
         // 전체 스터디 목록도 캐싱 (네트워크 오류 시 사용)
         try {
-          localStorage.setItem('studies_list', JSON.stringify(data));
-          console.log('[StudyService] 전체 스터디 목록을 localStorage에 캐싱했습니다.');
+          localStorage.setItem("studies_list", JSON.stringify(data));
+          console.log(
+            "[StudyService] 전체 스터디 목록을 localStorage에 캐싱했습니다."
+          );
         } catch (cacheError) {
-          console.warn('[StudyService] 전체 스터디 목록 캐싱 실패:', cacheError);
+          console.warn(
+            "[StudyService] 전체 스터디 목록 캐싱 실패:",
+            cacheError
+          );
         }
       }
 
       return data;
     } catch (error) {
       console.error("[StudyService] 스터디 목록 조회 오류:", error);
-      
+
       // API 호출 실패 시 localStorage에서 캐시된 목록 조회
       try {
-        const cachedListStr = localStorage.getItem('studies_list');
+        const cachedListStr = localStorage.getItem("studies_list");
         if (cachedListStr) {
-          console.log("[StudyService] API 호출 실패로 localStorage에서 캐시된 스터디 목록 사용");
+          console.log(
+            "[StudyService] API 호출 실패로 localStorage에서 캐시된 스터디 목록 사용"
+          );
           return JSON.parse(cachedListStr);
         }
       } catch (cacheError) {
-        console.error("[StudyService] 캐시된 스터디 목록 사용 중 오류:", cacheError);
+        console.error(
+          "[StudyService] 캐시된 스터디 목록 사용 중 오류:",
+          cacheError
+        );
       }
-      
+
       // 오류 발생 시 빈 배열 반환
       return [];
     }
@@ -1184,67 +1212,72 @@ export const studyService = {
       });
 
       console.log("[StudyService] 스터디 상세 조회 성공:", response.data);
-      
+
       // 응답 데이터가 있는 경우
       if (response.data) {
         const data = response.data;
-        
+
         // file 객체 확인 및 처리
         if (!("file" in data) || !data.file || !data.file.fileUrl) {
-          console.log("[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정");
+          console.log(
+            "[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정"
+          );
           data.file = { fileId: null, fileName: null, fileUrl: "" };
         }
-        
+
         // 스터디 데이터 캐싱 (백업용)
         try {
           const mappedData = {
             id: data.studyId,
-            title: data.studyName || '제목 없음',
-            description: data.studyContent || '설명 없음',
+            title: data.studyName || "제목 없음",
+            description: data.studyContent || "설명 없음",
             currentMembers: data.members?.length || 0,
             maxMembers: 10,
-            status: '모집중',
-            imageUrl: data.file && data.file.fileUrl ? data.file.fileUrl : ''
+            status: "모집중",
+            imageUrl: data.file && data.file.fileUrl ? data.file.fileUrl : "",
           };
-          
+
           localStorage.setItem(`study_${studyId}`, JSON.stringify(mappedData));
-          console.log("[StudyService] 스터디 데이터를 localStorage에 캐싱했습니다.");
+          console.log(
+            "[StudyService] 스터디 데이터를 localStorage에 캐싱했습니다."
+          );
         } catch (cacheError) {
           console.warn("[StudyService] 스터디 데이터 캐싱 실패:", cacheError);
         }
       }
-      
+
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 상세 조회 오류:", error);
-      
+
       // API 호출 실패 시 localStorage에서 캐시된 데이터 확인
       try {
         const cachedDataStr = localStorage.getItem(`study_${studyId}`);
         if (cachedDataStr) {
-          console.log("[StudyService] API 호출 실패로 localStorage에서 캐시된 데이터 사용");
+          console.log(
+            "[StudyService] API 호출 실패로 localStorage에서 캐시된 데이터 사용"
+          );
           const cachedData = JSON.parse(cachedDataStr);
-          
+
           // 캐시된 데이터를 원래 API 응답 형식으로 변환
           return {
             studyId: cachedData.id,
             studyName: cachedData.title,
             studyContent: cachedData.description,
             file: {
-              fileUrl: cachedData.imageUrl
-            }
+              fileUrl: cachedData.imageUrl,
+            },
           };
         }
       } catch (cacheError) {
         console.error("[StudyService] 캐시된 데이터 사용 중 오류:", cacheError);
       }
-      
+
       // 캐시된 데이터도 없으면 원래 오류 전달
       throw error;
     }
   },
 
-  
   // 스터디 멤버 조회
   getStudyMembers: async (studyId) => {
     try {
@@ -1414,7 +1447,7 @@ export const studyService = {
       if (error.response && error.response.status === 404) {
         throw new Error("회원가입 하지 않은 이메일입니다.");
       }
-      
+
       // 그 외 오류 메시지 추출 및 반환
       if (error.response && error.response.data) {
         const errorMessage =
@@ -1722,7 +1755,7 @@ export const studyService = {
       console.log("[StudyService] 스터디 생성 및 이미지 업로드 요청:", {
         studyData,
         imageFileName: imageFile?.name || "이미지 없음",
-        hasImage: !!imageFile
+        hasImage: !!imageFile,
       });
 
       // 1. 스터디 생성 및 Pre-signed URL 요청
@@ -1730,7 +1763,7 @@ export const studyService = {
         studyName: studyData.studyName || "",
         studyContent: studyData.studyContent || "",
         studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
-        fileName: imageFile?.name || null  // 파일 이름이 없으면 명시적으로 null 전송
+        fileName: imageFile?.name || null, // 파일 이름이 없으면 명시적으로 null 전송
       };
 
       console.log("[StudyService] 백엔드 요청 데이터:", requestData);
@@ -1739,25 +1772,29 @@ export const studyService = {
       const token = tokenUtils.getToken();
       if (!token) {
         console.error("[StudyService] 인증 토큰 없음, 스터디 생성 불가");
-        const authError = new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        const authError = new Error(
+          "인증 토큰이 없습니다. 로그인이 필요합니다."
+        );
         authError.type = "AUTH_ERROR";
-        
+
         // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
           const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
           setTimeout(() => {
             window.location.href = loginUrl;
           }, 500);
         }
-        
+
         throw authError;
       }
 
       // API 요청
       const response = await api.post("/studies/add", requestData, {
         headers: {
-          Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
           Accept: "application/json",
@@ -1770,51 +1807,60 @@ export const studyService = {
       // 2. Pre-signed URL이 있고 이미지 파일이 있는 경우 S3에 업로드
       if (response.data.uploadUrl && imageFile) {
         try {
-          await studyService.uploadImageToS3(response.data.uploadUrl, imageFile);
+          await studyService.uploadImageToS3(
+            response.data.uploadUrl,
+            imageFile
+          );
           console.log("[StudyService] 이미지 업로드 성공");
         } catch (uploadError) {
           console.error("[StudyService] 이미지 업로드 실패:", uploadError);
           // 이미지 업로드 실패 시에도 스터디 생성은 완료된 것으로 처리
           return {
             ...response.data,
-            warning: "스터디는 생성되었으나 이미지 업로드에 실패했습니다."
+            warning: "스터디는 생성되었으나 이미지 업로드에 실패했습니다.",
           };
         }
       }
 
       // 3. 최종 응답 반환
       return response.data;
-
     } catch (error) {
       console.error("[StudyService] 스터디 생성 오류:", error);
-      
+
       // 인증 오류인 경우 (401, 403)
-      if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+      if (
+        error.response &&
+        (error.response.status === 401 || error.response.status === 403)
+      ) {
         console.error("[StudyService] 인증 오류 발생:", error.response.status);
-        
+
         // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
-        const authError = new Error("인증에 실패했습니다. 다시 로그인이 필요합니다.");
+        const authError = new Error(
+          "인증에 실패했습니다. 다시 로그인이 필요합니다."
+        );
         authError.type = "AUTH_ERROR";
         authError.requireRelogin = true;
-        
+
         // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes('/login')) {
+        if (!window.location.pathname.includes("/login")) {
           console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
           setTimeout(() => {
-            window.location.href = '/login';
+            window.location.href = "/login";
           }, 500); // 약간의 지연을 두어 에러 메시지가 UI에 표시될 시간을 줌
         }
-        
+
         throw authError;
       }
-      
+
       // 네트워크 에러 처리
-      if (error.message && error.message.includes('Network Error')) {
-        const networkError = new Error("네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요.");
+      if (error.message && error.message.includes("Network Error")) {
+        const networkError = new Error(
+          "네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요."
+        );
         networkError.type = "NETWORK_ERROR";
         throw networkError;
       }
-      
+
       // 기타 에러
       throw error;
     }
@@ -1826,7 +1872,7 @@ export const studyService = {
       console.log("[StudyService] S3 이미지 업로드 시작:", {
         uploadUrl: uploadUrl.substring(0, 100) + "...",
         fileName: imageFile.name,
-        fileSize: imageFile.size
+        fileSize: imageFile.size,
       });
 
       await axios.put(uploadUrl, imageFile, {
@@ -1834,14 +1880,16 @@ export const studyService = {
           "Content-Type": imageFile.type,
         },
         maxContentLength: Infinity,
-        maxBodyLength: Infinity
+        maxBodyLength: Infinity,
       });
 
       console.log("[StudyService] S3 이미지 업로드 완료");
       return true;
     } catch (error) {
       console.error("[StudyService] S3 이미지 업로드 실패:", error);
-      throw new Error("이미지 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류"));
+      throw new Error(
+        "이미지 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류")
+      );
     }
   },
 };
@@ -1917,7 +1965,6 @@ export const noticeService = {
         data = data ? [data] : [];
       }
 
-      // 각 스터디 객체의 필드 확인 및 로깅
       if (data.length > 0) {
         console.log(
           "[NoticeService] 첫 번째 공지사항 객체 필드:",
@@ -1937,42 +1984,47 @@ export const noticeService = {
           "[NoticeService] noticeContent 존재 여부:",
           "noticeContent" in data[0]
         );
-        console.log(
-          "[NoticeService] noticeImagePath 존재 여부:",
-          "noticeImagePath" in data[0]
-        );
 
         // 데이터 유효성 검사
         data = data.map((notice) => {
-          // 필수 필드가 없는 경우 기본값 설정
-          if (!notice.noticeTitle) {
-            console.warn("[NoticeService] noticeName 필드 없음, 기본값 설정");
+          // noticeId가 없거나 유효하지 않은 경우
+          if (!notice.noticeId || isNaN(notice.noticeId)) {
+            console.warn(
+              "[NoticeService] noticeId 필드 없음 또는 유효하지 않음, 임의 ID 설정"
+            );
+            notice.noticeId = Math.floor(Math.random() * 10000);
+          }
+
+          // 제목이 없거나 빈 문자열인 경우
+          if (!notice.noticeTitle || notice.noticeTitle.trim() === "") {
+            console.warn(
+              "[NoticeService] noticeTitle 필드 없음 또는 빈 값, 기본값 설정"
+            );
             notice.noticeTitle = "제목 없음";
           }
 
-          if (!notice.noticeContent) {
+          // 내용이 없거나 빈 문자열인 경우
+          if (!notice.noticeContent || notice.noticeContent.trim() === "") {
             console.warn(
-              "[NoticeService] noticeContent 필드 없음, 기본값 설정"
+              "[NoticeService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
             );
-            notice.noticeContent = "설명 없음";
+            notice.noticeContent = "내용 없음";
           }
 
-          // noticeImagePath 필드가 존재하지만 값이 null이거나 빈 문자열인 경우 처리
-          if ("noticeImagePath" in notice) {
-            if (
-              notice.noticeImagePath === null ||
-              notice.noticeImagePath === ""
-            ) {
-              console.log(
-                "[NoticeService] noticeImagePath 필드가 비어있어 기본값(빈 문자열)으로 설정합니다"
-              );
-              notice.noticeImagePath = "";
-            }
-          } else {
-            console.log(
-              "[NoticeService] noticeImagePath 필드가 없어 기본값(빈 문자열)으로 설정합니다"
+          // 생성일이 없는 경우
+          if (!notice.noticeCreatedAt) {
+            console.warn(
+              "[NoticeService] noticeCreatedAt 필드 없음, 현재 시간으로 설정"
             );
-            notice.noticeImagePath = "";
+            notice.noticeCreatedAt = new Date().toISOString();
+          }
+
+          // 수정일이 없는 경우
+          if (!notice.noticeModifiedAt) {
+            console.warn(
+              "[NoticeService] noticeModifiedAt 필드 없음, 생성일과 동일하게 설정"
+            );
+            notice.noticeModifiedAt = notice.noticeCreatedAt;
           }
 
           return notice;
@@ -2160,10 +2212,57 @@ export const noticeService = {
       );
 
       console.log("[NoticeService] 공지사항 상세 조회 성공:", response.data);
-      return response.data;
+
+      // 데이터 유효성 검사 추가
+      let data = response.data;
+
+      // 데이터가 없거나 잘못된 형식인 경우 처리
+      if (!data) {
+        console.warn("[NoticeService] 응답 데이터 없음");
+        return {
+          success: false,
+          message: "공지사항 데이터를 불러올 수 없습니다.",
+          data: null,
+        };
+      }
+
+      // 필수 필드가 없는 경우 기본값 설정
+      if (!data.noticeTitle || data.noticeTitle.trim() === "") {
+        console.warn(
+          "[NoticeService] noticeTitle 필드 없음 또는 빈 값, 기본값 설정"
+        );
+        data.noticeTitle = "제목 없음";
+      }
+
+      if (!data.noticeContent || data.noticeContent.trim() === "") {
+        console.warn(
+          "[NoticeService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
+        );
+        data.noticeContent = "내용 없음";
+      }
+
+      if (!data.noticeCreatedAt) {
+        console.warn(
+          "[NoticeService] noticeCreatedAt 필드 없음, 현재 시간으로 설정"
+        );
+        data.noticeCreatedAt = new Date().toISOString();
+      }
+
+      if (!data.noticeModifiedAt) {
+        console.warn(
+          "[NoticeService] noticeModifiedAt 필드 없음, 생성일과 동일하게 설정"
+        );
+        data.noticeModifiedAt = data.noticeCreatedAt;
+      }
+
+      return { success: true, data: data };
     } catch (error) {
       console.error("[NoticeService] 공지사항 상세 조회 오류:", error);
-      throw error;
+      return {
+        success: false,
+        message: error.message || "공지사항을 불러오는 중 오류가 발생했습니다.",
+        data: null,
+      };
     }
   },
 

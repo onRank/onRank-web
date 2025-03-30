@@ -51,6 +51,15 @@ function NoticeListItem({ notice, onClick }) {
       color: "#999",
       marginLeft: "auto",
     },
+    noticeText: {
+      fontSize: "14px",
+      color: "#666",
+      marginTop: "4px",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      maxWidth: "100%",
+    },
   };
 
   // hover 효과를 위한 이벤트 핸들러
@@ -72,6 +81,7 @@ function NoticeListItem({ notice, onClick }) {
       <div style={styles.noticeLeft}>
         <div style={styles.noticeIcon}>📢</div>
         <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
+        <div style={styles.noticeText}>{notice.noticeContent}</div>
       </div>
       <div style={styles.noticeDate}>{formatDate(notice.noticeCreatedAt)}</div>
     </div>
