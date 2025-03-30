@@ -4,42 +4,46 @@ import { formatDate } from "../../../utils/dateUtils";
 function NoticeListItem({ notice, onClick }) {
   const styles = {
     noticeCard: {
-      backgroundColor: "#fff",
-      padding: "16px",
-      borderRadius: "8px",
-      marginBottom: "12px",
+      backgroundColor: "#ffffff",
+      padding: "16px 20px",
+      borderRadius: "10px",
+      marginBottom: "16px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
+      border: "1px solid #eee",
+      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+      transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
+      gap: "12px",
+      hover: {
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        transform: "translateY(-2px)",
+      },
     },
     noticeTitle: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      marginBottom: "32px",
-    },
-    noticeContent: {
-      color: "#666",
-      fontSize: "14px",
-      marginBottom: "10px",
+      fontSize: "16px",
+      fontWeight: "600",
+      color: "#333",
+      whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
-      display: "-webkit-box",
-      WebkitLineClamp: 2,
-      WebkitBoxOrient: "vertical",
     },
-    noticeDate: {
-      fontSize: "14px",
-      color: "#999",
-    },
-    noticeInfo: {
+    noticeIcon: {
+      flexShrink: 0,
+      width: "28px",
+      height: "28px",
+      backgroundColor: "#f1f1f1",
+      borderRadius: "6px",
       display: "flex",
       alignItems: "center",
+      justifyContent: "center",
+      fontSize: "18px",
     },
-    separator: {
-      margin: "0 8px",
-      color: "#ccc",
+    noticeDate: {
+      fontSize: "13px",
+      color: "#999",
+      marginLeft: "auto",
     },
   };
 
@@ -60,15 +64,9 @@ function NoticeListItem({ notice, onClick }) {
       onMouseLeave={handleMouseLeave}
     >
       <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
-      {notice.noticeContent && (
-        <p style={styles.noticeContent}>{notice.noticeContent}</p>
-      )}
-      <div style={styles.noticeInfo}>
-        <span style={styles.separator}>•</span>
-        <span style={styles.noticeDate}>
-          {formatDate(notice.noticeCreatedAt)}
-        </span>
-      </div>
+      <span style={styles.noticeDate}>
+        {formatDate(notice.noticeCreatedAt)}
+      </span>
     </div>
   );
 }
