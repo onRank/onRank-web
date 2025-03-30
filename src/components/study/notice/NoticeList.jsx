@@ -1,6 +1,5 @@
 import PropTypes from "prop-types";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import Button from "../../common/Button";
 import NoticeListItem from "./NoticeListItem";
 
 function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
@@ -14,16 +13,16 @@ function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
             등록된 공지사항이 없습니다.
           </div>
         ) : (
-          <ul className="space-y-2">
+          <div className="space-y-2">
             {notices.map((notice) => (
-              <li key={notice.noticeId}>
+              <div key={notice.noticeId}>
                 <NoticeListItem
                   notice={notice}
                   onClick={() => onNoticeClick(notice.noticeId)}
                 />
-              </li>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
     </div>
