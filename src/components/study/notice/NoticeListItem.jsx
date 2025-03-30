@@ -5,12 +5,14 @@ function NoticeListItem({ notice, onClick }) {
   const styles = {
     noticeCard: {
       backgroundColor: "#fff",
-      border: "1px solid #e5e5e5",
-      borderRadius: "12px",
-      padding: "15px",
+      padding: "16px",
+      borderRadius: "8px",
       marginBottom: "12px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.05)",
       cursor: "pointer",
-      transition: "background-color 0.2s ease",
     },
     noticeTitle: {
       fontSize: "24px",
@@ -29,8 +31,7 @@ function NoticeListItem({ notice, onClick }) {
     },
     noticeDate: {
       fontSize: "14px",
-      color: "#888",
-      marginLeft: "auto",
+      color: "#999",
     },
     noticeInfo: {
       display: "flex",

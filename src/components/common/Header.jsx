@@ -42,9 +42,8 @@ function Header() {
       gap: "12px",
     },
     logoutBtn: {
-      padding: "6px 30px",
+      padding: "6px 12px",
       fontFamily: "Lexend",
-      lineHeight: "21px",
       border: "none",
       borderRadius: "6px",
       backgroundColor: "#EDEDED",
