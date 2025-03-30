@@ -5,17 +5,17 @@ function NoticeListItem({ notice, onClick }) {
   const styles = {
     noticeCard: {
       backgroundColor: "#ffffff",
-      padding: "16px 20px",
+      padding: "12px 16px",
       borderRadius: "10px",
-      marginBottom: "16px",
+      marginBottom: "12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
       border: "1px solid #eee",
-      boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
+      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
-      gap: "12px",
+      gap: "10px",
       hover: {
         boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         transform: "translateY(-2px)",
