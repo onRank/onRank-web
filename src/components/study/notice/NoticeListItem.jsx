@@ -6,16 +6,16 @@ function NoticeListItem({ notice, onClick }) {
     noticeCard: {
       backgroundColor: "#fff",
       border: "1px solid #e5e5e5",
-      borderRadius: "6px",
+      borderRadius: "12px",
       padding: "15px",
       marginBottom: "12px",
       cursor: "pointer",
       transition: "background-color 0.2s ease",
     },
     noticeTitle: {
-      fontSize: "15px",
-      fontWeight: "500",
-      marginBottom: "8px",
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "32px",
     },
     noticeContent: {
       color: "#666",
@@ -30,6 +30,7 @@ function NoticeListItem({ notice, onClick }) {
     noticeDate: {
       fontSize: "14px",
       color: "#888",
+      marginLeft: "auto",
     },
     noticeInfo: {
       display: "flex",

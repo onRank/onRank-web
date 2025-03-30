@@ -72,7 +72,7 @@ function NoticeContent() {
     addNoticeCard: {
       backgroundColor: "#fff",
       border: "1px solid #e5e5e5",
-      borderRadius: "6px",
+      borderRadius: "12px",
       padding: "20px",
       marginBottom: "24px",
       display: "flex",
