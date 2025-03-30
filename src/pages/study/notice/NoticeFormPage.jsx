@@ -5,8 +5,6 @@ import Button from "../../../components/common/Button";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { studyService } from "../../../services/api";
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import { IoHomeOutline } from "react-icons/io5";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
@@ -17,24 +15,6 @@ function NoticeFormPage() {
   const [error, setError] = useState(null);
   const [studyData, setStudyData] = useState({ title: "로딩 중..." });
   const maxLength = 10000;
-
-  // 스터디 정보 가져오기
-  useEffect(() => {
-    const fetchStudyData = async () => {
-      try {
-        const data = await studyService.getStudyById(studyId);
-        if (data) {
-          setStudyData({
-            title: data.studyName || "제목 없음",
-          });
-        }
-      } catch (err) {
-        console.error("스터디 정보 로드 오류:", err);
-      }
-    };
-
-    fetchStudyData();
-  }, [studyId]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
