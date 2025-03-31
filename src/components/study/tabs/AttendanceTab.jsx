@@ -4,15 +4,25 @@ import PropTypes from 'prop-types';
 import { studyService } from '../../../services/api';
 
 const styles = {
-  // 스타일 코드는 유지
-};
-
-// 출석 상태별 아이콘 스타일
-const STATUS_STYLES = {
-  PRESENT: { color: '#4CAF50', text: 'O' },  // 초록색
-  ABSENT: { color: '#F44336', text: 'X' },   // 빨간색
-  LATE: { color: '#FFC107', text: '-' },     // 노란색
-  UNKNOWN: { color: '#9E9E9E', text: '?' }   // 회색
+  progressBar: {
+    width: '120px',
+    height: '8px',
+    backgroundColor: '#E5E5E5',
+    borderRadius: '4px',
+    overflow: 'hidden'
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FF0000',
+    borderRadius: '4px',
+    transition: 'width 0.3s ease'
+  },
+  progressText: {
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: '#333333',
+    marginLeft: '8px'
+  }
 };
 
 function AttendanceTab() {
@@ -46,6 +56,18 @@ function AttendanceTab() {
     navigate(`/studies/${studyId}/attendances/${scheduleId}`);
   };
 
+  // 출석률 계산 함수
+  const calculateAttendanceRate = (attendance) => {
+    const totalMembers = attendance.attendanceDetails?.length || 0;
+    if (totalMembers === 0) return 0;
+    
+    const presentMembers = attendance.attendanceDetails.filter(
+      detail => detail.status === 'PRESENT'
+    ).length;
+    
+    return Math.round((presentMembers / totalMembers) * 100);
+  };
+
   if (isLoading) {
     return <div>로딩 중...</div>;
   }
@@ -56,7 +78,6 @@ function AttendanceTab() {
 
   return (
     <div style={{ width: '100%' }}>
-      {/* 출석 현황 */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr',
@@ -104,19 +125,18 @@ function AttendanceTab() {
                 })}
               </div>
             </div>
-            <div style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              backgroundColor: STATUS_STYLES[attendance.attendanceStatus].color,
-              color: '#FFFFFF',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '16px',
-              fontWeight: 'bold'
-            }}>
-              {STATUS_STYLES[attendance.attendanceStatus].text}
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={styles.progressBar}>
+                <div 
+                  style={{
+                    ...styles.progressFill,
+                    width: `${calculateAttendanceRate(attendance)}%`
+                  }}
+                />
+              </div>
+              <span style={styles.progressText}>
+                {calculateAttendanceRate(attendance)}%
+              </span>
             </div>
           </div>
         ))}
