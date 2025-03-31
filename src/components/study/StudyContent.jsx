@@ -499,7 +499,7 @@ function StudyContent({ activeTab, studyData }) {
   const [error, setError] = useState(null);
   const [showScheduleDetail, setShowScheduleDetail] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const { studyId } = useParams();
+  const { studyId, scheduleId } = useParams();
   const navigate = useNavigate();
   const [attendances, setAttendances] = useState([]);
   const [showAttendanceDetail, setShowAttendanceDetail] = useState(false);
@@ -717,6 +717,15 @@ function StudyContent({ activeTab, studyData }) {
       return <div style={{ color: '#F44336' }}>{error}</div>;
     }
 
+    // URL에 scheduleId가 있으면 출석 상세 페이지 표시
+    if (scheduleId && activeTab === '출석') {
+      return (
+        <AttendanceDetailView
+          onBack={() => navigate(`/studies/${studyId}/attendances`)}
+        />
+      );
+    }
+
     switch (activeTab) {
       case "일정":
         if (showScheduleDetail) {
@@ -753,13 +762,6 @@ function StudyContent({ activeTab, studyData }) {
       case "게시판":
         return <DefaultContent content="게시판 기능 개발 중입니다." />;
       case "출석":
-        if (showAttendanceDetail) {
-          return (
-            <AttendanceDetailView
-              onBack={() => setShowAttendanceDetail(false)}
-            />
-          );
-        }
         return (
           <div style={{ width: '100%' }}>
             <div style={{
