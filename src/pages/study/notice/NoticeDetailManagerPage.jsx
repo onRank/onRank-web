@@ -32,9 +32,7 @@ function NoticeDetailManagerContent() {
   };
 
   const handleDelete = async () => {
-    if (!window.confirm("공지사항을 삭제하시겠습니까?")) {
-      return;
-    }
+    if (!window.confirm("공지사항을 삭제하시겠습니까?")) return;
 
     setIsDeleting(true);
     try {
@@ -57,7 +55,7 @@ function NoticeDetailManagerContent() {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div style={{ padding: "24px" }}>
         <Button onClick={handleBack} variant="back" />
         <ErrorMessage message={error} />
       </div>
@@ -66,49 +64,98 @@ function NoticeDetailManagerContent() {
 
   if (!selectedNotice) {
     return (
-      <div className="p-6">
+      <div style={{ padding: "24px" }}>
         <Button onClick={handleBack} variant="back" />
-        <div className="mt-4">해당 공지사항을 찾을 수 없습니다.</div>
+        <div style={{ marginTop: "16px" }}>
+          해당 공지사항을 찾을 수 없습니다.
+        </div>
       </div>
     );
   }
 
+  const styles = {
+    container: {
+      maxWidth: "800px",
+      margin: "0 auto",
+    },
+    topBar: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "24px",
+    },
+    card: {
+      backgroundColor: "#fff",
+      borderRadius: "12px",
+      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
+      padding: "32px",
+      border: "1px solid #eee",
+    },
+    title: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "12px",
+    },
+    dateText: {
+      color: "#666",
+      fontSize: "14px",
+      marginBottom: "24px",
+    },
+    content: {
+      marginBottom: "24px",
+      lineHeight: "1.6",
+      whiteSpace: "pre-wrap",
+    },
+    fileSection: {
+      borderTop: "1px solid #eee",
+      paddingTop: "24px",
+    },
+    fileTitle: {
+      fontSize: "16px",
+      fontWeight: "600",
+      marginBottom: "8px",
+    },
+    fileLink: {
+      color: "#1e3a8a",
+      cursor: "pointer",
+      textDecoration: "underline",
+    },
+  };
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
+    <div style={styles.container}>
+      <div style={styles.topBar}>
         <Button onClick={handleBack} variant="back" />
-        <div className="space-x-2">
+        <div>
           <Button onClick={handleEdit} variant="edit" />
           <Button onClick={handleDelete} variant="delete" />
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold mb-2">
-          {selectedNotice.noticeTitle}
-        </h1>
-        <div className="text-gray-600 mb-6">
+      <div style={styles.card}>
+        <h1 style={styles.title}>{selectedNotice.noticeTitle}</h1>
+        <div style={styles.dateText}>
           작성일: {formatDate(selectedNotice.noticeCreatedAt)}
           {selectedNotice.noticeModifiedAt !==
             selectedNotice.noticeCreatedAt && (
-            <span className="ml-4">
+            <span style={{ marginLeft: "16px" }}>
               수정일: {formatDate(selectedNotice.noticeModifiedAt)}
             </span>
           )}
         </div>
 
-        <div className="prose max-w-none mb-6">
+        <div style={styles.content}>
           {selectedNotice.noticeContent || <p>&nbsp;</p>}
         </div>
 
         {selectedNotice.files && selectedNotice.files.length > 0 && (
-          <div className="border-t pt-4">
-            <h2 className="text-lg font-semibold mb-2">첨부 파일</h2>
-            <ul className="space-y-2">
+          <div style={styles.fileSection}>
+            <div style={styles.fileTitle}>첨부 파일</div>
+            <ul>
               {selectedNotice.files.map((file) => (
                 <li
                   key={file.fileId}
-                  className="text-blue-600 hover:text-blue-800 cursor-pointer"
+                  style={styles.fileLink}
                   onClick={() => window.open(file.fileUrl, "_blank")}
                 >
                   {file.fileName}
@@ -123,10 +170,36 @@ function NoticeDetailManagerContent() {
 }
 
 function NoticeDetailManagerPage() {
+  const styles = {
+    wrapper: {
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      backgroundColor: "#fff",
+      display: "flex",
+      flexDirection: "column",
+    },
+    main: {
+      display: "flex",
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      padding: "48px 64px",
+    },
+  };
+
   return (
     <NoticeProvider>
-      <StudySidebar activeTab="공지사항" />
-      <NoticeDetailManagerContent />
+      <div style={styles.wrapper}>
+        <div style={styles.main}>
+          <aside>
+            <StudySidebar activeTab="공지사항" />
+          </aside>
+          <main style={styles.content}>
+            <NoticeDetailManagerContent />
+          </main>
+        </div>
+      </div>
     </NoticeProvider>
   );
 }
