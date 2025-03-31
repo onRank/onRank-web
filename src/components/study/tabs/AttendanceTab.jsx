@@ -13,10 +13,7 @@ const styles = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 'bold',
-    transition: 'background-color 0.2s ease',
-    ':hover': {
-      backgroundColor: '#0056b3'
-    }
+    transition: 'background-color 0.2s ease'
   }
 };
 
@@ -77,8 +74,7 @@ function AttendanceTab() {
               padding: '1rem',
               backgroundColor: '#FFFFFF',
               border: '1px solid #E5E5E5',
-              borderRadius: '8px',
-              transition: 'all 0.2s ease'
+              borderRadius: '8px'
             }}
           >
             <div style={{ flex: 1 }}>
