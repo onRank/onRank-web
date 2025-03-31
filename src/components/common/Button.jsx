@@ -4,7 +4,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
   const defaultLabels = {
     create: "작성",
     back: "닫기",
-    edit: "수정",
+    store: "저장",
     upload: "업로드",
     delete: "삭제",
     addFiles: "파일 첨부",
