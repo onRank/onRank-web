@@ -2,15 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../services/api';
 import { IoChevronBackOutline } from 'react-icons/io5';
+import { tokenUtils } from '../../utils/tokenUtils';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
   
-  const [scheduleTitle, setScheduleTitle] = useState('');
-  const [scheduleContent, setScheduleContent] = useState('');
-  const [scheduleDate, setScheduleDate] = useState('');
-  const [scheduleRound, setScheduleRound] = useState(1);
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
@@ -21,7 +21,7 @@ function ScheduleAddPage() {
         const schedules = await studyService.getSchedules(studyId);
         // 새 일정 회차는 현재 일정 갯수 + 1
         if (schedules && schedules.length > 0) {
-          setScheduleRound(schedules.length + 1);
+          setDate(schedules[schedules.length - 1].date);
         }
       } catch (error) {
         console.error("[ScheduleAddPage] 일정 목록 조회 실패:", error);
@@ -31,8 +31,30 @@ function ScheduleAddPage() {
     fetchSchedules();
   }, [studyId]);
   
+  // 새로고침 감지 및 리다이렉트 처리
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      const token = tokenUtils.getToken();
+      if (!token) {
+        navigate(`https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // 컴포넌트 마운트 시에도 토큰 체크
+    const token = tokenUtils.getToken();
+    if (!token) {
+      navigate(`https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [studyId, navigate]);
+  
   // 폼 유효성 검증
-  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '';
+  const isFormValid = title.trim() !== '' && date !== '';
 
   // 일정 추가 제출
   const handleSubmit = async (e) => {
@@ -49,10 +71,9 @@ function ScheduleAddPage() {
     try {
       // API 요청 데이터 형식으로 변환
       const scheduleData = {
-        title: scheduleTitle.trim(),
-        content: scheduleContent.trim(),
-        date: scheduleDate,
-        round: scheduleRound
+        title: title.trim(),
+        content: content.trim(),
+        date: date,
       };
       
       // API 호출
@@ -69,231 +90,104 @@ function ScheduleAddPage() {
     }
   };
 
+  const handleCancel = () => {
+    navigate(`/studies/${studyId}/schedules`);
+  };
+
   return (
-    <div style={{
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: '2rem 1rem'
-    }}>
+    <div style={{ padding: '2rem' }}>
+      <h2>일정</h2>
       <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <Link 
-          to={`/studies/${studyId}/schedules`}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            textDecoration: 'none',
-            color: '#333',
-            marginRight: '1rem'
-          }}
-        >
-          <IoChevronBackOutline size={20} />
-        </Link>
-        <h1 style={{ 
-          fontSize: '24px',
-          fontWeight: 'bold',
-          margin: 0
-        }}>
-          일정
-        </h1>
-      </div>
-      
-      <div style={{
-        marginBottom: '2rem',
-        padding: '1.5rem',
-        backgroundColor: '#F8F9FA',
-        borderRadius: '8px'
-      }}>
-        <h2 style={{
-          fontSize: '18px',
-          fontWeight: 'bold',
-          marginTop: 0,
-          marginBottom: '1rem'
-        }}>
-          일정 추가
-        </h2>
-        <div style={{
-          color: '#666',
-          fontSize: '14px'
-        }}>
-          다음을 일정을 추가해주세요.
-        </div>
-      </div>
-      
-      {error && (
-        <div style={{
-          padding: '1rem',
-          backgroundColor: '#FFEBEE',
-          color: '#D32F2F',
-          borderRadius: '4px',
-          marginBottom: '1rem'
-        }}>
-          {error}
-        </div>
-      )}
-      
-      <div style={{
-        border: '1px solid #e5e5e5',
+        backgroundColor: '#FFFFFF',
         borderRadius: '8px',
         padding: '2rem',
-        marginBottom: '2rem'
+        maxWidth: '800px',
+        margin: '2rem auto'
       }}>
-        <form onSubmit={handleSubmit}>
-          <div style={{
-            marginBottom: '1rem',
-            fontSize: '16px',
-            fontWeight: 'bold'
-          }}>
-            제목
-          </div>
-          
-          <div style={{
-            display: 'flex',
-            marginBottom: '1rem'
-          }}>
-            <div style={{
-              fontWeight: 'bold',
-              marginRight: '0.5rem'
-            }}>
-              {scheduleRound}회차
-            </div>
-            <div style={{
-              color: '#666666',
-              fontSize: '14px',
-              marginRight: '0.5rem'
-            }}>
-              ({scheduleDate || '날짜 선택'})
-            </div>
-          </div>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <input
-              id="scheduleTitle"
-              type="text"
-              value={scheduleTitle}
-              onChange={(e) => setScheduleTitle(e.target.value)}
-              placeholder="일정 제목을 입력하세요"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
-              }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
-              htmlFor="scheduleDate"
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}
-            >
-              날짜 <span style={{ color: '#FF0000' }}>*</span>
-            </label>
-            <input
-              id="scheduleDate"
-              type="date"
-              value={scheduleDate}
-              onChange={(e) => setScheduleDate(e.target.value)}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
-              }}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
-              htmlFor="scheduleContent"
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontWeight: 'bold',
-                fontSize: '14px'
-              }}
-            >
-              내용을 입력해주세요
-            </label>
-            <textarea
-              id="scheduleContent"
-              value={scheduleContent}
-              onChange={(e) => setScheduleContent(e.target.value)}
-              placeholder="일정에 대한 설명을 입력하세요"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                minHeight: '200px',
-                resize: 'vertical',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
-              }}
-            />
-            <div style={{ textAlign: 'right', fontSize: '12px', color: '#666' }}>
-              {scheduleContent.length}/10000
-            </div>
-          </div>
-          
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '1rem',
-            marginTop: '2rem'
-          }}>
-            <Link
-              to={`/studies/${studyId}/schedules`}
-              style={{
-                padding: '0.75rem 2rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                backgroundColor: 'white',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                textDecoration: 'none',
-                color: '#333',
-                display: 'inline-block',
-                textAlign: 'center'
-              }}
-            >
-              취소하기
-            </Link>
-            <button
-              type="submit"
-              disabled={isSubmitting || !isFormValid}
-              style={{
-                padding: '0.75rem 2rem',
-                border: 'none',
-                borderRadius: '4px',
-                backgroundColor: isSubmitting || !isFormValid ? '#cccccc' : '#FF0000',
-                color: 'white',
-                cursor: isSubmitting || !isFormValid ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {isSubmitting ? '처리 중...' : '작성'}
-            </button>
-          </div>
-        </form>
+        <div style={{ marginBottom: '2rem' }}>
+          <h3>제목</h3>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="일정 제목을 입력하세요"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #E5E5E5',
+              borderRadius: '4px',
+              fontSize: '16px'
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '2rem' }}>
+          <h3>날짜 <span style={{ color: '#FF0000' }}>*</span></h3>
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #E5E5E5',
+              borderRadius: '4px',
+              fontSize: '16px'
+            }}
+            required
+          />
+        </div>
+
+        <div style={{ marginBottom: '2rem' }}>
+          <h3>내용을 입력해주세요</h3>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="일정에 대한 설명을 입력하세요"
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: '1px solid #E5E5E5',
+              borderRadius: '4px',
+              fontSize: '16px',
+              minHeight: '200px',
+              resize: 'vertical'
+            }}
+          />
+        </div>
+
+        <div style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          gap: '1rem'
+        }}>
+          <button
+            onClick={handleCancel}
+            style={{
+              padding: '0.75rem 2rem',
+              border: '1px solid #E5E5E5',
+              borderRadius: '4px',
+              backgroundColor: '#FFFFFF',
+              cursor: 'pointer'
+            }}
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={!date}
+            style={{
+              padding: '0.75rem 2rem',
+              backgroundColor: date ? '#FF0000' : '#CCCCCC',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: date ? 'pointer' : 'not-allowed'
+            }}
+          >
+            작성
+          </button>
+        </div>
       </div>
     </div>
   );
