@@ -1540,10 +1540,19 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 백엔드 요청 형식에 맞게 변환
+      const apiScheduleData = {
+        scheduleTitle: scheduleData.title,
+        scheduleContent: scheduleData.content,
+        scheduleStartingAt: `${scheduleData.date}T00:00:00`
+      };
+
+      console.log("[StudyService] 일정 추가 요청 데이터:", apiScheduleData);
+
       // API 요청
       const response = await api.post(
         `/studies/${studyId}/schedules/add`,
-        scheduleData,
+        apiScheduleData,
         {
           headers: {
             Authorization: token.startsWith("Bearer ")
@@ -1555,6 +1564,8 @@ export const studyService = {
         }
       );
 
+      console.log("[StudyService] 일정 추가 응답:", response.status);
+
       // 201 상태코드 및 Location 헤더 처리
       if (response.status === 201) {
         const locationUrl = response.headers["location"];
@@ -1564,14 +1575,13 @@ export const studyService = {
         const scheduleId = locationUrl ? locationUrl.split("/").pop() : null;
         if (scheduleId) {
           console.log("[StudyService] 생성된 일정 ID:", scheduleId);
-          // response.data에 scheduleId 추가
-          if (!response.data) response.data = {};
-          response.data.scheduleId = scheduleId;
+          // Location 헤더에서 추출한 ID 반환
+          return { scheduleId };
         }
       }
 
-      console.log("[StudyService] 일정 추가 성공:", response.data);
-      return response.data || { success: true };
+      // 응답 본문이 없는 경우 기본값 반환
+      return { success: true };
     } catch (error) {
       console.error("[StudyService] 일정 추가 오류:", error);
 
@@ -1602,10 +1612,21 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 백엔드 요청 형식에 맞게 변환
+      const apiScheduleData = {
+        scheduleTitle: scheduleData.title,
+        scheduleContent: scheduleData.content,
+        scheduleStartingAt: scheduleData.date && scheduleData.date.includes('T') 
+          ? scheduleData.date 
+          : `${scheduleData.date}T00:00:00`
+      };
+
+      console.log("[StudyService] 일정 수정 요청 데이터:", apiScheduleData);
+
       // API 요청
       const response = await api.put(
         `/studies/${studyId}/schedules/${scheduleId}`,
-        scheduleData,
+        apiScheduleData,
         {
           headers: {
             Authorization: token.startsWith("Bearer ")
@@ -1617,10 +1638,26 @@ export const studyService = {
         }
       );
 
-      console.log("[StudyService] 일정 수정 성공:", response.data);
-      return response.data || { success: true };
+      console.log("[StudyService] 일정 수정 성공. 응답 상태:", response.status);
+      
+      // 성공 상태 코드를 받으면 성공으로 처리
+      if (response.status === 200) {
+        return { success: true };
+      }
+      
+      return { success: true };
     } catch (error) {
       console.error("[StudyService] 일정 수정 오류:", error);
+
+      // 403 Forbidden - 권한 없음
+      if (error.response && error.response.status === 403) {
+        throw new Error("일정을 수정할 권한이 없습니다.");
+      }
+      
+      // 404 Not Found - 존재하지 않는 일정
+      if (error.response && error.response.status === 404) {
+        throw new Error("존재하지 않는 일정입니다.");
+      }
 
       // 오류 메시지 추출 및 반환
       if (error.response && error.response.data) {
@@ -1663,10 +1700,26 @@ export const studyService = {
         }
       );
 
-      console.log("[StudyService] 일정 삭제 성공:", response.status);
-      return true; // 삭제 성공 시 true 반환
+      console.log("[StudyService] 일정 삭제 응답 상태:", response.status);
+      
+      // 204 No Content는 성공적인 삭제를 의미
+      if (response.status === 204) {
+        return true;
+      }
+      
+      return true; // 기타 성공 상태 코드도 true 반환
     } catch (error) {
       console.error("[StudyService] 일정 삭제 오류:", error);
+
+      // 403 Forbidden - 권한 없음
+      if (error.response && error.response.status === 403) {
+        throw new Error("일정을 삭제할 권한이 없습니다.");
+      }
+      
+      // 404 Not Found - 존재하지 않는 일정
+      if (error.response && error.response.status === 404) {
+        throw new Error("존재하지 않는 일정입니다.");
+      }
 
       // 오류 메시지 추출 및 반환
       if (error.response && error.response.data) {

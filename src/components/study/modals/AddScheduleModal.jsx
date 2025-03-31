@@ -2,11 +2,11 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 
-function AddScheduleModal({ onClose, onSubmit, initialRound, isSubmitting }) {
-  const [scheduleTitle, setScheduleTitle] = useState('');
-  const [scheduleDescription, setScheduleDescription] = useState('');
+function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initialDescription, initialDate, isSubmitting }) {
+  const [scheduleTitle, setScheduleTitle] = useState(initialTitle || '');
+  const [scheduleDescription, setScheduleDescription] = useState(initialDescription || '');
   const [scheduleRound, setScheduleRound] = useState(initialRound || 1);
-  const [scheduleDate] = useState(format(new Date(), 'yyyy.MM.dd'));
+  const [scheduleDate] = useState(initialDate || format(new Date(), 'yyyy.MM.dd'));
   
   // 폼 유효성 검증
   const isFormValid = scheduleTitle.trim() !== '';
@@ -26,6 +26,10 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, isSubmitting }) {
     // 부모 컴포넌트에 전달
     onSubmit(newSchedule);
   };
+
+  // 모달 제목 설정 (추가 또는 수정)
+  const modalTitle = initialTitle ? '일정 수정' : '일정 추가';
+  const submitButtonText = initialTitle ? '수정하기' : '추가하기';
 
   return (
     <div style={{
@@ -54,7 +58,7 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, isSubmitting }) {
           fontSize: '18px',
           fontWeight: 'bold'
         }}>
-          일정 추가
+          {modalTitle}
         </h3>
         
         <div style={{ marginBottom: '1.5rem' }}>
@@ -225,7 +229,7 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, isSubmitting }) {
               justifyContent: 'center'
             }}
           >
-            {isSubmitting ? '처리 중...' : '추가하기'}
+            {isSubmitting ? '처리 중...' : submitButtonText}
           </button>
         </div>
       </div>
@@ -237,11 +241,17 @@ AddScheduleModal.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   initialRound: PropTypes.number,
+  initialTitle: PropTypes.string,
+  initialDescription: PropTypes.string,
+  initialDate: PropTypes.string,
   isSubmitting: PropTypes.bool
 };
 
 AddScheduleModal.defaultProps = {
   initialRound: 1,
+  initialTitle: '',
+  initialDescription: '',
+  initialDate: '',
   isSubmitting: false
 };
 
