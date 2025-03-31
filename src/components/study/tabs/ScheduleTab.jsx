@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddScheduleModal from '../modals/AddScheduleModal';
 
-function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, isLoading, error }) {
+function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
   const { studyId } = useParams();
   const navigate = useNavigate();
   const [showUpdateSchedulePopup, setShowUpdateSchedulePopup] = useState(false);
@@ -23,11 +23,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   // 일정 추가 페이지로 이동
   const handleNavigateToAddSchedule = () => {
     navigate(`/studies/${studyId}/schedules/add`);
-  };
-
-  // 일정 상세 페이지로 이동
-  const handleNavigateToScheduleDetail = (schedule) => {
-    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`);
   };
 
   // 일정 수정 팝업 열기
@@ -123,22 +118,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         }}>
           일정
         </h2>
-        <button
-          onClick={handleNavigateToAddSchedule}
-          disabled={isLoading}
-          style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: isLoading ? '#cccccc' : '#FF0000',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: isLoading ? 'not-allowed' : 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          {isLoading ? '처리중...' : '일정 추가'}
-        </button>
       </div>
       
       {/* 일정 추가 안내 */}
@@ -148,10 +127,14 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         padding: '1.5rem',
         marginBottom: '2rem',
         backgroundColor: '#F8F9FA',
-        textAlign: 'center'
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
       }}>
-        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>일정 추가</div>
-        <div style={{ color: '#666', fontSize: '14px', marginBottom: '1rem' }}>다음을 일정을 추가해주세요.</div>
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>일정 추가</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>다가올 일정을 추가해주세요.</div>
+        </div>
         <button
           onClick={handleNavigateToAddSchedule}
           style={{
@@ -165,7 +148,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
             fontWeight: 'bold'
           }}
         >
-          작성
+          일정 추가
         </button>
       </div>
       
@@ -248,7 +231,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
               
               {/* 일정 내용 */}
               <div 
-                onClick={() => handleNavigateToScheduleDetail(schedule)}
+                onClick={() => onViewScheduleDetail(schedule)}
                 style={{
                   flex: 1,
                   border: '1px solid #E5E5E5',
@@ -263,42 +246,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                   }
                 }}
               >
-                {/* 삭제 버튼 */}
-                <button
-                  onClick={(e) => handleDeleteSchedule(schedule.scheduleId, e)}
-                  style={{
-                    position: 'absolute',
-                    top: '1rem',
-                    right: '1rem',
-                    background: 'none',
-                    border: 'none',
-                    color: '#666666',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: '0.25rem 0.5rem'
-                  }}
-                >
-                  삭제
-                </button>
-                
-                {/* 수정 버튼 */}
-                <button
-                  onClick={() => handleOpenUpdateSchedulePopup(schedule)}
-                  style={{
-                    position: 'absolute',
-                    top: '1rem',
-                    right: '4rem',
-                    background: 'none',
-                    border: 'none',
-                    color: '#666666',
-                    cursor: 'pointer',
-                    fontSize: '12px',
-                    padding: '0.25rem 0.5rem'
-                  }}
-                >
-                  수정
-                </button>
-                
                 <div style={{
                   display: 'flex',
                   flexDirection: 'column'
@@ -371,6 +318,7 @@ ScheduleTab.propTypes = {
   onAddSchedule: PropTypes.func.isRequired,
   onDeleteSchedule: PropTypes.func.isRequired,
   onUpdateSchedule: PropTypes.func.isRequired,
+  onViewScheduleDetail: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
   error: PropTypes.string
 };
