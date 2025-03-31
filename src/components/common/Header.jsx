@@ -105,7 +105,12 @@ function Header() {
   return (
     <header style={styles.header}>
       <div style={styles.left}>
-        <span style={styles.logo}>onRank</span>
+        <img
+          src="/logo1.png"
+          alt="onRank 로고"
+          style={{ height: "24px", cursor: "pointer" }}
+          onClick={() => navigate("/studies")}
+        />
         <nav style={styles.nav}>
           <a
             href="/studies"
