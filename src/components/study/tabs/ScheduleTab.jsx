@@ -25,6 +25,11 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     navigate(`/studies/${studyId}/schedules/add`);
   };
 
+  // 일정 상세 페이지로 이동
+  const handleNavigateToScheduleDetail = (schedule) => {
+    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`);
+  };
+
   // 일정 수정 팝업 열기
   const handleOpenUpdateSchedulePopup = (schedule) => {
     // scheduleStartingAt에서 날짜 부분만 추출
@@ -75,7 +80,10 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   };
   
   // 일정 삭제 처리
-  const handleDeleteSchedule = async (scheduleId) => {
+  const handleDeleteSchedule = async (scheduleId, event) => {
+    // 이벤트 버블링 방지
+    event.stopPropagation();
+    
     if (window.confirm('정말로 이 일정을 삭제하시겠습니까?')) {
       try {
         await onDeleteSchedule(scheduleId);
@@ -85,15 +93,36 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     }
   };
 
+  // 일정을 날짜순으로 정렬하고 회차 번호 할당
+  const sortedSchedules = () => {
+    if (!schedules || schedules.length === 0) return [];
+    
+    // 날짜순으로 정렬 (오래된 일정이 먼저)
+    return [...schedules]
+      .sort((a, b) => new Date(a.scheduleStartingAt) - new Date(b.scheduleStartingAt))
+      .map((schedule, index) => ({
+        ...schedule,
+        round: schedules.length - index // 회차 번호 (역순)
+      }));
+  };
+
+  const schedulesWithRounds = sortedSchedules();
+
   return (
-    <div style={{ width: '100%', position: 'relative', marginTop: '3rem' }}>
-      {/* 일정 추가 버튼 */}
+    <div style={{ width: '100%', position: 'relative', padding: '2rem 0' }}>
       <div style={{
-        position: 'absolute',
-        top: '-3rem',
-        right: 0,
-        zIndex: 1
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem'
       }}>
+        <h2 style={{ 
+          fontSize: '20px', 
+          fontWeight: 'bold',
+          margin: 0
+        }}>
+          일정
+        </h2>
         <button
           onClick={handleNavigateToAddSchedule}
           disabled={isLoading}
@@ -109,6 +138,34 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           }}
         >
           {isLoading ? '처리중...' : '일정 추가'}
+        </button>
+      </div>
+      
+      {/* 일정 추가 안내 */}
+      <div style={{
+        border: '1px solid #E5E5E5',
+        borderRadius: '4px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+        backgroundColor: '#F8F9FA',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>일정 추가</div>
+        <div style={{ color: '#666', fontSize: '14px', marginBottom: '1rem' }}>다음을 일정을 추가해주세요.</div>
+        <button
+          onClick={handleNavigateToAddSchedule}
+          style={{
+            padding: '0.5rem 2rem',
+            backgroundColor: '#FF0000',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}
+        >
+          작성
         </button>
       </div>
       
@@ -137,8 +194,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         </div>
       )}
       
-      {/* 일정 목록 표시 */}
-      {!isLoading && schedules.length === 0 ? (
+      {/* 일정 타임라인 */}
+      {!isLoading && schedulesWithRounds.length === 0 ? (
         <div style={{
           padding: '2rem',
           textAlign: 'center',
@@ -149,100 +206,148 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
         </div>
       ) : (
-        <>
-          {!isLoading && schedules.map((schedule) => (
+        <div style={{ position: 'relative' }}>
+          {/* 타임라인 라인 */}
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            bottom: '0',
+            left: '12px',
+            width: '2px',
+            backgroundColor: '#E5E5E5',
+            zIndex: 0
+          }}></div>
+          
+          {/* 일정 아이템 */}
+          {!isLoading && schedulesWithRounds.map((schedule, index) => (
             <div 
               key={schedule.scheduleId}
               style={{
+                display: 'flex',
                 marginBottom: '2rem',
-                width: '100%',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                padding: '1.5rem',
                 position: 'relative'
               }}
             >
-              {/* 삭제 버튼 */}
-              <button
-                onClick={() => handleDeleteSchedule(schedule.scheduleId)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'none',
-                  border: 'none',
-                  color: '#666666',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  padding: '0.25rem 0.5rem'
-                }}
-              >
-                삭제
-              </button>
-              
-              {/* 수정 버튼 */}
-              <button
-                onClick={() => handleOpenUpdateSchedulePopup(schedule)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '4rem',
-                  background: 'none',
-                  border: 'none',
-                  color: '#666666',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  padding: '0.25rem 0.5rem'
-                }}
-              >
-                수정
-              </button>
-              
+              {/* 타임라인 원형 마커 */}
               <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: '#FF0000',
                 display: 'flex',
+                justifyContent: 'center',
                 alignItems: 'center',
-                marginBottom: '1rem'
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '12px',
+                zIndex: 1,
+                marginRight: '1rem'
               }}>
-                <div style={{
-                  width: '1px',
-                  height: '16px',
-                  backgroundColor: '#FF0000',
-                  marginRight: '0.5rem'
-                }} />
-                <span style={{
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}>
-                  {schedule.round}회차
-                </span>
-                <span style={{
-                  fontSize: '14px',
-                  color: '#666666',
-                  marginLeft: '1rem'
-                }}>
-                  {schedule.formattedDate || formatDate(schedule.scheduleStartingAt)}
-                </span>
-                {schedule.scheduleTitle && (
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    marginLeft: '1rem'
-                  }}>
-                    - {schedule.scheduleTitle}
-                  </span>
-                )}
+                ●
               </div>
-              <div style={{
-                fontSize: '14px',
-                color: '#333333',
-                whiteSpace: 'pre-line',
-                lineHeight: '1.6'
-              }}>
-                {schedule.scheduleContent}
+              
+              {/* 일정 내용 */}
+              <div 
+                onClick={() => handleNavigateToScheduleDetail(schedule)}
+                style={{
+                  flex: 1,
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  padding: '1.5rem',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s ease',
+                  backgroundColor: 'white',
+                  ':hover': {
+                    backgroundColor: '#f9f9f9'
+                  }
+                }}
+              >
+                {/* 삭제 버튼 */}
+                <button
+                  onClick={(e) => handleDeleteSchedule(schedule.scheduleId, e)}
+                  style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '1rem',
+                    background: 'none',
+                    border: 'none',
+                    color: '#666666',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    padding: '0.25rem 0.5rem'
+                  }}
+                >
+                  삭제
+                </button>
+                
+                {/* 수정 버튼 */}
+                <button
+                  onClick={() => handleOpenUpdateSchedulePopup(schedule)}
+                  style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '4rem',
+                    background: 'none',
+                    border: 'none',
+                    color: '#666666',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    padding: '0.25rem 0.5rem'
+                  }}
+                >
+                  수정
+                </button>
+                
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <div style={{
+                    fontWeight: 'bold',
+                    fontSize: '16px',
+                    marginBottom: '0.5rem'
+                  }}>
+                    제목
+                  </div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '1rem'
+                  }}>
+                    <span style={{
+                      fontWeight: 'bold',
+                      marginRight: '0.5rem'
+                    }}>
+                      {schedule.round}회차
+                    </span>
+                    <span style={{
+                      color: '#666666',
+                      fontSize: '14px',
+                      marginRight: '0.5rem'
+                    }}>
+                      {formatDate(schedule.scheduleStartingAt)}
+                    </span>
+                    <span style={{
+                      fontWeight: 'bold',
+                      fontSize: '14px'
+                    }}>
+                      - {schedule.scheduleTitle}
+                    </span>
+                  </div>
+                  <div style={{
+                    fontSize: '14px',
+                    color: '#333333',
+                    whiteSpace: 'pre-line',
+                    lineHeight: '1.6'
+                  }}>
+                    {schedule.scheduleContent}
+                  </div>
+                </div>
               </div>
             </div>
           ))}
-        </>
+        </div>
       )}
       
       {/* 일정 수정 모달 */}

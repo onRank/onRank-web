@@ -3,38 +3,54 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../services/api';
 import { IoChevronBackOutline } from 'react-icons/io5';
 
-function ScheduleAddPage() {
-  const { studyId } = useParams();
+function ScheduleDetailPage() {
+  const { studyId, scheduleId } = useParams();
   const navigate = useNavigate();
   
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
   const [scheduleRound, setScheduleRound] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // 일정 목록을 가져와서 회차 번호 계산
+  // 일정 데이터 조회
   useEffect(() => {
-    const fetchSchedules = async () => {
+    const fetchScheduleDetails = async () => {
       try {
-        const schedules = await studyService.getSchedules(studyId);
-        // 새 일정 회차는 현재 일정 갯수 + 1
-        if (schedules && schedules.length > 0) {
-          setScheduleRound(schedules.length + 1);
+        setIsLoading(true);
+        setError('');
+        
+        const schedule = await studyService.getScheduleById(studyId, scheduleId);
+        console.log("[ScheduleDetailPage] 일정 조회 성공:", schedule);
+        
+        // 날짜 형식 변환 (ISO 날짜에서 yyyy-MM-dd 형식으로)
+        let dateString = '';
+        if (schedule.scheduleStartingAt) {
+          dateString = schedule.scheduleStartingAt.split('T')[0];
         }
+        
+        setScheduleTitle(schedule.scheduleTitle || '');
+        setScheduleContent(schedule.scheduleContent || '');
+        setScheduleDate(dateString);
+        setScheduleRound(schedule.round || 1);
+        
       } catch (error) {
-        console.error("[ScheduleAddPage] 일정 목록 조회 실패:", error);
+        console.error("[ScheduleDetailPage] 일정 조회 실패:", error);
+        setError("일정을 불러오는 중 오류가 발생했습니다.");
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchSchedules();
-  }, [studyId]);
+    fetchScheduleDetails();
+  }, [studyId, scheduleId]);
   
   // 폼 유효성 검증
   const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '';
 
-  // 일정 추가 제출
+  // 일정 수정 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -51,23 +67,57 @@ function ScheduleAddPage() {
       const scheduleData = {
         title: scheduleTitle.trim(),
         content: scheduleContent.trim(),
-        date: scheduleDate,
-        round: scheduleRound
+        date: scheduleDate
       };
       
       // API 호출
-      const result = await studyService.addSchedule(studyId, scheduleData);
-      console.log("[ScheduleAddPage] 일정 추가 성공:", result);
+      const result = await studyService.updateSchedule(studyId, scheduleId, scheduleData);
+      console.log("[ScheduleDetailPage] 일정 수정 성공:", result);
       
       // 성공 시 일정 목록 페이지로 이동
       navigate(`/studies/${studyId}/schedules`);
     } catch (error) {
-      console.error("[ScheduleAddPage] 일정 추가 실패:", error);
-      setError(`일정 추가에 실패했습니다: ${error.message}`);
+      console.error("[ScheduleDetailPage] 일정 수정 실패:", error);
+      setError(`일정 수정에 실패했습니다: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
+  
+  // 일정 삭제 처리
+  const handleDeleteSchedule = async () => {
+    if (window.confirm('정말로 이 일정을 삭제하시겠습니까?')) {
+      try {
+        setIsSubmitting(true);
+        
+        // API 호출
+        await studyService.deleteSchedule(studyId, scheduleId);
+        console.log("[ScheduleDetailPage] 일정 삭제 성공");
+        
+        // 성공 시 일정 목록 페이지로 이동
+        navigate(`/studies/${studyId}/schedules`);
+      } catch (error) {
+        console.error("[ScheduleDetailPage] 일정 삭제 실패:", error);
+        setError(`일정 삭제에 실패했습니다: ${error.message}`);
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '2rem 1rem',
+        textAlign: 'center'
+      }}>
+        <div style={{ marginTop: '2rem' }}>
+          일정 정보를 불러오는 중입니다...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{
@@ -113,13 +163,13 @@ function ScheduleAddPage() {
           marginTop: 0,
           marginBottom: '1rem'
         }}>
-          일정 추가
+          일정 상세
         </h2>
         <div style={{
           color: '#666',
           fontSize: '14px'
         }}>
-          다음을 일정을 추가해주세요.
+          일정을 조회하고 수정할 수 있습니다.
         </div>
       </div>
       
@@ -257,6 +307,24 @@ function ScheduleAddPage() {
             gap: '1rem',
             marginTop: '2rem'
           }}>
+            <button
+              type="button"
+              onClick={handleDeleteSchedule}
+              disabled={isSubmitting}
+              style={{
+                padding: '0.75rem 2rem',
+                border: '1px solid #f44336',
+                borderRadius: '4px',
+                backgroundColor: 'white',
+                color: '#f44336',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                display: 'inline-block',
+                textAlign: 'center'
+              }}
+            >
+              삭제하기
+            </button>
             <Link
               to={`/studies/${studyId}/schedules`}
               style={{
@@ -290,7 +358,7 @@ function ScheduleAddPage() {
                 justifyContent: 'center'
               }}
             >
-              {isSubmitting ? '처리 중...' : '작성'}
+              {isSubmitting ? '처리 중...' : '저장'}
             </button>
           </div>
         </form>
@@ -299,4 +367,4 @@ function ScheduleAddPage() {
   );
 }
 
-export default ScheduleAddPage; 
+export default ScheduleDetailPage; 
