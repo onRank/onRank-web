@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { IoHomeOutline } from 'react-icons/io5';
 import StudySidebar from '../../components/study/StudySidebar';
 import StudyContent from '../../components/study/StudyContent';
@@ -194,90 +194,23 @@ function StudyDetailPage() {
       width: '100%',
       maxWidth: '100%',
       overflowX: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
+      display: 'flex'
     }}>
-      {/* 경로 표시 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        marginBottom: '2rem',
-        fontSize: '14px',
-        color: '#666666',
-        width: '100%',
-        maxWidth: '1200px',
-        padding: '0 1rem'
-      }}>
-        <Link 
-          to="/studies"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            color: '#666666',
-            textDecoration: 'none',
-            transition: 'color 0.2s ease',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F8F9FA';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{'>'}</span>
-        <Link
-          to={`/studies/${studyId}`}
-          style={{
-            color: activeTab ? '#666666' : '#FF0000',
-            textDecoration: 'none',
-            transition: 'color 0.2s ease',
-            padding: '4px 8px',
-            borderRadius: '4px',
-            fontWeight: activeTab ? 'normal' : 'bold'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F8F9FA';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          {studyData.title}
-        </Link>
-        {activeTab && (
-          <>
-            <span>{'>'}</span>
-            <span style={{ 
-              color: '#FF0000',
-              fontWeight: 'bold',
-              padding: '2px 4px'
-            }}>
-              {activeTab}
-            </span>
-          </>
-        )}
-      </div>
+      {/* 사이드바 */}
+      <StudySidebar
+        studyId={studyId}
+        activeTab={activeTab}
+        studyData={studyData}
+      />
 
-      {/* 오류 메시지 표시 */}
-      {error && <ErrorMessage message={error} />}
-
-      {/* 메인 컨텐츠 */}
+      {/* 메인 콘텐츠 */}
       <div style={{
-        display: 'flex',
-        gap: '2rem',
-        width: '100%',
-        maxWidth: '1200px',
-        position: 'relative',
-        padding: '0 1rem'
+        flex: 1,
+        padding: '2rem',
+        backgroundColor: '#FFFFFF'
       }}>
-        <StudySidebar activeTab={activeTab} />
-        <StudyContent activeTab={activeTab} studyData={studyData} />
+        {/* 중첩된 라우트의 컴포넌트가 여기에 렌더링됩니다 */}
+        <Outlet context={{ studyData }} />
       </div>
     </div>
   );

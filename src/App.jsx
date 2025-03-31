@@ -371,6 +371,19 @@ function AppContent() {
             }
           />
           <Route
+            path="/studies/:studyId"
+            element={
+              <ProtectedRoute>
+                <StudyLayout>
+                  <StudyDetailPage />
+                </StudyLayout>
+              </ProtectedRoute>
+            }
+          >
+            <Route path="attendances" element={<AttendanceTab />} />
+            <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
+          </Route>
+          <Route
             path="/studies/:studyId/*"
             element={
               <ProtectedRoute>
@@ -392,11 +405,8 @@ function AppContent() {
                       element={<AssignmentDetail />}
                     />
                     <Route path="board" element={<StudyDetailPage />} />
-                    <Route path="attendance" element={<StudyDetailPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
-                    <Route path="attendances" element={<AttendanceTab />} />
-                    <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>
