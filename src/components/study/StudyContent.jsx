@@ -607,7 +607,19 @@ function StudyContent({ activeTab, studyData }) {
     }
   };
 
-  return <div className="study-content">{renderContent()}</div>;
+  return (
+    <div 
+      className="study-content" 
+      style={{
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0'
+      }}
+    >
+      {renderContent()}
+    </div>
+  );
 }
 
 StudyContent.propTypes = {
