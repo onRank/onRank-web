@@ -25,6 +25,9 @@ import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
+import ScheduleAddPage from "./pages/study/ScheduleAddPage";
+import AttendanceTab from "./components/study/tabs/AttendanceTab";
+import AttendanceDetailPage from "./pages/study/AttendanceDetailPage";
 import "./App.css";
 
 // 레이아웃 상수
@@ -39,6 +42,9 @@ const StudyLayout = memo(({ children }) => {
     <div
       style={{
         minHeight: `calc(100vh - ${HEADER_HEIGHT})`,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center'
       }}
     >
       <div
@@ -46,12 +52,14 @@ const StudyLayout = memo(({ children }) => {
           padding: "2rem",
           backgroundColor: "var(--main-bg, #ffffff)",
           overflow: "auto",
+          width: '100%'
         }}
       >
         <div
           style={{
             maxWidth: "1200px",
             margin: "0 auto",
+            width: '100%'
           }}
         >
           {children}
@@ -377,6 +385,7 @@ function AppContent() {
                     />
 
                     <Route path="schedules" element={<StudyDetailPage />} />
+                    <Route path="schedules/add" element={<ScheduleAddPage />} />
                     <Route path="assignment" element={<StudyDetailPage />} />
                     <Route
                       path="assignment/:id"
@@ -386,6 +395,8 @@ function AppContent() {
                     <Route path="attendance" element={<StudyDetailPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
+                    <Route path="attendances" element={<AttendanceTab />} />
+                    <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>

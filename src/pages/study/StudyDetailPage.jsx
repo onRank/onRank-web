@@ -193,7 +193,10 @@ function StudyDetailPage() {
     <div style={{
       width: '100%',
       maxWidth: '100%',
-      overflowX: 'hidden'
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
     }}>
       {/* 경로 표시 */}
       <div style={{
@@ -203,7 +206,9 @@ function StudyDetailPage() {
         marginBottom: '2rem',
         fontSize: '14px',
         color: '#666666',
-        width: '100%'
+        width: '100%',
+        maxWidth: '1200px',
+        padding: '0 1rem'
       }}>
         <Link 
           to="/studies"
@@ -267,7 +272,9 @@ function StudyDetailPage() {
         display: 'flex',
         gap: '2rem',
         width: '100%',
-        position: 'relative'
+        maxWidth: '1200px',
+        position: 'relative',
+        padding: '0 1rem'
       }}>
         <StudySidebar activeTab={activeTab} />
         <StudyContent activeTab={activeTab} studyData={studyData} />

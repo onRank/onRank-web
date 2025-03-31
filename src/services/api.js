@@ -1544,7 +1544,9 @@ export const studyService = {
       const apiScheduleData = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
-        scheduleStartingAt: `${scheduleData.date}T00:00:00`
+        scheduleStartingAt: scheduleData.date && scheduleData.date.includes('T') 
+          ? scheduleData.date.replace(/\./g, '-')
+          : `${scheduleData.date.replace(/\./g, '-')}T00:00:00`
       };
 
       console.log("[StudyService] 일정 추가 요청 데이터:", apiScheduleData);
@@ -1617,8 +1619,8 @@ export const studyService = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
         scheduleStartingAt: scheduleData.date && scheduleData.date.includes('T') 
-          ? scheduleData.date 
-          : `${scheduleData.date}T00:00:00`
+          ? scheduleData.date.replace(/\./g, '-')
+          : `${scheduleData.date.replace(/\./g, '-')}T00:00:00`
       };
 
       console.log("[StudyService] 일정 수정 요청 데이터:", apiScheduleData);
@@ -1737,16 +1739,32 @@ export const studyService = {
   // 출석 목록 조회
   getAttendances: async (studyId) => {
     try {
-      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
-
-      const response = await api.get(`/studies/${studyId}/attendances`, {
-        withCredentials: true,
-      });
-
-      console.log("[StudyService] 출석 목록 조회 성공:", response.data);
+      const response = await api.get(`/studies/${studyId}/attendances`);
       return response.data;
     } catch (error) {
-      console.error("[StudyService] 출석 목록 조회 오류:", error);
+      console.error('[API] 출석 목록 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 출석 상세 정보 조회
+  getAttendanceDetails: async (studyId, scheduleId) => {
+    try {
+      const response = await api.get(`/studies/${studyId}/attendances/${scheduleId}`);
+      return response.data;
+    } catch (error) {
+      console.error('[API] 출석 상세 정보 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 출석 상태 업데이트
+  updateAttendanceStatus: async (studyId, attendanceId, status) => {
+    try {
+      const response = await api.put(`/studies/${studyId}/attendances/${attendanceId}?status=${status}`);
+      return response.data;
+    } catch (error) {
+      console.error('[API] 출석 상태 업데이트 실패:', error);
       throw error;
     }
   },

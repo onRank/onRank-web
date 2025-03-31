@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate, useParams } from 'react-router-dom';
 import AddScheduleModal from '../modals/AddScheduleModal';
 
-function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, isLoading, error }) {
-  const [showAddSchedulePopup, setShowAddSchedulePopup] = useState(false);
+function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
+  const { studyId } = useParams();
+  const navigate = useNavigate();
   const [showUpdateSchedulePopup, setShowUpdateSchedulePopup] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [isAdding, setIsAdding] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   
   // ISO 날짜 문자열을 'yyyy.MM.dd' 형식으로 변환하는 함수
@@ -19,14 +20,9 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     return `${year}.${month}.${day}`;
   };
 
-  // 일정 추가 팝업 열기
-  const handleOpenAddSchedulePopup = () => {
-    setShowAddSchedulePopup(true);
-  };
-
-  // 일정 추가 팝업 닫기
-  const handleCloseAddSchedulePopup = () => {
-    setShowAddSchedulePopup(false);
+  // 일정 추가 페이지로 이동
+  const handleNavigateToAddSchedule = () => {
+    navigate(`/studies/${studyId}/schedules/add`);
   };
 
   // 일정 수정 팝업 열기
@@ -53,25 +49,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     setShowUpdateSchedulePopup(false);
   };
   
-  // 일정 추가 처리
-  const handleSubmitSchedule = async (newSchedule) => {
-    setIsAdding(true);
-    
-    try {
-      // API 요청을 통한 일정 추가
-      const success = await onAddSchedule(newSchedule);
-      
-      if (success) {
-        // 성공 시 모달 닫기
-        handleCloseAddSchedulePopup();
-      }
-    } catch (error) {
-      console.error('[ScheduleTab] 일정 추가 실패:', error);
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
   // 일정 수정 처리
   const handleSubmitUpdateSchedule = async (updatedSchedule) => {
     if (!selectedSchedule) return;
@@ -98,7 +75,10 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   };
   
   // 일정 삭제 처리
-  const handleDeleteSchedule = async (scheduleId) => {
+  const handleDeleteSchedule = async (scheduleId, event) => {
+    // 이벤트 버블링 방지
+    event.stopPropagation();
+    
     if (window.confirm('정말로 이 일정을 삭제하시겠습니까?')) {
       try {
         await onDeleteSchedule(scheduleId);
@@ -108,30 +88,58 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     }
   };
 
+  // 일정을 날짜순으로 정렬하고 회차 번호 할당
+  const sortedSchedules = () => {
+    if (!schedules || schedules.length === 0) return [];
+    
+    // 1. 먼저 날짜순으로 정렬 (오래된 순)하여 회차 부여
+    const withRounds = [...schedules]
+      .sort((a, b) => new Date(a.scheduleStartingAt) - new Date(b.scheduleStartingAt))
+      .map((schedule, index) => ({
+        ...schedule,
+        round: index + 1 // 오래된 일정부터 1회차, 2회차로 순차 할당
+      }));
+    
+    // 2. 다시 최신순으로 정렬하여 표시
+    return withRounds.sort((a, b) => new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt));
+  };
+
+  const schedulesWithRounds = sortedSchedules();
+
   return (
-    <div style={{ width: '100%', position: 'relative', marginTop: '3rem' }}>
-      {/* 일정 추가 버튼 */}
+    <div style={{ 
+      width: '100%'
+    }}>
+      {/* 일정 추가 안내 */}
       <div style={{
-        position: 'absolute',
-        top: '-3rem',
-        right: 0,
-        zIndex: 1
+        border: '1px solid #E5E5E5',
+        borderRadius: '4px',
+        padding: '1.5rem',
+        marginBottom: '2rem',
+        backgroundColor: '#F8F9FA',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        width: '100%'
       }}>
+        <div style={{ textAlign: 'left' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>일정 추가</div>
+          <div style={{ color: '#666', fontSize: '14px' }}>다가올 일정을 추가해주세요.</div>
+        </div>
         <button
-          onClick={handleOpenAddSchedulePopup}
-          disabled={isLoading || isAdding}
+          onClick={handleNavigateToAddSchedule}
           style={{
-            padding: '0.5rem 1rem',
-            backgroundColor: isLoading || isAdding ? '#cccccc' : '#FF0000',
+            padding: '0.5rem 2rem',
+            backgroundColor: '#FF0000',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: isLoading || isAdding ? 'not-allowed' : 'pointer',
+            cursor: 'pointer',
             fontSize: '14px',
             fontWeight: 'bold'
           }}
         >
-          {isLoading || isAdding ? '처리중...' : '일정 추가'}
+          일정 추가
         </button>
       </div>
       
@@ -143,7 +151,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           backgroundColor: '#FFEBEE',
           color: '#D32F2F',
           borderRadius: '4px',
-          fontSize: '14px'
+          fontSize: '14px',
+          width: '100%'
         }}>
           {error}
         </div>
@@ -154,128 +163,127 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         <div style={{
           padding: '2rem',
           textAlign: 'center',
-          color: '#666666'
+          color: '#666666',
+          width: '100%'
         }}>
           일정을 불러오는 중입니다...
         </div>
       )}
       
-      {/* 일정 목록 표시 */}
-      {!isLoading && schedules.length === 0 ? (
+      {/* 일정 타임라인 */}
+      {!isLoading && schedulesWithRounds.length === 0 ? (
         <div style={{
           padding: '2rem',
           textAlign: 'center',
           color: '#666666',
           border: '1px dashed #E5E5E5',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          width: '100%'
         }}>
           등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
         </div>
       ) : (
-        <>
-          {!isLoading && schedules.map((schedule) => (
-            <div 
+        <div style={{ 
+          width: '100%',
+          position: 'relative'
+        }}>
+          {/* 타임라인 세로선 */}
+          <div style={{
+            position: 'absolute',
+            left: '12px',
+            top: '0',
+            bottom: '0',
+            width: '2px',
+            backgroundColor: '#E5E5E5',
+            zIndex: 0
+          }} />
+          
+          {schedulesWithRounds.map((schedule, index) => (
+            <div
               key={schedule.scheduleId}
+              onClick={() => onViewScheduleDetail(schedule)}
               style={{
-                marginBottom: '2rem',
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'flex-start',
+                marginBottom: '1.5rem',
+                cursor: 'pointer',
                 width: '100%',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                padding: '1.5rem',
-                position: 'relative'
+                zIndex: 1
               }}
             >
-              {/* 삭제 버튼 */}
-              <button
-                onClick={() => handleDeleteSchedule(schedule.scheduleId)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '1rem',
-                  background: 'none',
-                  border: 'none',
-                  color: '#666666',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  padding: '0.25rem 0.5rem'
-                }}
-              >
-                삭제
-              </button>
-              
-              {/* 수정 버튼 */}
-              <button
-                onClick={() => handleOpenUpdateSchedulePopup(schedule)}
-                style={{
-                  position: 'absolute',
-                  top: '1rem',
-                  right: '4rem',
-                  background: 'none',
-                  border: 'none',
-                  color: '#666666',
-                  cursor: 'pointer',
-                  fontSize: '12px',
-                  padding: '0.25rem 0.5rem'
-                }}
-              >
-                수정
-              </button>
-              
+              {/* 타임라인 원형 마커 */}
               <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: '#FF0000',
+                color: '#FFFFFF',
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '1rem'
+                justifyContent: 'center',
+                marginRight: '1.5rem',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                flexShrink: 0,
+                border: '2px solid #FFFFFF',
+                boxShadow: '0 0 0 2px #FF0000'
               }}>
-                <div style={{
-                  width: '1px',
-                  height: '16px',
-                  backgroundColor: '#FF0000',
-                  marginRight: '0.5rem'
-                }} />
-                <span style={{
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}>
-                  {schedule.round}회차
-                </span>
-                <span style={{
-                  fontSize: '14px',
-                  color: '#666666',
-                  marginLeft: '1rem'
-                }}>
-                  {schedule.formattedDate || formatDate(schedule.scheduleStartingAt)}
-                </span>
-                {schedule.scheduleTitle && (
-                  <span style={{
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    marginLeft: '1rem'
-                  }}>
-                    - {schedule.scheduleTitle}
-                  </span>
-                )}
+                {schedule.round}
               </div>
+
+              {/* 일정 카드 */}
               <div style={{
-                fontSize: '14px',
-                color: '#333333',
-                whiteSpace: 'pre-line',
-                lineHeight: '1.6'
+                flex: 1,
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '8px',
+                padding: '1.5rem',
+                transition: 'all 0.2s ease',
+                ':hover': {
+                  backgroundColor: '#F8F9FA',
+                  transform: 'translateX(4px)'
+                }
               }}>
-                {schedule.scheduleContent}
+                {/* 제목 */}
+                <h3 style={{
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  margin: '0 0 0.75rem 0',
+                  color: '#333333'
+                }}>
+                  {schedule.scheduleTitle}
+                </h3>
+
+                {/* 회차와 날짜 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '0.75rem',
+                  color: '#666666',
+                  fontSize: '14px'
+                }}>
+                  <span style={{ fontWeight: 'bold', marginRight: '0.5rem' }}>
+                    {schedule.round}회차
+                  </span>
+                  <span>
+                    {formatDate(schedule.scheduleStartingAt)}
+                  </span>
+                </div>
+
+                {/* 내용 */}
+                <p style={{
+                  margin: 0,
+                  color: '#666666',
+                  fontSize: '14px',
+                  lineHeight: '1.5'
+                }}>
+                  {schedule.scheduleContent}
+                </p>
               </div>
             </div>
           ))}
-        </>
-      )}
-      
-      {/* 일정 추가 모달 */}
-      {showAddSchedulePopup && (
-        <AddScheduleModal
-          onClose={handleCloseAddSchedulePopup}
-          onSubmit={handleSubmitSchedule}
-          initialRound={schedules.length > 0 ? Math.max(...schedules.map(s => s.round)) + 1 : 1}
-          isSubmitting={isAdding}
-        />
+        </div>
       )}
       
       {/* 일정 수정 모달 */}
@@ -299,6 +307,7 @@ ScheduleTab.propTypes = {
   onAddSchedule: PropTypes.func.isRequired,
   onDeleteSchedule: PropTypes.func.isRequired,
   onUpdateSchedule: PropTypes.func.isRequired,
+  onViewScheduleDetail: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
   error: PropTypes.string
 };
