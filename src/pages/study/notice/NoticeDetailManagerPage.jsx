@@ -77,6 +77,8 @@ function NoticeDetailManagerContent() {
     container: {
       maxWidth: "800px",
       margin: "0 auto",
+      padding: "40px 24px",
+      fontFamily: "Pretendard, sans-serif",
     },
     topBar: {
       display: "flex",
@@ -94,31 +96,66 @@ function NoticeDetailManagerContent() {
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "12px",
+      marginBottom: "32px",
     },
     dateText: {
-      color: "#666",
       fontSize: "14px",
+      color: "#999",
       marginBottom: "24px",
     },
     content: {
-      marginBottom: "24px",
+      width: "100%",
+      height: "300px",
+      padding: "12px 16px",
+      fontSize: "16px",
+      border: "1px solid #d9d9d9",
+      borderRadius: "6px",
+      resize: "none",
       lineHeight: "1.6",
       whiteSpace: "pre-wrap",
+      marginBottom: "8px",
     },
     fileSection: {
       borderTop: "1px solid #eee",
       paddingTop: "24px",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      marginBottom: "40px",
     },
     fileTitle: {
       fontSize: "16px",
       fontWeight: "600",
-      marginBottom: "8px",
     },
     fileLink: {
       color: "#1e3a8a",
       cursor: "pointer",
       textDecoration: "underline",
+      fontSize: "14px",
+    },
+    inputTitle: {
+      width: "100%",
+      height: "40px",
+      padding: "8px 12px",
+      fontSize: "16px",
+      border: "1px solid #d9d9d9",
+      borderRadius: "6px",
+      marginBottom: "24px",
+    },
+    textareaDescription: {
+      fontSize: "14px",
+      color: "#999",
+      marginBottom: "24px",
+    },
+    buttonGroup: {
+      display: "flex",
+      gap: "12px",
+      marginTop: "20px",
+    },
+    closeButtonWrap: {
+      position: "fixed",
+      bottom: "24px",
+      right: "24px",
     },
   };
 
