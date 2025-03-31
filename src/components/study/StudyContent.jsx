@@ -364,6 +364,14 @@ ScheduleDetailView.propTypes = {
   isLoading: PropTypes.bool
 };
 
+// 출석 상태별 아이콘 스타일
+const STATUS_STYLES = {
+  PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },  // 초록색
+  ABSENT: { color: '#F44336', text: 'X', label: '결석' },   // 빨간색
+  LATE: { color: '#FFC107', text: '-', label: '지각' },     // 노란색
+  UNKNOWN: { color: '#9E9E9E', text: '?', label: '미정' }   // 회색
+};
+
 // 출석 상세 컴포넌트
 const AttendanceDetailView = ({ onBack }) => {
   const { studyId, scheduleId } = useParams();
@@ -836,7 +844,7 @@ function StudyContent({ activeTab, studyData }) {
   };
 
   return (
-    <div 
+    <div
       className="study-content" 
       style={{
         width: '100%',
