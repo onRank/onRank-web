@@ -393,6 +393,8 @@ function AppContent() {
                     <Route path="attendance" element={<StudyDetailPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
+                    <Route path="attendances" element={<AttendanceTab />} />
+                    <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>

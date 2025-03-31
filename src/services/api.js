@@ -1739,44 +1739,32 @@ export const studyService = {
   // 출석 목록 조회
   getAttendances: async (studyId) => {
     try {
-      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
-
-      // 토큰 확인
-      const token = tokenUtils.getToken();
-      if (!token) {
-        console.error("[StudyService] 토큰 없음, 출석 목록 조회 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
-      }
-
-      const response = await api.get(`/studies/${studyId}/attendances`, {
-        headers: {
-          Authorization: token.startsWith("Bearer ")
-            ? token
-            : `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      });
-
-      console.log("[StudyService] 출석 목록 조회 성공:", response.data);
+      const response = await api.get(`/studies/${studyId}/attendances`);
       return response.data;
     } catch (error) {
-      console.error("[StudyService] 출석 목록 조회 오류:", error);
-      
-      // 403 Forbidden - 스터디 비회원
-      if (error.response && error.response.status === 403) {
-        throw new Error("스터디 회원만 출석 정보를 조회할 수 있습니다.");
-      }
+      console.error('[API] 출석 목록 조회 실패:', error);
+      throw error;
+    }
+  },
 
-      // 기타 오류 처리
-      if (error.response && error.response.data) {
-        const errorMessage =
-          typeof error.response.data === "string"
-            ? error.response.data
-            : error.response.data.message || "출석 정보 조회에 실패했습니다.";
-        throw new Error(errorMessage);
-      }
+  // 출석 상세 정보 조회
+  getAttendanceDetails: async (studyId, scheduleId) => {
+    try {
+      const response = await api.get(`/studies/${studyId}/attendances/${scheduleId}`);
+      return response.data;
+    } catch (error) {
+      console.error('[API] 출석 상세 정보 조회 실패:', error);
+      throw error;
+    }
+  },
 
+  // 출석 상태 업데이트
+  updateAttendanceStatus: async (studyId, attendanceId, status) => {
+    try {
+      const response = await api.put(`/studies/${studyId}/attendances/${attendanceId}?status=${status}`);
+      return response.data;
+    } catch (error) {
+      console.error('[API] 출석 상태 업데이트 실패:', error);
       throw error;
     }
   },
