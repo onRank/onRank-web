@@ -9,6 +9,7 @@ import ErrorMessage from "../../../components/common/ErrorMessage";
 import Button from "../../../components/common/Button";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { formatDate } from "../../../utils/dateUtils";
+import NoticeForm from "../../../components/study/notice/NoticeForm";
 
 function NoticeDetailManagerContent() {
   const { studyId, noticeId } = useParams();
@@ -73,92 +74,6 @@ function NoticeDetailManagerContent() {
     );
   }
 
-  const styles = {
-    container: {
-      maxWidth: "800px",
-      margin: "0 auto",
-      padding: "40px 24px",
-      fontFamily: "Pretendard, sans-serif",
-    },
-    topBar: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "24px",
-    },
-    card: {
-      backgroundColor: "#fff",
-      borderRadius: "12px",
-      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
-      padding: "32px",
-      border: "1px solid #eee",
-    },
-    title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      marginBottom: "32px",
-    },
-    dateText: {
-      fontSize: "14px",
-      color: "#999",
-      marginBottom: "24px",
-    },
-    content: {
-      width: "100%",
-      height: "300px",
-      padding: "12px 16px",
-      fontSize: "16px",
-      border: "1px solid #d9d9d9",
-      borderRadius: "6px",
-      resize: "none",
-      lineHeight: "1.6",
-      whiteSpace: "pre-wrap",
-      marginBottom: "8px",
-    },
-    fileSection: {
-      borderTop: "1px solid #eee",
-      paddingTop: "24px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "40px",
-    },
-    fileTitle: {
-      fontSize: "16px",
-      fontWeight: "600",
-    },
-    fileLink: {
-      color: "#1e3a8a",
-      cursor: "pointer",
-      textDecoration: "underline",
-      fontSize: "14px",
-    },
-    inputTitle: {
-      width: "100%",
-      height: "40px",
-      padding: "8px 12px",
-      fontSize: "16px",
-      border: "1px solid #d9d9d9",
-      borderRadius: "6px",
-      marginBottom: "24px",
-    },
-    textareaDescription: {
-      fontSize: "14px",
-      color: "#999",
-      marginBottom: "24px",
-    },
-    buttonGroup: {
-      display: "flex",
-      gap: "12px",
-      marginTop: "20px",
-    },
-    closeButtonWrap: {
-      position: "fixed",
-      bottom: "24px",
-      right: "24px",
-    },
-  };
-
   return (
     <div style={styles.container}>
       <div style={styles.topBar}>
@@ -207,6 +122,8 @@ function NoticeDetailManagerContent() {
 }
 
 function NoticeDetailManagerPage() {
+  const { studyId, noticeId } = useParams();
+
   const styles = {
     wrapper: {
       minHeight: "100vh",
@@ -223,6 +140,11 @@ function NoticeDetailManagerPage() {
       flex: 1,
       padding: "48px 64px",
     },
+    title: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "32px",
+    },
   };
 
   return (
@@ -233,7 +155,10 @@ function NoticeDetailManagerPage() {
             <StudySidebar activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
-            <NoticeDetailManagerContent />
+            <h1 style={styles.title}>공지사항</h1>
+            <NoticeForm studyId={studyId} mode="edit" onFinish={handleFinish}>
+              <NoticeDetailManagerContent />
+            </NoticeForm>
           </main>
         </div>
       </div>
