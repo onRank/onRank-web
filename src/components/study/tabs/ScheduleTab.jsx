@@ -180,66 +180,104 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
         </div>
       ) : (
-        <div style={{ width: '100%' }}>
+        <div style={{ 
+          width: '100%',
+          position: 'relative'
+        }}>
+          {/* 타임라인 세로선 */}
+          <div style={{
+            position: 'absolute',
+            left: '12px',
+            top: '0',
+            bottom: '0',
+            width: '2px',
+            backgroundColor: '#E5E5E5',
+            zIndex: 0
+          }} />
+          
           {schedulesWithRounds.map((schedule, index) => (
             <div
               key={schedule.scheduleId}
               onClick={() => onViewScheduleDetail(schedule)}
               style={{
                 position: 'relative',
-                padding: '1.5rem',
-                marginBottom: '1rem',
-                backgroundColor: '#FFFFFF',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                marginBottom: '1.5rem',
                 cursor: 'pointer',
                 width: '100%',
-                transition: 'all 0.2s ease'
+                zIndex: 1
               }}
             >
+              {/* 타임라인 원형 마커 */}
               <div style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: '#FF0000',
+                color: '#FFFFFF',
                 display: 'flex',
                 alignItems: 'center',
-                marginBottom: '0.5rem'
+                justifyContent: 'center',
+                marginRight: '1.5rem',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                flexShrink: 0,
+                border: '2px solid #FFFFFF',
+                boxShadow: '0 0 0 2px #FF0000'
               }}>
-                <div style={{
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '50%',
-                  backgroundColor: '#FF0000',
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '0.75rem',
-                  fontSize: '12px',
-                  fontWeight: 'bold'
-                }}>
-                  {schedulesWithRounds.length - index}
-                </div>
+                {schedulesWithRounds.length - index}
+              </div>
+
+              {/* 일정 카드 */}
+              <div style={{
+                flex: 1,
+                backgroundColor: '#FFFFFF',
+                border: '1px solid #E5E5E5',
+                borderRadius: '8px',
+                padding: '1.5rem',
+                transition: 'all 0.2s ease',
+                ':hover': {
+                  backgroundColor: '#F8F9FA',
+                  transform: 'translateX(4px)'
+                }
+              }}>
+                {/* 제목 */}
                 <h3 style={{
-                  fontSize: '16px',
+                  fontSize: '18px',
                   fontWeight: 'bold',
-                  margin: 0,
-                  marginRight: '1rem'
+                  margin: '0 0 0.75rem 0',
+                  color: '#333333'
                 }}>
                   {schedule.scheduleTitle}
                 </h3>
-                <span style={{
+
+                {/* 회차와 날짜 */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  marginBottom: '0.75rem',
                   color: '#666666',
                   fontSize: '14px'
                 }}>
-                  {formatDate(schedule.scheduleStartingAt)}
-                </span>
+                  <span style={{ fontWeight: 'bold', marginRight: '0.5rem' }}>
+                    {schedulesWithRounds.length - index}회차
+                  </span>
+                  <span>
+                    {formatDate(schedule.scheduleStartingAt)}
+                  </span>
+                </div>
+
+                {/* 내용 */}
+                <p style={{
+                  margin: 0,
+                  color: '#666666',
+                  fontSize: '14px',
+                  lineHeight: '1.5'
+                }}>
+                  {schedule.scheduleContent}
+                </p>
               </div>
-              <p style={{
-                margin: 0,
-                color: '#666666',
-                fontSize: '14px',
-                paddingLeft: '2.5rem'
-              }}>
-                {schedule.scheduleContent}
-              </p>
             </div>
           ))}
         </div>
