@@ -7,6 +7,7 @@ import DefaultContent from "./tabs/DefaultContent";
 import ManagementTab from "./tabs/ManagementTab";
 import AttendanceTab from "./tabs/AttendanceTab";
 import { studyService } from "../../services/api";
+import NoticeList from "./notice/NoticeList";
 
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
@@ -142,7 +143,7 @@ function StudyContent({ activeTab, studyData }) {
         console.log("Rendering attendance content");
         return <AttendanceTab />;
       case "공지사항":
-      // return <NoticeTab />;
+        return <NoticeList />;
       case "게시판":
       case "랭킹":
         return (

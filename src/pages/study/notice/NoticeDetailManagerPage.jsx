@@ -7,6 +7,7 @@ import {
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import Button from "../../../components/common/Button";
+import StudySidebar from "../../../components/study/StudySidebar";
 import { formatDate } from "../../../utils/dateUtils";
 
 function NoticeDetailManagerContent() {
@@ -124,6 +125,7 @@ function NoticeDetailManagerContent() {
 function NoticeDetailManagerPage() {
   return (
     <NoticeProvider>
+      <StudySidebar activeTab="공지사항" />
       <NoticeDetailManagerContent />
     </NoticeProvider>
   );
