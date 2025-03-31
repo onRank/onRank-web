@@ -56,6 +56,11 @@ function NoticeContent() {
     navigate(`/studies/${studyId}/notices`);
   };
 
+  // 공지사항 편집 페이지로 이동
+  const handleEdit = (noticeId) => {
+    navigate(`/studies/${studyId}/notices/${noticeId}`);
+  };
+
   const styles = {
     contentArea: {
       flex: 1,
@@ -114,6 +119,7 @@ function NoticeContent() {
           noticeId={selectedNoticeId}
           selectedNotice={selectedNotice}
           handleBack={handleBack}
+          handleEdit={handleEdit}
           isLoading={isLoading}
           error={error}
         />

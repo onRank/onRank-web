@@ -26,9 +26,9 @@ function NoticeDetailManagerContent() {
     navigate(`/studies/${studyId}/notices`);
   };
 
-  // const handleEdit = () => {
-  //   navigate(`/studies/${studyId}/notices/edit/${noticeId}`);
-  // };
+  const handleEdit = () => {
+    navigate(`/studies/${studyId}/notices/${noticeId}`);
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("공지사항을 삭제하시겠습니까?")) {

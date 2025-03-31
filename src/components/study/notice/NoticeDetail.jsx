@@ -6,7 +6,7 @@ import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 
-function NoticeDetail({ studyId, noticeId, handleBack }) {
+function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
 
   useEffect(() => {
@@ -39,7 +39,10 @@ function NoticeDetail({ studyId, noticeId, handleBack }) {
 
   return (
     <div className="p-6">
-      <Button onClick={handleBack} variant="back" />
+      <div className="flex justify-between items-center mb-4">
+        <Button onClick={handleBack} variant="back" />
+        <Button onClick={() => handleEdit(noticeId)} variant="edit" />
+      </div>
       <div className="border rounded-lg p-6">
         <h1 className="text-2xl font-bold mb-4">
           {selectedNotice.noticeTitle}
@@ -58,6 +61,7 @@ NoticeDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
   noticeId: PropTypes.number.isRequired,
   handleBack: PropTypes.func.isRequired,
+  handleEdit: PropTypes.func.isRequired,
 };
 
 export default NoticeDetail;
