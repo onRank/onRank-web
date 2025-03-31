@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../services/api';
 import { tokenUtils } from '../../utils/tokenUtils';
 import StudySidebar from '../../components/study/StudySidebar';
@@ -99,6 +99,25 @@ function ScheduleAddPage() {
     <div style={{ display: 'flex', minHeight: '100vh' }}>
       <StudySidebar activeTab="일정" />
       <div style={{ flex: 1, padding: '2rem' }}>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          marginBottom: '1rem',
+          fontSize: '14px',
+          color: '#666666'
+        }}>
+          <Link to="/" style={{ color: '#666666', textDecoration: 'none' }}>
+            홈
+          </Link>
+          <span>{'>'}</span>
+          <Link to={`/studies/${studyId}`} style={{ color: '#666666', textDecoration: 'none' }}>
+            ○○
+          </Link>
+          <span>{'>'}</span>
+          <span style={{ color: '#FF0000' }}>일정</span>
+        </div>
+
         <h2>일정</h2>
         <div style={{
           backgroundColor: '#FFFFFF',
