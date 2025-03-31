@@ -40,6 +40,9 @@ const StudyLayout = memo(({ children }) => {
     <div
       style={{
         minHeight: `calc(100vh - ${HEADER_HEIGHT})`,
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'center'
       }}
     >
       <div
@@ -47,12 +50,14 @@ const StudyLayout = memo(({ children }) => {
           padding: "2rem",
           backgroundColor: "var(--main-bg, #ffffff)",
           overflow: "auto",
+          width: '100%'
         }}
       >
         <div
           style={{
             maxWidth: "1200px",
             margin: "0 auto",
+            width: '100%'
           }}
         >
           {children}
