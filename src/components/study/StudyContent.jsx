@@ -16,6 +16,16 @@ function StudyContent({ activeTab, studyData }) {
   const [error, setError] = useState(null);
   const { studyId } = useParams();
 
+  // ISO 날짜 문자열을 'yyyy.MM.dd' 형식으로 변환하는 함수
+  const formatDate = (isoDateString) => {
+    if (!isoDateString) return '';
+    const date = new Date(isoDateString);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}.${month}.${day}`;
+  };
+
   // 일정 목록 조회
   useEffect(() => {
     if (activeTab === "일정") {
@@ -26,7 +36,14 @@ function StudyContent({ activeTab, studyData }) {
 
           const data = await studyService.getSchedules(studyId);
           console.log("[StudyContent] 일정 데이터 조회 성공:", data);
-          setSchedules(data);
+          
+          // 응답 데이터 변환 (날짜 형식 변환)
+          const formattedData = data.map(schedule => ({
+            ...schedule,
+            formattedDate: formatDate(schedule.scheduleStartingAt)
+          }));
+          
+          setSchedules(formattedData);
         } catch (error) {
           console.error("[StudyContent] 일정 데이터 조회 실패:", error);
           setError("일정을 불러오는 중 오류가 발생했습니다.");
@@ -67,10 +84,10 @@ function StudyContent({ activeTab, studyData }) {
 
       // API 요청 데이터 형식으로 변환
       const scheduleData = {
-        round: newSchedule.round,
         title: newSchedule.title,
         content: newSchedule.description,
         date: newSchedule.date,
+        round: newSchedule.round,
       };
 
       // API 호출
@@ -79,11 +96,12 @@ function StudyContent({ activeTab, studyData }) {
 
       // 성공 시 상태 업데이트
       const addedSchedule = {
-        scheduleId: result.scheduleId || Date.now(),
-        round: newSchedule.round,
-        title: newSchedule.title,
-        content: `${newSchedule.title}\n${newSchedule.description}`,
-        date: newSchedule.date,
+        scheduleId: result.scheduleId || Date.now(), // Location 헤더에서 추출한 ID 또는 임시 ID
+        scheduleTitle: newSchedule.title,
+        scheduleContent: newSchedule.description,
+        scheduleStartingAt: `${newSchedule.date}T00:00:00`,
+        formattedDate: newSchedule.date,
+        round: newSchedule.round, // UI 표시용으로 round 정보 유지
       };
 
       setSchedules((prev) => [...prev, addedSchedule]);
@@ -120,6 +138,50 @@ function StudyContent({ activeTab, studyData }) {
     }
   };
 
+  // 일정 수정 핸들러
+  const handleUpdateSchedule = async (scheduleId, updatedSchedule) => {
+    try {
+      setIsLoading(true);
+
+      // API 요청 데이터 형식으로 변환
+      const scheduleData = {
+        title: updatedSchedule.title,
+        content: updatedSchedule.content,
+        date: updatedSchedule.date,
+      };
+
+      // API 호출
+      const result = await studyService.updateSchedule(studyId, scheduleId, scheduleData);
+      console.log("[StudyContent] 일정 수정 성공:", result);
+
+      // 성공 시 상태 업데이트
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.scheduleId === scheduleId
+            ? {
+                ...schedule,
+                scheduleTitle: updatedSchedule.title,
+                scheduleContent: updatedSchedule.content,
+                scheduleStartingAt: updatedSchedule.date.includes('T') 
+                  ? updatedSchedule.date 
+                  : `${updatedSchedule.date}T00:00:00`,
+                formattedDate: formatDate(updatedSchedule.date.includes('T') 
+                  ? updatedSchedule.date 
+                  : `${updatedSchedule.date}T00:00:00`),
+              }
+            : schedule
+        )
+      );
+      return true;
+    } catch (error) {
+      console.error("[StudyContent] 일정 수정 실패:", error);
+      setError(`일정 수정에 실패했습니다: ${error.message}`);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const renderContent = () => {
     console.log("StudyContent - activeTab:", activeTab);
 
@@ -130,6 +192,7 @@ function StudyContent({ activeTab, studyData }) {
             schedules={schedules}
             onAddSchedule={handleAddSchedule}
             onDeleteSchedule={handleDeleteSchedule}
+            onUpdateSchedule={handleUpdateSchedule}
             isLoading={isLoading}
             error={error}
           />
