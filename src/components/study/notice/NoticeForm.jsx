@@ -12,6 +12,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { isLoading, createNotice, editNotice } = useNotice();
+  const maxLength = 10000;
 
   useEffect(() => {
     if (notice) {
@@ -25,6 +26,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     }
   }, [notice]);
 
+  // 파일 선택 핸들러
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -61,21 +63,19 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       return;
     }
 
+    // 선택된 파일 추가
     setSelectedFiles((prev) => [...prev, ...newFiles]);
     // 파일 선택 후 input 초기화
     e.target.value = "";
   };
 
+  // 선택된 파일 제거 핸들러
   const handleRemoveFile = (fileName) => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  const handleRemoveExistingFile = (fileId, fileName) => {
-    setExistingFiles((prev) => prev.filter((file) => file.fileId !== fileId));
-    setFilesToRemove((prev) => [...prev, { fileId, fileName }]);
-  };
-
-  const handleSubmit = async (e) => {
+  // 공지사항 생성 핸들러
+  const handleCreateNotice = async (e) => {
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
@@ -140,193 +140,178 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     }
   };
 
+  // NoticeFormPage 스타일 적용
+  const styles = {
+    formContainer: {
+      width: "100%",
+    },
+    inputGroup: {
+      marginBottom: "24px",
+    },
+    label: {
+      display: "block",
+      fontWeight: "bold",
+      marginBottom: "8px",
+    },
+    input: {
+      width: "100%",
+      padding: "10px",
+      borderRadius: "6px",
+      border: "1px solid #ccc",
+      fontSize: "14px",
+    },
+    textarea: {
+      width: "100%",
+      minHeight: "200px",
+      padding: "10px",
+      borderRadius: "8px",
+      border: "1px solid #ccc",
+      resize: "none",
+      fontSize: "14px",
+    },
+    charCount: {
+      textAlign: "right",
+      fontSize: "12px",
+      color: "#888",
+      marginTop: "4px",
+    },
+    fileUploadRow: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: "8px",
+      marginBottom: "32px",
+    },
+    fileUploadButton: {
+      backgroundColor: "#e74c3c",
+      color: "#fff",
+      border: "none",
+      borderRadius: "6px",
+      padding: "6px 12px",
+      cursor: "pointer",
+      fontSize: "14px",
+    },
+    actionButtons: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: "24px",
+    },
+    leftButtons: {
+      display: "flex",
+      gap: "12px",
+    },
+    errorMessage: {
+      backgroundColor: "#fdecea",
+      color: "#e74c3c",
+      padding: "12px",
+      borderRadius: "6px",
+      marginBottom: "16px",
+    },
+    fileList: {
+      marginTop: "8px",
+      padding: "8px 12px",
+      backgroundColor: "#f8f9fa",
+      borderRadius: "4px",
+      fontSize: "14px",
+    },
+    fileItem: {
+      display: "flex",
+      alignItems: "center",
+      marginBottom: "4px",
+    },
+    fileIcon: {
+      marginRight: "8px",
+      color: "#666",
+    },
+  };
+
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 space-y-4">
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+    <form onSubmit={handleCreateNotice} style={styles.formContainer}>
+      {error && <div style={styles.errorMessage}>{error}</div>}
 
-      <div>
-        <label
-          htmlFor="title"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
+      <div style={styles.inputGroup}>
+        <label style={styles.label} htmlFor="title">
           제목
         </label>
         <input
           id="title"
-          className="w-full p-2 border rounded"
-          placeholder="제목을 입력하세요"
+          style={styles.input}
+          placeholder="공지사항 제목을 입력하세요"
           value={noticeTitle}
           onChange={(e) => setNoticeTitle(e.target.value)}
           required
         />
       </div>
 
-      <div>
-        <label
-          htmlFor="content"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          내용
+      <div style={styles.inputGroup}>
+        <label style={styles.label} htmlFor="content">
+          내용을 입력해주세요.
         </label>
         <textarea
           id="content"
-          className="w-full p-2 border rounded h-40"
-          placeholder="내용을 입력하세요"
+          style={styles.textarea}
+          placeholder="공지사항 내용을 입력하세요"
           value={noticeContent}
           onChange={(e) => setNoticeContent(e.target.value)}
+          maxLength={maxLength}
         />
-      </div>
-
-      {/* 파일 업로드 영역 */}
-      <div className="mt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          파일 첨부
-        </label>
-        <div className="flex items-center">
-          <label htmlFor="file-upload" className="cursor-pointer">
-            <div className="px-4 py-2 bg-blue-50 text-blue-600 rounded border border-blue-300 hover:bg-blue-100">
-              파일 선택
-            </div>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              className="hidden"
-            />
-          </label>
-          <span className="ml-3 text-sm text-gray-500">
-            10MB 이하 파일만 업로드 가능합니다.
-          </span>
+        <div style={styles.charCount}>
+          {noticeContent.length}/{maxLength}
         </div>
-
-        {/* 기존 첨부 파일 목록 (수정 모드) */}
-        {mode === "edit" && existingFiles.length > 0 && (
-          <div className="mt-3">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
-              기존 첨부 파일
-            </h4>
-            <ul className="border rounded divide-y">
-              {existingFiles.map((file) => (
-                <li
-                  key={file.fileId}
-                  className="flex items-center justify-between px-4 py-2 text-sm"
-                >
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-gray-400 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <span className="truncate max-w-xs">{file.fileName}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      handleRemoveExistingFile(file.fileId, file.fileName)
-                    }
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* 새로 선택된 파일 목록 */}
-        {selectedFiles.length > 0 && (
-          <div className="mt-3">
-            <h4 className="text-sm font-medium text-gray-700 mb-2">
-              {mode === "edit" ? "추가할 파일" : "선택된 파일"}
-            </h4>
-            <ul className="border rounded divide-y">
-              {selectedFiles.map((file, index) => (
-                <li
-                  key={index}
-                  className="flex items-center justify-between px-4 py-2 text-sm"
-                >
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-4 w-4 text-gray-400 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <span className="truncate max-w-xs">{file.name}</span>
-                    <span className="ml-2 text-xs text-gray-500">
-                      ({(file.size / 1024).toFixed(1)} KB)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFile(file.name)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
-      <div className="flex justify-end mt-6 space-x-3">
+      {/* 파일 목록 표시 */}
+      {selectedFiles.length > 0 && (
+        <div style={styles.fileList}>
+          {selectedFiles.map((file, index) => (
+            <div key={index} style={styles.fileItem}>
+              <span style={styles.fileIcon}>📎</span>
+              {file.name}
+              <span
+                style={{ marginLeft: "10px", color: "#666", fontSize: "12px" }}
+              >
+                ({(file.size / 1024).toFixed(1)} KB)
+              </span>
+              <button
+                type="button"
+                onClick={() => handleRemoveFile(file.name)}
+                style={{
+                  marginLeft: "auto",
+                  color: "#e74c3c",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={styles.fileUploadRow}>
+        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+          <div style={styles.fileUploadButton}>파일 첨부</div>
+          <input
+            id="file-upload"
+            type="file"
+            multiple
+            onChange={handleFileChange}
+            style={{ display: "none" }}
+          />
+        </label>
+      </div>
+
+      <div style={styles.actionButtons}>
+        <div style={styles.leftButtons}>
+          <Button type="submit" variant="upload" disabled={isSubmitting} />
+        </div>
         <Button
-          type="submit"
-          variant="upload"
-          label={mode === "create" ? "등록하기" : "수정하기"}
+          type="button"
+          variant="back"
+          onClick={onFinish}
           disabled={isSubmitting}
         />
       </div>
