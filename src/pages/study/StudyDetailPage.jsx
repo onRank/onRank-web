@@ -146,7 +146,12 @@ function StudyDetailPage() {
   // URL에서 현재 섹션 가져오기
   useEffect(() => {
     const path = location.pathname;
-    const section = path.split('/').pop();
+    const pathParts = path.split('/');
+    const section = pathParts[pathParts.length - 2] === 'schedules' && pathParts[pathParts.length - 1] === 'add' 
+      ? 'schedules'
+      : pathParts[pathParts.length - 2] === 'attendances' && pathParts[pathParts.length - 1].match(/^\d+$/)
+      ? 'attendances'
+      : pathParts.pop();
     
     console.log('Current path:', path);
     console.log('Section:', section);
@@ -162,7 +167,7 @@ function StudyDetailPage() {
       'schedules': '일정',
       'assignment': '과제',
       'board': '게시판',
-      'attendance': '출석',
+      'attendances': '출석',
       'management': '관리',
       'ranking': '랭킹'
     };
