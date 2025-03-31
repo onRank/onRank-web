@@ -366,7 +366,6 @@ ScheduleDetailView.propTypes = {
 };
 
 function StudyContent({ activeTab, studyData }) {
-  const [assignments, setAssignments] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -414,27 +413,6 @@ function StudyContent({ activeTab, studyData }) {
       fetchSchedules();
     }
   }, [activeTab, studyId]);
-
-  useEffect(() => {
-    if (activeTab === "과제") {
-      // TODO: API 연동 후 과제 목록 불러오기
-      setAssignments([
-        {
-          id: 1,
-          title: "[기말 프로젝트]",
-          dueDate: "2025.3.2",
-          status: "진행중",
-        },
-        {
-          id: 2,
-          title: "[중간 프로젝트]",
-          dueDate: "2025.2.1",
-          status: "완료",
-          score: "10/10",
-        },
-      ]);
-    }
-  }, [activeTab]);
 
   // 일정 추가 핸들러
   const handleAddSchedule = async (newSchedule) => {
@@ -556,15 +534,27 @@ function StudyContent({ activeTab, studyData }) {
   const renderContent = () => {
     switch (activeTab) {
       case '공지사항':
-        return <NoticeList />;
+        return <NoticeList studyId={studyId} userRole="MEMBER" />;
       case '일정':
-        return <ScheduleTab />;
+        return (
+          <ScheduleTab
+            schedules={schedules}
+            onAddSchedule={handleAddSchedule}
+            onDeleteSchedule={handleDeleteSchedule}
+            onUpdateSchedule={handleUpdateSchedule}
+            onViewScheduleDetail={handleViewScheduleDetail}
+            isLoading={isLoading}
+            error={error}
+          />
+        );
       case '과제':
-        return <AssignmentTab />;
+      case '게시판':
+      case '랭킹':
+        return <DefaultContent content="해당 기능은 현재 개발 중입니다." />;
       case '출석':
         return <AttendanceTab />;
       case '관리':
-        return <ManagementTab />;
+        return <ManagementTab studyId={studyId} />;
       default:
         return <DefaultContent studyData={studyData} />;
     }
