@@ -33,10 +33,11 @@ function ScheduleAddPage() {
   
   // 새로고침 감지 및 리다이렉트 처리
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = () => {
       const token = tokenUtils.getToken();
       if (!token) {
-        navigate(`https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`);
+        window.location.href = `https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`;
+        return null;
       }
     };
 
@@ -45,13 +46,13 @@ function ScheduleAddPage() {
     // 컴포넌트 마운트 시에도 토큰 체크
     const token = tokenUtils.getToken();
     if (!token) {
-      navigate(`https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`);
+      window.location.href = `https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`;
     }
 
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [studyId, navigate]);
+  }, [studyId]);
   
   // 폼 유효성 검증
   const isFormValid = title.trim() !== '' && date !== '';
