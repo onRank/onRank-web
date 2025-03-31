@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useNavigate, useParams } from 'react-router-dom';
 import AddScheduleModal from '../modals/AddScheduleModal';
 
 function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, isLoading, error }) {
-  const [showAddSchedulePopup, setShowAddSchedulePopup] = useState(false);
+  const { studyId } = useParams();
+  const navigate = useNavigate();
   const [showUpdateSchedulePopup, setShowUpdateSchedulePopup] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [isAdding, setIsAdding] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   
   // ISO 날짜 문자열을 'yyyy.MM.dd' 형식으로 변환하는 함수
@@ -19,14 +20,9 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     return `${year}.${month}.${day}`;
   };
 
-  // 일정 추가 팝업 열기
-  const handleOpenAddSchedulePopup = () => {
-    setShowAddSchedulePopup(true);
-  };
-
-  // 일정 추가 팝업 닫기
-  const handleCloseAddSchedulePopup = () => {
-    setShowAddSchedulePopup(false);
+  // 일정 추가 페이지로 이동
+  const handleNavigateToAddSchedule = () => {
+    navigate(`/studies/${studyId}/schedules/add`);
   };
 
   // 일정 수정 팝업 열기
@@ -53,25 +49,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     setShowUpdateSchedulePopup(false);
   };
   
-  // 일정 추가 처리
-  const handleSubmitSchedule = async (newSchedule) => {
-    setIsAdding(true);
-    
-    try {
-      // API 요청을 통한 일정 추가
-      const success = await onAddSchedule(newSchedule);
-      
-      if (success) {
-        // 성공 시 모달 닫기
-        handleCloseAddSchedulePopup();
-      }
-    } catch (error) {
-      console.error('[ScheduleTab] 일정 추가 실패:', error);
-    } finally {
-      setIsAdding(false);
-    }
-  };
-
   // 일정 수정 처리
   const handleSubmitUpdateSchedule = async (updatedSchedule) => {
     if (!selectedSchedule) return;
@@ -118,20 +95,20 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         zIndex: 1
       }}>
         <button
-          onClick={handleOpenAddSchedulePopup}
-          disabled={isLoading || isAdding}
+          onClick={handleNavigateToAddSchedule}
+          disabled={isLoading}
           style={{
             padding: '0.5rem 1rem',
-            backgroundColor: isLoading || isAdding ? '#cccccc' : '#FF0000',
+            backgroundColor: isLoading ? '#cccccc' : '#FF0000',
             color: 'white',
             border: 'none',
             borderRadius: '4px',
-            cursor: isLoading || isAdding ? 'not-allowed' : 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
             fontSize: '14px',
             fontWeight: 'bold'
           }}
         >
-          {isLoading || isAdding ? '처리중...' : '일정 추가'}
+          {isLoading ? '처리중...' : '일정 추가'}
         </button>
       </div>
       
@@ -266,16 +243,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
             </div>
           ))}
         </>
-      )}
-      
-      {/* 일정 추가 모달 */}
-      {showAddSchedulePopup && (
-        <AddScheduleModal
-          onClose={handleCloseAddSchedulePopup}
-          onSubmit={handleSubmitSchedule}
-          initialRound={schedules.length > 0 ? Math.max(...schedules.map(s => s.round)) + 1 : 1}
-          isSubmitting={isAdding}
-        />
       )}
       
       {/* 일정 수정 모달 */}

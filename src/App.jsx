@@ -25,6 +25,7 @@ import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
+import ScheduleAddPage from "./pages/study/ScheduleAddPage";
 import "./App.css";
 
 // 레이아웃 상수
@@ -377,6 +378,7 @@ function AppContent() {
                     />
 
                     <Route path="schedules" element={<StudyDetailPage />} />
+                    <Route path="schedules/add" element={<ScheduleAddPage />} />
                     <Route path="assignment" element={<StudyDetailPage />} />
                     <Route
                       path="assignment/:id"
