@@ -684,7 +684,7 @@ function StudyContent({ activeTab, studyData }) {
 
   // 출석 목록 조회
   useEffect(() => {
-    if (activeTab === '출석') {
+    if (activeTab === '출석' && !scheduleId) {
       const fetchAttendances = async () => {
         try {
           setIsLoading(true);
@@ -701,7 +701,7 @@ function StudyContent({ activeTab, studyData }) {
 
       fetchAttendances();
     }
-  }, [activeTab, studyId]);
+  }, [activeTab, studyId, scheduleId]);
 
   // 출석 상세 페이지로 이동
   const handleAttendanceClick = (scheduleId) => {
