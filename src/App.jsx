@@ -26,6 +26,7 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/ScheduleAddPage";
+import AttendanceEditPage from './pages/study/AttendanceEditPage';
 import "./App.css";
 
 // 레이아웃 상수
@@ -394,7 +395,7 @@ function AppContent() {
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
                     <Route path="attendances" element={<StudyDetailPage />} />
-                    <Route path="attendances/:scheduleId" element={<StudyDetailPage />} />
+                    <Route path="attendances/:scheduleId" element={<AttendanceEditPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>
