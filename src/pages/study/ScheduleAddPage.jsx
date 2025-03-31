@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../services/api';
 import { tokenUtils } from '../../utils/tokenUtils';
 import StudySidebar from '../../components/study/StudySidebar';
+import { IoHomeOutline } from 'react-icons/io5';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
@@ -96,119 +97,178 @@ function ScheduleAddPage() {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <StudySidebar activeTab="일정" />
-      <div style={{ flex: 1, padding: '2rem' }}>
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '0.5rem',
-          marginBottom: '1rem',
-          fontSize: '14px',
-          color: '#666666'
-        }}>
-          <Link to="/" style={{ color: '#666666', textDecoration: 'none' }}>
-            홈
-          </Link>
-          <span>{'>'}</span>
-          <Link to={`/studies/${studyId}`} style={{ color: '#666666', textDecoration: 'none' }}>
-            ○○
-          </Link>
-          <span>{'>'}</span>
-          <span style={{ color: '#FF0000' }}>일정</span>
-        </div>
-
-        <h2>일정</h2>
-        <div style={{
-          backgroundColor: '#FFFFFF',
-          borderRadius: '8px',
-          padding: '2rem',
-          maxWidth: '800px',
-          margin: '2rem auto'
-        }}>
-          <div style={{ marginBottom: '2rem' }}>
-            <h3>제목</h3>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="일정 제목을 입력하세요"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <h3>날짜 <span style={{ color: '#FF0000' }}>*</span></h3>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                fontSize: '16px'
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: '2rem' }}>
-            <h3>내용을 입력해주세요</h3>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="일정에 대한 설명을 입력하세요"
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                fontSize: '16px',
-                minHeight: '200px',
-                resize: 'vertical'
-              }}
-            />
-          </div>
-
-          <div style={{
+    <div style={{
+      width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      {/* 경로 표시 */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '2rem',
+        fontSize: '14px',
+        color: '#666666',
+        width: '100%',
+        maxWidth: '1200px',
+        padding: '0 1rem'
+      }}>
+        <Link 
+          to="/studies"
+          style={{
             display: 'flex',
-            justifyContent: 'flex-end',
-            gap: '1rem'
+            alignItems: 'center',
+            color: '#666666',
+            textDecoration: 'none',
+            transition: 'color 0.2s ease',
+            padding: '4px 8px',
+            borderRadius: '4px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F8F9FA';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <IoHomeOutline size={16} />
+        </Link>
+        <span>{'>'}</span>
+        <Link
+          to={`/studies/${studyId}`}
+          style={{
+            color: '#666666',
+            textDecoration: 'none',
+            transition: 'color 0.2s ease',
+            padding: '4px 8px',
+            borderRadius: '4px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F8F9FA';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          ○○
+        </Link>
+        <span>{'>'}</span>
+        <span style={{ 
+          color: '#FF0000',
+          fontWeight: 'bold',
+          padding: '2px 4px'
+        }}>
+          일정
+        </span>
+      </div>
+
+      {/* 메인 컨텐츠 */}
+      <div style={{
+        display: 'flex',
+        gap: '2rem',
+        width: '100%',
+        maxWidth: '1200px',
+        position: 'relative',
+        padding: '0 1rem'
+      }}>
+        <StudySidebar activeTab="일정" />
+        <div style={{ flex: 1 }}>
+          <h2>일정</h2>
+          <div style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: '8px',
+            padding: '2rem',
+            maxWidth: '800px',
+            margin: '2rem auto'
           }}>
-            <button
-              onClick={handleCancel}
-              style={{
-                padding: '0.75rem 2rem',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                backgroundColor: '#FFFFFF',
-                cursor: 'pointer'
-              }}
-            >
-              취소
-            </button>
-            <button
-              onClick={handleSubmit}
-              disabled={!date}
-              style={{
-                padding: '0.75rem 2rem',
-                backgroundColor: date ? '#FF0000' : '#CCCCCC',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: date ? 'pointer' : 'not-allowed'
-              }}
-            >
-              작성
-            </button>
+            <div style={{ marginBottom: '2rem' }}>
+              <h3>제목</h3>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="일정 제목을 입력하세요"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3>날짜 <span style={{ color: '#FF0000' }}>*</span></h3>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  fontSize: '16px'
+                }}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3>내용을 입력해주세요</h3>
+              <textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="일정에 대한 설명을 입력하세요"
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  minHeight: '200px',
+                  resize: 'vertical'
+                }}
+              />
+            </div>
+
+            <div style={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '1rem'
+            }}>
+              <button
+                onClick={handleCancel}
+                style={{
+                  padding: '0.75rem 2rem',
+                  border: '1px solid #E5E5E5',
+                  borderRadius: '4px',
+                  backgroundColor: '#FFFFFF',
+                  cursor: 'pointer'
+                }}
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={!date}
+                style={{
+                  padding: '0.75rem 2rem',
+                  backgroundColor: date ? '#FF0000' : '#CCCCCC',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: date ? 'pointer' : 'not-allowed'
+                }}
+              >
+                작성
+              </button>
+            </div>
           </div>
         </div>
       </div>
