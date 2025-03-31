@@ -26,8 +26,6 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/ScheduleAddPage";
-import AttendanceTab from "./components/study/tabs/AttendanceTab";
-import AttendanceDetailPage from "./pages/study/AttendanceDetailPage";
 import "./App.css";
 
 // 레이아웃 상수
@@ -371,24 +369,33 @@ function AppContent() {
             }
           />
           <Route
-            path="/studies/:studyId"
-            element={
-              <ProtectedRoute>
-                <StudyLayout>
-                  <StudyDetailPage />
-                </StudyLayout>
-              </ProtectedRoute>
-            }
-          >
-            <Route path="attendances" element={<AttendanceTab />} />
-            <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
-          </Route>
-          <Route
             path="/studies/:studyId/*"
             element={
               <ProtectedRoute>
                 <StudyLayout>
-                  <StudyDetailPage />
+                  <Routes>
+                    <Route index element={<StudyDetailPage />} />
+                    <Route path="notices" element={<NoticeManagerPage />} />
+                    <Route path="notices/add" element={<NoticeFormPage />} />
+                    <Route
+                      path="notices/:noticeId"
+                      element={<NoticeDetailManagerPage />}
+                    />
+
+                    <Route path="schedules" element={<StudyDetailPage />} />
+                    <Route path="schedules/add" element={<ScheduleAddPage />} />
+                    <Route path="assignment" element={<StudyDetailPage />} />
+                    <Route
+                      path="assignment/:id"
+                      element={<AssignmentDetail />}
+                    />
+                    <Route path="board" element={<StudyDetailPage />} />
+                    <Route path="attendance" element={<StudyDetailPage />} />
+                    <Route path="management" element={<StudyDetailPage />} />
+                    <Route path="ranking" element={<StudyDetailPage />} />
+                    <Route path="attendances" element={<StudyDetailPage />} />
+                    <Route path="attendances/:scheduleId" element={<StudyDetailPage />} />
+                  </Routes>
                 </StudyLayout>
               </ProtectedRoute>
             }

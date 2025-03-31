@@ -5,7 +5,6 @@ import ScheduleTab from "./tabs/ScheduleTab";
 import AssignmentTab from "./tabs/AssignmentTab";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementTab from "./tabs/ManagementTab";
-import AttendanceTab from "./tabs/AttendanceTab";
 import { studyService } from "../../services/api";
 import NoticeList from "./notice/NoticeList";
 import { IoChevronBackOutline } from "react-icons/io5";
@@ -365,7 +364,136 @@ ScheduleDetailView.propTypes = {
   isLoading: PropTypes.bool
 };
 
+// 출석 상세 컴포넌트
+const AttendanceDetailView = ({ onBack }) => {
+  const { studyId, scheduleId } = useParams();
+  const [attendances, setAttendances] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAttendanceDetails = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const data = await studyService.getAttendanceDetails(studyId, scheduleId);
+        setAttendances(data);
+      } catch (error) {
+        console.error('[AttendanceDetailView] 출석 상세 정보 조회 실패:', error);
+        setError('출석 상세 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAttendanceDetails();
+  }, [studyId, scheduleId]);
+
+  const handleStatusChange = async (attendanceId, newStatus) => {
+    try {
+      await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
+      const updatedData = await studyService.getAttendanceDetails(studyId, scheduleId);
+      setAttendances(updatedData);
+    } catch (error) {
+      console.error('[AttendanceDetailView] 출석 상태 변경 실패:', error);
+      alert('출석 상태 변경에 실패했습니다.');
+    }
+  };
+
+  if (isLoading) return <div>로딩 중...</div>;
+  if (error) return <div style={{ color: '#F44336' }}>{error}</div>;
+
+  return (
+    <div style={{ width: '100%' }}>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: '2rem'
+      }}>
+        <h2>출석 현황</h2>
+        <button
+          onClick={onBack}
+          style={{
+            padding: '0.5rem 1rem',
+            border: '1px solid #E5E5E5',
+            borderRadius: '4px',
+            backgroundColor: '#FFFFFF',
+            cursor: 'pointer'
+          }}
+        >
+          목록으로
+        </button>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr',
+        gap: '1rem'
+      }}>
+        {attendances.map((attendance) => (
+          <div
+            key={attendance.attendanceId}
+            style={{
+              padding: '1rem',
+              backgroundColor: '#FFFFFF',
+              border: '1px solid #E5E5E5',
+              borderRadius: '8px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                {attendance.studentName}
+              </div>
+              <div style={{ fontSize: '14px', color: '#666666' }}>
+                {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              {Object.entries(STATUS_STYLES).map(([status, style]) => (
+                <button
+                  key={status}
+                  onClick={() => handleStatusChange(attendance.attendanceId, status)}
+                  style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    backgroundColor: attendance.attendanceStatus === status ? style.color : '#E5E5E5',
+                    color: '#FFFFFF',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '16px',
+                    fontWeight: 'bold'
+                  }}
+                  title={style.label}
+                >
+                  {style.text}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+// 출석 상세 컴포넌트
 function StudyContent({ activeTab, studyData }) {
+  const [assignments, setAssignments] = useState([]);
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -373,6 +501,8 @@ function StudyContent({ activeTab, studyData }) {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const { studyId } = useParams();
   const navigate = useNavigate();
+  const [attendances, setAttendances] = useState([]);
+  const [showAttendanceDetail, setShowAttendanceDetail] = useState(false);
 
   // ISO 날짜 문자열을 'yyyy.MM.dd' 형식으로 변환하는 함수
   const formatDate = (isoDateString) => {
@@ -413,6 +543,27 @@ function StudyContent({ activeTab, studyData }) {
       fetchSchedules();
     }
   }, [activeTab, studyId]);
+
+  useEffect(() => {
+    if (activeTab === "과제") {
+      // TODO: API 연동 후 과제 목록 불러오기
+      setAssignments([
+        {
+          id: 1,
+          title: "[기말 프로젝트]",
+          dueDate: "2025.3.2",
+          status: "진행중",
+        },
+        {
+          id: 2,
+          title: "[중간 프로젝트]",
+          dueDate: "2025.2.1",
+          status: "완료",
+          score: "10/10",
+        },
+      ]);
+    }
+  }, [activeTab]);
 
   // 일정 추가 핸들러
   const handleAddSchedule = async (newSchedule) => {
@@ -531,15 +682,58 @@ function StudyContent({ activeTab, studyData }) {
     setSelectedSchedule(null);
   };
 
+  // 출석 목록 조회
+  useEffect(() => {
+    if (activeTab === '출석') {
+      const fetchAttendances = async () => {
+        try {
+          setIsLoading(true);
+          setError(null);
+          const data = await studyService.getAttendances(studyId);
+          setAttendances(data);
+        } catch (error) {
+          console.error('[StudyContent] 출석 목록 조회 실패:', error);
+          setError('출석 목록을 불러오는데 실패했습니다.');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchAttendances();
+    }
+  }, [activeTab, studyId]);
+
+  // 출석 상세 페이지로 이동
+  const handleAttendanceClick = (scheduleId) => {
+    navigate(`/studies/${studyId}/attendances/${scheduleId}`);
+  };
+
   const renderContent = () => {
+    if (isLoading) {
+      return <div>로딩 중...</div>;
+    }
+
+    if (error) {
+      return <div style={{ color: '#F44336' }}>{error}</div>;
+    }
+
     switch (activeTab) {
-      case '공지사항':
-        return <NoticeList studyId={studyId} userRole="MEMBER" />;
-      case '일정':
+      case "일정":
+        if (showScheduleDetail) {
+          return (
+            <ScheduleDetailView
+              schedule={selectedSchedule}
+              onBack={handleBackToScheduleList}
+              onUpdate={handleUpdateSchedule}
+              onDelete={handleDeleteSchedule}
+              isLoading={isLoading}
+            />
+          );
+        }
         return (
           <ScheduleTab
             schedules={schedules}
-            onAddSchedule={handleAddSchedule}
+            onAddSchedule={() => navigate(`/studies/${studyId}/schedules/add`)}
             onDeleteSchedule={handleDeleteSchedule}
             onUpdateSchedule={handleUpdateSchedule}
             onViewScheduleDetail={handleViewScheduleDetail}
@@ -547,29 +741,116 @@ function StudyContent({ activeTab, studyData }) {
             error={error}
           />
         );
-      case '과제':
-      case '게시판':
-      case '랭킹':
-        return <DefaultContent content="해당 기능은 현재 개발 중입니다." />;
-      case '출석':
-        return <AttendanceTab />;
-      case '관리':
+      case "과제":
+        return (
+          <AssignmentTab
+            assignments={assignments}
+            studyId={studyId}
+          />
+        );
+      case "공지사항":
+        return <NoticeList studyId={studyId} userRole="MEMBER" />;
+      case "게시판":
+        return <DefaultContent content="게시판 기능 개발 중입니다." />;
+      case "출석":
+        if (showAttendanceDetail) {
+          return (
+            <AttendanceDetailView
+              onBack={() => setShowAttendanceDetail(false)}
+            />
+          );
+        }
+        return (
+          <div style={{ width: '100%' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr',
+              gap: '1rem',
+              width: '100%'
+            }}>
+              {attendances.map((attendance) => (
+                <div
+                  key={attendance.attendanceId}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '1rem',
+                    backgroundColor: '#FFFFFF',
+                    border: '1px solid #E5E5E5',
+                    borderRadius: '8px'
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                      marginBottom: '0.5rem'
+                    }}>
+                      {attendance.scheduleTitle}
+                    </h3>
+                    <div style={{
+                      fontSize: '14px',
+                      color: '#666666'
+                    }}>
+                      {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleAttendanceClick(attendance.attendanceId)}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#007AFF',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    수정하기
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case "관리":
         return <ManagementTab studyId={studyId} />;
+      case "랭킹&보증금":
+        return <DefaultContent content="랭킹 및 보증금 기능 개발 중입니다." />;
       default:
-        return <DefaultContent studyData={studyData} />;
+        return (
+          <DefaultContent content="탭을 선택하여 스터디 관련 정보를 확인하세요." />
+        );
     }
   };
 
   return (
-    <div style={{ flex: 1 }}>
+    <div 
+      className="study-content" 
+      style={{
+        width: '100%',
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0'
+      }}
+    >
       {renderContent()}
     </div>
   );
 }
 
 StudyContent.propTypes = {
-  activeTab: PropTypes.string,
-  studyData: PropTypes.object
+  activeTab: PropTypes.string.isRequired,
+  studyData: PropTypes.object,
 };
 
 export default StudyContent;
