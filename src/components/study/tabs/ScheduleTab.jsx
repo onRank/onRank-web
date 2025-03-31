@@ -97,14 +97,20 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
       .sort((a, b) => new Date(a.scheduleStartingAt) - new Date(b.scheduleStartingAt))
       .map((schedule, index) => ({
         ...schedule,
-        round: schedules.length - index // 회차 번호 (역순)
+        round: index + 1 // 오래된 일정부터 1회차, 2회차로 순차 할당
       }));
   };
 
   const schedulesWithRounds = sortedSchedules();
 
   return (
-    <div style={{ width: '100%', position: 'relative', padding: '2rem 0' }}>
+    <div style={{ 
+      width: '100%', 
+      position: 'relative', 
+      padding: '2rem 0',
+      maxWidth: '1200px',
+      margin: '0 auto'
+    }}>
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -129,7 +135,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         backgroundColor: '#F8F9FA',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        width: '100%'
       }}>
         <div style={{ textAlign: 'left' }}>
           <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>일정 추가</div>
@@ -160,7 +167,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           backgroundColor: '#FFEBEE',
           color: '#D32F2F',
           borderRadius: '4px',
-          fontSize: '14px'
+          fontSize: '14px',
+          width: '100%'
         }}>
           {error}
         </div>
@@ -171,7 +179,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         <div style={{
           padding: '2rem',
           textAlign: 'center',
-          color: '#666666'
+          color: '#666666',
+          width: '100%'
         }}>
           일정을 불러오는 중입니다...
         </div>
@@ -184,12 +193,13 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           textAlign: 'center',
           color: '#666666',
           border: '1px dashed #E5E5E5',
-          borderRadius: '4px'
+          borderRadius: '4px',
+          width: '100%'
         }}>
           등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
         </div>
       ) : (
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', width: '100%' }}>
           {/* 타임라인 라인 */}
           <div style={{
             position: 'absolute',
@@ -208,7 +218,8 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
               style={{
                 display: 'flex',
                 marginBottom: '2rem',
-                position: 'relative'
+                position: 'relative',
+                width: '100%'
               }}
             >
               {/* 타임라인 원형 마커 */}
@@ -255,7 +266,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                     fontSize: '16px',
                     marginBottom: '0.5rem'
                   }}>
-                    제목
+                    {schedule.scheduleTitle}
                   </div>
                   <div style={{
                     display: 'flex',
@@ -274,12 +285,6 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                       marginRight: '0.5rem'
                     }}>
                       {formatDate(schedule.scheduleStartingAt)}
-                    </span>
-                    <span style={{
-                      fontWeight: 'bold',
-                      fontSize: '14px'
-                    }}>
-                      - {schedule.scheduleTitle}
                     </span>
                   </div>
                   <div style={{

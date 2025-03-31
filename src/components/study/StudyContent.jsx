@@ -103,7 +103,8 @@ const ScheduleDetailView = ({
 
   return (
     <div style={{
-      maxWidth: '800px',
+      width: '100%',
+      maxWidth: '1200px',
       margin: '0 auto',
       padding: '2rem 1rem'
     }}>
@@ -140,7 +141,8 @@ const ScheduleDetailView = ({
         marginBottom: '2rem',
         padding: '1.5rem',
         backgroundColor: '#F8F9FA',
-        borderRadius: '8px'
+        borderRadius: '8px',
+        width: '100%'
       }}>
         <h2 style={{
           fontSize: '18px',
@@ -164,7 +166,8 @@ const ScheduleDetailView = ({
           backgroundColor: '#FFEBEE',
           color: '#D32F2F',
           borderRadius: '4px',
-          marginBottom: '1rem'
+          marginBottom: '1rem',
+          width: '100%'
         }}>
           {error}
         </div>
@@ -174,7 +177,8 @@ const ScheduleDetailView = ({
         border: '1px solid #e5e5e5',
         borderRadius: '8px',
         padding: '2rem',
-        marginBottom: '2rem'
+        marginBottom: '2rem',
+        width: '100%'
       }}>
         <form onSubmit={handleSubmit}>
           <div style={{
@@ -182,7 +186,7 @@ const ScheduleDetailView = ({
             fontSize: '16px',
             fontWeight: 'bold'
           }}>
-            제목
+            {scheduleTitle || '제목 없음'}
           </div>
           
           <div style={{
