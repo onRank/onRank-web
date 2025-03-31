@@ -92,13 +92,16 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   const sortedSchedules = () => {
     if (!schedules || schedules.length === 0) return [];
     
-    // 날짜순으로 정렬 (오래된 일정이 먼저)
-    return [...schedules]
+    // 1. 먼저 날짜순으로 정렬 (오래된 순)하여 회차 부여
+    const withRounds = [...schedules]
       .sort((a, b) => new Date(a.scheduleStartingAt) - new Date(b.scheduleStartingAt))
       .map((schedule, index) => ({
         ...schedule,
         round: index + 1 // 오래된 일정부터 1회차, 2회차로 순차 할당
       }));
+    
+    // 2. 다시 최신순으로 정렬하여 표시
+    return withRounds.sort((a, b) => new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt));
   };
 
   const schedulesWithRounds = sortedSchedules();
@@ -226,7 +229,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                 border: '2px solid #FFFFFF',
                 boxShadow: '0 0 0 2px #FF0000'
               }}>
-                {schedulesWithRounds.length - index}
+                {schedule.round}
               </div>
 
               {/* 일정 카드 */}
@@ -261,7 +264,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                   fontSize: '14px'
                 }}>
                   <span style={{ fontWeight: 'bold', marginRight: '0.5rem' }}>
-                    {schedulesWithRounds.length - index}회차
+                    {schedule.round}회차
                   </span>
                   <span>
                     {formatDate(schedule.scheduleStartingAt)}
