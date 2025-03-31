@@ -388,26 +388,7 @@ function AppContent() {
             element={
               <ProtectedRoute>
                 <StudyLayout>
-                  <Routes>
-                    <Route index element={<StudyDetailPage />} />
-                    <Route path="notices" element={<NoticeManagerPage />} />
-                    <Route path="notices/add" element={<NoticeFormPage />} />
-                    <Route
-                      path="notices/:noticeId"
-                      element={<NoticeDetailManagerPage />}
-                    />
-
-                    <Route path="schedules" element={<StudyDetailPage />} />
-                    <Route path="schedules/add" element={<ScheduleAddPage />} />
-                    <Route path="assignment" element={<StudyDetailPage />} />
-                    <Route
-                      path="assignment/:id"
-                      element={<AssignmentDetail />}
-                    />
-                    <Route path="board" element={<StudyDetailPage />} />
-                    <Route path="management" element={<StudyDetailPage />} />
-                    <Route path="ranking" element={<StudyDetailPage />} />
-                  </Routes>
+                  <StudyDetailPage />
                 </StudyLayout>
               </ProtectedRoute>
             }

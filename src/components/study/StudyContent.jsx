@@ -554,77 +554,32 @@ function StudyContent({ activeTab, studyData }) {
   };
 
   const renderContent = () => {
-    console.log("StudyContent - activeTab:", activeTab);
-
     switch (activeTab) {
-      case "일정":
-        // 일정 상세 보기 모드
-        if (showScheduleDetail && selectedSchedule) {
-          return (
-            <ScheduleDetailView
-              schedule={selectedSchedule}
-              onBack={handleBackToScheduleList}
-              onUpdate={handleUpdateSchedule}
-              onDelete={handleDeleteSchedule}
-              isLoading={isLoading}
-            />
-          );
-        }
-        
-        // 일정 목록 보기 모드
-        return (
-          <ScheduleTab
-            schedules={schedules}
-            onAddSchedule={handleAddSchedule}
-            onDeleteSchedule={handleDeleteSchedule}
-            onUpdateSchedule={handleUpdateSchedule}
-            onViewScheduleDetail={handleViewScheduleDetail}
-            isLoading={isLoading}
-            error={error}
-          />
-        );
-      case "과제":
-        return (
-          <AssignmentTab
-            assignments={assignments}
-            studyId={studyId}
-          />
-        );
-      case "공지사항":
-        return <NoticeList studyId={studyId} userRole="MEMBER" />;
-      case "게시판":
-        return <DefaultContent content="게시판 기능 개발 중입니다." />;
-      case "출석":
-        return <AttendanceTab studyId={studyId} />;
-      case "관리":
-        return <ManagementTab studyId={studyId} />;
-      case "랭킹&보증금":
-        return <DefaultContent content="랭킹 및 보증금 기능 개발 중입니다." />;
+      case '공지사항':
+        return <NoticeList />;
+      case '일정':
+        return <ScheduleTab />;
+      case '과제':
+        return <AssignmentTab />;
+      case '출석':
+        return <AttendanceTab />;
+      case '관리':
+        return <ManagementTab />;
       default:
-        return (
-          <DefaultContent content="탭을 선택하여 스터디 관련 정보를 확인하세요." />
-        );
+        return <DefaultContent studyData={studyData} />;
     }
   };
 
   return (
-    <div 
-      className="study-content" 
-      style={{
-        width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0'
-      }}
-    >
+    <div style={{ flex: 1 }}>
       {renderContent()}
     </div>
   );
 }
 
 StudyContent.propTypes = {
-  activeTab: PropTypes.string.isRequired,
-  studyData: PropTypes.object,
+  activeTab: PropTypes.string,
+  studyData: PropTypes.object
 };
 
 export default StudyContent;

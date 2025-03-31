@@ -194,23 +194,94 @@ function StudyDetailPage() {
       width: '100%',
       maxWidth: '100%',
       overflowX: 'hidden',
-      display: 'flex'
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
     }}>
-      {/* 사이드바 */}
-      <StudySidebar
-        studyId={studyId}
-        activeTab={activeTab}
-        studyData={studyData}
-      />
-
-      {/* 메인 콘텐츠 */}
+      {/* 경로 표시 */}
       <div style={{
-        flex: 1,
-        padding: '2rem',
-        backgroundColor: '#FFFFFF'
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        marginBottom: '2rem',
+        fontSize: '14px',
+        color: '#666666',
+        width: '100%',
+        maxWidth: '1200px',
+        padding: '0 1rem'
       }}>
-        {/* 중첩된 라우트의 컴포넌트가 여기에 렌더링됩니다 */}
-        <Outlet context={{ studyData }} />
+        <Link 
+          to="/studies"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            color: '#666666',
+            textDecoration: 'none',
+            transition: 'color 0.2s ease',
+            padding: '4px 8px',
+            borderRadius: '4px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F8F9FA';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          <IoHomeOutline size={16} />
+        </Link>
+        <span>{'>'}</span>
+        <Link
+          to={`/studies/${studyId}`}
+          style={{
+            color: activeTab ? '#666666' : '#FF0000',
+            textDecoration: 'none',
+            transition: 'color 0.2s ease',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontWeight: activeTab ? 'normal' : 'bold'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#F8F9FA';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = 'transparent';
+          }}
+        >
+          {studyData.title}
+        </Link>
+        {activeTab && (
+          <>
+            <span>{'>'}</span>
+            <span style={{ 
+              color: '#FF0000',
+              fontWeight: 'bold',
+              padding: '2px 4px'
+            }}>
+              {activeTab}
+            </span>
+          </>
+        )}
+      </div>
+
+      {/* 오류 메시지 표시 */}
+      {error && <ErrorMessage message={error} />}
+
+      {/* 메인 컨텐츠 */}
+      <div style={{
+        display: 'flex',
+        gap: '2rem',
+        width: '100%',
+        maxWidth: '1200px',
+        position: 'relative',
+        padding: '0 1rem'
+      }}>
+        <StudySidebar
+          studyId={studyId}
+          activeTab={activeTab}
+          studyData={studyData}
+        />
+        <StudyContent activeTab={activeTab} studyData={studyData} />
       </div>
     </div>
   );
