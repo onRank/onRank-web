@@ -4,24 +4,19 @@ import PropTypes from 'prop-types';
 import { studyService } from '../../../services/api';
 
 const styles = {
-  progressBar: {
-    width: '120px',
-    height: '8px',
-    backgroundColor: '#E5E5E5',
+  editButton: {
+    padding: '8px 16px',
+    backgroundColor: '#007AFF',
+    color: '#FFFFFF',
+    border: 'none',
     borderRadius: '4px',
-    overflow: 'hidden'
-  },
-  progressFill: {
-    height: '100%',
-    backgroundColor: '#FF0000',
-    borderRadius: '4px',
-    transition: 'width 0.3s ease'
-  },
-  progressText: {
+    cursor: 'pointer',
     fontSize: '14px',
     fontWeight: 'bold',
-    color: '#333333',
-    marginLeft: '8px'
+    transition: 'background-color 0.2s ease',
+    ':hover': {
+      backgroundColor: '#0056b3'
+    }
   }
 };
 
@@ -51,21 +46,9 @@ function AttendanceTab() {
     fetchAttendances();
   }, [studyId]);
 
-  // 출석 상세 페이지로 이동
-  const handleAttendanceClick = (scheduleId) => {
+  const handleEditClick = (e, scheduleId) => {
+    e.stopPropagation(); // 이벤트 버블링 방지
     navigate(`/studies/${studyId}/attendances/${scheduleId}`);
-  };
-
-  // 출석률 계산 함수
-  const calculateAttendanceRate = (attendance) => {
-    const totalMembers = attendance.attendanceDetails?.length || 0;
-    if (totalMembers === 0) return 0;
-    
-    const presentMembers = attendance.attendanceDetails.filter(
-      detail => detail.status === 'PRESENT'
-    ).length;
-    
-    return Math.round((presentMembers / totalMembers) * 100);
   };
 
   if (isLoading) {
@@ -87,7 +70,6 @@ function AttendanceTab() {
         {attendances.map((attendance) => (
           <div
             key={attendance.attendanceId}
-            onClick={() => handleAttendanceClick(attendance.attendanceId)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -96,12 +78,7 @@ function AttendanceTab() {
               backgroundColor: '#FFFFFF',
               border: '1px solid #E5E5E5',
               borderRadius: '8px',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease',
-              ':hover': {
-                backgroundColor: '#F8F9FA',
-                transform: 'translateX(4px)'
-              }
+              transition: 'all 0.2s ease'
             }}
           >
             <div style={{ flex: 1 }}>
@@ -125,19 +102,12 @@ function AttendanceTab() {
                 })}
               </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div style={styles.progressBar}>
-                <div 
-                  style={{
-                    ...styles.progressFill,
-                    width: `${calculateAttendanceRate(attendance)}%`
-                  }}
-                />
-              </div>
-              <span style={styles.progressText}>
-                {calculateAttendanceRate(attendance)}%
-              </span>
-            </div>
+            <button
+              onClick={(e) => handleEditClick(e, attendance.attendanceId)}
+              style={styles.editButton}
+            >
+              수정하기
+            </button>
           </div>
         ))}
       </div>
