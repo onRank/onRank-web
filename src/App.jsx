@@ -26,6 +26,8 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/ScheduleAddPage";
+import AttendanceTab from "./components/study/tabs/AttendanceTab";
+import AttendanceDetailPage from "./pages/study/AttendanceDetailPage";
 import "./App.css";
 
 // 레이아웃 상수
