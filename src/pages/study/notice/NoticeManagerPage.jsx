@@ -137,9 +137,6 @@ function NoticeContent() {
 
 // 메인 공지사항 페이지 컴포넌트
 function NoticeManagerPage() {
-  const { studyId } = useParams();
-  const [studyData, setStudyData] = useState({ title: "" });
-
   const styles = {
     container: {
       display: "flex",

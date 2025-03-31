@@ -104,6 +104,18 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
         if (result.warning) {
           setError(result.warning);
         }
+
+        // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
+        if (result.data && result.data.noticeId) {
+          console.log("[NoticeForm] 생성된 공지사항 ID:", result.data.noticeId);
+          onFinish?.(result.data.noticeId);
+        } else {
+          console.warn(
+            "[NoticeForm] 생성된 공지사항에 ID가 없습니다:",
+            result.data
+          );
+          onFinish?.();
+        }
       } else {
         // 수정 모드
         const updatedNotice = {
@@ -129,8 +141,10 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
         if (result.warning) {
           setError(result.warning);
         }
+
+        // 수정 모드에서는 기존 ID 전달
+        onFinish?.(notice.noticeId);
       }
-      onFinish?.(); // 전송 후 콜백 (예: 목록으로 이동)
     } catch (error) {
       setError(
         "공지사항 처리 중 오류 발생: " + (error.message || "알 수 없는 오류")
@@ -277,6 +291,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
                 type="button"
                 onClick={() => handleRemoveFile(file.name)}
                 style={{
+                  marginBottom: "4px",
                   marginLeft: "auto",
                   color: "#e74c3c",
                   background: "none",
@@ -311,7 +326,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
         <Button
           type="button"
           variant="back"
-          onClick={onFinish}
+          onClick={() => onFinish()}
           disabled={isSubmitting}
         />
       </div>

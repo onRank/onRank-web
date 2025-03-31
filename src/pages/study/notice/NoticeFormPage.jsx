@@ -8,9 +8,15 @@ function NoticeFormPage() {
   const navigate = useNavigate();
 
   // 공지사항 생성/수정 완료 후 호출될 콜백
-  const handleFinish = () => {
-    // 공지사항 목록 페이지로 이동
-    navigate(`/studies/${studyId}/notices`);
+  const handleFinish = (noticeId) => {
+    // noticeId가 있으면 상세 페이지로, 없으면 목록 페이지로 이동
+    if (noticeId) {
+      console.log(`[NoticeFormPage] 공지사항 생성 완료, ID=${noticeId}로 이동`);
+      navigate(`/studies/${studyId}/notices/${noticeId}`);
+    } else {
+      console.log(`[NoticeFormPage] 공지사항 ID 없음, 목록으로 이동`);
+      navigate(`/studies/${studyId}/notices`);
+    }
   };
 
   const styles = {
