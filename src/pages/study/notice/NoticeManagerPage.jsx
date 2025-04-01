@@ -158,6 +158,7 @@ function NoticeManagerPage() {
     container: {
       display: "flex",
       minHeight: "100vh",
+      overflow: "hidden",
     },
     breadcrumb: {
       display: "flex",
