@@ -70,10 +70,6 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
       flexDirection: "column",
       gap: "24px",
     },
-    title: {
-      fontSize: "20px",
-      fontWeight: "500",
-    },
     date: {
       fontSize: "12px",
       color: "#888",
@@ -108,7 +104,6 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.title}>{selectedNotice.noticeTitle}</div>
       <div style={styles.date}>
         {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
       </div>
