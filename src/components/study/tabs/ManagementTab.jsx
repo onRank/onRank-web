@@ -4,11 +4,11 @@ import { useParams } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
-import DepositManagement from './management/DepositManagement';
+import PointManagement from './management/PointManagement';
 
 function ManagementTab({ studyData }) {
   const { studyId } = useParams();
-  const [managementTab, setManagementTab] = useState('회원'); // 관리 탭 내부 탭 (회원, 스터디, 보증금)
+  const [managementTab, setManagementTab] = useState('스터디'); // 관리 탭 내부 탭 (회원, 스터디, 포인트)
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -86,18 +86,18 @@ function ManagementTab({ studyData }) {
             회원
           </button>
           <button 
-            onClick={() => setManagementTab('보증금')}
+            onClick={() => setManagementTab('포인트')}
             style={{
-              backgroundColor: managementTab === '보증금' ? '#000000' : '#FFFFFF',
-              color: managementTab === '보증금' ? 'white' : '#000',
-              border: managementTab === '보증금' ? 'none' : '1px solid #ddd',
+              backgroundColor: managementTab === '포인트' ? '#000000' : '#FFFFFF',
+              color: managementTab === '포인트' ? 'white' : '#000',
+              border: managementTab === '포인트' ? 'none' : '1px solid #ddd',
               borderRadius: '4px',
               padding: '0.5rem 1rem',
               fontSize: '0.9rem',
               cursor: 'pointer'
             }}
           >
-            보증금
+            포인트
           </button>
         </div>
       </div>
@@ -117,9 +117,9 @@ function ManagementTab({ studyData }) {
         <StudyManagement studyData={studyData} />
       )}
       
-      {/* 보증금 관리 컴포넌트 */}
-      {managementTab === '보증금' && (
-        <DepositManagement />
+      {/* 포인트 관리 컴포넌트 */}
+      {managementTab === '포인트' && (
+        <PointManagement />
       )}
     </div>
   );
