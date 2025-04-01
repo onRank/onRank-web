@@ -67,7 +67,7 @@ function NoticeContent() {
       flex: 1,
       padding: "20px",
       minWidth: 0, // 중요: 플렉스 아이템이 너비를 초과하지 않도록 설정
-      overflow: "auto", // 필요한 경우에만 스크롤 표시
+      overflow: "hidden", // 필요한 경우에만 스크롤 표시
     },
     title: {
       fontSize: "22px",

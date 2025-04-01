@@ -7,6 +7,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
     store: "저장",
     upload: "업로드",
     delete: "삭제",
+    edit: "수정",
     addFiles: "파일 첨부",
     default: "확인",
   };

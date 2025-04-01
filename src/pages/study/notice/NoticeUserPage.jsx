@@ -1,42 +1,70 @@
-// 일반 사용자가 보는 공지사항 페이지
-
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import {
-  NoticeProvider,
-  useNotice,
-} from "../../../components/study/notice/NoticeProvider";
+import { useNavigate, useParams, Link } from "react-router-dom";
+import { IoHomeOutline } from "react-icons/io5";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
+import StudySidebar from "../../../components/study/StudySidebar";
+import {
+  NoticeProvider,
+  useNotice,
+} from "../../../components/study/notice/NoticeProvider";
 
-function NoticeUserPageContent() {
+// 실제 공지사항 컨텐츠를 표시하는 컴포넌트
+function NoticeContent() {
+  const navigate = useNavigate();
   const { studyId } = useParams();
-  const { notices, getNotices, isLoading, error } = useNotice();
   const [selectedNoticeId, setSelectedNoticeId] = useState(null);
-  const [pageInitialized, setPageInitialized] = useState(false);
 
-  // 페이지 로드 시 공지사항 목록 가져오기
+  // NoticeProvider에서 상태와 함수 가져오기
+  const {
+    notices,
+    selectedNotice,
+    isLoading,
+    error,
+    getNotices,
+    getNoticeById,
+  } = useNotice();
+
+  // 페이지 마운트 시 공지사항 목록 가져오기
   useEffect(() => {
-    if (!pageInitialized) {
-      console.log("[NoticeUserPage] 공지사항 목록 로드 시도");
-      getNotices(studyId);
-      setPageInitialized(true);
+    getNotices(studyId);
+  }, [studyId, getNotices]);
+
+  // 선택된 공지사항 ID가 변경될 때 상세 정보 가져오기
+  useEffect(() => {
+    if (selectedNoticeId) {
+      getNoticeById(studyId, selectedNoticeId);
     }
-  }, [studyId, getNotices, pageInitialized]);
+  }, [studyId, selectedNoticeId, getNoticeById]);
 
   // 공지사항 상세 보기
   const handleNoticeClick = (noticeId) => {
     setSelectedNoticeId(noticeId);
+    navigate(`/studies/${studyId}/notices/${noticeId}`);
   };
 
   // 공지사항 상세 보기에서 목록으로 돌아가기
   const handleBack = () => {
     setSelectedNoticeId(null);
+    navigate(`/studies/${studyId}/notices`);
   };
 
-  // 로딩 중일 때 LoadingSpinner 표시
+  const styles = {
+    contentArea: {
+      flex: 1,
+      padding: "20px",
+      minWidth: 0, // 중요: 플렉스 아이템이 너비를 초과하지 않도록 설정
+      overflow: "hidden", // 필요한 경우에만 스크롤 표시
+    },
+    title: {
+      fontSize: "22px",
+      fontWeight: "bold",
+      marginBottom: "20px",
+    },
+  };
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -45,37 +73,124 @@ function NoticeUserPageContent() {
     return <ErrorMessage message={error} />;
   }
 
-  // 공지사항 상세 보기
-  if (selectedNoticeId) {
-    return (
-      <NoticeDetail
-        studyId={studyId}
-        noticeId={selectedNoticeId}
-        handleBack={handleBack}
-      />
-    );
-  }
-
-  // 공지사항 목록 보기 (생성 기능 없음)
   return (
-    <div>
-      <h1 className="text-xl font-bold mb-6">공지사항</h1>
-      <NoticeList
-        notices={notices}
-        onNoticeClick={handleNoticeClick}
-        isLoading={isLoading}
-        handleCreate={null} // 사용자는 공지사항 생성 권한이 없음
-      />
+    <div style={styles.contentArea}>
+      <h1 style={styles.title}>공지사항</h1>
+
+      {selectedNoticeId ? (
+        <NoticeDetail
+          studyId={studyId}
+          noticeId={selectedNoticeId}
+          selectedNotice={selectedNotice}
+          handleBack={handleBack}
+          handleEdit={handleEdit}
+          isLoading={isLoading}
+          error={error}
+        />
+      ) : (
+        <NoticeList
+          notices={notices}
+          onNoticeClick={handleNoticeClick}
+          handleCreate={handleCreate}
+          isLoading={isLoading}
+        />
+      )}
     </div>
   );
 }
 
-function NoticeUserPage() {
+// 메인 공지사항 페이지 컴포넌트
+function NoticeManagerPage() {
+  const { studyId } = useParams();
+  const [studyData, setStudyData] = useState({ title: "스터디" });
+
+  // 스터디 정보 가져오기
+  useEffect(() => {
+    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
+    if (cachedStudyDataStr) {
+      try {
+        const cachedStudyData = JSON.parse(cachedStudyDataStr);
+        setStudyData(cachedStudyData);
+      } catch (err) {
+        console.error("[NoticeManagerPage] 캐시 데이터 파싱 오류:", err);
+      }
+    }
+  }, [studyId]);
+
+  const styles = {
+    container: {
+      display: "flex",
+      minHeight: "100vh",
+      overflow: "hidden",
+    },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+      maxWidth: "1200px",
+      padding: "0 1rem",
+    },
+    breadcrumbLink: {
+      display: "flex",
+      alignItems: "center",
+      color: "#666666",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+    },
+    activeTab: {
+      color: "#FF0000",
+      fontWeight: "bold",
+      padding: "2px 4px",
+    },
+    contentArea: {
+      display: "flex",
+    },
+  };
+
   return (
     <NoticeProvider>
-      <NoticeUserPageContent />
+      {/* 브레드크럼 (경로 표시) */}
+      <div style={styles.breadcrumb}>
+        <Link
+          to="/"
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          <IoHomeOutline size={16} />
+        </Link>
+        <span>{">"}</span>
+        <Link
+          to={`/studies/${studyId}`}
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          {studyData?.title || "스터디"}
+        </Link>
+        <span>{">"}</span>
+        <span style={styles.activeTab}>공지사항</span>
+      </div>
+      <div style={styles.container}>
+        <StudySidebar activeTab="공지사항" />
+        <NoticeContent />
+      </div>
     </NoticeProvider>
   );
 }
 
-export default NoticeUserPage;
+export default NoticeManagerPage;
