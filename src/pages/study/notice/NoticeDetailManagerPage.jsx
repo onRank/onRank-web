@@ -249,8 +249,5 @@ function NoticeDetailManagerPage() {
     </NoticeProvider>
   );
 }
-NoticeDetailManagerContent.propTypes = {
-  onTitleLoaded: PropTypes.func.isRequired,
-};
 
 export default NoticeDetailManagerPage;
