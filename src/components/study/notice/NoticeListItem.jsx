@@ -55,8 +55,8 @@ function NoticeListItem({ notice, onClick }) {
       fontSize: "13px",
       color: "#999",
       marginLeft: "auto",
-      whitespace: "nowrap",
-      flexshrink: 0,
+      whiteSpace: "nowrap",
+      flexShrink: 0,
     },
     noticeText: {
       fontSize: "12px",
