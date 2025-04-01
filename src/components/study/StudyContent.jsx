@@ -364,6 +364,13 @@ ScheduleDetailView.propTypes = {
   isLoading: PropTypes.bool
 };
 
+// 출석 상태 스타일 정의
+const STATUS_STYLES = {
+  PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },
+  ABSENT: { color: '#F44336', text: 'X', label: '결석' },
+  LATE: { color: '#FFC107', text: '△', label: '지각' }
+};
+
 // 출석 상세 컴포넌트
 const AttendanceDetailView = ({ onBack }) => {
   const { studyId, scheduleId } = useParams();
@@ -689,24 +696,14 @@ function StudyContent({ activeTab, studyData }) {
         try {
           setIsLoading(true);
           setError(null);
-          const data = await studyService.getAttendances(studyId);
-          
-          // 중복 제거: scheduleId를 기준으로 중복된 항목 제거
-          const uniqueAttendances = data.reduce((acc, current) => {
-            const x = acc.find(item => item.scheduleId === current.scheduleId);
-            if (!x) {
-              return acc.concat([current]);
-            } else {
-              return acc;
-            }
-          }, []);
+          const data = await studyService.getSchedules(studyId);
           
           // 날짜순으로 정렬 (최신순)
-          const sortedAttendances = uniqueAttendances.sort((a, b) => 
+          const sortedSchedules = data.sort((a, b) => 
             new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt)
           );
           
-          setAttendances(sortedAttendances);
+          setAttendances(sortedSchedules);
         } catch (error) {
           console.error('[StudyContent] 출석 목록 조회 실패:', error);
           setError('출석 목록을 불러오는데 실패했습니다.');
@@ -786,9 +783,9 @@ function StudyContent({ activeTab, studyData }) {
               gap: '1rem',
               width: '100%'
             }}>
-              {attendances.map((attendance) => (
+              {attendances.map((schedule) => (
                 <div
-                  key={attendance.attendanceId}
+                  key={schedule.scheduleId}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -805,13 +802,13 @@ function StudyContent({ activeTab, studyData }) {
                       fontWeight: 'bold',
                       marginBottom: '0.5rem'
                     }}>
-                      {attendance.scheduleTitle}
+                      {schedule.scheduleTitle}
                     </h3>
                     <div style={{
                       fontSize: '14px',
                       color: '#666666'
                     }}>
-                      {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
+                      {new Date(schedule.scheduleStartingAt).toLocaleString('ko-KR', {
                         year: 'numeric',
                         month: '2-digit',
                         day: '2-digit',
@@ -821,7 +818,7 @@ function StudyContent({ activeTab, studyData }) {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleAttendanceClick(attendance.attendanceId)}
+                    onClick={() => handleAttendanceClick(schedule.scheduleId)}
                     style={{
                       padding: '8px 16px',
                       backgroundColor: '#007AFF',
