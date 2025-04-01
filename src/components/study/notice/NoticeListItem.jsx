@@ -63,7 +63,7 @@ function NoticeListItem({ notice, onClick }) {
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
-      maxWidth: "100%",
+      maxWidth: "90%",
     },
   };
 
