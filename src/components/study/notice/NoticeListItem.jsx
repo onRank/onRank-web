@@ -54,7 +54,7 @@ function NoticeListItem({ notice, onClick }) {
     noticeDate: {
       fontSize: "13px",
       color: "#999",
-      marginLeft: "auto",
+      marginLeft: "20px",
     },
     noticeText: {
       fontSize: "12px",
@@ -63,7 +63,7 @@ function NoticeListItem({ notice, onClick }) {
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
-      maxWidth: "90%",
+      maxWidth: "100%",
     },
   };
 
