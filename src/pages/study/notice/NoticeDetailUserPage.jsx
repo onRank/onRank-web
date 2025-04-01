@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import { IoHomeOutline } from "react-icons/io5";
 import {
   NoticeProvider,
   useNotice,
@@ -8,8 +9,9 @@ import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import Button from "../../../components/common/Button";
 import { formatDate } from "../../../utils/dateUtils";
+import PropTypes from "prop-types";
 
-function NoticeDetailUserContent() {
+function NoticeDetailUserContent({ onTitleLoaded }) {
   const { studyId, noticeId } = useParams(); // URL에서 studyId와 noticeId 추출
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
@@ -20,6 +22,13 @@ function NoticeDetailUserContent() {
       getNoticeById(studyId, parseInt(noticeId, 10));
     }
   }, [studyId, noticeId, getNoticeById]);
+
+  // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
+  useEffect(() => {
+    if (selectedNotice && selectedNotice.noticeTitle && onTitleLoaded) {
+      onTitleLoaded(selectedNotice.noticeTitle);
+    }
+  }, [selectedNotice, onTitleLoaded]);
 
   // 뒤로 가기 처리
   const handleBack = () => {
@@ -84,11 +93,6 @@ function NoticeDetailUserContent() {
       flex: 1,
       padding: "32px",
     },
-    breadcrumb: {
-      fontSize: "14px",
-      color: "#999",
-      marginBottom: "16px",
-    },
     title: {
       fontSize: "20px",
       fontWeight: "bold",
@@ -140,9 +144,6 @@ function NoticeDetailUserContent() {
     <div style={styles.wrapper}>
       <div style={styles.main}>
         <main style={styles.contentArea}>
-          <div style={styles.breadcrumb}>
-            공지사항 &gt; {selectedNotice.noticeTitle}
-          </div>
           <h1 style={styles.title}>{selectedNotice.noticeTitle}</h1>
           <div style={styles.date}>
             {formatDate(selectedNotice.noticeCreatedAt)}
@@ -178,10 +179,140 @@ function NoticeDetailUserContent() {
   );
 }
 
+// PropTypes 추가
+NoticeDetailUserContent.propTypes = {
+  onTitleLoaded: PropTypes.func,
+};
+
+// 기본 props 설정
+NoticeDetailUserContent.defaultProps = {
+  onTitleLoaded: () => {},
+};
+
 function NoticeDetailUserPage() {
+  const { studyId } = useParams();
+  const [studyData, setStudyData] = useState({ title: "스터디" });
+  const [pageTitle, setPageTitle] = useState("공지사항 상세");
+
+  // 스터디 정보 가져오기
+  useEffect(() => {
+    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
+    if (cachedStudyDataStr) {
+      try {
+        const cachedStudyData = JSON.parse(cachedStudyDataStr);
+        setStudyData(cachedStudyData);
+      } catch (err) {
+        console.error("[NoticeDetailUserPage] 캐시 데이터 파싱 오류:", err);
+      }
+    }
+  }, [studyId]);
+
+  // 자식 컴포넌트에서 제목을 받아오는 함수
+  const updatePageTitle = (title) => {
+    setPageTitle(title);
+  };
+
+  const styles = {
+    wrapper: {
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      backgroundColor: "#f9f9f9",
+      display: "flex",
+      flexDirection: "column",
+    },
+    main: {
+      display: "flex",
+      flex: 1,
+    },
+    content: {
+      flex: 1,
+      padding: "48px 64px",
+    },
+    title: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "32px",
+    },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+      maxWidth: "1200px",
+      padding: "0 1rem",
+    },
+    breadcrumbLink: {
+      display: "flex",
+      alignItems: "center",
+      color: "#666666",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+    },
+    activeTab: {
+      color: "#FF0000",
+      fontWeight: "bold",
+      padding: "2px 4px",
+    },
+  };
+
   return (
     <NoticeProvider>
-      <NoticeDetailUserContent />
+      <div style={styles.wrapper}>
+        {/* 브레드크럼 (경로 표시) */}
+        <div style={styles.breadcrumb}>
+          <Link
+            to="/"
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            <IoHomeOutline size={16} />
+          </Link>
+          <span>{">"}</span>
+          <Link
+            to={`/studies/${studyId}`}
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            {studyData?.title || "스터디"}
+          </Link>
+          <span>{">"}</span>
+          <Link
+            to={`/studies/${studyId}/notices`}
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            공지사항
+          </Link>
+          <span>{">"}</span>
+          <span style={styles.activeTab}>{pageTitle}</span>
+        </div>
+        <div style={styles.main}>
+          <main style={styles.content}>
+            <h1 style={styles.title}>{pageTitle}</h1>
+            <NoticeDetailUserContent onTitleLoaded={updatePageTitle} />
+          </main>
+        </div>
+      </div>
     </NoticeProvider>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import { IoHomeOutline } from "react-icons/io5";
 import {
   NoticeProvider,
   useNotice,
@@ -9,7 +11,7 @@ import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
 
-function NoticeDetailManagerContent() {
+function NoticeDetailManagerContent({ onTitleLoaded }) {
   const { studyId, noticeId } = useParams();
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
@@ -23,7 +25,7 @@ function NoticeDetailManagerContent() {
 
   // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
-    if (selectedNotice && selectedNotice.noticeTitle) {
+    if (selectedNotice && selectedNotice.noticeTitle && onTitleLoaded) {
       onTitleLoaded(selectedNotice.noticeTitle);
     }
   }, [selectedNotice, onTitleLoaded]);
@@ -118,7 +120,7 @@ function NoticeDetailManagerContent() {
     <div style={styles.container}>
       <div style={styles.header}>
         <div style={styles.titleSection}>
-          <h1 style={styles.title}>{selectedNotice.noticeTitle}</h1>
+          {/* 여기서는 제목을 표시하지 않음 - 부모 컴포넌트에서 처리 */}
           <div style={styles.date}>
             작성일:{" "}
             {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
@@ -162,8 +164,18 @@ function NoticeDetailManagerContent() {
   );
 }
 
+// PropTypes 추가
+NoticeDetailManagerContent.propTypes = {
+  onTitleLoaded: PropTypes.func,
+};
+
+// 기본 props 설정
+NoticeDetailManagerContent.defaultProps = {
+  onTitleLoaded: () => {},
+};
+
 function NoticeDetailManagerPage() {
-  const { studyId } = useParams();
+  const { studyId, noticeId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("공지사항 상세");
 
@@ -236,6 +248,49 @@ function NoticeDetailManagerPage() {
   return (
     <NoticeProvider>
       <div style={styles.wrapper}>
+        {/* 브레드크럼 (경로 표시) */}
+        <div style={styles.breadcrumb}>
+          <Link
+            to="/"
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            <IoHomeOutline size={16} />
+          </Link>
+          <span>{">"}</span>
+          <Link
+            to={`/studies/${studyId}`}
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            {studyData?.title || "스터디"}
+          </Link>
+          <span>{">"}</span>
+          <Link
+            to={`/studies/${studyId}/notices`}
+            style={styles.breadcrumbLink}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#F8F9FA";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            공지사항
+          </Link>
+          <span>{">"}</span>
+          <span style={styles.activeTab}>{pageTitle}</span>
+        </div>
         <div style={styles.main}>
           <aside>
             <StudySidebar activeTab="공지사항" />
