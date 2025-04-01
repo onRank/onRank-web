@@ -17,7 +17,6 @@ function NoticeContent() {
   const navigate = useNavigate();
   const { studyId } = useParams();
   const [selectedNoticeId, setSelectedNoticeId] = useState(null);
-  const [studyData, setStudyData] = useState({ title: "스터디" });
 
   // NoticeProvider에서 상태와 함수 가져오기
   const {
@@ -40,19 +39,6 @@ function NoticeContent() {
       getNoticeById(studyId, selectedNoticeId);
     }
   }, [studyId, selectedNoticeId, getNoticeById]);
-
-  // 스터디 정보 가져오기
-  useEffect(() => {
-    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
-    if (cachedStudyDataStr) {
-      try {
-        const cachedStudyData = JSON.parse(cachedStudyDataStr);
-        setStudyData(cachedStudyData);
-      } catch (err) {
-        console.error("[NoticeManagerPage] 캐시 데이터 파싱 오류:", err);
-      }
-    }
-  }, [studyId]);
 
   // 공지사항 작성 페이지로 이동
   const handleCreate = () => {
@@ -106,31 +92,6 @@ function NoticeContent() {
       fontSize: "14px",
       marginTop: "5px",
     },
-    breadcrumb: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      marginBottom: "2rem",
-      fontSize: "14px",
-      color: "#666666",
-      width: "100%",
-      maxWidth: "1200px",
-      padding: "0 1rem",
-    },
-    breadcrumbLink: {
-      display: "flex",
-      alignItems: "center",
-      color: "#666666",
-      textDecoration: "none",
-      transition: "color 0.2s ease",
-      padding: "4px 8px",
-      borderRadius: "4px",
-    },
-    activeTab: {
-      color: "#FF0000",
-      fontWeight: "bold",
-      padding: "2px 4px",
-    },
   };
 
   if (isLoading) {
@@ -143,37 +104,6 @@ function NoticeContent() {
 
   return (
     <div style={styles.contentArea}>
-      {/* 브레드크럼 (경로 표시) */}
-      <div style={styles.breadcrumb}>
-        <Link
-          to="/"
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}`}
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          {studyData?.title || "스터디"}
-        </Link>
-        <span>{">"}</span>
-        <span style={styles.activeTab}>공지사항</span>
-      </div>
-
       <h1 style={styles.title}>공지사항</h1>
 
       <div style={styles.addNoticeCard}>
@@ -208,15 +138,89 @@ function NoticeContent() {
 
 // 메인 공지사항 페이지 컴포넌트
 function NoticeManagerPage() {
+  const { studyId } = useParams();
+  const [studyData, setStudyData] = useState({ title: "스터디" });
+
+  // 스터디 정보 가져오기
+  useEffect(() => {
+    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
+    if (cachedStudyDataStr) {
+      try {
+        const cachedStudyData = JSON.parse(cachedStudyDataStr);
+        setStudyData(cachedStudyData);
+      } catch (err) {
+        console.error("[NoticeManagerPage] 캐시 데이터 파싱 오류:", err);
+      }
+    }
+  }, [studyId]);
+
   const styles = {
     container: {
       display: "flex",
       minHeight: "100vh",
     },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+      maxWidth: "1200px",
+      padding: "0 1rem",
+    },
+    breadcrumbLink: {
+      display: "flex",
+      alignItems: "center",
+      color: "#666666",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+    },
+    activeTab: {
+      color: "#FF0000",
+      fontWeight: "bold",
+      padding: "2px 4px",
+    },
+    contentArea: {
+      display: "flex",
+    },
   };
 
   return (
     <NoticeProvider>
+      {/* 브레드크럼 (경로 표시) */}
+      <div style={styles.breadcrumb}>
+        <Link
+          to="/"
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          <IoHomeOutline size={16} />
+        </Link>
+        <span>{">"}</span>
+        <Link
+          to={`/studies/${studyId}`}
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          {studyData?.title || "스터디"}
+        </Link>
+        <span>{">"}</span>
+        <span style={styles.activeTab}>공지사항</span>
+      </div>
       <div style={styles.container}>
         <StudySidebar activeTab="공지사항" />
         <NoticeContent />
