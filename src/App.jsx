@@ -19,7 +19,6 @@ import NoticeFormPage from "./pages/study/notice/NoticeFormPage";
 import NoticeUserPage from "./pages/study/notice/NoticeUserPage";
 import NoticeManagerPage from "./pages/study/notice/NoticeManagerPage";
 import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
-import NoticeEditPage from "./pages/study/notice/NoticeEditPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
 import Header from "./components/common/Header";
 import UserInfoForm from "./components/auth/UserInfoForm";
@@ -383,11 +382,6 @@ function AppContent() {
                       path="notices/:noticeId"
                       element={<NoticeDetailManagerPage />}
                     />
-                    <Route
-                      path="notices/:noticeId/edit"
-                      element={<NoticeEditPage />}
-                    />
-
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<ScheduleAddPage />} />
                     <Route path="assignment" element={<StudyDetailPage />} />

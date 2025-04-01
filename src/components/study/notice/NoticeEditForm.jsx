@@ -1,55 +1,42 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { IoHomeOutline } from "react-icons/io5";
-import {
-  NoticeProvider,
-  useNotice,
-} from "../../../components/study/notice/NoticeProvider";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
-import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
-import Button from "../../../components/common/Button";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useNotice } from "./NoticeProvider";
+import LoadingSpinner from "../../common/LoadingSpinner";
+import Button from "../../common/Button";
 
-function NoticeEditManagerContent() {
-  const { studyId, noticeId } = useParams();
+/**
+ * 공지사항 수정 폼 컴포넌트
+ *
+ * @param {Object} props
+ * @param {string} props.studyId - 스터디 ID
+ * @param {string} props.noticeId - 공지사항 ID
+ * @param {Object} props.initialData - 초기 공지사항 데이터
+ * @param {Function} props.onCancel - 취소 버튼 클릭 핸들러
+ * @param {Function} props.onSaveComplete - 저장 완료 후 호출될 콜백
+ */
+function NoticeEditForm({
+  studyId,
+  noticeId,
+  initialData,
+  onCancel,
+  onSaveComplete,
+}) {
+  const { editNotice, deleteNotice } = useNotice();
   const navigate = useNavigate();
-  const {
-    selectedNotice,
-    isLoading,
-    error,
-    getNoticeById,
-    editNotice,
-    deleteNotice,
-  } = useNotice();
 
-  const [noticeTitle, setNoticeTitle] = useState("");
-  const [noticeContent, setNoticeContent] = useState("");
+  const [noticeTitle, setNoticeTitle] = useState(
+    initialData?.noticeTitle || ""
+  );
+  const [noticeContent, setNoticeContent] = useState(
+    initialData?.noticeContent || ""
+  );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState([]);
+  const [existingFiles, setExistingFiles] = useState(initialData?.files || []);
   const [filesToRemove, setFilesToRemove] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
-
-  // 컴포넌트 마운트 시 공지사항 정보 가져오기
-  useEffect(() => {
-    if (studyId && noticeId) {
-      getNoticeById(studyId, parseInt(noticeId, 10));
-    }
-  }, [studyId, noticeId, getNoticeById]);
-
-  // 공지사항 데이터가 로드되면 상태 업데이트
-  useEffect(() => {
-    if (selectedNotice) {
-      setNoticeTitle(selectedNotice.noticeTitle || "");
-      setNoticeContent(selectedNotice.noticeContent || "");
-
-      // 기존 파일이 있으면 설정
-      if (selectedNotice.files && Array.isArray(selectedNotice.files)) {
-        setExistingFiles(selectedNotice.files);
-      }
-    }
-  }, [selectedNotice]);
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
@@ -144,8 +131,8 @@ function NoticeEditManagerContent() {
         return;
       }
 
-      // 성공 시 상세 페이지로 이동
-      navigate(`/studies/${studyId}/notices/${noticeId}`);
+      // 성공 시 상세 보기 모드로 전환
+      onSaveComplete();
     } catch (error) {
       setSubmitError("공지사항 수정 중 오류가 발생했습니다.");
       setIsSubmitting(false);
@@ -175,31 +162,8 @@ function NoticeEditManagerContent() {
     }
   };
 
-  // 취소 핸들러
-  const handleCancel = () => {
-    navigate(`/studies/${studyId}/notices`);
-  };
-
-  if (isLoading || isSubmitting) {
+  if (isSubmitting) {
     return <LoadingSpinner />;
-  }
-
-  if (error) {
-    return (
-      <div style={{ padding: "24px" }}>
-        <ErrorMessage message={error} />
-      </div>
-    );
-  }
-
-  if (!selectedNotice) {
-    return (
-      <div style={{ padding: "24px" }}>
-        <div style={{ marginTop: "16px" }}>
-          해당 공지사항을 찾을 수 없습니다.
-        </div>
-      </div>
-    );
   }
 
   const styles = {
@@ -223,7 +187,7 @@ function NoticeEditManagerContent() {
     },
     textarea: {
       width: "100%",
-      minHeight: "200px",
+      minHeight: "313px",
       padding: "10px",
       borderRadius: "8px",
       border: "1px solid #ccc",
@@ -392,140 +356,18 @@ function NoticeEditManagerContent() {
           <Button type="submit" variant="store" />
           <Button type="button" variant="delete" onClick={handleDelete} />
         </div>
-        <Button type="button" variant="back" onClick={handleCancel} />
+        <Button type="button" variant="back" onClick={onCancel} />
       </div>
     </form>
   );
 }
 
-function NoticeEditPage() {
-  const { studyId } = useParams();
-  const [studyData, setStudyData] = useState({ title: "스터디" });
+NoticeEditForm.propTypes = {
+  studyId: PropTypes.string.isRequired,
+  noticeId: PropTypes.string.isRequired,
+  initialData: PropTypes.object.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  onSaveComplete: PropTypes.func.isRequired,
+};
 
-  // 스터디 정보 가져오기
-  useEffect(() => {
-    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
-    if (cachedStudyDataStr) {
-      try {
-        const cachedStudyData = JSON.parse(cachedStudyDataStr);
-        setStudyData(cachedStudyData);
-      } catch (err) {
-        console.error("[NoticeManagerPage] 캐시 데이터 파싱 오류:", err);
-      }
-    }
-  }, [studyId]);
-
-  const styles = {
-    container: {
-      display: "flex",
-      minHeight: "100vh",
-      overflow: "hidden",
-    },
-    breadcrumb: {
-      display: "flex",
-      alignItems: "center",
-      gap: "0.5rem",
-      marginBottom: "2rem",
-      fontSize: "14px",
-      color: "#666666",
-      width: "100%",
-      maxWidth: "1200px",
-      padding: "0 1rem",
-    },
-    breadcrumbLink: {
-      display: "flex",
-      alignItems: "center",
-      color: "#666666",
-      textDecoration: "none",
-      transition: "color 0.2s ease",
-      padding: "4px 8px",
-      borderRadius: "4px",
-    },
-    activeTab: {
-      color: "#FF0000",
-      fontWeight: "bold",
-      padding: "2px 4px",
-    },
-    contentArea: {
-      display: "flex",
-    },
-    wrapper: {
-      minHeight: "100vh",
-      fontFamily: "sans-serif",
-      backgroundColor: "#fff",
-      display: "flex",
-      flexDirection: "column",
-    },
-    main: {
-      display: "flex",
-      flex: 1,
-    },
-    content: {
-      flex: 1,
-      padding: "48px 64px",
-    },
-    title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      marginBottom: "32px",
-    },
-  };
-
-  return (
-    <NoticeProvider>
-      <div style={styles.breadcrumb}>
-        <Link
-          to="/"
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}`}
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          {studyData?.title || "스터디"}
-        </Link>
-        <span>{">"}</span>
-        <Link
-          to={`/studies/${studyId}/notices`}
-          style={styles.breadcrumbLink}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-          }}
-        >
-          공지사항
-        </Link>
-      </div>
-      <div style={styles.wrapper}>
-        <div style={styles.main}>
-          <aside>
-            <StudySidebar activeTab="공지사항" />
-          </aside>
-          <main style={styles.content}>
-            <h1 style={styles.title}>공지사항</h1>
-            <NoticeEditManagerContent />
-          </main>
-        </div>
-      </div>
-    </NoticeProvider>
-  );
-}
-
-export default NoticeEditPage;
+export default NoticeEditForm;

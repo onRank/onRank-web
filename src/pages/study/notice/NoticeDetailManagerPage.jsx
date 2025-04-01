@@ -10,11 +10,13 @@ import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
+import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
 
 function NoticeDetailManagerContent({ onTitleLoaded }) {
   const { studyId, noticeId } = useParams();
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // 컴포넌트 마운트 시 공지사항 정보 가져오기
   useEffect(() => {
@@ -25,19 +27,41 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
 
   // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
-    if (selectedNotice && selectedNotice.noticeTitle && onTitleLoaded) {
+    if (
+      selectedNotice &&
+      selectedNotice.noticeTitle &&
+      onTitleLoaded &&
+      !isEditMode
+    ) {
       onTitleLoaded(selectedNotice.noticeTitle);
     }
-  }, [selectedNotice, onTitleLoaded]);
+  }, [selectedNotice, onTitleLoaded, isEditMode]);
 
   // 닫기 버튼 핸들러 - 공지사항 목록으로 이동
   const handleClose = () => {
     navigate(`/studies/${studyId}/notices`);
   };
 
-  // 수정 버튼 핸들러 추가 - 공지사항 수정 페이지로 이동
+  // 수정 버튼 핸들러 - URL 변경 대신 수정 모드로 전환
   const handleEdit = () => {
-    navigate(`/studies/${studyId}/notices/${noticeId}/edit`);
+    setIsEditMode(true);
+    if (onTitleLoaded) {
+      onTitleLoaded("공지사항 수정");
+    }
+  };
+
+  // 수정 취소 및 완료 핸들러
+  const handleEditCancel = () => {
+    setIsEditMode(false);
+    if (selectedNotice && onTitleLoaded) {
+      onTitleLoaded(selectedNotice.noticeTitle);
+    }
+  };
+
+  const handleEditComplete = () => {
+    // 수정 완료 후 GET API를 다시 호출하여 최신 데이터 가져오기
+    getNoticeById(studyId, parseInt(noticeId, 10));
+    setIsEditMode(false);
   };
 
   if (isLoading) {
@@ -104,32 +128,44 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.date}>
-        {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
-      </div>
-      <div style={styles.contentBox}>
-        {selectedNotice.noticeContent || <p>내용이 없습니다.</p>}
-      </div>
-      {selectedNotice.files?.length > 0 && (
-        <div style={styles.attachmentWrapper}>
-          <div style={styles.attachmentTitle}>첨부 파일</div>
-          <ul style={{ listStyle: "none", padding: 0 }}>
-            {selectedNotice.files.map((file) => (
-              <li
-                key={file.fileId}
-                style={styles.attachmentItem}
-                onClick={() => window.open(file.fileUrl, "_blank")}
-              >
-                {file.fileName}
-              </li>
-            ))}
-          </ul>
-        </div>
+      {isEditMode ? (
+        <NoticeEditForm
+          studyId={studyId}
+          noticeId={noticeId}
+          initialData={selectedNotice}
+          onCancel={handleEditCancel}
+          onSaveComplete={handleEditComplete}
+        />
+      ) : (
+        <>
+          <div style={styles.date}>
+            {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
+          </div>
+          <div style={styles.contentBox}>
+            {selectedNotice.noticeContent || <p>내용이 없습니다.</p>}
+          </div>
+          {selectedNotice.files?.length > 0 && (
+            <div style={styles.attachmentWrapper}>
+              <div style={styles.attachmentTitle}>첨부 파일</div>
+              <ul style={{ listStyle: "none", padding: 0 }}>
+                {selectedNotice.files.map((file) => (
+                  <li
+                    key={file.fileId}
+                    style={styles.attachmentItem}
+                    onClick={() => window.open(file.fileUrl, "_blank")}
+                  >
+                    {file.fileName}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div style={styles.buttonContainer}>
+            <Button variant="edit" onClick={handleEdit} />
+            <Button variant="back" onClick={handleClose} />
+          </div>
+        </>
       )}
-      <div style={styles.buttonContainer}>
-        <Button variant="edit" onClick={handleEdit} />
-        <Button variant="back" onClick={handleClose} />
-      </div>
     </div>
   );
 }
