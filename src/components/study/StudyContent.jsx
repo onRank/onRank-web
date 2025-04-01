@@ -690,7 +690,23 @@ function StudyContent({ activeTab, studyData }) {
           setIsLoading(true);
           setError(null);
           const data = await studyService.getAttendances(studyId);
-          setAttendances(data);
+          
+          // 중복 제거: scheduleId를 기준으로 중복된 항목 제거
+          const uniqueAttendances = data.reduce((acc, current) => {
+            const x = acc.find(item => item.scheduleId === current.scheduleId);
+            if (!x) {
+              return acc.concat([current]);
+            } else {
+              return acc;
+            }
+          }, []);
+          
+          // 날짜순으로 정렬 (최신순)
+          const sortedAttendances = uniqueAttendances.sort((a, b) => 
+            new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt)
+          );
+          
+          setAttendances(sortedAttendances);
         } catch (error) {
           console.error('[StudyContent] 출석 목록 조회 실패:', error);
           setError('출석 목록을 불러오는데 실패했습니다.');
