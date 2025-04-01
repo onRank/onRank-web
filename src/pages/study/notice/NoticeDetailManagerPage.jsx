@@ -65,39 +65,28 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   // 스타일 정의
   const styles = {
     container: {
-      padding: "24px",
-    },
-    header: {
+      padding: "0 16px",
       display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      marginBottom: "24px",
-    },
-    titleSection: {
-      marginBottom: "16px",
+      flexDirection: "column",
+      gap: "24px",
     },
     title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      marginBottom: "8px",
+      fontSize: "20px",
+      fontWeight: "500",
     },
     date: {
-      color: "#666",
-      fontSize: "14px",
+      fontSize: "12px",
+      color: "#888",
     },
-    content: {
-      backgroundColor: "#fff",
+    contentBox: {
       border: "1px solid #e0e0e0",
       borderRadius: "8px",
-      padding: "24px",
-      marginBottom: "24px",
-      lineHeight: "1.6",
-      minHeight: "200px",
+      minHeight: "313px",
+      padding: "16px",
+      background: "#fff",
     },
-    attachments: {
-      marginTop: "24px",
-      borderTop: "1px solid #eee",
-      paddingTop: "16px",
+    attachmentWrapper: {
+      marginTop: "12px",
     },
     attachmentTitle: {
       fontSize: "16px",
@@ -105,9 +94,10 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
       marginBottom: "8px",
     },
     attachmentItem: {
-      color: "#0066cc",
+      fontSize: "14px",
+      marginBottom: "6px",
+      color: "#333",
       cursor: "pointer",
-      marginBottom: "8px",
     },
     buttonContainer: {
       display: "flex",
@@ -118,30 +108,16 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.titleSection}>
-          {/* 여기서는 제목을 표시하지 않음 - 부모 컴포넌트에서 처리 */}
-          <div style={styles.date}>
-            작성일:{" "}
-            {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
-            {selectedNotice.noticeModifiedAt !==
-              selectedNotice.noticeCreatedAt && (
-              <span style={{ marginLeft: "12px" }}>
-                수정일:{" "}
-                {new Date(selectedNotice.noticeModifiedAt).toLocaleDateString()}
-              </span>
-            )}
-          </div>
-        </div>
+      <div style={styles.title}>{selectedNotice.noticeTitle}</div>
+      <div style={styles.date}>
+        {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
       </div>
-
-      <div style={styles.content}>
+      <div style={styles.contentBox}>
         {selectedNotice.noticeContent || <p>내용이 없습니다.</p>}
       </div>
-
-      {selectedNotice.files && selectedNotice.files.length > 0 && (
-        <div style={styles.attachments}>
-          <h3 style={styles.attachmentTitle}>첨부파일</h3>
+      {selectedNotice.files?.length > 0 && (
+        <div style={styles.attachmentWrapper}>
+          <div style={styles.attachmentTitle}>첨부 파일</div>
           <ul style={{ listStyle: "none", padding: 0 }}>
             {selectedNotice.files.map((file) => (
               <li
@@ -155,7 +131,6 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
           </ul>
         </div>
       )}
-
       <div style={styles.buttonContainer}>
         <Button variant="edit" onClick={handleEdit} />
         <Button variant="back" onClick={handleClose} />
@@ -201,13 +176,12 @@ function NoticeDetailManagerPage() {
     wrapper: {
       minHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#f9f9f9",
+      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
     },
     main: {
       display: "flex",
-      flex: 1,
     },
     content: {
       flex: 1,
@@ -218,7 +192,7 @@ function NoticeDetailManagerPage() {
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "32px",
+      marginBottom: "10px",
     },
     breadcrumb: {
       display: "flex",
