@@ -108,7 +108,6 @@ function NoticeDetailUserContent({ onTitleLoaded }) {
       borderRadius: "6px",
       minHeight: "200px",
       padding: "16px",
-      backgroundColor: "#fafafa",
       marginBottom: "32px",
     },
     fileLabel: {
