@@ -213,9 +213,8 @@ function NoticeDetailUserPage() {
 
   const styles = {
     wrapper: {
-      minHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#f9f9f9",
+      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
     },

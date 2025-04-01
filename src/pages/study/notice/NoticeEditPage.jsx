@@ -519,7 +519,7 @@ function NoticeEditPage() {
             <StudySidebar activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
-            <h1 style={styles.title}>공지사항 수정</h1>
+            <h1 style={styles.title}>공지사항</h1>
             <NoticeEditManagerContent />
           </main>
         </div>
