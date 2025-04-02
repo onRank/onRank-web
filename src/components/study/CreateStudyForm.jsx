@@ -73,6 +73,27 @@ const styles = {
     borderRadius: '4px',
     marginBottom: '1rem',
     fontSize: '14px'
+  },
+  depositInputContainer: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #E5E5E5',
+    borderRadius: '4px',
+    overflow: 'hidden'
+  },
+  depositInput: {
+    width: '100%',
+    padding: '12px',
+    border: 'none',
+    fontSize: '14px',
+    textAlign: 'center'
+  },
+  depositSuffix: {
+    padding: '0 12px',
+    backgroundColor: '#F5F5F5',
+    color: '#666666',
+    fontSize: '14px'
   }
 };
 
@@ -80,6 +101,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
   const [studyName, setStudyName] = useState('');
   const [content, setContent] = useState('');
   const [googleFormLink, setGoogleFormLink] = useState('');
+  const [deposit, setDeposit] = useState(0);
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,6 +184,26 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
     }
   };
 
+  // 보증금 입력 처리 함수
+  const handleDepositChange = (e) => {
+    const value = e.target.value;
+    
+    // 빈 값인 경우 0으로 설정
+    if (value === '') {
+      setDeposit(0);
+      return;
+    }
+    
+    // 숫자가 아닌 경우 무시
+    if (!/^\d+$/.test(value)) {
+      return;
+    }
+    
+    // 정수로 변환하여 설정
+    const depositAmount = parseInt(value, 10);
+    setDeposit(depositAmount);
+  };
+
   // 스터디 생성 핸들러
   const handleCreateStudy = async () => {
     console.log('[CreateStudyForm] 스터디 생성 시작');
@@ -193,7 +235,8 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
       const studyData = { 
         studyName: studyName,
         studyContent: content,
-        studyGoogleFormUrl: googleFormLink || null
+        studyGoogleFormUrl: googleFormLink || null,
+        deposit: deposit
       };
       
       console.log('[CreateStudyForm] 스터디 생성 요청 데이터:', {
@@ -327,6 +370,34 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             onChange={(e) => setContent(e.target.value)}
             style={styles.textarea}
           />
+        </div>
+
+        {/* 구분선 */}
+        <div style={styles.divider} />
+
+        {/* 보증금 입력 */}
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            1인당 보증금 (원)
+          </label>
+          <div style={styles.depositInputContainer}>
+            <input
+              type="text"
+              value={deposit || 0}
+              onChange={handleDepositChange}
+              placeholder="0"
+              style={styles.depositInput}
+            />
+            <div style={styles.depositSuffix}>원</div>
+          </div>
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#666666', 
+            marginTop: '6px', 
+            textAlign: 'center' 
+          }}>
+            스터디 참여자가 납부해야 하는 1인당 보증금입니다. 입력하지 않으면 0원으로 설정됩니다.
+          </div>
         </div>
 
         {/* 구분선 */}
