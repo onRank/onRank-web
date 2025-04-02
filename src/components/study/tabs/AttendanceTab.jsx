@@ -3,12 +3,20 @@ import PropTypes from 'prop-types';
 import { useParams, useNavigate } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import { IoChevronBackOutline } from "react-icons/io5";
+import { FaPencilAlt } from "react-icons/fa";
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Select, MenuItem, FormControl, Box } from '@mui/material';
+
+// Chart.js 컴포넌트 등록
+ChartJS.register(ArcElement, Tooltip, Legend);
 
 // 출석 상태 스타일 정의
 const STATUS_STYLES = {
   PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },
   ABSENT: { color: '#F44336', text: 'X', label: '결석' },
-  LATE: { color: '#FFC107', text: '△', label: '지각' }
+  LATE: { color: '#FFC107', text: '△', label: '지각' },
+  UNVERIFIED: { color: '#9E9E9E', text: '?', label: '미확인' }
 };
 
 // 출석 상세 컴포넌트
@@ -17,6 +25,7 @@ const AttendanceDetailView = ({ onBack }) => {
   const [attendances, setAttendances] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState('MEMBER');
 
   useEffect(() => {
     const fetchAttendanceDetails = async () => {
@@ -25,6 +34,11 @@ const AttendanceDetailView = ({ onBack }) => {
         setError(null);
         const data = await studyService.getAttendanceDetails(studyId, scheduleId);
         setAttendances(data);
+        
+        // 첫 번째 참석자의 역할로 사용자 역할 설정 (임시 방법)
+        if (data.length > 0 && data[0].memberRole) {
+          setUserRole(data[0].memberRole);
+        }
       } catch (error) {
         console.error('[AttendanceDetailView] 출석 상세 정보 조회 실패:', error);
         setError('출석 상세 정보를 불러오는데 실패했습니다.');
@@ -106,30 +120,57 @@ const AttendanceDetailView = ({ onBack }) => {
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              {Object.entries(STATUS_STYLES).map(([status, style]) => (
-                <button
-                  key={status}
-                  onClick={() => handleStatusChange(attendance.attendanceId, status)}
-                  style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '50%',
-                    border: 'none',
-                    backgroundColor: attendance.attendanceStatus === status ? style.color : '#E5E5E5',
-                    color: '#FFFFFF',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '16px',
-                    fontWeight: 'bold'
-                  }}
-                  title={style.label}
-                >
-                  {style.text}
-                </button>
-              ))}
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              {userRole === 'HOST' ? (
+                <FormControl size="small">
+                  <Select
+                    value={attendance.attendanceStatus || 'UNVERIFIED'}
+                    onChange={(e) => handleStatusChange(attendance.attendanceId, e.target.value)}
+                    sx={{ 
+                      minWidth: 100,
+                      height: 32,
+                      fontSize: '14px',
+                      '.MuiOutlinedInput-notchedOutline': { 
+                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color 
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': { 
+                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color 
+                      },
+                      color: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                      fontWeight: 'bold'
+                    }}
+                  >
+                    {Object.entries(STATUS_STYLES).map(([status, style]) => (
+                      <MenuItem key={status} value={status}>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          color: style.color,
+                          fontWeight: 'bold' 
+                        }}>
+                          <span style={{ marginRight: '8px' }}>{style.text}</span>
+                          {style.label}
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              ) : (
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px',
+                  borderRadius: '50%',
+                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                  color: '#FFFFFF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '16px',
+                  fontWeight: 'bold'
+                }}>
+                  {STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].text}
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -142,6 +183,128 @@ AttendanceDetailView.propTypes = {
   onBack: PropTypes.func.isRequired
 };
 
+// 출석률 그래프 컴포넌트
+const AttendanceChart = ({ attendances }) => {
+  // 출석 상태 통계 계산
+  const stats = {
+    PRESENT: 0,
+    ABSENT: 0,
+    LATE: 0,
+    UNVERIFIED: 0
+  };
+  
+  attendances.forEach(attendance => {
+    const status = attendance.attendanceStatus || 'UNVERIFIED';
+    stats[status] = (stats[status] || 0) + 1;
+  });
+  
+  const total = attendances.length;
+  const presentRate = total > 0 ? Math.round((stats.PRESENT / total) * 100) : 0;
+  
+  // 차트 데이터
+  const chartData = {
+    labels: Object.entries(STATUS_STYLES).map(([_, style]) => style.label),
+    datasets: [
+      {
+        data: Object.keys(STATUS_STYLES).map(status => stats[status] || 0),
+        backgroundColor: Object.entries(STATUS_STYLES).map(([_, style]) => style.color),
+        borderWidth: 0,
+      },
+    ],
+  };
+  
+  // 차트 옵션
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const label = context.label || '';
+            const value = context.raw || 0;
+            const percentage = Math.round((value / total) * 100);
+            return `${label}: ${value}명 (${percentage}%)`;
+          }
+        }
+      }
+    }
+  };
+  
+  return (
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      alignItems: 'center',
+      padding: '2rem',
+      backgroundColor: '#FFFFFF',
+      border: '1px solid #E5E5E5',
+      borderRadius: '8px',
+      marginBottom: '2rem'
+    }}>
+      <div style={{ 
+        position: 'relative',
+        width: '200px',
+        height: '200px'
+      }}>
+        <Doughnut data={chartData} options={chartOptions} />
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#4CAF50' }}>
+            {presentRate}%
+          </div>
+          <div style={{ fontSize: '14px', color: '#666666' }}>
+            출석률
+          </div>
+        </div>
+      </div>
+      
+      <div style={{ 
+        display: 'flex',
+        justifyContent: 'space-between',
+        width: '100%',
+        marginTop: '2rem'
+      }}>
+        {Object.entries(STATUS_STYLES).map(([status, style]) => (
+          <div key={status} style={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center'
+          }}>
+            <div style={{ 
+              color: style.color,
+              fontWeight: 'bold',
+              fontSize: '20px',
+              marginBottom: '0.5rem'
+            }}>
+              {stats[status] || 0}
+            </div>
+            <div style={{ 
+              fontSize: '14px',
+              color: '#666666'
+            }}>
+              {style.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+AttendanceChart.propTypes = {
+  attendances: PropTypes.array.isRequired
+};
+
 // 출석 탭 메인 컴포넌트
 function AttendanceTab() {
   const { studyId, scheduleId } = useParams();
@@ -149,6 +312,7 @@ function AttendanceTab() {
   const [attendances, setAttendances] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState('MEMBER');
 
   // 출석 목록 조회
   useEffect(() => {
@@ -157,14 +321,14 @@ function AttendanceTab() {
         try {
           setIsLoading(true);
           setError(null);
-          const data = await studyService.getSchedules(studyId);
+          // 출석 정보 가져오기
+          const data = await studyService.getAttendances(studyId);
+          setAttendances(data);
           
-          // 날짜순으로 정렬 (최신순)
-          const sortedSchedules = data.sort((a, b) => 
-            new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt)
-          );
-          
-          setAttendances(sortedSchedules);
+          // 사용자 역할 확인 (첫 번째 항목의 역할 기준)
+          if (data.length > 0 && data[0].memberRole) {
+            setUserRole(data[0].memberRole);
+          }
         } catch (error) {
           console.error('[AttendanceTab] 출석 목록 조회 실패:', error);
           setError('출석 목록을 불러오는데 실패했습니다.');
@@ -201,15 +365,23 @@ function AttendanceTab() {
 
   return (
     <div style={{ width: '100%' }}>
+      {/* 출석률 그래프 */}
+      <AttendanceChart attendances={attendances} />
+      
+      {/* 출석 목록 */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr',
         gap: '1rem',
         width: '100%'
       }}>
-        {attendances.map((schedule) => (
+        <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '1rem' }}>
+          출석 기록
+        </h2>
+        
+        {attendances.map((attendance) => (
           <div
-            key={schedule.scheduleId}
+            key={attendance.attendanceId}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -224,15 +396,27 @@ function AttendanceTab() {
               <h3 style={{
                 fontSize: '16px',
                 fontWeight: 'bold',
-                marginBottom: '0.5rem'
+                marginBottom: '0.5rem',
+                display: 'flex',
+                alignItems: 'center'
               }}>
-                {schedule.scheduleTitle}
+                {attendance.scheduleTitle}
+                <span style={{ 
+                  marginLeft: '0.5rem',
+                  fontSize: '14px', 
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                  color: '#FFFFFF' 
+                }}>
+                  {STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].label}
+                </span>
               </h3>
               <div style={{
                 fontSize: '14px',
                 color: '#666666'
               }}>
-                {new Date(schedule.scheduleStartingAt).toLocaleString('ko-KR', {
+                {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',
@@ -241,21 +425,25 @@ function AttendanceTab() {
                 })}
               </div>
             </div>
-            <button
-              onClick={() => handleAttendanceClick(schedule.scheduleId)}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#007AFF',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold'
-              }}
-            >
-              수정하기
-            </button>
+            
+            {userRole === 'HOST' && (
+              <button
+                onClick={() => handleAttendanceClick(attendance.attendanceId)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  backgroundColor: '#F5F5F5',
+                  border: 'none',
+                  cursor: 'pointer'
+                }}
+              >
+                <FaPencilAlt size={14} color="#666666" />
+              </button>
+            )}
           </div>
         ))}
       </div>
