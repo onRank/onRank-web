@@ -9,7 +9,7 @@ function StudySidebar({ activeTab }) {
     { id: "notices", label: "공지사항", path: "notices" },
     { id: "schedules", label: "일정", path: "schedules" },
     { id: "assignment", label: "과제", path: "assignment" },
-    { id: "board", label: "게시판", path: "board" },
+    { id: "posts", label: "게시판", path: "posts" },
     { id: "attendance", label: "출석", path: "attendance" },
     { id: "manage", label: "관리", path: "management" },
     { id: "ranking", label: "랭킹", path: "ranking" },

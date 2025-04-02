@@ -184,7 +184,7 @@ function StudyDetailPage() {
       notices: "공지사항",
       schedules: "일정",
       assignment: "과제",
-      post: "게시판",
+      posts: "게시판",
       attendance: "출석",
       management: "관리",
       ranking: "랭킹",
