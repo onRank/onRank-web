@@ -21,7 +21,7 @@ function PostFormPage() {
 
   const styles = {
     wrapper: {
-      minHeight: "100vh",
+      maxHeight: "100vh",
       fontFamily: "sans-serif",
       backgroundColor: "#fff",
       display: "flex",
@@ -40,6 +40,40 @@ function PostFormPage() {
       fontWeight: "bold",
       marginBottom: "20px",
     },
+    container: {
+      display: "flex",
+      maxHeight: "100vh",
+      overflow: "hidden",
+      height: "fit-content",
+    },
+    breadcrumb: {
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+      marginBottom: "2rem",
+      fontSize: "14px",
+      color: "#666666",
+      width: "100%",
+      maxWidth: "1200px",
+      padding: "0 1rem",
+    },
+    breadcrumbLink: {
+      display: "flex",
+      alignItems: "center",
+      color: "#666666",
+      textDecoration: "none",
+      transition: "color 0.2s ease",
+      padding: "4px 8px",
+      borderRadius: "4px",
+    },
+    activeTab: {
+      color: "#FF0000",
+      fontWeight: "bold",
+      padding: "2px 4px",
+    },
+    contentArea: {
+      display: "flex",
+    },
     sidebar: {
       padding: "0 1rem",
     },
@@ -47,6 +81,46 @@ function PostFormPage() {
 
   return (
     <PostProvider>
+      <div style={styles.breadcrumb}>
+        <Link
+          to="/"
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          <IoHomeOutline size={16} />
+        </Link>
+        <span>{">"}</span>
+        <Link
+          to={`/studies/${studyId}`}
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          {studyData?.title || "스터디"}
+        </Link>
+        <span>{">"}</span>
+        <Link
+          to={`/studies/${studyId}/notices`}
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          게시판
+        </Link>
+      </div>
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
