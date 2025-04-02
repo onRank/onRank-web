@@ -13,23 +13,23 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 // 출석 상태 스타일 정의
 const STATUS_STYLES = {
-  PRESENT: { color: '#E50011', text: 'O', label: '출석' },
+  PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },
   ABSENT: { color: '#F44336', text: 'X', label: '결석' },
   LATE: { color: '#FFC107', text: '△', label: '지각' },
   UNKNOWN: { color: '#9E9E9E', text: '?', label: '미확인' }
 };
 
-// 그래프 색상 - 출석은 빨간색, 나머지는 노란색
+// 그래프 색상 - 출석은 빨간색, 나머지는 분홍색
 const CHART_COLORS = {
   PRESENT: '#E50011',  // 빨간색 - 출석
-  ABSENT: '#FFC107',   // 노란색 - 결석
-  LATE: '#FFC107',     // 노란색 - 지각
-  UNKNOWN: '#FFC107'   // 노란색 - 미확인
+  ABSENT: '#FF5252',   // 분홍색 - 결석
+  LATE: '#FF5252',     // 분홍색 - 지각
+  UNKNOWN: '#FF5252'   // 분홍색 - 미확인
 };
 
 // 출석 상세 컴포넌트
 const AttendanceDetailView = ({ onBack }) => {
-  const { studyId, scheduleId } = useParams();
+  const { studyId, attendanceId } = useParams();
   const [attendances, setAttendances] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,10 +40,9 @@ const AttendanceDetailView = ({ onBack }) => {
       try {
         setIsLoading(true);
         setError(null);
-        const data = await studyService.getHostAttendancesBySchedule(studyId, scheduleId);
+        const data = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
         setAttendances(data);
         
-        // 사용자 역할 확인
         if (data.length > 0 && data[0].memberRole) {
           setUserRole(data[0].memberRole);
         }
@@ -56,12 +55,12 @@ const AttendanceDetailView = ({ onBack }) => {
     };
 
     fetchAttendanceDetails();
-  }, [studyId, scheduleId]);
+  }, [studyId, attendanceId]);
 
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
       await studyService.updateAttendance(studyId, attendanceId, newStatus);
-      const updatedData = await studyService.getHostAttendancesBySchedule(studyId, scheduleId);
+      const updatedData = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
       setAttendances(updatedData);
     } catch (error) {
       console.error('[AttendanceDetailView] 출석 상태 변경 실패:', error);
@@ -314,7 +313,7 @@ AttendanceChart.propTypes = {
 
 // 출석 탭 메인 컴포넌트
 function AttendanceTab() {
-  const { studyId, scheduleId } = useParams();
+  const { studyId, attendanceId } = useParams();
   const navigate = useNavigate();
   const [attendances, setAttendances] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -324,12 +323,11 @@ function AttendanceTab() {
 
   // 출석 목록 조회
   useEffect(() => {
-    if (!scheduleId) {
+    if (!attendanceId) {
       const fetchAttendances = async () => {
         try {
           setIsLoading(true);
           setError(null);
-          // 출석 정보 가져오기
           const data = await studyService.getAttendances(studyId);
           
           // 중복 제거 (scheduleTitle + scheduleStartingAt 기준)
@@ -349,13 +347,8 @@ function AttendanceTab() {
             new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt)
           );
           
-          console.log('출석 데이터:', data);
-          console.log('중복 제거 후:', uniqueSchedules);
-          console.log('정렬 후:', sortedData);
-          
           setAttendances(sortedData);
           
-          // 사용자 역할 확인
           if (data.length > 0 && data[0].memberRole) {
             setUserRole(data[0].memberRole);
           }
@@ -369,19 +362,16 @@ function AttendanceTab() {
 
       fetchAttendances();
     }
-  }, [studyId, scheduleId]);
+  }, [studyId, attendanceId]);
 
   // 출석 상세 페이지로 이동
   const handleAttendanceClick = (scheduleTitle, scheduleStartingAt) => {
-    // 사용자가 제공한 API 문서에 따르면 scheduleId가 필요함
-    // scheduleId 정보가 없으므로 백엔드에서 scheduleId를 전달해 주어야 함
     const attendance = attendances.find(a => 
       a.scheduleTitle === scheduleTitle && 
       a.scheduleStartingAt === scheduleStartingAt
     );
     
     if (attendance) {
-      // api 문서처럼 scheduleId로 이동
       navigate(`/studies/${studyId}/attendances/${attendance.attendanceId}`);
     } else {
       console.error('해당 일정의 출석 정보를 찾을 수 없습니다.');
@@ -393,8 +383,8 @@ function AttendanceTab() {
     navigate(`/studies/${studyId}/attendances`);
   };
 
-  // URL에 scheduleId가 있으면 출석 상세 페이지 표시
-  if (scheduleId) {
+  // URL에 attendanceId가 있으면 출석 상세 페이지 표시
+  if (attendanceId) {
     return (
       <AttendanceDetailView
         onBack={handleBackFromDetail}
@@ -437,8 +427,10 @@ function AttendanceTab() {
               backgroundColor: '#FFFFFF',
               border: '1px solid #E5E5E5',
               borderRadius: '8px',
-              position: 'relative'
+              position: 'relative',
+              cursor: userRole === 'HOST' ? 'pointer' : 'default'
             }}
+            onClick={() => userRole === 'HOST' && handleAttendanceClick(attendance.scheduleTitle, attendance.scheduleStartingAt)}
             onMouseEnter={() => setHoveredItem(attendance.attendanceId)}
             onMouseLeave={() => setHoveredItem(null)}
           >
@@ -477,8 +469,7 @@ function AttendanceTab() {
             </div>
             
             {userRole === 'HOST' && (
-              <button
-                onClick={() => handleAttendanceClick(attendance.scheduleTitle, attendance.scheduleStartingAt)}
+              <div
                 className="edit-button"
                 style={{
                   display: 'flex',
@@ -487,9 +478,8 @@ function AttendanceTab() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  backgroundColor: 'transparent',
+                  backgroundColor: hoveredItem === attendance.attendanceId ? '#F5F5F5' : 'transparent',
                   border: 'none',
-                  cursor: 'pointer',
                   position: 'absolute',
                   right: '16px',
                   transition: 'all 0.2s ease-in-out',
@@ -497,7 +487,7 @@ function AttendanceTab() {
                 }}
               >
                 <FaPencilAlt size={14} color="#666666" />
-              </button>
+              </div>
             )}
           </div>
         ))}
