@@ -214,7 +214,7 @@ function PostMyDetailPage() {
     },
     content: {
       flex: 1,
-      padding: "20px",
+      padding: "20px 40px",
       maxHeight: "100vh",
       margin: "0 auto",
     },

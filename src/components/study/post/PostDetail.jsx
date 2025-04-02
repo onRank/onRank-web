@@ -1,12 +1,12 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
-import { usePost } from "./NoticeProvider";
+import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 
-function NoticeDetail({ studyId, postId, handleBack, handleEdit }) {
+function PostDetail({ studyId, postId, handleBack, handleEdit }) {
   const { selectedPost, isLoading, error, getPostById } = usePost();
 
   useEffect(() => {
@@ -15,7 +15,7 @@ function NoticeDetail({ studyId, postId, handleBack, handleEdit }) {
 
   if (isLoading) return <LoadingSpinner />;
 
-  if (error) { //여기부터 수정
+  if (error) {
     return (
       <div className="p-6">
         <Button onClick={handleBack} variant="back" />
@@ -24,15 +24,11 @@ function NoticeDetail({ studyId, postId, handleBack, handleEdit }) {
     );
   }
 
-  if (
-    !selectedNotice ||
-    !selectedNotice.noticeTitle ||
-    !selectedNotice.noticeContent
-  ) {
+  if (!selectedPost || !selectedPost.postTitle || !selectedPost.postContent) {
     return (
       <div className="p-6">
         <Button onClick={handleBack} variant="back" />
-        <ErrorMessage message="잘못된 공지사항 데이터입니다." type="warning" />
+        <ErrorMessage message="잘못된 게시판 데이터입니다." type="warning" />
       </div>
     );
   }
@@ -41,27 +37,24 @@ function NoticeDetail({ studyId, postId, handleBack, handleEdit }) {
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
         <Button onClick={handleBack} variant="back" />
-        <Button onClick={() => handleEdit(noticeId)} variant="edit" />
+        <Button onClick={() => handleEdit(postId)} variant="edit" />
       </div>
       <div className="border rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">
-          {selectedNotice.noticeTitle}
-        </h1>
+        <h1 className="text-2xl font-bold mb-4">{selectedPost.postTitle}</h1>
         <div className="flex items-center text-gray-600 mb-6">
-          <span className="mx-2">•</span>
-          <span>{formatDate(selectedNotice.noticeCreatedAt)}</span>
+          <span>{formatDate(selectedPost.postCreatedAt)}</span>
         </div>
-        <div className="prose max-w-none">{selectedNotice.noticeContent}</div>
+        <div className="prose max-w-none">{selectedPost.postContent}</div>
       </div>
     </div>
   );
 }
 
-NoticeDetail.propTypes = {
+PostDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
-  noticeId: PropTypes.number.isRequired,
+  postId: PropTypes.number.isRequired,
   handleBack: PropTypes.func.isRequired,
   handleEdit: PropTypes.func.isRequired,
 };
 
-export default NoticeDetail;
+export default PostDetail;

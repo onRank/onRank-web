@@ -259,7 +259,7 @@ function PostEditForm({
         <textarea
           id="content"
           style={styles.textarea}
-          placeholder="공지사항 내용을 입력하세요"
+          placeholder="게시판 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}

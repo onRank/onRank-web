@@ -33,7 +33,7 @@ function PostFormPage() {
     },
     content: {
       flex: 1,
-      padding: "48px 64px",
+      padding: "20px 40px",
     },
     title: {
       fontSize: "24px",

@@ -61,7 +61,7 @@ function NoticeContent() {
     contentArea: {
       flex: 1,
       height: "fit-content",
-      padding: "20px",
+      padding: "20px 40px",
       minWidth: 0, // 중요: 플렉스 아이템이 너비를 초과하지 않도록 설정
       overflow: "hidden", // 필요한 경우에만 스크롤 표시
     },

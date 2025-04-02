@@ -10,7 +10,7 @@ function PostList({ posts, onPostClick, handleCreate, isLoading }) {
       <div className="bg-white border rounded-lg overflow-hidden">
         {posts.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
-            등록된 공지사항이 없습니다.
+            등록된 게시판이 없습니다.
           </div>
         ) : (
           <div className="space-y-2">
