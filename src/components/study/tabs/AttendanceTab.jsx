@@ -41,9 +41,15 @@ const AttendanceDetailView = ({ onBack }) => {
       try {
         setIsLoading(true);
         setError(null);
+        console.log(`[AttendanceDetailView] 출석 상세 정보 조회 요청: ${attendanceId}`);
         const data = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
-        setAttendances(data);
         
+        // scheduleId가 응답에 포함되어 있는지 확인하고 로깅
+        if (data.length > 0 && data[0].scheduleId) {
+          console.log(`[AttendanceDetailView] scheduleId 확인: ${data[0].scheduleId}`);
+        }
+        
+        setAttendances(data);
         if (data.length > 0 && data[0].memberRole) {
           setUserRole(data[0].memberRole);
         }
@@ -61,6 +67,7 @@ const AttendanceDetailView = ({ onBack }) => {
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
       await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      // 상태 업데이트 후 데이터 다시 조회
       const updatedData = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
       setAttendances(updatedData);
     } catch (error) {
@@ -366,17 +373,16 @@ function AttendanceTab() {
   }, [studyId, attendanceId]);
 
   // 출석 상세 페이지로 이동
-  const handleAttendanceClick = (scheduleTitle, scheduleStartingAt) => {
-    const attendance = attendances.find(a => 
-      a.scheduleTitle === scheduleTitle && 
-      a.scheduleStartingAt === scheduleStartingAt
-    );
-    
-    if (attendance) {
-      navigate(`/studies/${studyId}/attendances/${attendance.attendanceId}`);
-    } else {
-      console.error('해당 일정의 출석 정보를 찾을 수 없습니다.');
+  const handleAttendanceClick = (attendance) => {
+    if (!attendance) {
+      console.error('출석 정보가 없습니다.');
+      return;
     }
+    
+    // scheduleId가 있으면 사용하고, 없으면 attendanceId 사용
+    const targetId = attendance.scheduleId || attendance.attendanceId;
+    console.log(`[AttendanceTab] 출석 상세 페이지로 이동: ${targetId} (${attendance.scheduleId ? 'scheduleId' : 'attendanceId'})`);
+    navigate(`/studies/${studyId}/attendances/${targetId}`);
   };
 
   // 출석 상세 페이지에서 뒤로 가기
@@ -431,7 +437,7 @@ function AttendanceTab() {
               position: 'relative',
               cursor: userRole === 'HOST' ? 'pointer' : 'default'
             }}
-            onClick={() => userRole === 'HOST' && handleAttendanceClick(attendance.scheduleTitle, attendance.scheduleStartingAt)}
+            onClick={() => userRole === 'HOST' && handleAttendanceClick(attendance)}
             onMouseEnter={() => setHoveredItem(attendance.attendanceId)}
             onMouseLeave={() => setHoveredItem(null)}
           >

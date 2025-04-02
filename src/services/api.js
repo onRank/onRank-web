@@ -1969,6 +1969,44 @@ export const studyService = {
       );
     }
   },
+
+  // 출석 상세 정보 조회 (HOST 권한)
+  getHostAttendancesByAttendance: async (studyId, id) => {
+    try {
+      console.log(`[StudyService] 출석 상세 조회 요청: ${studyId}, ID: ${id}`);
+      const response = await api.get(`/studies/${studyId}/attendances/${id}`, {
+        withCredentials: true
+      });
+      
+      // scheduleId가 응답에 포함되어 있는지 확인하고 로깅
+      if (response.data && response.data.length > 0 && response.data[0].scheduleId) {
+        console.log('[StudyService] 응답에서 scheduleId 확인:', response.data[0].scheduleId);
+      }
+      
+      console.log('[StudyService] 출석 상세 조회 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 출석 상세 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  // 출석 상태 업데이트
+  updateAttendance: async (studyId, attendanceId, newStatus) => {
+    try {
+      console.log(`[StudyService] 출석 상태 업데이트 요청: ${studyId}, ${attendanceId}, ${newStatus}`);
+      const response = await api.patch(
+        `/studies/${studyId}/attendances/${attendanceId}`,
+        { attendanceStatus: newStatus },
+        { withCredentials: true }
+      );
+      console.log('[StudyService] 출석 상태 업데이트 성공:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[StudyService] 출석 상태 업데이트 실패:', error);
+      throw error;
+    }
+  },
 };
 
 export const noticeService = {
