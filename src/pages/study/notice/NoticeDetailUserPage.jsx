@@ -1,3 +1,5 @@
+// 나중에 수정해야함
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
@@ -255,6 +257,9 @@ function NoticeDetailUserPage() {
       color: "#FF0000",
       fontWeight: "bold",
       padding: "2px 4px",
+    },
+    sidebar: {
+      padding: "0 1rem",
     },
   };
 

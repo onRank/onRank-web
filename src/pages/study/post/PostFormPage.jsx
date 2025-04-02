@@ -38,7 +38,10 @@ function PostFormPage() {
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "32px",
+      marginBottom: "20px",
+    },
+    sidebar: {
+      padding: "0 1rem",
     },
   };
 
@@ -47,7 +50,7 @@ function PostFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="게시판" />
+            <StudySidebar style={styles.sidebar} activeTab="게시판" />
           </aside>
 
           <main style={styles.content}>

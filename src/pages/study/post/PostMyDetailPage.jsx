@@ -248,6 +248,9 @@ function PostMyDetailPage() {
       fontWeight: "bold",
       padding: "2px 4px",
     },
+    sidebar: {
+      padding: "0 1rem",
+    },
   };
 
   return (
@@ -298,7 +301,7 @@ function PostMyDetailPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="게시판" />
+            <StudySidebar style={styles.sidebar} activeTab="게시판" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>

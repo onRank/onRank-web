@@ -54,7 +54,7 @@ function NoticeFormPage() {
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "32px",
+      marginBottom: "20px",
     },
     container: {
       display: "flex",
@@ -89,6 +89,9 @@ function NoticeFormPage() {
     },
     contentArea: {
       display: "flex",
+    },
+    sidebar: {
+      padding: "0 1rem",
     },
   };
 
@@ -138,7 +141,7 @@ function NoticeFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebar style={styles.sidebar} activeTab="공지사항" />
           </aside>
 
           <main style={styles.content}>

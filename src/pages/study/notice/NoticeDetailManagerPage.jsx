@@ -89,7 +89,7 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   // 스타일 정의
   const styles = {
     container: {
-      padding: "0 16px",
+      padding: 0,
       display: "flex",
       flexDirection: "column",
       gap: "24px",
@@ -216,7 +216,7 @@ function NoticeDetailManagerPage() {
     },
     content: {
       flex: 1,
-      padding: "20px",
+      padding: "20px 40px",
       margin: "0 auto",
     },
     title: {
@@ -248,6 +248,9 @@ function NoticeDetailManagerPage() {
       color: "#FF0000",
       fontWeight: "bold",
       padding: "2px 4px",
+    },
+    sidebar: {
+      padding: "0 1rem",
     },
   };
 
@@ -299,7 +302,7 @@ function NoticeDetailManagerPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebar style={styles.sidebar} activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
