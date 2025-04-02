@@ -30,6 +30,7 @@ const CHART_COLORS = {
 // 출석 상세 컴포넌트
 const AttendanceDetailView = ({ onBack }) => {
   const { studyId, attendanceId } = useParams();
+  const navigate = useNavigate();
   const [attendances, setAttendances] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -81,7 +82,7 @@ const AttendanceDetailView = ({ onBack }) => {
       }}>
         <h2>출석 현황</h2>
         <button
-          onClick={onBack}
+          onClick={() => navigate(`/studies/${studyId}/attendances`)}
           style={{
             padding: '0.5rem 1rem',
             border: '1px solid #E5E5E5',
