@@ -2725,7 +2725,7 @@ export const postService = {
 
               // 새 토큰으로 요청 재시도
               const retryResponse = await api.post(
-                `/studies/${studyId}/posts/${postId}`,
+                `/studies/${studyId}/posts/add`,
                 requestData,
                 {
                   headers: {
