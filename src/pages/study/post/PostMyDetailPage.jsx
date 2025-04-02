@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import { IoHomeOutline } from "react-icons/io5";
 import {
   PostProvider,
-  useNotice,
+  usePost,
 } from "../../../components/study/post/PostProvider";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
@@ -12,16 +12,16 @@ import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 
-function NoticeDetailManagerContent({ onTitleLoaded }) {
+function PostDetailManagerContent({ onTitleLoaded }) {
   const { studyId, postId } = useParams();
   const navigate = useNavigate();
-  const { selectedPost, isLoading, error, getPostById } = useNotice();
+  const { selectedPost, isLoading, error, getPostById } = usePost();
   const [isEditMode, setIsEditMode] = useState(false);
 
   // 컴포넌트 마운트 시 게시판 정보 가져오기
   useEffect(() => {
     if (studyId && postId) {
-      getNoticeById(studyId, parseInt(postId, 10));
+      getPostById(studyId, parseInt(postId, 10));
     }
   }, [studyId, postId, getPostById]);
 
@@ -53,14 +53,14 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   // 수정 취소 및 완료 핸들러
   const handleEditCancel = () => {
     setIsEditMode(false);
-    if (selectedNotice && onTitleLoaded) {
+    if (selectedPost && onTitleLoaded) {
       onTitleLoaded(selectedPost.postTitle);
     }
   };
 
   const handleEditComplete = () => {
     // 수정 완료 후 GET API를 다시 호출하여 최신 데이터 가져오기
-    getPostById(studyId, parseInt(noticeId, 10));
+    getPostById(studyId, parseInt(postId, 10));
     setIsEditMode(false);
   };
 
@@ -76,7 +76,7 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
     );
   }
 
-  if (!selectedNotice) {
+  if (!selectedPost) {
     return (
       <div style={{ padding: "24px" }}>
         <div style={{ marginTop: "16px" }}>해당 게시판을 찾을 수 없습니다.</div>

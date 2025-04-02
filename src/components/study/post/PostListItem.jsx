@@ -54,7 +54,9 @@ function PostListItem({ post, onClick }) {
     postDate: {
       fontSize: "13px",
       color: "#999",
-      marginLeft: "auto",
+      marginLeft: "20px",
+      whiteSpace: "nowrap",
+      flexShrink: 0,
     },
     postText: {
       fontSize: "12px",
@@ -102,6 +104,7 @@ PostListItem.propTypes = {
     postContent: PropTypes.string,
     postCreatedAt: PropTypes.string.isRequired,
     postModifiedAt: PropTypes.string.isRequired,
+    postWritenBy: PropTypes.string.isRequired,
     files: PropTypes.arrayOf(
       PropTypes.shape({
         fileId: PropTypes.number.isRequired,

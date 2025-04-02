@@ -158,7 +158,7 @@ function NoticeManagerPage() {
   const styles = {
     container: {
       display: "flex",
-      minHeight: "100vh",
+      maxHeight: "100vh",
       overflow: "hidden",
       height: "fit-content",
     },
