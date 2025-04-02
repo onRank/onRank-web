@@ -1841,7 +1841,7 @@ export const studyService = {
         studyContent: studyData.studyContent || "",
         studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
         fileName: imageFile?.name || null, // 파일 이름이 없으면 명시적으로 null 전송
-        deposit: studyData.deposit || 0 // 보증금 추가 (없으면 0으로 기본값 설정)
+        deposit: studyData.deposit || 0, // 보증금 추가 (없으면 0으로 기본값 설정)
       };
 
       console.log("[StudyService] 백엔드 요청 데이터:", requestData);
@@ -1976,18 +1976,25 @@ export const studyService = {
     try {
       console.log(`[StudyService] 출석 상세 조회 요청: ${studyId}, ID: ${id}`);
       const response = await api.get(`/studies/${studyId}/attendances/${id}`, {
-        withCredentials: true
+        withCredentials: true,
       });
-      
+
       // scheduleId가 응답에 포함되어 있는지 확인하고 로깅
-      if (response.data && response.data.length > 0 && response.data[0].scheduleId) {
-        console.log('[StudyService] 응답에서 scheduleId 확인:', response.data[0].scheduleId);
+      if (
+        response.data &&
+        response.data.length > 0 &&
+        response.data[0].scheduleId
+      ) {
+        console.log(
+          "[StudyService] 응답에서 scheduleId 확인:",
+          response.data[0].scheduleId
+        );
       }
-      
-      console.log('[StudyService] 출석 상세 조회 성공:', response.data);
+
+      console.log("[StudyService] 출석 상세 조회 성공:", response.data);
       return response.data;
     } catch (error) {
-      console.error('[StudyService] 출석 상세 조회 실패:', error);
+      console.error("[StudyService] 출석 상세 조회 실패:", error);
       throw error;
     }
   },
@@ -1995,16 +2002,18 @@ export const studyService = {
   // 출석 상태 업데이트
   updateAttendance: async (studyId, attendanceId, newStatus) => {
     try {
-      console.log(`[StudyService] 출석 상태 업데이트 요청: ${studyId}, ${attendanceId}, ${newStatus}`);
+      console.log(
+        `[StudyService] 출석 상태 업데이트 요청: ${studyId}, ${attendanceId}, ${newStatus}`
+      );
       const response = await api.patch(
         `/studies/${studyId}/attendances/${attendanceId}`,
         { attendanceStatus: newStatus },
         { withCredentials: true }
       );
-      console.log('[StudyService] 출석 상태 업데이트 성공:', response.data);
+      console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
       return response.data;
     } catch (error) {
-      console.error('[StudyService] 출석 상태 업데이트 실패:', error);
+      console.error("[StudyService] 출석 상태 업데이트 실패:", error);
       throw error;
     }
   },
@@ -2585,7 +2594,7 @@ export const postService = {
 
         // 데이터 유효성 검사
         data = data.map((post) => {
-          // noticeId가 없거나 유효하지 않은 경우
+          // postId가 없거나 유효하지 않은 경우
           if (!post.postId || isNaN(post.postId)) {
             console.warn(
               "[postService] postId 필드 없음 또는 유효하지 않음, 임의 ID 설정"
@@ -2598,13 +2607,13 @@ export const postService = {
             console.warn(
               "[postService] postTitle 필드 없음 또는 빈 값, 기본값 설정"
             );
-            post.noticeTitle = "제목 없음";
+            post.postTitle = "제목 없음";
           }
 
           // 내용이 없거나 빈 문자열인 경우
           if (!post.postContent || post.postContent.trim() === "") {
             console.warn(
-              "[postService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
+              "[postService] postContent 필드 없음 또는 빈 값, 기본값 설정"
             );
             post.postContent = "내용 없음";
           }
@@ -2649,7 +2658,7 @@ export const postService = {
   },
 
   // 게시판 생성
-  createNotice: async (studyId, newPost, files = []) => {
+  createPost: async (studyId, newPost, files = []) => {
     try {
       console.log("[postService] 게시판 생성 요청:", newPost);
       // 백엔드 DTO 구조에 맞게 데이터 변환
