@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { NoticeProvider } from "../../../components/study/notice/NoticeProvider";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import StudySidebar from "../../../components/study/StudySidebar";
+import { IoHomeOutline } from "react-icons/io5";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
@@ -106,7 +107,18 @@ function NoticeFormPage() {
           {studyData?.title || "스터디"}
         </Link>
         <span>{">"}</span>
-        <span style={styles.activeTab}>공지사항</span>
+        <Link
+          to={`/studies/${studyId}/notices`}
+          style={styles.breadcrumbLink}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#F8F9FA";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+          }}
+        >
+          공지사항
+        </Link>
       </div>
       <div style={styles.wrapper}>
         <div style={styles.main}>
