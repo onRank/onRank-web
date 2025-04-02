@@ -3,10 +3,25 @@ import { NoticeProvider } from "../../../components/study/notice/NoticeProvider"
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { IoHomeOutline } from "react-icons/io5";
+import { useState, useEffect } from "react";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
+  const [studyData, setStudyData] = useState({ title: "스터디" });
+
+  // 스터디 정보 가져오기
+  useEffect(() => {
+    const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
+    if (cachedStudyDataStr) {
+      try {
+        const cachedStudyData = JSON.parse(cachedStudyDataStr);
+        setStudyData(cachedStudyData);
+      } catch (err) {
+        console.error("[NoticeFormPage] 캐시 데이터 파싱 오류:", err);
+      }
+    }
+  }, [studyId]);
 
   // 공지사항 생성/수정 완료 후 호출될 콜백
   const handleFinish = (noticeId) => {
