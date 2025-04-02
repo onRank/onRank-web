@@ -3,6 +3,7 @@ import { PostProvider } from "../../../components/study/post/PostProvider";
 import PostForm from "../../../components/study/post/PostForm";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { IoHomeOutline } from "react-icons/io5";
+import { useEffect } from "react";
 
 function PostFormPage() {
   const { studyId } = useParams();
