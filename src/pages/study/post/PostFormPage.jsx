@@ -1,7 +1,8 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { PostProvider } from "../../../components/study/post/PostProvider";
 import PostForm from "../../../components/study/post/PostForm";
 import StudySidebar from "../../../components/study/StudySidebar";
+import { IoHomeOutline } from "react-icons/io5";
 
 function PostFormPage() {
   const { studyId } = useParams();
