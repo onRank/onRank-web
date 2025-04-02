@@ -99,7 +99,7 @@ const PublicRoute = ({ children }) => {
         console.log("[PublicRoute] 유효한 토큰 발견, /studies로 리다이렉트");
         return <Navigate to="/studies" replace />;
       } else {
-        // 토큰이 만료된 경우 제거
+        // 토큰이 만료된 경우 제거 
         console.log("[PublicRoute] 만료된 토큰 발견, 제거");
         tokenUtils.removeToken(true);
         sessionStorage.removeItem("cachedUserInfo");
