@@ -19,7 +19,7 @@ const STATUS_STYLES = {
   UNKNOWN: { color: '#FFC107', text: '?', label: '미확인' }
 };
 
-// 출석 상세 컴포넌트
+// 출석 상세 컴포넌트ㅎ
 const AttendanceDetailView = ({ onBack }) => {
   const { studyId, scheduleId } = useParams();
   const [attendances, setAttendances] = useState([]);
@@ -324,13 +324,14 @@ function AttendanceTab() {
           // 출석 정보 가져오기
           const data = await studyService.getAttendances(studyId);
           
-          // 중복 제거 (scheduleId 기준)
+          // 중복 제거 (scheduleTitle + scheduleStartingAt 기준)
           const uniqueSchedules = [];
-          const scheduleIds = new Set();
+          const scheduleKeys = new Set();
           
           data.forEach(item => {
-            if (!scheduleIds.has(item.scheduleId)) {
-              scheduleIds.add(item.scheduleId);
+            const key = `${item.scheduleTitle}_${item.scheduleStartingAt}`;
+            if (!scheduleKeys.has(key)) {
+              scheduleKeys.add(key);
               uniqueSchedules.push(item);
             }
           });
@@ -339,6 +340,10 @@ function AttendanceTab() {
           const sortedData = uniqueSchedules.sort((a, b) => 
             new Date(b.scheduleStartingAt) - new Date(a.scheduleStartingAt)
           );
+          
+          console.log('출석 데이터:', data);
+          console.log('중복 제거 후:', uniqueSchedules);
+          console.log('정렬 후:', sortedData);
           
           setAttendances(sortedData);
           
@@ -359,8 +364,20 @@ function AttendanceTab() {
   }, [studyId, scheduleId]);
 
   // 출석 상세 페이지로 이동
-  const handleAttendanceClick = (scheduleId) => {
-    navigate(`/studies/${studyId}/attendances/${scheduleId}`);
+  const handleAttendanceClick = (scheduleTitle, scheduleStartingAt) => {
+    // 사용자가 제공한 API 문서에 따르면 scheduleId가 필요함
+    // scheduleId 정보가 없으므로 백엔드에서 scheduleId를 전달해 주어야 함
+    const attendance = attendances.find(a => 
+      a.scheduleTitle === scheduleTitle && 
+      a.scheduleStartingAt === scheduleStartingAt
+    );
+    
+    if (attendance) {
+      // api 문서처럼 scheduleId로 이동
+      navigate(`/studies/${studyId}/attendances/${attendance.attendanceId}`);
+    } else {
+      console.error('해당 일정의 출석 정보를 찾을 수 없습니다.');
+    }
   };
 
   // URL에 scheduleId가 있으면 출석 상세 페이지 표시
@@ -398,7 +415,7 @@ function AttendanceTab() {
         
         {attendances.map((attendance) => (
           <div
-            key={attendance.scheduleId}
+            key={attendance.attendanceId}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -409,7 +426,7 @@ function AttendanceTab() {
               borderRadius: '8px',
               position: 'relative'
             }}
-            onMouseEnter={() => setHoveredItem(attendance.scheduleId)}
+            onMouseEnter={() => setHoveredItem(attendance.attendanceId)}
             onMouseLeave={() => setHoveredItem(null)}
           >
             <div style={{ flex: 1 }}>
@@ -446,9 +463,10 @@ function AttendanceTab() {
               </div>
             </div>
             
-            {(userRole === 'HOST' && hoveredItem === attendance.scheduleId) && (
+            {userRole === 'HOST' && (
               <button
-                onClick={() => handleAttendanceClick(attendance.scheduleId)}
+                onClick={() => handleAttendanceClick(attendance.scheduleTitle, attendance.scheduleStartingAt)}
+                className="edit-button"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
