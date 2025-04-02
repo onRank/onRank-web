@@ -217,7 +217,6 @@ function NoticeDetailManagerPage() {
     content: {
       flex: 1,
       padding: "20px",
-      maxHeight: "100vh",
       margin: "0 auto",
     },
     title: {
