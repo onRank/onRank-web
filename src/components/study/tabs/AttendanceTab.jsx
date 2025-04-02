@@ -16,7 +16,7 @@ const STATUS_STYLES = {
   PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },
   ABSENT: { color: '#F44336', text: 'X', label: '결석' },
   LATE: { color: '#FFC107', text: '△', label: '지각' },
-  UNVERIFIED: { color: '#9E9E9E', text: '?', label: '미확인' }
+  UNKNOWN: { color: '#9E9E9E', text: '?', label: '미확인' }
 };
 
 // 출석 상세 컴포넌트
@@ -124,19 +124,19 @@ const AttendanceDetailView = ({ onBack }) => {
               {userRole === 'HOST' ? (
                 <FormControl size="small">
                   <Select
-                    value={attendance.attendanceStatus || 'UNVERIFIED'}
+                    value={attendance.attendanceStatus || 'UNKNOWN'}
                     onChange={(e) => handleStatusChange(attendance.attendanceId, e.target.value)}
                     sx={{ 
                       minWidth: 100,
                       height: 32,
                       fontSize: '14px',
                       '.MuiOutlinedInput-notchedOutline': { 
-                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color 
+                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color 
                       },
                       '&:hover .MuiOutlinedInput-notchedOutline': { 
-                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color 
+                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color 
                       },
-                      color: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                      color: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color,
                       fontWeight: 'bold'
                     }}
                   >
@@ -160,7 +160,7 @@ const AttendanceDetailView = ({ onBack }) => {
                   width: '32px', 
                   height: '32px',
                   borderRadius: '50%',
-                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color,
                   color: '#FFFFFF',
                   display: 'flex',
                   alignItems: 'center',
@@ -168,7 +168,7 @@ const AttendanceDetailView = ({ onBack }) => {
                   fontSize: '16px',
                   fontWeight: 'bold'
                 }}>
-                  {STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].text}
+                  {STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].text}
                 </div>
               )}
             </div>
@@ -190,11 +190,11 @@ const AttendanceChart = ({ attendances }) => {
     PRESENT: 0,
     ABSENT: 0,
     LATE: 0,
-    UNVERIFIED: 0
+    UNKNOWN: 0
   };
   
   attendances.forEach(attendance => {
-    const status = attendance.attendanceStatus || 'UNVERIFIED';
+    const status = attendance.attendanceStatus || 'UNKNOWN';
     stats[status] = (stats[status] || 0) + 1;
   });
   
@@ -406,10 +406,10 @@ function AttendanceTab() {
                   fontSize: '14px', 
                   padding: '2px 8px',
                   borderRadius: '12px',
-                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].color,
+                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color,
                   color: '#FFFFFF' 
                 }}>
-                  {STATUS_STYLES[attendance.attendanceStatus || 'UNVERIFIED'].label}
+                  {STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].label}
                 </span>
               </h3>
               <div style={{
