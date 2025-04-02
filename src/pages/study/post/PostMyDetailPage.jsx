@@ -3,50 +3,50 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { IoHomeOutline } from "react-icons/io5";
 import {
-  NoticeProvider,
+  PostProvider,
   useNotice,
-} from "../../../components/study/notice/NoticeProvider";
+} from "../../../components/study/post/PostProvider";
 import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
-import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
+import PostEditForm from "../../../components/study/post/PostEditForm";
 
 function NoticeDetailManagerContent({ onTitleLoaded }) {
-  const { studyId, noticeId } = useParams();
+  const { studyId, postId } = useParams();
   const navigate = useNavigate();
-  const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
+  const { selectedPost, isLoading, error, getPostById } = useNotice();
   const [isEditMode, setIsEditMode] = useState(false);
 
-  // 컴포넌트 마운트 시 공지사항 정보 가져오기
+  // 컴포넌트 마운트 시 게시판 정보 가져오기
   useEffect(() => {
-    if (studyId && noticeId) {
-      getNoticeById(studyId, parseInt(noticeId, 10));
+    if (studyId && postId) {
+      getNoticeById(studyId, parseInt(postId, 10));
     }
-  }, [studyId, noticeId, getNoticeById]);
+  }, [studyId, postId, getPostById]);
 
-  // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
+  // 게시판 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
     if (
-      selectedNotice &&
-      selectedNotice.noticeTitle &&
+      selectedPost &&
+      selectedPost.postTitle &&
       onTitleLoaded &&
       !isEditMode
     ) {
-      onTitleLoaded(selectedNotice.noticeTitle);
+      onTitleLoaded(selectedPost.postTitle);
     }
-  }, [selectedNotice, onTitleLoaded, isEditMode]);
+  }, [selectedPost, onTitleLoaded, isEditMode]);
 
-  // 닫기 버튼 핸들러 - 공지사항 목록으로 이동
+  // 닫기 버튼 핸들러 - 게시판 목록으로 이동
   const handleClose = () => {
-    navigate(`/studies/${studyId}/notices`);
+    navigate(`/studies/${studyId}/posts`);
   };
 
   // 수정 버튼 핸들러 - URL 변경 대신 수정 모드로 전환
   const handleEdit = () => {
     setIsEditMode(true);
     if (onTitleLoaded) {
-      onTitleLoaded("공지사항");
+      onTitleLoaded("게시판");
     }
   };
 
@@ -54,13 +54,13 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   const handleEditCancel = () => {
     setIsEditMode(false);
     if (selectedNotice && onTitleLoaded) {
-      onTitleLoaded(selectedNotice.noticeTitle);
+      onTitleLoaded(selectedPost.postTitle);
     }
   };
 
   const handleEditComplete = () => {
     // 수정 완료 후 GET API를 다시 호출하여 최신 데이터 가져오기
-    getNoticeById(studyId, parseInt(noticeId, 10));
+    getPostById(studyId, parseInt(noticeId, 10));
     setIsEditMode(false);
   };
 
@@ -79,9 +79,7 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   if (!selectedNotice) {
     return (
       <div style={{ padding: "24px" }}>
-        <div style={{ marginTop: "16px" }}>
-          해당 공지사항을 찾을 수 없습니다.
-        </div>
+        <div style={{ marginTop: "16px" }}>해당 게시판을 찾을 수 없습니다.</div>
       </div>
     );
   }
@@ -129,26 +127,26 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   return (
     <div style={styles.container}>
       {isEditMode ? (
-        <NoticeEditForm
+        <PostEditForm
           studyId={studyId}
-          noticeId={noticeId}
-          initialData={selectedNotice}
+          postId={postId}
+          initialData={selectedNPost}
           onCancel={handleEditCancel}
           onSaveComplete={handleEditComplete}
         />
       ) : (
         <>
           <div style={styles.date}>
-            {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
+            {new Date(selectedPost.postCreatedAt).toLocaleDateString()}
           </div>
           <div style={styles.contentBox}>
-            {selectedNotice.noticeContent || <p>내용이 없습니다.</p>}
+            {selectedPost.postContent || <p>내용이 없습니다.</p>}
           </div>
-          {selectedNotice.files?.length > 0 && (
+          {selectedPost.files?.length > 0 && (
             <div style={styles.attachmentWrapper}>
               <div style={styles.attachmentTitle}>첨부 파일</div>
               <ul style={{ listStyle: "none", padding: 0 }}>
-                {selectedNotice.files.map((file) => (
+                {selectedPost.files.map((file) => (
                   <li
                     key={file.fileId}
                     style={styles.attachmentItem}
@@ -171,19 +169,19 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
 }
 
 // PropTypes 추가
-NoticeDetailManagerContent.propTypes = {
+PostDetailManagerContent.propTypes = {
   onTitleLoaded: PropTypes.func,
 };
 
 // 기본 props 설정
-NoticeDetailManagerContent.defaultProps = {
+PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function NoticeDetailManagerPage() {
-  const { studyId, noticeId } = useParams();
+function PostMyDetailPage() {
+  const { studyId, postId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
-  const [pageTitle, setPageTitle] = useState("공지사항 상세");
+  const [pageTitle, setPageTitle] = useState("게시판 상세");
 
   // 스터디 정보 가져오기
   useEffect(() => {
@@ -193,7 +191,7 @@ function NoticeDetailManagerPage() {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[NoticeDetailManagerPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[PostDetailManagerPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -253,7 +251,7 @@ function NoticeDetailManagerPage() {
   };
 
   return (
-    <NoticeProvider>
+    <PostProvider>
       <div style={styles.wrapper}>
         {/* 브레드크럼 (경로 표시) */}
         <div style={styles.breadcrumb}>
@@ -284,7 +282,7 @@ function NoticeDetailManagerPage() {
           </Link>
           <span>{">"}</span>
           <Link
-            to={`/studies/${studyId}/notices`}
+            to={`/studies/${studyId}/posts`}
             style={styles.breadcrumbLink}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = "#F8F9FA";
@@ -293,23 +291,23 @@ function NoticeDetailManagerPage() {
               e.currentTarget.style.backgroundColor = "transparent";
             }}
           >
-            공지사항
+            게시판
           </Link>
           <span>{">"}</span>
           <span style={styles.activeTab}>{pageTitle}</span>
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebar activeTab="게시판" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <NoticeDetailManagerContent onTitleLoaded={updatePageTitle} />
+            <PostDetailManagerContent onTitleLoaded={updatePageTitle} />
           </main>
         </div>
       </div>
-    </NoticeProvider>
+    </PostProvider>
   );
 }
 
-export default NoticeDetailManagerPage;
+export default PostMyDetailPage;

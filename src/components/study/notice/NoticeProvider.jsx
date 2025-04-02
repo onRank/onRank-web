@@ -22,7 +22,10 @@ export function NoticeProvider({ children }) {
     try {
       const response = await noticeService.getNotices(studyId);
       if (response.success) {
-        setNotices(response.data || []);
+        const sortedNotices = [...(response.data || [])].sort(
+          (a, b) => new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
+        );
+        setNotices(sortedNotices);
       } else {
         setError(
           response.message || "공지사항 목록을 불러오는데 실패했습니다."
@@ -69,9 +72,17 @@ export function NoticeProvider({ children }) {
         files
       );
       if (response.success) {
-        // 성공시 목록에 새 공지사항 추가
+        // 성공시 목록에 새 공지사항 추가 후 최신 생성일자 기준으로 정렬
         if (response.data) {
-          setNotices((prev) => [response.data, ...prev]);
+          setNotices((prev) => {
+            // 새 공지사항 추가
+            const updatedNotices = [response.data, ...prev];
+
+            return updatedNotices.sort(
+              (a, b) =>
+                new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
+            );
+          });
         }
         return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
       } else {
@@ -100,14 +111,24 @@ export function NoticeProvider({ children }) {
           files
         );
         if (response.success) {
-          // 수정된 공지사항으로 상태 업데이트
-          setNotices((prev) =>
-            prev.map((notice) =>
+          // 수정된 공지사항으로 상태 업데이트 후 생성일자 기준으로 정렬
+          setNotices((prev) => {
+            // 먼저 해당 공지사항 업데이트
+            const updatedNotices = prev.map((notice) =>
               notice.noticeId === noticeId
-                ? { ...notice, ...noticeData }
+                ? {
+                    ...notice,
+                    ...noticeData,
+                  }
                 : notice
-            )
-          );
+            );
+
+            // 생성일자 기준으로 내림차순 정렬 (최신순)
+            return updatedNotices.sort(
+              (a, b) =>
+                new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
+            );
+          });
           return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
         } else {
           throw new Error(response.message || "공지사항 수정에 실패했습니다.");
