@@ -20,6 +20,9 @@ import NoticeUserPage from "./pages/study/notice/NoticeUserPage";
 import NoticeManagerPage from "./pages/study/notice/NoticeManagerPage";
 import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
+import PostFormPage from "./pages/study/post/PostFormPage";
+import PostMyDetailPage from "./pages/study/post/PostMyDetailPage";
+import PostPage from "./pages/study/post/PostPage";
 import Header from "./components/common/Header";
 import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
@@ -99,7 +102,7 @@ const PublicRoute = ({ children }) => {
         console.log("[PublicRoute] 유효한 토큰 발견, /studies로 리다이렉트");
         return <Navigate to="/studies" replace />;
       } else {
-        // 토큰이 만료된 경우 제거 
+        // 토큰이 만료된 경우 제거
         console.log("[PublicRoute] 만료된 토큰 발견, 제거");
         tokenUtils.removeToken(true);
         sessionStorage.removeItem("cachedUserInfo");
@@ -389,7 +392,12 @@ function AppContent() {
                       path="assignment/:id"
                       element={<AssignmentDetail />}
                     />
-                    <Route path="board" element={<StudyDetailPage />} />
+                    <Route path="posts" element={<PostPage />} />
+                    <Route path="posts/add" element={<PostFormPage />} />
+                    <Route
+                      path="posts/:postId"
+                      element={<PostMyDetailPage />}
+                    />
                     <Route path="attendance" element={<StudyDetailPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />

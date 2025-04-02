@@ -12,25 +12,25 @@ import {
   usePost,
 } from "../../../components/study/post/PostProvider";
 
-// 실제 공지사항 컨텐츠를 표시하는 컴포넌트
+// 실제 게시판 컨텐츠를 표시하는 컴포넌트
 function PostContent() {
   const navigate = useNavigate();
   const { studyId } = useParams();
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-  // NoticeProvider에서 상태와 함수 가져오기
-  const { posts, selectedPost, isLoading, error, getposts, getPostById } =
-    useNotice();
+  // PostProvider에서 상태와 함수 가져오기
+  const { posts, selectedPost, isLoading, error, getPosts, getPostById } =
+    usePost();
 
-  // 페이지 마운트 시 공지사항 목록 가져오기
+  // 페이지 마운트 시 게시판 목록 가져오기
   useEffect(() => {
-    getposts(studyId);
+    getPosts(studyId);
   }, [studyId, getPostById]);
 
   // 선택된 게시판 ID가 변경될 때 상세 정보 가져오기
   useEffect(() => {
     if (selectedPostId) {
-      getNoticeById(studyId, selectedPostId);
+      getPostById(studyId, selectedPostId);
     }
   }, [studyId, selectedPostId, getPostById]);
 
@@ -94,7 +94,7 @@ function PostContent() {
 
   return (
     <div style={styles.contentArea}>
-      <h1 style={styles.title}>공지사항</h1>
+      <h1 style={styles.title}>게시판</h1>
 
       <div style={styles.addPostCard}>
         <div>
@@ -117,7 +117,7 @@ function PostContent() {
         />
       ) : (
         <PostList
-          notices={notices}
+          posts={posts}
           onPostClick={handlePostClick}
           handleCreate={handleCreate}
           isLoading={isLoading}
@@ -127,7 +127,7 @@ function PostContent() {
   );
 }
 
-// 메인 공지사항 페이지 컴포넌트
+// 메인 게시판 페이지 컴포넌트
 function PostPage() {
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
@@ -212,10 +212,10 @@ function PostPage() {
           {studyData?.title || "스터디"}
         </Link>
         <span>{">"}</span>
-        <span style={styles.activeTab}>공지사항</span>
+        <span style={styles.activeTab}>게시판</span>
       </div>
       <div style={styles.container}>
-        <StudySidebar activeTab="공지사항" />
+        <StudySidebar activeTab="게시판" />
         <PostContent />
       </div>
     </PostProvider>

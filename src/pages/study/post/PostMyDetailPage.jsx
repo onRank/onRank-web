@@ -130,7 +130,7 @@ function PostDetailManagerContent({ onTitleLoaded }) {
         <PostEditForm
           studyId={studyId}
           postId={postId}
-          initialData={selectedNPost}
+          initialData={selectedPost}
           onCancel={handleEditCancel}
           onSaveComplete={handleEditComplete}
         />
