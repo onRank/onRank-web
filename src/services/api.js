@@ -2739,7 +2739,7 @@ export const postService = {
               );
 
               console.log(
-                "[postService] 공지사항 생성 재시도 결과:",
+                "[postService] 게시판 생성 재시도 결과:",
                 retryResponse.data
               );
 
@@ -2771,7 +2771,7 @@ export const postService = {
         }
       }
 
-      console.log("[postService] 공지사항 생성 성공:", response.data);
+      console.log("[postService] 게시판 생성 성공:", response.data);
 
       // 파일 업로드 처리
       if (files && files.length > 0 && response.data.uploadUrls) {
@@ -2915,7 +2915,7 @@ export const postService = {
       if (error.response.status === 403) {
         return {
           success: false,
-          message: "권한이 없습니다. 공지사항을 삭제할 수 없습니다.",
+          message: "권한이 없습니다. 게시판을 삭제할 수 없습니다.",
         };
       }
       throw error;
@@ -2931,7 +2931,7 @@ export const postService = {
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
         postTitle: postData.postTitle || "",
-        postContent: postData.postTitle || "",
+        postContent: postData.postContent || "",
         fileNames: postData.fileNames || [], // 파일명 목록 추가
       };
 

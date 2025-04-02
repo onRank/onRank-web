@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 
-function StudySidebar({ activeTab }) {
+function StudySidebar({ activeTab, style }) {
   const navigate = useNavigate();
   const { studyId } = useParams();
 
@@ -28,6 +28,7 @@ function StudySidebar({ activeTab }) {
         position: "sticky",
         top: 0,
         height: "fit-content",
+        ...style,
       }}
     >
       {menuItems.map((item) => (
@@ -63,6 +64,11 @@ function StudySidebar({ activeTab }) {
 
 StudySidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
+  style: PropTypes.object,
+};
+
+StudySidebar.defaultProps = {
+  style: {},
 };
 
 export default StudySidebar;
