@@ -14,12 +14,20 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 // 출석 상태 스타일 정의
 const STATUS_STYLES = {
   PRESENT: { color: '#E50011', text: 'O', label: '출석' },
-  ABSENT: { color: '#FFC107', text: 'X', label: '결석' },
+  ABSENT: { color: '#F44336', text: 'X', label: '결석' },
   LATE: { color: '#FFC107', text: '△', label: '지각' },
-  UNKNOWN: { color: '#FFC107', text: '?', label: '미확인' }
+  UNKNOWN: { color: '#9E9E9E', text: '?', label: '미확인' }
 };
 
-// 출석 상세 컴포넌트ㅎ
+// 그래프 색상 - 출석은 빨간색, 나머지는 노란색
+const CHART_COLORS = {
+  PRESENT: '#E50011',  // 빨간색 - 출석
+  ABSENT: '#FFC107',   // 노란색 - 결석
+  LATE: '#FFC107',     // 노란색 - 지각
+  UNKNOWN: '#FFC107'   // 노란색 - 미확인
+};
+
+// 출석 상세 컴포넌트
 const AttendanceDetailView = ({ onBack }) => {
   const { studyId, scheduleId } = useParams();
   const [attendances, setAttendances] = useState([]);
@@ -207,7 +215,7 @@ const AttendanceChart = ({ attendances }) => {
     datasets: [
       {
         data: Object.keys(STATUS_STYLES).map(status => stats[status] || 0),
-        backgroundColor: Object.entries(STATUS_STYLES).map(([_, style]) => style.color),
+        backgroundColor: Object.keys(STATUS_STYLES).map(status => CHART_COLORS[status]),
         borderWidth: 0,
       },
     ],
@@ -380,11 +388,16 @@ function AttendanceTab() {
     }
   };
 
+  // 출석 상세 페이지에서 뒤로 가기
+  const handleBackFromDetail = () => {
+    navigate(`/studies/${studyId}/attendances`);
+  };
+
   // URL에 scheduleId가 있으면 출석 상세 페이지 표시
   if (scheduleId) {
     return (
       <AttendanceDetailView
-        onBack={() => navigate(`/studies/${studyId}/attendances`)}
+        onBack={handleBackFromDetail}
       />
     );
   }
@@ -479,7 +492,8 @@ function AttendanceTab() {
                   cursor: 'pointer',
                   position: 'absolute',
                   right: '16px',
-                  transition: 'all 0.2s ease-in-out'
+                  transition: 'all 0.2s ease-in-out',
+                  opacity: hoveredItem === attendance.attendanceId ? 1 : 0
                 }}
               >
                 <FaPencilAlt size={14} color="#666666" />
