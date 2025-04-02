@@ -53,7 +53,12 @@ function PostFormPage() {
           <main style={styles.content}>
             <h1 style={styles.title}>게시판</h1>
 
-            <PostForm studyId={studyId} mode="create" onFinish={handleFinish} />
+            <PostForm
+              studyId={studyId}
+              post={null}
+              mode="create"
+              onFinish={handleFinish}
+            />
           </main>
         </div>
       </div>

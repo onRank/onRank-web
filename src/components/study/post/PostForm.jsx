@@ -3,7 +3,7 @@ import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 
-const PostForm = ({ studyId, PostForm = null, mode = "create", onFinish }) => {
+const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
