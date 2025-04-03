@@ -1490,6 +1490,14 @@ export const studyService = {
       });
 
       console.log("[StudyService] 일정 목록 조회 성공:", response.data);
+      
+      // API 응답 형식: { memberContext: {...}, data: [...] }
+      // memberContext 정보 로깅
+      if (response.data && response.data.memberContext) {
+        console.log("[StudyService] 멤버 컨텍스트:", response.data.memberContext);
+      }
+      
+      // 전체 응답 객체 그대로 반환 - 컴포넌트에서 data 필드에 접근하도록 함
       return response.data;
     } catch (error) {
       console.error("[StudyService] 일정 목록 조회 오류:", error);
@@ -1529,6 +1537,12 @@ export const studyService = {
       return response.data;
     } catch (error) {
       console.error("[StudyService] 일정 상세 조회 오류:", error);
+      
+      // 404 Not Found - 존재하지 않는 일정
+      if (error.response && error.response.status === 404) {
+        throw new Error("존재하지 않는 일정입니다.");
+      }
+      
       throw error;
     }
   },
@@ -1572,26 +1586,40 @@ export const studyService = {
         }
       );
 
-      console.log("[StudyService] 일정 추가 응답:", response.status);
+      console.log("[StudyService] 일정 추가 응답:", response);
+      
+      // 응답 형식: { studyName: "...", memberRole: "..." }
+      console.log("[StudyService] 응답 데이터:", {
+        studyName: response.data?.studyName,
+        memberRole: response.data?.memberRole
+      });
 
-      // 201 상태코드 및 Location 헤더 처리
+      // 201 성공 시 응답 데이터에 scheduleId 정보 추가
       if (response.status === 201) {
         const locationUrl = response.headers["location"];
-        console.log("[StudyService] 추가된 일정 URL:", locationUrl);
-
-        // 생성된 일정 ID 추출 (선택적)
-        const scheduleId = locationUrl ? locationUrl.split("/").pop() : null;
-        if (scheduleId) {
+        let scheduleId = null;
+        
+        if (locationUrl) {
+          scheduleId = locationUrl.split("/").pop();
           console.log("[StudyService] 생성된 일정 ID:", scheduleId);
-          // Location 헤더에서 추출한 ID 반환
-          return { scheduleId };
         }
+        
+        // scheduleId 정보가 있으면 응답 데이터에 추가하여 반환
+        return {
+          ...response.data,
+          scheduleId
+        };
       }
 
-      // 응답 본문이 없는 경우 기본값 반환
-      return { success: true };
+      // 그 외의 경우 응답 데이터 그대로 반환
+      return response.data;
     } catch (error) {
       console.error("[StudyService] 일정 추가 오류:", error);
+
+      // 403 Forbidden - 권한 없음
+      if (error.response && error.response.status === 403) {
+        throw new Error("일정을 추가할 권한이 없습니다.");
+      }
 
       // 오류 메시지 추출 및 반환
       if (error.response && error.response.data) {
@@ -1647,14 +1675,19 @@ export const studyService = {
         }
       );
 
-      console.log("[StudyService] 일정 수정 성공. 응답 상태:", response.status);
+      console.log("[StudyService] 일정 수정 응답:", response);
+      
+      // 응답 형식: { studyName: "...", memberRole: "..." }
+      console.log("[StudyService] 응답 데이터:", {
+        studyName: response.data?.studyName,
+        memberRole: response.data?.memberRole
+      });
 
-      // 성공 상태 코드를 받으면 성공으로 처리
-      if (response.status === 200) {
-        return { success: true };
-      }
-
-      return { success: true };
+      // 응답 데이터에 scheduleId 추가하여 반환
+      return {
+        ...response.data,
+        scheduleId: scheduleId // 전달받은 scheduleId 사용
+      };
     } catch (error) {
       console.error("[StudyService] 일정 수정 오류:", error);
 
@@ -1709,14 +1742,26 @@ export const studyService = {
         }
       );
 
-      console.log("[StudyService] 일정 삭제 응답 상태:", response.status);
-
-      // 204 No Content는 성공적인 삭제를 의미
+      console.log("[StudyService] 일정 삭제 응답:", response);
+      
+      // 응답 형식: { studyName: "...", memberRole: "..." }
+      if (response.data) {
+        console.log("[StudyService] 응답 데이터:", {
+          studyName: response.data.studyName,
+          memberRole: response.data.memberRole
+        });
+        
+        // 데이터가 있으면 그대로 반환
+        return response.data;
+      }
+      
+      // 204 No Content 응답은 성공으로 처리
       if (response.status === 204) {
-        return true;
+        return { success: true };
       }
 
-      return true; // 기타 성공 상태 코드도 true 반환
+      // 기타 성공 응답
+      return { success: true };
     } catch (error) {
       console.error("[StudyService] 일정 삭제 오류:", error);
 

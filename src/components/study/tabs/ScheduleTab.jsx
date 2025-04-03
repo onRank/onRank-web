@@ -90,10 +90,14 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
 
   // 일정을 날짜순으로 정렬하고 회차 번호 할당
   const sortedSchedules = () => {
+    // schedules가 없거나 빈 배열이면 빈 배열 반환
     if (!schedules || schedules.length === 0) return [];
     
+    // 일정 데이터 배열 추출
+    const scheduleData = schedules;
+    
     // 1. 먼저 날짜순으로 정렬 (오래된 순)하여 회차 부여
-    const withRounds = [...schedules]
+    const withRounds = [...scheduleData]
       .sort((a, b) => new Date(a.scheduleStartingAt) - new Date(b.scheduleStartingAt))
       .map((schedule, index) => ({
         ...schedule,

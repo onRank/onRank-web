@@ -40,11 +40,20 @@ function StudyContent({ activeTab, studyData }) {
           setIsLoading(true);
           setError(null);
 
-          const data = await studyService.getSchedules(studyId);
-          console.log("[StudyContent] 일정 데이터 조회 성공:", data);
+          const response = await studyService.getSchedules(studyId);
+          console.log("[StudyContent] 일정 데이터 조회 성공:", response);
+          
+          // 멤버 컨텍스트 정보 저장 (있는 경우)
+          if (response && response.memberContext) {
+            console.log("[StudyContent] 멤버 컨텍스트:", response.memberContext);
+            // 필요한 경우 여기서 memberContext 정보 활용
+          }
+          
+          // data 필드에서 일정 배열을 추출 (없으면 빈 배열)
+          const scheduleList = response?.data || [];
           
           // 응답 데이터 변환 (날짜 형식 변환)
-          const formattedData = data.map(schedule => ({
+          const formattedData = scheduleList.map(schedule => ({
             ...schedule,
             formattedDate: formatDate(schedule.scheduleStartingAt)
           }));
@@ -93,7 +102,6 @@ function StudyContent({ activeTab, studyData }) {
         title: newSchedule.title,
         content: newSchedule.description,
         date: newSchedule.date,
-        round: newSchedule.round,
       };
 
       // API 호출
@@ -105,16 +113,18 @@ function StudyContent({ activeTab, studyData }) {
         scheduleId: result.scheduleId || Date.now(), // Location 헤더에서 추출한 ID 또는 임시 ID
         scheduleTitle: newSchedule.title,
         scheduleContent: newSchedule.description,
-        scheduleStartingAt: `${newSchedule.date}T00:00:00`,
+        scheduleStartingAt: `${newSchedule.date}T00:00:00`.replace(/\./g, "-"),
         formattedDate: newSchedule.date,
-        round: newSchedule.round, // UI 표시용으로 round 정보 유지
+        // 추가 정보
+        studyName: result.studyName,
+        memberRole: result.memberRole
       };
 
       setSchedules((prev) => [...prev, addedSchedule]);
       return true;
     } catch (error) {
       console.error("[StudyContent] 일정 추가 실패:", error);
-      setError("일정 추가에 실패했습니다.");
+      setError(`일정 추가에 실패했습니다: ${error.message}`);
       return false;
     } finally {
       setIsLoading(false);
@@ -127,8 +137,8 @@ function StudyContent({ activeTab, studyData }) {
       setIsLoading(true);
 
       // API 호출
-      await studyService.deleteSchedule(studyId, scheduleId);
-      console.log("[StudyContent] 일정 삭제 성공:", scheduleId);
+      const result = await studyService.deleteSchedule(studyId, scheduleId);
+      console.log("[StudyContent] 일정 삭제 성공:", result);
 
       // 성공 시 상태 업데이트
       setSchedules((prev) =>
@@ -137,7 +147,7 @@ function StudyContent({ activeTab, studyData }) {
       return true;
     } catch (error) {
       console.error("[StudyContent] 일정 삭제 실패:", error);
-      setError("일정 삭제에 실패했습니다.");
+      setError(`일정 삭제에 실패했습니다: ${error.message}`);
       return false;
     } finally {
       setIsLoading(false);
@@ -169,11 +179,14 @@ function StudyContent({ activeTab, studyData }) {
                 scheduleTitle: updatedSchedule.title,
                 scheduleContent: updatedSchedule.content,
                 scheduleStartingAt: updatedSchedule.date.includes('T') 
-                  ? updatedSchedule.date 
-                  : `${updatedSchedule.date}T00:00:00`,
+                  ? updatedSchedule.date.replace(/\./g, "-") 
+                  : `${updatedSchedule.date.replace(/\./g, "-")}T00:00:00`,
                 formattedDate: formatDate(updatedSchedule.date.includes('T') 
                   ? updatedSchedule.date 
                   : `${updatedSchedule.date}T00:00:00`),
+                // 멤버 컨텍스트 정보 업데이트
+                studyName: result.studyName || schedule.studyName,
+                memberRole: result.memberRole || schedule.memberRole
               }
             : schedule
         )
