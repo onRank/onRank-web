@@ -1313,7 +1313,7 @@ export const studyService = {
   changeMemberRole: async (studyId, memberId, roleData) => {
     try {
       console.log(
-        `[StudyService] 스터디 멤버 역할 변경 요청: 스터디 ${studyId}, 멤버 ${memberId}, 역할 ${roleData.role}`
+        `[StudyService] 스터디 멤버 역할 변경 요청: 스터디 ${studyId}, 멤버 ${memberId}, 역할 ${roleData.memberRole}`
       );
 
       // 토큰 확인
@@ -1323,10 +1323,16 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 요청 데이터 준비 - API 명세에 맞게 수정
+      const requestData = {
+        studyName: roleData.studyName || "",  // 필요한 경우 전달받아 사용
+        memberRole: roleData.memberRole || "PARTICIPANT" // 기본값은 참여자
+      };
+
       // API 요청
       const response = await api.put(
         `/studies/${studyId}/management/members/${memberId}/role`,
-        roleData,
+        requestData,
         {
           headers: {
             Authorization: token.startsWith("Bearer ")
@@ -1417,10 +1423,15 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // API 요청 데이터 준비 (이메일만 필요)
+      const requestData = {
+        studentEmail: memberData.studentEmail
+      };
+
       // API 요청
       const response = await api.post(
         `/studies/${studyId}/management/members/add`,
-        memberData,
+        requestData,
         {
           headers: {
             Authorization: token.startsWith("Bearer ")
@@ -1432,14 +1443,8 @@ export const studyService = {
         }
       );
 
-      // 201 상태코드 및 Location 헤더 처리
-      if (response.status === 201) {
-        const locationUrl = response.headers["location"];
-        console.log("[StudyService] 추가된 멤버 URL:", locationUrl);
-      }
-
       console.log("[StudyService] 스터디 멤버 추가 성공:", response.data);
-      return response.data || true;
+      return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 멤버 추가 오류:", error);
 
@@ -2991,4 +2996,18 @@ export const postService = {
       };
     }
   },
+};
+
+// 멤버 역할 표시명 변환 유틸리티 (CREATOR -> 마스터)
+export const getMemberRoleDisplayName = (role) => {
+  switch (role) {
+    case 'CREATOR':
+      return '마스터';
+    case 'HOST':
+      return '관리자';
+    case 'PARTICIPANT':
+      return '참여자';
+    default:
+      return role || '알 수 없음';
+  }
 };

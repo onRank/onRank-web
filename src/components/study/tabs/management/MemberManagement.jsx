@@ -2,7 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import AddMemberModal from '../../modals/AddMemberModal';
-import { studyService } from '../../../../services/api';
+import { studyService, getMemberRoleDisplayName } from '../../../../services/api';
 
 function MemberManagement({ members, loading, error, fetchMembers }) {
   const { studyId } = useParams();
@@ -10,6 +10,9 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
   const [processingMemberId, setProcessingMemberId] = useState(null);
   const [confirmModal, setConfirmModal] = useState({ show: false, type: null, memberId: null });
   const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
+
+  // 현재 사용자가 CREATOR인지 확인 (첫 번째 멤버가 로그인한 사용자라고 가정)
+  const isCurrentUserCreator = members.length > 0 && members[0]?.memberRole === 'CREATOR';
 
   // 팝업 닫기 함수
   const handleClosePopup = () => {
@@ -20,11 +23,25 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
   const handleChangeRole = async (memberId, newRole) => {
     if (!memberId || !newRole) return;
     
+    // CREATOR는 역할 변경 불가
+    const memberToChange = members.find(m => m.memberId === memberId);
+    if (memberToChange?.memberRole === 'CREATOR') {
+      setStatusMessage({ text: '마스터의 역할은 변경할 수 없습니다.', type: 'error' });
+      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
+      return;
+    }
+    
     try {
       setProcessingMemberId(memberId);
       setStatusMessage({ text: '처리 중...', type: 'info' });
       
-      await studyService.changeMemberRole(studyId, memberId, { memberRole: newRole });
+      // 스터디 이름을 첫 번째 멤버에서 가져옴 (있다면)
+      const studyName = members.length > 0 ? members[0].studyName || "" : "";
+      
+      await studyService.changeMemberRole(studyId, memberId, { 
+        studyName: studyName,
+        memberRole: newRole 
+      });
       
       setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
       fetchMembers(); // 멤버 목록 갱신
@@ -43,6 +60,21 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
 
   // 멤버 삭제 확인 모달 표시
   const handleShowDeleteConfirm = (memberId) => {
+    const memberToDelete = members.find(m => m.memberId === memberId);
+    
+    // CREATOR, HOST 삭제 불가
+    if (memberToDelete?.memberRole === 'CREATOR') {
+      setStatusMessage({ text: '마스터는 삭제할 수 없습니다.', type: 'error' });
+      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
+      return;
+    }
+    
+    if (memberToDelete?.memberRole === 'HOST') {
+      setStatusMessage({ text: '관리자는 삭제할 수 없습니다.', type: 'error' });
+      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
+      return;
+    }
+    
     setConfirmModal({ show: true, type: 'delete', memberId });
   };
 
@@ -77,6 +109,15 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
   const handleCloseConfirmModal = () => {
     setConfirmModal({ show: false, type: null, memberId: null });
   };
+
+  // 역할 표시명 가져오기
+  const getRoleDisplayName = (role) => getMemberRoleDisplayName(role);
+  
+  // 역할 변경 가능 여부 확인
+  const canChangeRole = (memberRole) => memberRole !== 'CREATOR';
+  
+  // 멤버 삭제 가능 여부 확인
+  const canDeleteMember = (memberRole) => memberRole !== 'CREATOR' && memberRole !== 'HOST';
 
   return (
     <div style={{ width: '100%', overflowX: 'auto' }}>
@@ -149,33 +190,51 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                     {member.studentEmail}
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    <select 
-                      value={member.memberRole || '로딩 안됨'} 
-                      onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
-                      disabled={processingMemberId === member.memberId}
-                      style={{ 
-                        padding: '0.25rem 0.5rem', 
+                    {canChangeRole(member.memberRole) ? (
+                      <select 
+                        value={member.memberRole || '로딩 안됨'} 
+                        onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
+                        disabled={processingMemberId === member.memberId}
+                        style={{ 
+                          padding: '0.25rem 0.5rem', 
+                          borderRadius: '4px',
+                          border: '1px solid #ddd',
+                          backgroundColor: member.memberRole === 'CREATOR' ? '#ffebee' :
+                                           member.memberRole === 'HOST' ? '#e3f2fd' : 'white'
+                        }}
+                      >
+                        {!member.memberRole && <option value="로딩 안됨">로딩 안됨</option>}
+                        <option value="HOST">관리자</option>
+                        <option value="PARTICIPANT">참여자</option>
+                      </select>
+                    ) : (
+                      <span style={{ 
+                        display: 'inline-block',
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: '#ffebee',
                         borderRadius: '4px',
-                        border: '1px solid #ddd',
-                        backgroundColor: member.memberRole === 'HOST' ? '#e3f2fd' : 'white'
-                      }}
-                    >
-                      {!member.memberRole && <option value="로딩 안됨">로딩 안됨</option>}
-                      <option value="HOST">관리자</option>
-                      <option value="PARTICIPANT">참여자</option>
-                    </select>
+                        color: '#c62828',
+                        fontWeight: 'bold'
+                      }}>
+                        {getRoleDisplayName(member.memberRole)}
+                      </span>
+                    )}
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
                     <button 
                       onClick={() => handleShowDeleteConfirm(member.memberId)}
-                      disabled={processingMemberId === member.memberId || member.memberRole === 'HOST'}
+                      disabled={processingMemberId === member.memberId || !canDeleteMember(member.memberRole)}
                       style={{ 
                         background: 'none', 
                         border: 'none', 
-                        cursor: member.memberRole === 'HOST' ? 'not-allowed' : 'pointer',
-                        opacity: member.memberRole === 'HOST' ? 0.5 : 1
+                        cursor: canDeleteMember(member.memberRole) ? 'pointer' : 'not-allowed',
+                        opacity: canDeleteMember(member.memberRole) ? 1 : 0.5
                       }}
-                      title={member.memberRole === 'HOST' ? '관리자는 삭제할 수 없습니다' : '멤버 삭제'}
+                      title={
+                        member.memberRole === 'CREATOR' ? '마스터는 삭제할 수 없습니다' : 
+                        member.memberRole === 'HOST' ? '관리자는 삭제할 수 없습니다' : 
+                        '멤버 삭제'
+                      }
                     >
                       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
@@ -211,36 +270,35 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
             }}>
               <div style={{
                 backgroundColor: 'white',
-                padding: '2rem',
                 borderRadius: '8px',
+                padding: '2rem',
                 width: '400px',
-                maxWidth: '90%'
+                maxWidth: '90%',
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
               }}>
-                <h3 style={{ marginTop: 0 }}>멤버 삭제 확인</h3>
-                <p>이 멤버를 정말 삭제하시겠습니까?</p>
-                <p>이 작업은 되돌릴 수 없습니다.</p>
-                
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '2rem' }}>
-                  <button 
+                <h3 style={{ marginTop: 0, marginBottom: '1.5rem' }}>회원 삭제 확인</h3>
+                <p>정말 이 회원을 삭제하시겠습니까?</p>
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1.5rem' }}>
+                  <button
                     onClick={handleCloseConfirmModal}
                     style={{
-                      padding: '0.5rem 1rem',
-                      backgroundColor: '#f0f0f0',
+                      padding: '0.75rem 1.5rem',
                       border: '1px solid #ddd',
                       borderRadius: '4px',
+                      backgroundColor: 'white',
                       cursor: 'pointer'
                     }}
                   >
                     취소
                   </button>
-                  <button 
+                  <button
                     onClick={handleDeleteMember}
                     style={{
-                      padding: '0.5rem 1rem',
-                      backgroundColor: '#f44336',
-                      color: 'white',
+                      padding: '0.75rem 1.5rem',
                       border: 'none',
                       borderRadius: '4px',
+                      backgroundColor: '#E53935',
+                      color: 'white',
                       cursor: 'pointer'
                     }}
                   >
@@ -257,14 +315,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
 }
 
 MemberManagement.propTypes = {
-  members: PropTypes.arrayOf(
-    PropTypes.shape({
-      memberId: PropTypes.number.isRequired,
-      studentName: PropTypes.string.isRequired,
-      studentEmail: PropTypes.string.isRequired,
-      memberRole: PropTypes.string.isRequired
-    })
-  ).isRequired,
+  members: PropTypes.array.isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
   fetchMembers: PropTypes.func.isRequired

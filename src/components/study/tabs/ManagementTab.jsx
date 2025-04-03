@@ -28,16 +28,19 @@ function ManagementTab({ studyData }) {
       // studyService를 사용하여 멤버 목록 조회
       const response = await studyService.getStudyMembers(studyId);
       console.log('회원 목록 조회 결과:', response);
-      setMembers(response || []);
+      
+      // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
+      const membersList = Array.isArray(response) ? response : response.members || [];
+      setMembers(membersList);
     } catch (err) {
       console.error('회원 목록 조회 오류:', err);
       setError('회원 목록을 불러오는데 실패했습니다.');
-      // 개발 중에는 임시 데이터 사용
+      // 개발 중에는 임시 데이터 사용 (CREATOR 역할 포함)
       setMembers([
-        { memberId: 1, studentName: '회원1', studentEmail: 'member1@example.com', memberRole: 'HOST' },
-        { memberId: 2, studentName: '회원2', studentEmail: 'member2@example.com', memberRole: 'PARTICIPANT' },
-        { memberId: 3, studentName: '회원3', studentEmail: 'member3@example.com', memberRole: 'PARTICIPANT' },
-        { memberId: 4, studentName: '회원4', studentEmail: 'member4@example.com', memberRole: 'PARTICIPANT' }
+        { memberId: 1, studentName: '회원1 (생성자)', studentEmail: 'creator@example.com', memberRole: 'CREATOR', studyName: '테스트 스터디' },
+        { memberId: 2, studentName: '회원2 (관리자)', studentEmail: 'host@example.com', memberRole: 'HOST' },
+        { memberId: 3, studentName: '회원3', studentEmail: 'member1@example.com', memberRole: 'PARTICIPANT' },
+        { memberId: 4, studentName: '회원4', studentEmail: 'member2@example.com', memberRole: 'PARTICIPANT' }
       ]);
     } finally {
       setLoading(false);
