@@ -13,6 +13,7 @@ import CreateStudyPage from "./pages/study/CreateStudyPage";
 import OAuthCallback from "./pages/auth/OAuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { tokenUtils } from "./services/api";
 import StudyDetailPage from "./pages/study/StudyDetailPage";
 import NoticeFormPage from "./pages/study/notice/NoticeFormPage";
@@ -38,8 +39,10 @@ const HEADER_HEIGHT = "64px";
 // 헤더 컴포넌트 메모이제이션
 const MemoizedHeader = memo(Header);
 
-// 스터디 레이아웃 컴포넌트
+// 스터디 레이아웃 컴포넌트 (테마 적용)
 const StudyLayout = memo(({ children }) => {
+  const { colors } = useTheme();
+  
   return (
     <div
       style={{
@@ -47,12 +50,14 @@ const StudyLayout = memo(({ children }) => {
         width: "100%",
         display: "flex",
         justifyContent: "center",
+        backgroundColor: colors.background,
+        color: colors.text
       }}
     >
       <div
         style={{
           padding: "2rem",
-          backgroundColor: "var(--main-bg, #ffffff)",
+          backgroundColor: colors.background,
           overflow: "auto",
           width: "100%",
         }}
@@ -73,12 +78,19 @@ const StudyLayout = memo(({ children }) => {
 
 StudyLayout.displayName = "StudyLayout";
 
-// 기본 레이아웃 컴포넌트
-const DefaultLayout = memo(() => (
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <Outlet />
-  </div>
-));
+// 기본 레이아웃 컴포넌트 (테마 적용)
+const DefaultLayout = memo(() => {
+  const { colors } = useTheme();
+  
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ 
+      backgroundColor: colors.background, 
+      color: colors.text 
+    }}>
+      <Outlet />
+    </div>
+  );
+});
 
 DefaultLayout.displayName = "DefaultLayout";
 
@@ -118,9 +130,25 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
+// ThemeWrapper 컴포넌트 추가
+const ThemeWrapper = ({ children }) => {
+  const { colors } = useTheme();
+  
+  return (
+    <div style={{ 
+      backgroundColor: colors.background,
+      color: colors.text,
+      minHeight: '100vh'
+    }}>
+      {children}
+    </div>
+  );
+};
+
 function AppContent() {
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
+  const { colors } = useTheme();
 
   // 페이지 로드 시 관리자 권한 확인
   useEffect(() => {
@@ -356,11 +384,38 @@ function AppContent() {
     );
   }, [location.pathname]);
 
-  return (
-    <div className="min-h-screen">
-      {showHeader && <MemoizedHeader />}
-      <main>
+  // 라우트 설정
+  const routes = useMemo(
+    () => (
+      <ThemeWrapper>
+        <MemoizedHeader />
         <Routes>
+          {/* 로그인 및 콜백 라우트 */}
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/oauth/callback"
+            element={
+              <PublicRoute>
+                <OAuthCallback />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/user/form"
+            element={
+              <ProtectedRoute>
+                <UserInfoForm />
+              </ProtectedRoute>
+            }
+          />
+
           {/* 스터디 관련 라우트 */}
           <Route
             path="/studies"
@@ -443,36 +498,24 @@ function AppContent() {
               </ProtectedRoute>
             }
           />
-
-          {/* 회원가입 라우트 */}
-          <Route path="/auth/add" element={<UserInfoForm />} />
-
-          {/* Public routes */}
-          <Route element={<DefaultLayout />}>
-            <Route
-              path="/"
-              element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              }
-            />
-            <Route path="/auth/callback" element={<OAuthCallback />} />
-            <Route path="/oauth2/callback/google" element={<OAuthCallback />} />
-          </Route>
         </Routes>
-      </main>
-    </div>
+      </ThemeWrapper>
+    ),
+    [location.pathname]
   );
+
+  return routes;
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </AuthProvider>
+    </Router>
   );
 }
 

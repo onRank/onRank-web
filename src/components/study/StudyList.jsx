@@ -1,8 +1,10 @@
 import PropTypes from 'prop-types'
 import { useNavigate } from 'react-router-dom'
 import StudyCard from './StudyCard'
+import { useTheme } from '../../contexts/ThemeContext';
 
 function StudyList({ studies }) {
+  const { colors } = useTheme();
   const navigate = useNavigate()
 
   // 디버깅 정보 추가
@@ -32,19 +34,19 @@ function StudyList({ studies }) {
       <div style={{
         padding: '2rem',
         textAlign: 'center',
-        backgroundColor: '#f8f9fa',
+        backgroundColor: colors.secondaryBackground,
         borderRadius: '8px',
         margin: '1rem 0'
       }}>
-        <h3 style={{ marginBottom: '1rem', color: '#495057' }}>등록된 스터디가 없습니다</h3>
-        <p style={{ color: '#6c757d', marginBottom: '1.5rem' }}>
+        <h3 style={{ marginBottom: '1rem', color: colors.text }}>등록된 스터디가 없습니다</h3>
+        <p style={{ color: colors.textSecondary, marginBottom: '1.5rem' }}>
           참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
         </p>
         <button
           onClick={() => navigate('/studies/add')}
           style={{
-            backgroundColor: '#4263eb',
-            color: 'white',
+            backgroundColor: colors.primary,
+            color: colors.buttonText,
             border: 'none',
             borderRadius: '4px',
             padding: '0.75rem 1.5rem',
@@ -52,7 +54,7 @@ function StudyList({ studies }) {
             cursor: 'pointer',
             transition: 'background-color 0.2s',
             ':hover': {
-              backgroundColor: '#3b5bdb'
+              backgroundColor: colors.primaryHover
             }
           }}
         >

@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types'
+import { useTheme } from '../../contexts/ThemeContext';
 
 function StudyCard({ study, onClick }) {
+  const { colors } = useTheme();
+  
   // 디버깅 로그 추가
   console.log('[StudyCard] 렌더링:', study);
   
@@ -16,19 +19,19 @@ function StudyCard({ study, onClick }) {
     <div 
       onClick={onClick}
       style={{
-        backgroundColor: '#FFFFFF',
+        backgroundColor: colors.cardBackground,
         borderRadius: '15px',
-        border: '1px solid #EEEEEE',
+        border: `1px solid ${colors.border}`,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         cursor: 'pointer',
         transition: 'transform 0.2s, box-shadow 0.2s',
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        boxShadow: `0 2px 4px ${colors.isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
         ':hover': {
           transform: 'translateY(-4px)',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+          boxShadow: `0 4px 6px ${colors.isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)'}`
         }
       }}
     >
@@ -37,7 +40,7 @@ function StudyCard({ study, onClick }) {
         width: '100%',
         height: '180px',
         overflow: 'hidden',
-        backgroundColor: '#f5f5f5'
+        backgroundColor: colors.secondaryBackground
       }}>
         <img 
           src={study.imageUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E'} 
@@ -59,14 +62,14 @@ function StudyCard({ study, onClick }) {
         <h3 style={{
           fontSize: '16px',
           fontWeight: '600',
-          color: '#333333',
+          color: colors.text,
           marginBottom: '8px'
         }}>
           {study.title || '제목 없음'}
         </h3>
         <p style={{
           fontSize: '14px',
-          color: '#666666',
+          color: colors.textSecondary,
           margin: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',

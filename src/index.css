@@ -25,6 +25,19 @@
   --main-bg: #ffffff;
   --button-hover-bg: #e5e7eb;
 
+  /* 추가 변수 - 다크모드 호환성 */
+  --dark-mode: 0;
+  --theme-bg: #ffffff;
+  --theme-card: #ffffff;
+  --theme-text: #111827;
+  --theme-text-secondary: #6B7280;
+  --theme-border: #E5E7EB;
+  --theme-primary: #FF0000;
+  --theme-accent: #3B82F6;
+  --theme-success: #059669;
+  --theme-error: #DC2626;
+  --theme-warning: #D97706;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -74,6 +87,7 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 다크모드 처리 (시스템 테마) */
 @media (prefers-color-scheme: dark) {
   :root {
     color: rgba(255, 255, 255, 0.87);
@@ -94,6 +108,19 @@ button:focus-visible {
     --sidebar-bg: #111827;
     --main-bg: #0f172a;
     --button-hover-bg: #374151;
+
+    /* 추가 변수 - 다크모드 호환성 */
+    --dark-mode: 1;
+    --theme-bg: #0f172a;
+    --theme-card: #1f2937;
+    --theme-text: #E5E7EB;
+    --theme-text-secondary: #9CA3AF;
+    --theme-border: #374151;
+    --theme-primary: #FF6B6B;
+    --theme-accent: #60A5FA;
+    --theme-success: #10B981;
+    --theme-error: #EF4444;
+    --theme-warning: #FBBF24;
   }
   
   button {
@@ -105,8 +132,86 @@ button:focus-visible {
   }
 }
 
+/* 다크모드 클래스 기반 스타일 (JavaScript 제어용) */
+html.dark-mode {
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  /* Dark mode variables */
+  --card-bg: #1f2937;
+  --text-primary: #ffffff;
+  --text-secondary: #9CA3AF;
+  --border-color: #374151;
+  
+  /* Header variables - Dark mode */
+  --header-bg: #1f2937;
+  --button-bg: #374151;
+  --button-active-bg: #4B5563;
+  
+  /* Sidebar variables - Dark mode */
+  --sidebar-bg: #111827;
+  --main-bg: #0f172a;
+  --button-hover-bg: #374151;
+
+  /* 추가 변수 - 다크모드 호환성 */
+  --dark-mode: 1;
+  --theme-bg: #0f172a;
+  --theme-card: #1f2937;
+  --theme-text: #E5E7EB;
+  --theme-text-secondary: #9CA3AF;
+  --theme-border: #374151;
+  --theme-primary: #FF6B6B;
+  --theme-accent: #60A5FA;
+  --theme-success: #10B981;
+  --theme-error: #EF4444;
+  --theme-warning: #FBBF24;
+}
+
+/* 기본 스타일 재설정 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* 카드 스타일 수정 */
+.card {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* 테이블 스타일 수정 */
+table {
+  border-color: var(--border-color);
+}
+
+th, td {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* 입력 필드 스타일 수정 */
+input, textarea, select {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+/* 버튼 스타일 수정 */
+.btn {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* 아이콘 색상 조정 */
+svg {
+  fill: currentColor;
 }
