@@ -4,6 +4,45 @@ if (!import.meta.env.VITE_API_URL) {
   console.error("API URL이 설정되지 않았습니다");
 }
 
+// API 인스턴스 정의
+export const api = axios.create({
+  baseURL: import.meta.env.PROD
+    ? "https://onrank.kr"
+    : import.meta.env.VITE_API_URL || "http://localhost:8080",
+  timeout: 5000,
+  withCredentials: true,
+});
+
+// 요청 인터셉터 설정
+api.interceptors.request.use(
+  (config) => {
+    // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
+    const token = tokenUtils.getToken();
+    if (token) {
+      config.headers.Authorization = token;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 응답 인터셉터 설정
+api.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  async (error) => {
+    // 401 에러 처리 (토큰 만료 등)
+    if (error.response && error.response.status === 401) {
+      // 토큰 재발급 로직 등 여기에 추가
+      console.log("[API] 401 에러 발생, 토큰 재발급 필요");
+    }
+    return Promise.reject(error);
+  }
+);
+
 // 토큰 관련 유틸리티 함수
 export const tokenUtils = {
   // 쿠키에서 특정 이름의 쿠키 값을 가져오는 유틸리티 함수
@@ -25,14 +64,6 @@ export const tokenUtils = {
     // 서버에 요청하여 쿠키 유효성 확인
     try {
       console.log("[Token Debug] Validating refresh token with server");
-      const api = axios.create({
-        baseURL: import.meta.env.PROD
-          ? "https://onrank.kr"
-          : import.meta.env.VITE_API_URL || "http://localhost:8080",
-        timeout: 5000,
-        withCredentials: true,
-      });
-
       await api.get("/auth/validate", { withCredentials: true });
       console.log("[Token Debug] Server confirmed refresh token is valid");
       return true;
@@ -312,499 +343,6 @@ export const tokenUtils = {
     console.log("[Token Debug] All tokens cleared (localStorage + cookie)");
   },
 };
-
-// api 인스턴스 생성
-export const api = axios.create({
-  baseURL: (() => {
-    const url = import.meta.env.PROD
-      ? "https://onrank.kr"
-      : import.meta.env.VITE_API_URL || "http://localhost:8080";
-
-    // 프로덕션에서는 항상 HTTPS 사용
-    if (import.meta.env.PROD && url.startsWith("http:")) {
-      console.warn(
-        "[API Config] HTTP URL detected in production, forcing HTTPS"
-      );
-      return url.replace("http:", "https:");
-    }
-
-    return url;
-  })(),
-  timeout: 10000,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-    "X-Requested-With": "XMLHttpRequest",
-    "X-Forwarded-Proto": "https",
-  },
-});
-
-// 쿠키 디버깅 유틸리티 함수 추가
-export const checkCookiesDebug = () => {
-  console.log("[Cookie Debug] 현재 문서 쿠키:", document.cookie);
-  console.log("[Cookie Debug] 쿠키 도메인:", window.location.hostname);
-  console.log("[Cookie Debug] 현재 프로토콜:", window.location.protocol);
-
-  // HttpOnly 쿠키는 JavaScript에서 직접 접근할 수 없으므로
-  // 백엔드에 검증 요청을 보내는 것이 좋습니다
-  return api
-    .get("/auth/validate", { withCredentials: true })
-    .then((response) => {
-      console.log("[Cookie Debug] 쿠키 검증 응답:", response.data);
-      return true;
-    })
-    .catch((error) => {
-      console.error("[Cookie Debug] 쿠키 검증 실패:", error);
-      return false;
-    });
-};
-
-// 요청 인터셉터
-api.interceptors.request.use(
-  async (config) => {
-    // /auth/reissue 요청인 경우 특별 처리
-    if (config.url?.includes("/auth/reissue")) {
-      console.log(
-        "[API Debug] /auth/reissue 요청 감지: 액세스 토큰 유효성 확인"
-      );
-
-      // localStorage에서 현재 토큰 확인
-      const currentToken = localStorage.getItem("accessToken");
-
-      // 기존 액세스 토큰이 있는 경우 그 유효성 확인
-      if (currentToken) {
-        try {
-          // JWT 토큰 디코딩 및 만료 확인
-          const tokenPayload = JSON.parse(atob(currentToken.split(".")[1]));
-          const expirationTime = tokenPayload.exp * 1000;
-          const timeToExpiration = expirationTime - Date.now();
-
-          // 토큰이 아직 유효한 경우 (만료되지 않음)
-          if (timeToExpiration > 0) {
-            console.log(
-              "[API Debug] 유효한 액세스 토큰 존재함 - /auth/reissue 요청 취소"
-            );
-
-            // 요청 취소 (Axios 요청 취소 기능 사용)
-            const cancelTokenSource = axios.CancelToken.source();
-            config.cancelToken = cancelTokenSource.token;
-            cancelTokenSource.cancel(
-              "현재 토큰이 유효하여 reissue 요청이 취소됨"
-            );
-
-            return config;
-          }
-
-          console.log("[API Debug] 액세스 토큰 만료됨, reissue 요청 진행");
-        } catch (error) {
-          console.error("[API Debug] 토큰 검증 중 오류:", error);
-        }
-      }
-
-      // 토큰이 없거나 만료된 경우 일반적으로 진행
-      console.log("[API Debug] 액세스 토큰이 없거나 만료됨, reissue 요청 진행");
-      return config;
-    }
-
-    // 페이지 새로고침 후 첫 API 요청에서 토큰 유효성 강제 검증
-    if (window._shouldRevalidateToken) {
-      window._shouldRevalidateToken = false; // 플래그 초기화
-      console.log(
-        "[API Debug] First request after refresh, checking token validity"
-      );
-
-      // 로컬 저장소에서 현재 토큰 확인
-      const currentToken = localStorage.getItem("accessToken");
-      if (currentToken) {
-        // JWT 토큰 디코딩 및 만료 확인
-        try {
-          const tokenPayload = JSON.parse(atob(currentToken.split(".")[1]));
-          const expirationTime = tokenPayload.exp * 1000;
-          const timeToExpiration = expirationTime - Date.now();
-
-          // 토큰이 만료되지 않은 경우, 그대로 사용
-          if (timeToExpiration > 0) {
-            console.log(
-              "[API Debug] Valid token exists (expiry: " +
-                Math.round(timeToExpiration / 60000) +
-                " mins), continuing with request"
-            );
-
-            // Bearer 토큰 형식 확인 및 설정
-            if (
-              !config.headers["Authorization"] &&
-              !config.headers["authorization"]
-            ) {
-              const tokenWithBearer = currentToken.startsWith("Bearer ")
-                ? currentToken
-                : `Bearer ${currentToken}`;
-              config.headers["Authorization"] = tokenWithBearer;
-            }
-
-            return config;
-          }
-
-          // 토큰이 만료된 경우에만 재발급 요청
-          if (timeToExpiration <= 0) {
-            console.log("[API Debug] Token expired, attempting reissue");
-
-            try {
-              // 세션 유효성 검증 및 토큰 갱신 시도
-              const refreshResponse = await api.get("/auth/reissue", {
-                withCredentials: true, // 쿠키 전송 필수
-              });
-
-              const newToken =
-                refreshResponse.headers["authorization"] ||
-                refreshResponse.headers["Authorization"];
-              if (newToken) {
-                console.log(
-                  "[API Debug] Session validation successful, using new token"
-                );
-                tokenUtils.setToken(newToken);
-
-                // 현재 요청에 새 토큰 적용
-                if (
-                  !config.headers["Authorization"] &&
-                  !config.headers["authorization"]
-                ) {
-                  const tokenWithBearer = newToken.startsWith("Bearer ")
-                    ? newToken
-                    : `Bearer ${newToken}`;
-                  config.headers["Authorization"] = tokenWithBearer;
-                }
-              }
-            } catch (error) {
-              console.error(
-                "[API Debug] Session validation failed:",
-                error.message
-              );
-              // 검증 실패 시 로컬 토큰 제거 (리프레시 토큰이 유효하지 않음)
-              tokenUtils.removeToken();
-            }
-          }
-        } catch (err) {
-          console.error("[API Debug] Error parsing token:", err);
-          tokenUtils.removeToken();
-        }
-      } else {
-        console.log("[API Debug] No token found after refresh");
-      }
-    }
-
-    // 토큰 가져오기
-    let token = tokenUtils.getToken();
-
-    // 로그 여부 확인
-    if (config.url) {
-      console.log(
-        `[API Debug] Processing request to ${
-          config.url
-        }, token exists: ${!!token}`
-      );
-    }
-
-    // 토큰이 없고 리프레시 요청이 아닌 경우 리프레시 토큰으로 새 토큰 요청
-    if (!token && !config.url?.includes("/auth/reissue")) {
-      try {
-        console.log(
-          `[API Debug] No token for ${config.url}, attempting to refresh...`
-        );
-
-        // 리프레시 토큰으로 새 액세스 토큰 요청
-        const refreshResponse = await api.get("/auth/reissue", {
-          withCredentials: true, // 쿠키의 리프레시 토큰을 서버로 전송
-        });
-
-        const newToken =
-          refreshResponse.headers["authorization"] ||
-          refreshResponse.headers["Authorization"];
-        if (newToken) {
-          console.log("[API Debug] Token refresh successful, using new token");
-          tokenUtils.setToken(newToken);
-          token = newToken;
-        } else {
-          console.error(
-            "[API Debug] Token refresh response missing authorization header"
-          );
-          // 토큰 없이 응답이 왔을 경우 인증 에러로 처리
-          tokenUtils.removeToken(); // 액세스 토큰 제거
-
-          // 로그인 페이지가 아닐 경우에만 리다이렉트
-          if (!window.location.pathname.includes("/login")) {
-            console.log(
-              "[API Debug] Redirecting to login page due to authentication failure"
-            );
-            window.location.href = "/login";
-          }
-
-          // API 요청 취소
-          const cancelTokenSource = axios.CancelToken.source();
-          config.cancelToken = cancelTokenSource.token;
-          cancelTokenSource.cancel("Authentication required");
-        }
-      } catch (error) {
-        console.error(`[API Debug] Failed to refresh token: ${error.message}`);
-
-        // 토큰 갱신 실패 시 액세스 토큰 제거
-        tokenUtils.removeToken();
-
-        // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes("/login")) {
-          console.log(
-            "[API Debug] Redirecting to login page due to token refresh failure"
-          );
-          window.location.href = "/login";
-        }
-
-        // API 요청 취소
-        const cancelTokenSource = axios.CancelToken.source();
-        config.cancelToken = cancelTokenSource.token;
-        cancelTokenSource.cancel("Authentication required");
-      }
-    }
-
-    // 헤더에 이미 Authorization이 있는지 확인
-    const hasAuthHeader =
-      config.headers &&
-      (config.headers["Authorization"] || config.headers["authorization"]);
-
-    if (token && !hasAuthHeader) {
-      // Bearer 토큰 형식 확인 및 설정
-      const tokenWithBearer = token.startsWith("Bearer ")
-        ? token
-        : `Bearer ${token}`;
-      config.headers["Authorization"] = tokenWithBearer;
-      console.log(
-        `[API Debug] Added Authorization header to request: ${config.url}`
-      );
-
-      // 토큰 만료 시간 확인
-      try {
-        const tokenPayload = JSON.parse(atob(token.split(".")[1]));
-        const expirationTime = tokenPayload.exp * 1000;
-        console.log("[API Debug] Token expiration:", new Date(expirationTime));
-
-        // 토큰이 만료되었거나 5분 이내로 만료될 예정인 경우
-        if (Date.now() >= expirationTime - 300000) {
-          // 5분으로 조정
-          console.log("[API Debug] Token needs refresh");
-          // 토큰 갱신은 응답 인터셉터에서 처리
-        }
-      } catch (error) {
-        console.error("[API Debug] Token parsing error:", error);
-      }
-    } else if (hasAuthHeader) {
-      console.log(
-        `[API Debug] Request already has Authorization header: ${config.url}`
-      );
-    } else {
-      console.warn(
-        `[API Debug] No token available for request to ${config.url}`
-      );
-    }
-
-    // 디버그 로깅
-    console.log("[API Debug] Request config:", {
-      url: config.url,
-      method: config.method,
-      hasAuthHeader: !!hasAuthHeader,
-      withCredentials: config.withCredentials,
-    });
-
-    // 모든 요청에 credentials 강제 적용
-    config.withCredentials = true;
-
-    // 디버그 로깅
-    console.log("[API Debug] Final request config:", {
-      url: config.url,
-      baseURL: config.baseURL,
-      method: config.method,
-      withCredentials: config.withCredentials,
-      headers: config.headers,
-    });
-
-    return config;
-  },
-  (error) => {
-    console.error("[API Debug] Request interceptor error:", error);
-    return Promise.reject(error);
-  }
-);
-
-// 응답 인터셉터
-api.interceptors.response.use(
-  (response) => {
-    console.log("Response received:", {
-      status: response.status,
-      headers: response.headers,
-      data: response.data,
-    });
-
-    // Set-Cookie 헤더 검사
-    const setCookieHeader = response.headers["set-cookie"];
-    if (setCookieHeader) {
-      console.log(
-        "[Cookie Debug] 서버에서 Set-Cookie 헤더 발견:",
-        setCookieHeader
-      );
-    } else {
-      console.log("[Cookie Debug] 서버에서 Set-Cookie 헤더 없음");
-    }
-
-    // 모든 헤더를 출력
-    console.log("[Cookie Debug] 모든 응답 헤더:", response.headers);
-
-    // Location 헤더가 있다면 로깅
-    if (response.headers["location"]) {
-      console.log(
-        "[Redirect Debug] Location 헤더 발견:",
-        response.headers["location"]
-      );
-    }
-
-    const authHeader =
-      response.headers["authorization"] || response.headers["Authorization"];
-    if (authHeader) {
-      console.log("[API Debug] New token received:", authHeader);
-      tokenUtils.setToken(authHeader);
-    }
-    return response;
-  },
-  async (error) => {
-    console.error("Response error:", {
-      status: error.response?.status,
-      data: error.response?.data,
-      headers: error.response?.headers,
-      url: error.config?.url,
-    });
-
-    // 에러 응답의 헤더에서 리다이렉션 URL 확인
-    if (error.response?.headers) {
-      console.log("[Redirect Debug] 에러 응답 헤더:", error.response.headers);
-
-      // Location 헤더 확인
-      if (error.response.headers["location"]) {
-        console.log(
-          "[Redirect Debug] 에러 응답의 Location 헤더:",
-          error.response.headers["location"]
-        );
-      }
-
-      // 모든 헤더 출력
-      console.log(
-        "[Redirect Debug] 에러 응답의 모든 헤더:",
-        Object.keys(error.response.headers)
-      );
-    }
-
-    const originalRequest = error.config;
-
-    // /auth/add 요청에서 401이 발생한 경우 특별 처리
-    if (error.response?.status === 401 && originalRequest.url === "/auth/add") {
-      console.log(
-        "[API Debug] 회원정보 등록 중 인증 오류 발생, 토큰 재발급 시도"
-      );
-      try {
-        // 토큰 재발급 시도
-        const refreshResponse = await api.get("/auth/reissue", {
-          withCredentials: true,
-        });
-
-        const newToken =
-          refreshResponse.headers["authorization"] ||
-          refreshResponse.headers["Authorization"];
-        if (newToken) {
-          console.log("[API Debug] 토큰 재발급 성공, 원래 요청 재시도");
-          tokenUtils.setToken(newToken);
-          originalRequest.headers["Authorization"] = newToken;
-          return api(originalRequest);
-        }
-      } catch (refreshError) {
-        console.error("[API Debug] 토큰 재발급 실패:", refreshError);
-        tokenUtils.removeToken();
-        return Promise.reject(error);
-      }
-    }
-
-    // 토큰 재발급 요청 실패 시
-    if (
-      error.response?.status === 401 &&
-      originalRequest.url === "/auth/reissue"
-    ) {
-      console.log("[API Debug] 토큰 재발급 실패");
-      // 특정 에러 메시지인 경우 처리
-      if (
-        error.response?.data &&
-        typeof error.response.data === "string" &&
-        error.response.data.includes(
-          "만료되지 않은 access token과 함께 refresh token이 전달되었습니다"
-        )
-      ) {
-        console.log(
-          "[API Debug] 유효한 액세스 토큰이 있으므로 재발급 요청이 거부됨 - 정상적인 상황"
-        );
-        return Promise.reject(error);
-      }
-
-      // 다른 401 오류는 토큰 제거
-      tokenUtils.removeToken();
-      return Promise.reject(error);
-    }
-
-    // 401 에러이고 아직 재시도하지 않은 경우에만 토큰 갱신 시도
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      console.log("[API Debug] 인증 오류 발생, 토큰 재발급 시도...");
-      try {
-        // HttpOnly 쿠키에 저장된 리프레시 토큰을 사용하여 새 토큰 요청
-        const response = await api.get("/auth/reissue", {
-          withCredentials: true,
-        });
-
-        const newToken =
-          response.headers["authorization"] ||
-          response.headers["Authorization"];
-        if (newToken) {
-          console.log("[API Debug] 토큰 재발급 성공, 원래 요청 재시도");
-          tokenUtils.setToken(newToken);
-          originalRequest.headers["Authorization"] = newToken;
-          return api(originalRequest);
-        } else {
-          console.error(
-            "[API Debug] 토큰 재발급 응답에 Authorization 헤더가 없음"
-          );
-          tokenUtils.removeToken();
-
-          // 로그인 페이지가 아닐 경우에만 리다이렉트
-          if (!window.location.pathname.includes("/login")) {
-            console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
-            window.location.href = "/login";
-          }
-
-          return Promise.reject(
-            new Error("인증에 실패했습니다. 다시 로그인해주세요.")
-          );
-        }
-      } catch (refreshError) {
-        console.error("[API Debug] 토큰 재발급 실패:", refreshError);
-        tokenUtils.removeToken();
-
-        // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes("/login")) {
-          console.log("[API Debug] 인증 실패로 로그인 페이지로 리다이렉트");
-          window.location.href = "/login";
-        }
-
-        return Promise.reject(
-          new Error("인증에 실패했습니다. 다시 로그인해주세요.")
-        );
-      }
-    }
-    return Promise.reject(error);
-  }
-);
 
 export const authService = {
   // 회원 정보 등록

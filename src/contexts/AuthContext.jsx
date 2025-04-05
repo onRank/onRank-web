@@ -59,6 +59,25 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // JWT 토큰 유효성 검증 함수
+  const validateToken = async () => {
+    try {
+      // 토큰 만료 체크
+      const token = tokenUtils.getToken()
+      if (!token) {
+        console.log('[Auth] 토큰 없음, 재인증 필요')
+        return false
+      }
+
+      // 백엔드로 토큰 유효성 체크 요청
+      await api.get('/auth/validate')
+      return true
+    } catch (error) {
+      console.error('[Auth] 토큰 유효성 검증 실패:', error)
+      return false
+    }
+  }
+
   useEffect(() => {
     const initializeAuth = async () => {
       console.log('[Auth] useEffect 실행')
@@ -192,7 +211,8 @@ export function AuthProvider({ children }) {
     loading,
     refreshUserInfo, // 사용자 정보를 강제로 새로고침하는 함수 노출
     isDetailedUserInfo, // 상세 사용자 정보 여부 (프로필 페이지 등에서 사용)
-    isAuthenticated: !!user // user 객체가 존재하면 true, 아니면 false
+    isAuthenticated: !!user, // user 객체가 존재하면 true, 아니면 false
+    validateToken, // 토큰 유효성 검증 함수 추가
   }
 
   console.log('[Auth] Provider 렌더링')
@@ -207,9 +227,11 @@ export function AuthProvider({ children }) {
 
 export function useAuth() {
   const context = useContext(AuthContext)
-  if (!context) {
+  
+  if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider')
   }
+  
   return context
 }
 
