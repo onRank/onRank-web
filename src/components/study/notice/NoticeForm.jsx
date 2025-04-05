@@ -168,32 +168,32 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       display: "block",
       fontWeight: "bold",
       marginBottom: "8px",
-      color: colors.textPrimary,
+      color: `var(--textPrimary)`,
     },
     input: {
       width: "100%",
       padding: "10px",
       borderRadius: "6px",
-      border: `1px solid ${colors.border}`,
+      border: `1px solid var(--border)`,
       fontSize: "14px",
-      backgroundColor: colors.inputBackground,
-      color: colors.textPrimary,
+      backgroundColor: `var(--inputBackground)`,
+      color: `var(--textPrimary)`,
     },
     textarea: {
       width: "100%",
       minHeight: "200px",
       padding: "10px",
       borderRadius: "8px",
-      border: `1px solid ${colors.border}`,
+      border: `1px solid var(--border)`,
       resize: "none",
       fontSize: "14px",
-      backgroundColor: colors.inputBackground,
-      color: colors.textPrimary,
+      backgroundColor: `var(--inputBackground)`,
+      color: `var(--textPrimary)`,
     },
     charCount: {
       textAlign: "right",
       fontSize: "12px",
-      color: colors.textSecondary,
+      color: `var(--textSecondary)`,
       marginTop: "4px",
     },
     fileUploadRow: {
@@ -203,7 +203,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       marginBottom: "32px",
     },
     fileUploadButton: {
-      backgroundColor: "#e74c3c",
+      backgroundColor: `var(--primary)`,
       color: "#fff",
       border: "none",
       borderRadius: "6px",
@@ -221,8 +221,8 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       gap: "12px",
     },
     errorMessage: {
-      backgroundColor: colors.errorBackground,
-      color: colors.error,
+      backgroundColor: `var(--errorBackground)`,
+      color: `var(--error)`,
       padding: "12px",
       borderRadius: "6px",
       marginBottom: "16px",
@@ -230,20 +230,20 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     fileList: {
       marginTop: "8px",
       padding: "8px 12px",
-      backgroundColor: colors.cardBackground,
+      backgroundColor: `var(--cardBackground)`,
       borderRadius: "4px",
       fontSize: "14px",
-      border: `1px solid ${colors.border}`,
+      border: `1px solid var(--border)`,
     },
     fileItem: {
       display: "flex",
       alignItems: "center",
       marginBottom: "4px",
-      color: colors.textPrimary,
+      color: `var(--textPrimary)`,
     },
     fileIcon: {
       marginRight: "8px",
-      color: colors.textSecondary,
+      color: `var(--textSecondary)`,
     },
   };
 
@@ -292,7 +292,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
               <span style={styles.fileIcon}>📎</span>
               {file.name}
               <span
-                style={{ marginLeft: "10px", color: colors.textSecondary, fontSize: "12px" }}
+                style={{ marginLeft: "10px", color: `var(--textSecondary)`, fontSize: "12px" }}
               >
                 ({(file.size / 1024).toFixed(1)} KB)
               </span>
@@ -302,7 +302,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
                 style={{
                   marginBottom: "4px",
                   marginLeft: "auto",
-                  color: colors.error,
+                  color: `var(--error)`,
                   background: "none",
                   border: "none",
                   cursor: "pointer",

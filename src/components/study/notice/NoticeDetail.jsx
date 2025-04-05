@@ -51,23 +51,23 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
         <Button onClick={() => handleEdit(noticeId)} variant="edit" />
       </div>
       <div style={{ 
-        border: `1px solid ${colors.border}`, 
+        border: `1px solid var(--border)`, 
         borderRadius: '0.5rem', 
         padding: '1.5rem',
-        backgroundColor: colors.cardBackground
+        backgroundColor: `var(--cardBackground)`
       }}>
         <h1 style={{ 
           fontSize: '1.5rem', 
           fontWeight: 'bold', 
           marginBottom: '1rem',
-          color: colors.textPrimary
+          color: `var(--textPrimary)`
         }}>
           {selectedNotice.noticeTitle}
         </h1>
         <div style={{ 
           display: 'flex', 
           alignItems: 'center', 
-          color: colors.textSecondary, 
+          color: `var(--textSecondary)`, 
           marginBottom: '1.5rem' 
         }}>
           <span style={{ marginLeft: '0.5rem', marginRight: '0.5rem' }}>•</span>
@@ -75,7 +75,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
         </div>
         <div style={{ 
           maxWidth: 'none',
-          color: colors.textPrimary
+          color: `var(--textPrimary)`
         }}>
           {selectedNotice.noticeContent}
         </div>

@@ -3,18 +3,18 @@ import { formatDate } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeListItem({ notice, onClick }) {
-  const { colors, isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
   
   const styles = {
     noticeCard: {
-      backgroundColor: colors.cardBackground,
+      backgroundColor: `var(--cardBackground)`,
       padding: "12px 16px",
       borderRadius: "10px",
       marginBottom: "12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      border: `1px solid ${colors.border}`,
+      border: `1px solid var(--border)`,
       boxShadow: `0 1px 4px ${isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
@@ -38,7 +38,7 @@ function NoticeListItem({ notice, onClick }) {
     noticeTitle: {
       fontSize: "16px",
       fontWeight: "600",
-      color: colors.textPrimary,
+      color: `var(--textPrimary)`,
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
@@ -47,7 +47,7 @@ function NoticeListItem({ notice, onClick }) {
       flexShrink: 0,
       width: "28px",
       height: "28px",
-      backgroundColor: colors.buttonBackground,
+      backgroundColor: `var(--buttonBackground)`,
       borderRadius: "6px",
       display: "flex",
       alignItems: "center",
@@ -56,14 +56,14 @@ function NoticeListItem({ notice, onClick }) {
     },
     noticeDate: {
       fontSize: "13px",
-      color: colors.textSecondary,
+      color: `var(--textSecondary)`,
       marginLeft: "20px",
       whiteSpace: "nowrap",
       flexShrink: 0,
     },
     noticeText: {
       fontSize: "12px",
-      color: colors.textSecondary,
+      color: `var(--textSecondary)`,
       marginTop: "4px",
       whiteSpace: "nowrap",
       overflow: "hidden",
@@ -74,11 +74,11 @@ function NoticeListItem({ notice, onClick }) {
 
   // hover 효과를 위한 이벤트 핸들러
   const handleMouseEnter = (e) => {
-    e.currentTarget.style.backgroundColor = colors.hoverBackground;
+    e.currentTarget.style.backgroundColor = `var(--hoverBackground)`;
   };
 
   const handleMouseLeave = (e) => {
-    e.currentTarget.style.backgroundColor = colors.cardBackground;
+    e.currentTarget.style.backgroundColor = `var(--cardBackground)`;
   };
 
   return (

@@ -145,6 +145,35 @@ const ThemeWrapper = ({ children }) => {
   );
 };
 
+// 테마 토글 버튼 컴포넌트
+const ThemeToggle = () => {
+  const { isDarkMode, toggleTheme } = useTheme();
+  return (
+    <button
+      onClick={toggleTheme}
+      style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        backgroundColor: `var(--cardBackground)`,
+        border: `1px solid var(--border)`,
+        color: `var(--textPrimary)`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        cursor: 'pointer',
+        zIndex: 1000,
+        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+      }}
+    >
+      {isDarkMode ? '🌞' : '🌙'}
+    </button>
+  );
+};
+
 function AppContent() {
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -499,6 +528,7 @@ function AppContent() {
             }
           />
         </Routes>
+        <ThemeToggle />
       </ThemeWrapper>
     ),
     [location.pathname]

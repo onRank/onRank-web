@@ -79,7 +79,7 @@ const AttendanceDetailView = ({ onBack }) => {
   };
 
   if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div style={{ color: '#F44336' }}>{error}</div>;
+  if (error) return <div style={{ color: `var(--error)` }}>{error}</div>;
 
   return (
     <div style={{ width: '100%' }}>
@@ -89,15 +89,15 @@ const AttendanceDetailView = ({ onBack }) => {
         alignItems: 'center',
         marginBottom: '2rem'
       }}>
-        <h2 style={{ color: colors.text }}>출석 현황</h2>
+        <h2 style={{ color: `var(--textPrimary)` }}>출석 현황</h2>
         <button
           onClick={() => navigate(`/studies/${studyId}/attendances`, { replace: true })}
           style={{
             padding: '0.5rem 1rem',
-            border: `1px solid ${colors.border}`,
+            border: `1px solid var(--border)`,
             borderRadius: '4px',
-            backgroundColor: colors.cardBackground,
-            color: colors.text,
+            backgroundColor: `var(--cardBackground)`,
+            color: `var(--textPrimary)`,
             cursor: 'pointer'
           }}
         >
@@ -115,8 +115,8 @@ const AttendanceDetailView = ({ onBack }) => {
             key={attendance.attendanceId}
             style={{
               padding: '1rem',
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`,
+              backgroundColor: `var(--cardBackground)`,
+              border: `1px solid var(--border)`,
               borderRadius: '8px',
               display: 'flex',
               justifyContent: 'space-between',
@@ -124,10 +124,10 @@ const AttendanceDetailView = ({ onBack }) => {
             }}
           >
             <div>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: `var(--textPrimary)` }}>
                 {attendance.studentName}
               </div>
-              <div style={{ fontSize: '14px', color: colors.textSecondary }}>
+              <div style={{ fontSize: '14px', color: `var(--textSecondary)` }}>
                 {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: '2-digit',
@@ -261,8 +261,8 @@ const AttendanceChart = ({ attendances }) => {
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '2rem',
-      backgroundColor: colors.cardBackground,
-      border: `1px solid ${colors.border}`,
+      backgroundColor: `var(--cardBackground)`,
+      border: `1px solid var(--border)`,
       borderRadius: '8px',
       marginBottom: '2rem'
     }}>
@@ -282,7 +282,7 @@ const AttendanceChart = ({ attendances }) => {
           <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#E50011' }}>
             {presentRate}%
           </div>
-          <div style={{ fontSize: '14px', color: '#666666' }}>
+          <div style={{ fontSize: '14px', color: `var(--textSecondary)` }}>
             출석률
           </div>
         </div>
@@ -308,7 +308,7 @@ const AttendanceChart = ({ attendances }) => {
             }} />
             <div style={{ 
               fontSize: '16px',
-              color: '#333333'
+              color: `var(--textPrimary)`
             }}>
               {style.label}: <span style={{ fontWeight: 'bold' }}>{stats[status] || 0}</span>
             </div>
@@ -378,7 +378,7 @@ function AttendanceTab() {
   };
 
   if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div style={{ color: '#F44336' }}>{error}</div>;
+  if (error) return <div style={{ color: `var(--error)` }}>{error}</div>;
 
   return (
     <div>
@@ -388,13 +388,13 @@ function AttendanceTab() {
         alignItems: 'center',
         marginBottom: '2rem'
       }}>
-        <h2 style={{ color: colors.text }}>출석 현황</h2>
+        <h2 style={{ color: `var(--textPrimary)` }}>출석 현황</h2>
         {userRole === 'HOST' && (
           <button
             onClick={handleCreateAttendance}
             style={{
               padding: '0.5rem 1rem',
-              backgroundColor: colors.primary,
+              backgroundColor: `var(--primary)`,
               color: '#FFFFFF',
               border: 'none',
               borderRadius: '4px',
@@ -410,10 +410,10 @@ function AttendanceTab() {
         <div style={{
           padding: '2rem',
           textAlign: 'center',
-          backgroundColor: colors.cardBackground,
-          border: `1px solid ${colors.border}`,
+          backgroundColor: `var(--cardBackground)`,
+          border: `1px solid var(--border)`,
           borderRadius: '8px',
-          color: colors.text
+          color: `var(--textPrimary)`
         }}>
           등록된 출석이 없습니다. 출석을 등록해주세요.
         </div>
@@ -426,8 +426,8 @@ function AttendanceTab() {
           <div
             style={{
               padding: '1rem',
-              backgroundColor: colors.cardBackground,
-              border: `1px solid ${colors.border}`,
+              backgroundColor: `var(--cardBackground)`,
+              border: `1px solid var(--border)`,
               borderRadius: '8px',
               marginBottom: '1rem'
             }}
@@ -441,8 +441,8 @@ function AttendanceTab() {
               onClick={() => handleAttendanceClick(attendance)}
               style={{
                 padding: '1rem',
-                backgroundColor: colors.cardBackground,
-                border: `1px solid ${colors.border}`,
+                backgroundColor: `var(--cardBackground)`,
+                border: `1px solid var(--border)`,
                 borderRadius: '8px',
                 cursor: 'pointer',
                 display: 'flex',
@@ -455,13 +455,13 @@ function AttendanceTab() {
                   fontWeight: 'bold',
                   fontSize: '16px',
                   marginBottom: '0.5rem',
-                  color: colors.text
+                  color: `var(--textPrimary)`
                 }}>
                   {attendance.scheduleName || '무제'}
                 </div>
                 <div style={{
                   fontSize: '14px',
-                  color: colors.textSecondary
+                  color: `var(--textSecondary)`
                 }}>
                   {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
                     year: 'numeric',
@@ -473,7 +473,7 @@ function AttendanceTab() {
                 </div>
               </div>
               <div>
-                <FaPencilAlt size={16} color={colors.primary} />
+                <FaPencilAlt size={16} color={`var(--primary)`} />
               </div>
             </div>
           ))}

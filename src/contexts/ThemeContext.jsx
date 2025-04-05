@@ -28,17 +28,19 @@ export const ThemeProvider = ({ children }) => {
     background: "#f8f9fa",
     cardBackground: "#ffffff",
     textPrimary: "#333333",
+    text: "#333333",
     textSecondary: "#666666",
     border: "#dddddd",
     hoverBackground: "#f1f3f5",
     buttonBackground: "#f1f1f1",
     buttonText: "#333333",
-    primary: "#4a6cf7",
+    primary: "#E50011",
     inputBackground: "#ffffff",
     error: "#e74c3c",
     errorBackground: "#fdecea",
     success: "#2ecc71",
-    warning: "#f39c12"
+    warning: "#f39c12",
+    shadowColor: "rgba(0, 0, 0, 0.1)"
   };
   
   // 다크모드 컬러 정의
@@ -46,17 +48,19 @@ export const ThemeProvider = ({ children }) => {
     background: "#1a1c23",
     cardBackground: "#2d3748",
     textPrimary: "#f8f9fa",
+    text: "#f8f9fa",
     textSecondary: "#a0aec0",
     border: "#4a5568",
     hoverBackground: "#3a4a5e",
     buttonBackground: "#3a4a5e",
     buttonText: "#f8f9fa",
-    primary: "#4a6cf7",
+    primary: "#ff6b6b",
     inputBackground: "#2d3748",
     error: "#fc8181",
     errorBackground: "#553c3c",
     success: "#68d391",
-    warning: "#f6ad55"
+    warning: "#f6ad55",
+    shadowColor: "rgba(0, 0, 0, 0.3)"
   };
   
   // 현재 테마에 맞는 색상 설정
@@ -66,7 +70,13 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     document.body.classList.toggle("dark-mode", isDarkMode);
-  }, [isDarkMode]);
+    
+    // CSS 변수 설정
+    const root = document.documentElement;
+    Object.entries(colors).forEach(([key, value]) => {
+      root.style.setProperty(`--${key}`, value);
+    });
+  }, [isDarkMode, colors]);
 
   // 시스템 테마 변경 감지
   useEffect(() => {
