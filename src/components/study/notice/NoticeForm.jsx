@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
   const [noticeTitle, setNoticeTitle] = useState("");
@@ -12,6 +13,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const { isLoading, createNotice, editNotice } = useNotice();
+  const { colors } = useTheme();
   const maxLength = 10000;
 
   useEffect(() => {
@@ -166,27 +168,32 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       display: "block",
       fontWeight: "bold",
       marginBottom: "8px",
+      color: colors.textPrimary,
     },
     input: {
       width: "100%",
       padding: "10px",
       borderRadius: "6px",
-      border: "1px solid #ccc",
+      border: `1px solid ${colors.border}`,
       fontSize: "14px",
+      backgroundColor: colors.inputBackground,
+      color: colors.textPrimary,
     },
     textarea: {
       width: "100%",
       minHeight: "200px",
       padding: "10px",
       borderRadius: "8px",
-      border: "1px solid #ccc",
+      border: `1px solid ${colors.border}`,
       resize: "none",
       fontSize: "14px",
+      backgroundColor: colors.inputBackground,
+      color: colors.textPrimary,
     },
     charCount: {
       textAlign: "right",
       fontSize: "12px",
-      color: "#888",
+      color: colors.textSecondary,
       marginTop: "4px",
     },
     fileUploadRow: {
@@ -214,8 +221,8 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
       gap: "12px",
     },
     errorMessage: {
-      backgroundColor: "#fdecea",
-      color: "#e74c3c",
+      backgroundColor: colors.errorBackground,
+      color: colors.error,
       padding: "12px",
       borderRadius: "6px",
       marginBottom: "16px",
@@ -223,18 +230,20 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     fileList: {
       marginTop: "8px",
       padding: "8px 12px",
-      backgroundColor: "#f8f9fa",
+      backgroundColor: colors.cardBackground,
       borderRadius: "4px",
       fontSize: "14px",
+      border: `1px solid ${colors.border}`,
     },
     fileItem: {
       display: "flex",
       alignItems: "center",
       marginBottom: "4px",
+      color: colors.textPrimary,
     },
     fileIcon: {
       marginRight: "8px",
-      color: "#666",
+      color: colors.textSecondary,
     },
   };
 
@@ -283,7 +292,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
               <span style={styles.fileIcon}>📎</span>
               {file.name}
               <span
-                style={{ marginLeft: "10px", color: "#666", fontSize: "12px" }}
+                style={{ marginLeft: "10px", color: colors.textSecondary, fontSize: "12px" }}
               >
                 ({(file.size / 1024).toFixed(1)} KB)
               </span>
@@ -293,7 +302,7 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
                 style={{
                   marginBottom: "4px",
                   marginLeft: "auto",
-                  color: "#e74c3c",
+                  color: colors.error,
                   background: "none",
                   border: "none",
                   cursor: "pointer",

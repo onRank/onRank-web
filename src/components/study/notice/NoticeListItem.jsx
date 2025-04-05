@@ -1,23 +1,26 @@
 import PropTypes from "prop-types";
 import { formatDate } from "../../../utils/dateUtils";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeListItem({ notice, onClick }) {
+  const { colors, isDarkMode } = useTheme();
+  
   const styles = {
     noticeCard: {
-      backgroundColor: "#ffffff",
+      backgroundColor: colors.cardBackground,
       padding: "12px 16px",
       borderRadius: "10px",
       marginBottom: "12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      border: "1px solid #eee",
-      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
+      border: `1px solid ${colors.border}`,
+      boxShadow: `0 1px 4px ${isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
       gap: "10px",
       hover: {
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+        boxShadow: `0 4px 12px ${isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)'}`,
         transform: "translateY(-2px)",
       },
     },
@@ -35,7 +38,7 @@ function NoticeListItem({ notice, onClick }) {
     noticeTitle: {
       fontSize: "16px",
       fontWeight: "600",
-      color: "#333",
+      color: colors.textPrimary,
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
@@ -44,7 +47,7 @@ function NoticeListItem({ notice, onClick }) {
       flexShrink: 0,
       width: "28px",
       height: "28px",
-      backgroundColor: "#f1f1f1",
+      backgroundColor: colors.buttonBackground,
       borderRadius: "6px",
       display: "flex",
       alignItems: "center",
@@ -53,14 +56,14 @@ function NoticeListItem({ notice, onClick }) {
     },
     noticeDate: {
       fontSize: "13px",
-      color: "#999",
+      color: colors.textSecondary,
       marginLeft: "20px",
       whiteSpace: "nowrap",
       flexShrink: 0,
     },
     noticeText: {
       fontSize: "12px",
-      color: "#666",
+      color: colors.textSecondary,
       marginTop: "4px",
       whiteSpace: "nowrap",
       overflow: "hidden",
@@ -71,11 +74,11 @@ function NoticeListItem({ notice, onClick }) {
 
   // hover 효과를 위한 이벤트 핸들러
   const handleMouseEnter = (e) => {
-    e.currentTarget.style.backgroundColor = "#f8f9fa";
+    e.currentTarget.style.backgroundColor = colors.hoverBackground;
   };
 
   const handleMouseLeave = (e) => {
-    e.currentTarget.style.backgroundColor = "#fff";
+    e.currentTarget.style.backgroundColor = colors.cardBackground;
   };
 
   return (

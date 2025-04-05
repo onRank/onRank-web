@@ -1,19 +1,31 @@
 import PropTypes from "prop-types";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import NoticeListItem from "./NoticeListItem";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
+  const { colors } = useTheme();
+  
   if (isLoading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div className="bg-white border rounded-lg overflow-hidden">
+      <div style={{
+        backgroundColor: colors.cardBackground,
+        border: `1px solid ${colors.border}`,
+        borderRadius: '0.5rem',
+        overflow: 'hidden'
+      }}>
         {notices.length === 0 ? (
-          <div className="p-6 text-center text-gray-500">
+          <div style={{
+            padding: '1.5rem',
+            textAlign: 'center',
+            color: colors.textSecondary
+          }}>
             등록된 공지사항이 없습니다.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {notices.map((notice) => (
               <div key={notice.noticeId}>
                 <NoticeListItem

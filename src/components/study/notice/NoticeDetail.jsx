@@ -5,9 +5,11 @@ import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
+  const { colors } = useTheme();
 
   useEffect(() => {
     getNoticeById(studyId, noticeId);
@@ -17,7 +19,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
 
   if (error) {
     return (
-      <div className="p-6">
+      <div style={{ padding: '1.5rem' }}>
         <Button onClick={handleBack} variant="back" />
         <ErrorMessage message={error} />
       </div>
@@ -30,7 +32,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
     !selectedNotice.noticeContent
   ) {
     return (
-      <div className="p-6">
+      <div style={{ padding: '1.5rem' }}>
         <Button onClick={handleBack} variant="back" />
         <ErrorMessage message="잘못된 공지사항 데이터입니다." type="warning" />
       </div>
@@ -38,20 +40,45 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
+    <div style={{ padding: '1.5rem' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '1rem' 
+      }}>
         <Button onClick={handleBack} variant="back" />
         <Button onClick={() => handleEdit(noticeId)} variant="edit" />
       </div>
-      <div className="border rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">
+      <div style={{ 
+        border: `1px solid ${colors.border}`, 
+        borderRadius: '0.5rem', 
+        padding: '1.5rem',
+        backgroundColor: colors.cardBackground
+      }}>
+        <h1 style={{ 
+          fontSize: '1.5rem', 
+          fontWeight: 'bold', 
+          marginBottom: '1rem',
+          color: colors.textPrimary
+        }}>
           {selectedNotice.noticeTitle}
         </h1>
-        <div className="flex items-center text-gray-600 mb-6">
-          <span className="mx-2">•</span>
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          color: colors.textSecondary, 
+          marginBottom: '1.5rem' 
+        }}>
+          <span style={{ marginLeft: '0.5rem', marginRight: '0.5rem' }}>•</span>
           <span>{formatDate(selectedNotice.noticeCreatedAt)}</span>
         </div>
-        <div className="prose max-w-none">{selectedNotice.noticeContent}</div>
+        <div style={{ 
+          maxWidth: 'none',
+          color: colors.textPrimary
+        }}>
+          {selectedNotice.noticeContent}
+        </div>
       </div>
     </div>
   );
