@@ -68,14 +68,32 @@ export const ThemeProvider = ({ children }) => {
 
   // 테마 변경 시 localStorage 업데이트 및 CSS 변수 적용
   useEffect(() => {
+    // localStorage 저장
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    
+    // 다크모드 클래스 적용
     document.body.classList.toggle("dark-mode", isDarkMode);
+    document.documentElement.classList.toggle("dark-mode", isDarkMode);
+    
+    // 메타 테마 컬러 변경 (모바일 브라우저 테마 색상)
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute("content", isDarkMode ? darkColors.background : lightColors.background);
+    }
     
     // CSS 변수 설정
     const root = document.documentElement;
     Object.entries(colors).forEach(([key, value]) => {
       root.style.setProperty(`--${key}`, value);
     });
+
+    // 최상위 data-theme 속성 설정 (외부 라이브러리용)
+    document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
+    
+    // 스타일 처리를 위한 짧은 딜레이 (트랜지션 효과 적용을 위함)
+    setTimeout(() => {
+      document.body.style.transition = "background-color 0.3s, color 0.3s";
+    }, 100);
   }, [isDarkMode, colors]);
 
   // 시스템 테마 변경 감지
