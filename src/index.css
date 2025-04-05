@@ -90,32 +90,32 @@ button:focus-visible {
 /* 다크모드 처리 (시스템 테마) */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    color: rgba(255, 255, 255, 0.9);
+    background-color: #121212;
 
     /* Dark mode variables */
-    --card-bg: #1f2937;
+    --card-bg: #1e1e1e;
     --text-primary: #ffffff;
-    --text-secondary: #9CA3AF;
-    --border-color: #374151;
+    --text-secondary: #aaaaaa;
+    --border-color: #3d3d3d;
     
     /* Header variables - Dark mode */
-    --header-bg: #1f2937;
-    --button-bg: #374151;
-    --button-active-bg: #4B5563;
+    --header-bg: #1e1e1e;
+    --button-bg: #333333;
+    --button-active-bg: #444444;
     
     /* Sidebar variables - Dark mode */
-    --sidebar-bg: #111827;
-    --main-bg: #0f172a;
-    --button-hover-bg: #374151;
+    --sidebar-bg: #121212;
+    --main-bg: #121212;
+    --button-hover-bg: #444444;
 
     /* 추가 변수 - 다크모드 호환성 */
     --dark-mode: 1;
-    --theme-bg: #0f172a;
-    --theme-card: #1f2937;
-    --theme-text: #E5E7EB;
-    --theme-text-secondary: #9CA3AF;
-    --theme-border: #374151;
+    --theme-bg: #121212;
+    --theme-card: #1e1e1e;
+    --theme-text: #ffffff;
+    --theme-text-secondary: #aaaaaa;
+    --theme-border: #3d3d3d;
     --theme-primary: #FF6B6B;
     --theme-accent: #60A5FA;
     --theme-success: #10B981;
@@ -124,42 +124,43 @@ button:focus-visible {
   }
   
   button {
-    background-color: #1a1a1a;
+    background-color: #333333;
+    color: #ffffff;
   }
   
   a:hover {
-    color: #747bff;
+    color: #FF6B6B;
   }
 }
 
 /* 다크모드 클래스 기반 스타일 (JavaScript 제어용) */
 html.dark-mode {
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: rgba(255, 255, 255, 0.9);
+  background-color: #121212;
 
   /* Dark mode variables */
-  --card-bg: #1f2937;
+  --card-bg: #1e1e1e;
   --text-primary: #ffffff;
-  --text-secondary: #9CA3AF;
-  --border-color: #374151;
+  --text-secondary: #aaaaaa;
+  --border-color: #3d3d3d;
   
   /* Header variables - Dark mode */
-  --header-bg: #1f2937;
-  --button-bg: #374151;
-  --button-active-bg: #4B5563;
+  --header-bg: #1e1e1e;
+  --button-bg: #333333;
+  --button-active-bg: #444444;
   
   /* Sidebar variables - Dark mode */
-  --sidebar-bg: #111827;
-  --main-bg: #0f172a;
-  --button-hover-bg: #374151;
+  --sidebar-bg: #121212;
+  --main-bg: #121212;
+  --button-hover-bg: #444444;
 
   /* 추가 변수 - 다크모드 호환성 */
   --dark-mode: 1;
-  --theme-bg: #0f172a;
-  --theme-card: #1f2937;
-  --theme-text: #E5E7EB;
-  --theme-text-secondary: #9CA3AF;
-  --theme-border: #374151;
+  --theme-bg: #121212;
+  --theme-card: #1e1e1e;
+  --theme-text: #ffffff;
+  --theme-text-secondary: #aaaaaa;
+  --theme-border: #3d3d3d;
   --theme-primary: #FF6B6B;
   --theme-accent: #60A5FA;
   --theme-success: #10B981;

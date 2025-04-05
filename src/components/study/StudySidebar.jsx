@@ -1,9 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
+import { useTheme } from "../../contexts/ThemeContext";
 
 function StudySidebar({ activeTab, style }) {
   const navigate = useNavigate();
   const { studyId } = useParams();
+  const { colors } = useTheme();
 
   const menuItems = [
     { id: "notices", label: "공지사항", path: "notices" },
@@ -23,11 +25,12 @@ function StudySidebar({ activeTab, style }) {
     <div
       style={{
         width: "200px",
-        borderRight: "1px solid #E5E5E5",
+        borderRight: `1px solid ${colors.border}`,
         flexShrink: 0,
         position: "sticky",
         top: 0,
         height: "fit-content",
+        backgroundColor: colors.sidebarBackground,
         ...style,
       }}
     >
@@ -42,14 +45,14 @@ function StudySidebar({ activeTab, style }) {
             border: "none",
             background: "none",
             cursor: "pointer",
-            color: activeTab === item.label ? "#FF0000" : "#000000",
+            color: activeTab === item.label ? colors.primary : colors.text,
             fontWeight: activeTab === item.label ? "bold" : "normal",
             fontSize: "14px",
             outline: "none",
             transition: "all 0.2s ease",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#F8F9FA";
+            e.currentTarget.style.backgroundColor = colors.surfaceHover;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = "transparent";

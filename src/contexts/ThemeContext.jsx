@@ -78,13 +78,14 @@ export const ThemeProvider = ({ children }) => {
     toggleTheme,
     colors: isDarkMode ? {
       // 다크모드 색상
-      background: '#0f172a',      // 메인 배경
-      cardBackground: '#1f2937',  // 카드 배경
-      surface: '#242F3F',         // 표면
-      surfaceHover: '#2c3a4d',    // 표면 호버
-      border: '#374151',          // 경계선
-      text: '#E5E7EB',            // 기본 텍스트
-      textSecondary: '#9CA3AF',   // 보조 텍스트
+      background: '#121212',      // 메인 배경 (더 어둡게)
+      cardBackground: '#1e1e1e',  // 카드 배경
+      secondaryBackground: '#262626', // 보조 배경
+      surface: '#2d2d2d',         // 표면
+      surfaceHover: '#333333',    // 표면 호버
+      border: '#3d3d3d',          // 경계선
+      text: '#FFFFFF',            // 기본 텍스트
+      textSecondary: '#AAAAAA',   // 보조 텍스트
       primary: '#FF6B6B',         // 주요 색상
       secondary: '#4F46E5',       // 보조 색상
       accent: '#60A5FA',          // 강조 색상
@@ -92,18 +93,20 @@ export const ThemeProvider = ({ children }) => {
       success: '#10B981',         // 성공
       warning: '#FBBF24',         // 경고
       info: '#3B82F6',            // 정보
-      divider: '#1F2937',         // 구분선
-      headerBackground: '#1f2937',// 헤더 배경
-      sidebarBackground: '#111827',// 사이드바 배경
-      buttonBackground: '#374151',// 버튼 배경
-      buttonHover: '#4B5563',     // 버튼 호버
+      divider: '#333333',         // 구분선
+      headerBackground: '#1e1e1e',// 헤더 배경
+      sidebarBackground: '#121212',// 사이드바 배경
+      buttonBackground: '#333333',// 버튼 배경
+      buttonHover: '#444444',     // 버튼 호버
+      buttonText: '#FFFFFF',      // 버튼 텍스트
       timelineMarker: '#FF6B6B',  // 타임라인 마커
-      shadowColor: 'rgba(0, 0, 0, 0.3)', // 그림자
+      shadowColor: 'rgba(0, 0, 0, 0.5)', // 그림자
       codeBackground: '#282c34',  // 코드 배경
-      tooltip: '#4B5563',         // 툴팁
+      tooltip: '#444444',         // 툴팁
       selection: '#2563EB',       // 선택 배경
-      overlay: 'rgba(0, 0, 0, 0.7)', // 오버레이
-      focus: '#2563EB'           // 포커스
+      overlay: 'rgba(0, 0, 0, 0.8)', // 오버레이
+      focus: '#2563EB',           // 포커스
+      primaryHover: '#ff5252'     // 주요 색상 호버
     } : {
       // 라이트모드 색상
       background: '#FFFFFF',      // 메인 배경

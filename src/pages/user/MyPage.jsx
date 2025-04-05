@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTheme } from '../../contexts/ThemeContext'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import ErrorMessage from '../../components/common/ErrorMessage'
 
 function MyPage() {
   const navigate = useNavigate()
   const { user, refreshUserInfo, isDetailedUserInfo } = useAuth()
+  const { colors } = useTheme()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -63,23 +65,25 @@ function MyPage() {
       <h1 style={{
         fontSize: '24px',
         fontWeight: 'bold',
-        marginBottom: '2rem'
+        marginBottom: '2rem',
+        color: colors.text
       }}>
         내 프로필
       </h1>
 
       <div style={{
-        background: '#f8f9fa',
+        background: colors.cardBackground,
         borderRadius: '8px',
         padding: '2rem',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        boxShadow: `0 2px 4px ${colors.shadowColor}`,
+        border: `1px solid ${colors.border}`
       }}>
         <div style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ 
             fontSize: '18px', 
             fontWeight: 'bold',
             marginBottom: '0.5rem',
-            color: '#495057'
+            color: colors.text
           }}>
             기본 정보
           </h2>
@@ -89,31 +93,32 @@ function MyPage() {
             gap: '0.5rem',
             fontSize: '16px'
           }}>
-            <div style={{ fontWeight: 'bold', color: '#6c757d' }}>이름:</div>
-            <div>{user.studentName || user.nickname || '정보 없음'}</div>
+            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>이름:</div>
+            <div style={{ color: colors.text }}>{user.studentName || user.nickname || '정보 없음'}</div>
             
-            <div style={{ fontWeight: 'bold', color: '#6c757d' }}>이메일:</div>
-            <div>{user.email || '정보 없음'}</div>
+            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>이메일:</div>
+            <div style={{ color: colors.text }}>{user.email || '정보 없음'}</div>
             
-            <div style={{ fontWeight: 'bold', color: '#6c757d' }}>학교:</div>
-            <div>{user.studentSchool || '정보 없음'}</div>
+            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>학교:</div>
+            <div style={{ color: colors.text }}>{user.studentSchool || '정보 없음'}</div>
             
-            <div style={{ fontWeight: 'bold', color: '#6c757d' }}>학과:</div>
-            <div>{user.studentDepartment || user.department || '정보 없음'}</div>
+            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>학과:</div>
+            <div style={{ color: colors.text }}>{user.studentDepartment || user.department || '정보 없음'}</div>
             
-            <div style={{ fontWeight: 'bold', color: '#6c757d' }}>전화번호:</div>
-            <div>{user.studentPhoneNumber || '정보 없음'}</div>
+            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>전화번호:</div>
+            <div style={{ color: colors.text }}>{user.studentPhoneNumber || '정보 없음'}</div>
           </div>
         </div>
 
         {!isDetailedUserInfo && (
           <div style={{
-            background: '#fff3cd',
-            color: '#856404',
+            background: colors.warning + '20', // 투명도 추가
+            color: colors.warning,
             padding: '0.75rem',
             borderRadius: '4px',
             marginTop: '1rem',
-            fontSize: '14px'
+            fontSize: '14px',
+            border: `1px solid ${colors.warning}`
           }}>
             일부 사용자 정보만 표시되고 있습니다. 전체 정보를 보려면 페이지를 새로고침 해주세요.
           </div>
@@ -123,9 +128,9 @@ function MyPage() {
           <button
             onClick={() => navigate('/studies')}
             style={{
-              background: '#6c757d',
-              color: 'white',
-              border: 'none',
+              background: colors.buttonBackground,
+              color: colors.text,
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               padding: '0.5rem 1rem',
               fontSize: '14px',
@@ -139,8 +144,8 @@ function MyPage() {
           <button
             onClick={() => refreshUserInfo()}
             style={{
-              background: '#007bff',
-              color: 'white',
+              background: colors.primary,
+              color: colors.buttonText,
               border: 'none',
               borderRadius: '4px',
               padding: '0.5rem 1rem',

@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useTheme } from '../../contexts/ThemeContext';
 
 function CalendarPage() {
+  const { colors } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [leftArrowColor, setLeftArrowColor] = useState('#666666');
-  const [rightArrowColor, setRightArrowColor] = useState('#666666');
+  const [leftArrowColor, setLeftArrowColor] = useState(colors.textSecondary);
+  const [rightArrowColor, setRightArrowColor] = useState(colors.textSecondary);
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -30,14 +32,14 @@ function CalendarPage() {
   const allDays = [...prevMonthDays, ...daysInMonth, ...nextMonthDays];
 
   const handlePrevMonth = () => {
-    setLeftArrowColor('#FF0000');
-    setTimeout(() => setLeftArrowColor('#666666'), 200);
+    setLeftArrowColor(colors.primary);
+    setTimeout(() => setLeftArrowColor(colors.textSecondary), 200);
     setCurrentDate(subMonths(currentDate, 1));
   };
 
   const handleNextMonth = () => {
-    setRightArrowColor('#FF0000');
-    setTimeout(() => setRightArrowColor('#666666'), 200);
+    setRightArrowColor(colors.primary);
+    setTimeout(() => setRightArrowColor(colors.textSecondary), 200);
     setCurrentDate(addMonths(currentDate, 1));
   };
 
@@ -81,7 +83,8 @@ function CalendarPage() {
         <h2 style={{
           margin: 0,
           fontSize: '24px',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          color: colors.text
         }}>
           {format(currentDate, 'yyyy. M', { locale: ko })}
         </h2>
@@ -111,14 +114,14 @@ function CalendarPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         textAlign: 'center',
-        borderBottom: '1px solid #E5E5E5',
+        borderBottom: `1px solid ${colors.border}`,
         padding: '0.5rem'
       }}>
         {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
           <div
             key={day}
             style={{
-              color: index === 0 ? '#FF0000' : index === 6 ? '#0000FF' : '#000000',
+              color: index === 0 ? colors.primary : index === 6 ? colors.info : colors.text,
               fontSize: '14px'
             }}
           >
@@ -132,7 +135,7 @@ function CalendarPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '1px',
-        backgroundColor: '#E5E5E5'
+        backgroundColor: colors.border
       }}>
         {allDays.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
@@ -144,17 +147,17 @@ function CalendarPage() {
               key={index}
               onClick={() => handleDateClick(date)}
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: colors.cardBackground,
                 padding: '1rem',
                 minHeight: '100px',
                 cursor: 'pointer',
                 position: 'relative',
-                color: !isCurrentMonth ? '#CCCCCC' : 
-                       date.getDay() === 0 ? '#FF0000' :
-                       date.getDay() === 6 ? '#0000FF' : '#000000',
+                color: !isCurrentMonth ? colors.textSecondary : 
+                       date.getDay() === 0 ? colors.primary :
+                       date.getDay() === 6 ? colors.info : colors.text,
                 ...(isSelected && {
-                  backgroundColor: '#F8F9FA',
-                  border: '2px solid #FF0000'
+                  backgroundColor: colors.surfaceHover,
+                  border: `2px solid ${colors.primary}`
                 })
               }}
             >
@@ -165,7 +168,7 @@ function CalendarPage() {
               }}>
                 <span style={{
                   ...(todayDate && {
-                    backgroundColor: '#FF0000',
+                    backgroundColor: colors.primary,
                     color: '#FFFFFF',
                     width: '24px',
                     height: '24px',
