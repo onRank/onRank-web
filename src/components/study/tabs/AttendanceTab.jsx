@@ -10,7 +10,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Select, MenuItem, FormControl, Box } from '@mui/material';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useContext } from 'react';
-import { AuthContext } from '../../../contexts/AuthContext';
+import AuthContext from '../../../contexts/AuthContext';
 import '../../../styles/attendanceTab.css';
 
 // Chart.js 컴포넌트 등록
