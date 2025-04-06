@@ -29,7 +29,14 @@ function OAuthCallback() {
       const isNewUser = searchParams.get('isNewUser') === 'true'
       console.log(`[OAuth] 사용자 상태: ${isNewUser ? '신규 사용자' : '기존 사용자'}`)
       
-      // auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
+      // 중요: isNewUser 체크를 isAuthCallback 체크보다 먼저 수행
+      if (isNewUser) {
+        console.log('[OAuth] 신규 사용자 감지, /auth/add로 리다이렉트')
+        navigate('/auth/add', { replace: true })
+        return
+      }
+      
+      // isNewUser 체크 후 auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
       if (isAuthCallback) {
         console.log('[OAuth] /auth/callback URL 감지됨, studies로 즉시 리다이렉트')
         navigate('/studies', { replace: true })

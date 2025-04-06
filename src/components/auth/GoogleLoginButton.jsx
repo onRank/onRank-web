@@ -21,7 +21,7 @@ function GoogleLoginButton() {
 
     // 프로덕션 환경에서는 백엔드 서버로 직접 리다이렉트
     console.log('[Auth Debug] 백엔드 서버로 직접 리다이렉트 (혼합 콘텐츠 문제 해결)')
-    window.location.href = 'https://onrank.kr/oauth2/authorization/google'
+    window.location.href = 'https://onrank.kr/oauth2/authorization/google?prompt=select_account'
   }
 
   return (
