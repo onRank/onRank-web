@@ -454,7 +454,7 @@ function AppContent() {
             }
           />
           <Route
-            path="/user/form"
+            path="/auth/add"
             element={
               <ProtectedRoute>
                 <UserInfoForm />
