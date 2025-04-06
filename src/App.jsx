@@ -419,6 +419,15 @@ function AppContent() {
       <ThemeWrapper>
         <MemoizedHeader />
         <Routes>
+          {/* 루트 경로 추가 */}
+          <Route
+            path="/"
+            element={
+              <PublicRoute>
+                <LoginPage />
+              </PublicRoute>
+            }
+          />
           {/* 로그인 및 콜백 라우트 */}
           <Route
             path="/login"
