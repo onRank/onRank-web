@@ -66,8 +66,21 @@ function OAuthCallback() {
       // isNewUser 체크 후 auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
       if (isAuthCallback && !isNewUser) {
         console.log('[OAuth DEBUG] /auth/callback URL 감지됨 (기존 사용자), studies로 즉시 리다이렉트')
-        navigate('/studies', { replace: true })
-        return
+        
+        // 기존 사용자인 경우에도 토큰 유무에 따라 처리
+        const currentToken = localStorage.getItem('accessToken');
+        if (currentToken) {
+          console.log('[OAuth DEBUG] 기존 토큰 발견, 추가 처리 없이 studies로 이동');
+          
+          // 페이지 이동 전 잠시 지연
+          await new Promise(resolve => setTimeout(resolve, 300));
+          navigate('/studies', { replace: true });
+          return;
+        }
+        
+        // 토큰이 없는 경우 tokenUtils.setToken 호출 없이는 저장 안 되므로
+        // reissue 요청을 계속 진행하는 것이 좋음
+        console.log('[OAuth DEBUG] 토큰 없음, reissue 요청 진행');
       }
       
       // localStorage에서 state 값 확인 (추적용)
@@ -207,12 +220,29 @@ function OAuthCallback() {
             const finalToken = localStorage.getItem('accessToken');
             console.log('[OAuth DEBUG] 최종 토큰 상태:', !!finalToken);
             
+            // 토큰 저장이 완전히 마무리되도록 약간의 지연 추가 (300ms)
+            console.log('[OAuth DEBUG] 페이지 이동 전 잠시 대기 (토큰 저장 보장)');
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // 토큰이 실제로 저장되었는지 최종 확인
+            const verifiedToken = localStorage.getItem('accessToken');
+            console.log('[OAuth DEBUG] 이동 직전 토큰 존재 여부:', !!verifiedToken);
+            
             navigate('/auth/add', { replace: true });
             return;
           }
 
           // 신규 사용자가 아니라고 판단되면 스터디 페이지로 이동
           console.log('[OAuth DEBUG] 최종 판단: 기존 사용자. /studies로 이동');
+          
+          // 토큰 저장이 완전히 마무리되도록 약간의 지연 추가 (300ms)
+          console.log('[OAuth DEBUG] 페이지 이동 전 잠시 대기 (토큰 저장 보장)');
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          // 토큰이 실제로 저장되었는지 최종 확인
+          const verifiedToken = localStorage.getItem('accessToken');
+          console.log('[OAuth DEBUG] 이동 직전 토큰 존재 여부:', !!verifiedToken);
+          
           navigate('/studies', { replace: true });
           return;
         } catch (error) {
@@ -231,6 +261,8 @@ function OAuthCallback() {
                               
           if (isErrorNewUser) {
             console.log('[OAuth DEBUG] 오류 발생했지만 신규 사용자로 판단됨, /auth/add로 이동');
+            // 지연 추가
+            await new Promise(resolve => setTimeout(resolve, 300));
             navigate('/auth/add', { replace: true });
             return;
           }
@@ -249,8 +281,10 @@ function OAuthCallback() {
           }
           // 토큰 제거는 필요할 때만 수행
           if (!isNewUser) {
-            tokenUtils.removeToken()
+            tokenUtils.removeToken(true);
           }
+          // 지연 추가
+          await new Promise(resolve => setTimeout(resolve, 300));
           navigate('/')
         }
       } catch (error) {
@@ -259,12 +293,16 @@ function OAuthCallback() {
         // 여기서도 isNewUser 확인하여 처리
         if (isNewUser) {
           console.log('[OAuth DEBUG] 일반 오류 발생했지만 신규 사용자이므로 /auth/add로 이동')
+          // 지연 추가
+          await new Promise(resolve => setTimeout(resolve, 300));
           navigate('/auth/add')
           return
         }
         
         // 일반 오류 처리
-        tokenUtils.removeToken()
+        tokenUtils.removeToken(true);
+        // 지연 추가
+        await new Promise(resolve => setTimeout(resolve, 300));
         navigate('/')
       }
     }
