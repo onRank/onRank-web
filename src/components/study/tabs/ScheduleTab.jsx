@@ -26,9 +26,14 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   const formatTime = (isoDateString) => {
     if (!isoDateString) return '';
     const date = new Date(isoDateString);
-    const hours = String(date.getHours()).padStart(2, '0');
+    const hours = date.getHours();
     const minutes = String(date.getMinutes()).padStart(2, '0');
-    return `${hours}:${minutes}`;
+    
+    // AM/PM 포맷 적용
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12; // 12시간제로 변환 (0 → 12)
+    
+    return `${String(displayHours).padStart(2, '0')}:${minutes} ${ampm}`;
   };
 
   // ISO 날짜와 시간 형식으로 포맷하는 함수
@@ -320,7 +325,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                     fontSize: '14px',
                     color: colors.textSecondary
                   }}>
-                    {formatDateTime(schedule.scheduleStartingAt)}
+                    {schedule.formattedDateTime || formatDateTime(schedule.scheduleStartingAt)}
                   </div>
                   
                   <p style={{

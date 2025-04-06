@@ -1349,10 +1349,21 @@ export const studyService = {
   // 출석 목록 조회
   getAttendances: async (studyId) => {
     try {
+      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
       const response = await api.get(`/studies/${studyId}/attendances`);
+      
+      // 응답 구조 로깅
+      console.log('[StudyService] 출석 목록 응답 구조:', {
+        hasData: !!response.data,
+        dataType: typeof response.data,
+        isArray: Array.isArray(response.data),
+        dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
+        hasMemberContext: !!(response.data && response.data.memberContext)
+      });
+      
       return response.data;
     } catch (error) {
-      console.error("[API] 출석 목록 조회 실패:", error);
+      console.error("[StudyService] 출석 목록 조회 실패:", error);
       throw error;
     }
   },
@@ -1587,22 +1598,30 @@ export const studyService = {
         withCredentials: true,
       });
 
-      // scheduleId가 응답에 포함되어 있는지 확인하고 로깅
-      if (
-        response.data &&
-        response.data.length > 0 &&
-        response.data[0].scheduleId
-      ) {
-        console.log(
-          "[StudyService] 응답에서 scheduleId 확인:",
-          response.data[0].scheduleId
-        );
-      }
+      // 응답 데이터 유형 로깅
+      const responseData = response.data;
+      console.log('[StudyService] 출석 상세 응답 구조:', {
+        dataType: typeof responseData,
+        isArray: Array.isArray(responseData),
+        hasData: !!(responseData && responseData.data),
+        dataArrayLength: Array.isArray(responseData) ? responseData.length : 
+                        (responseData && Array.isArray(responseData.data)) ? responseData.data.length : 'N/A',
+        scheduleTitle: Array.isArray(responseData) && responseData.length > 0 ? 
+                      responseData[0].scheduleTitle || responseData[0].scheduleName || 'N/A' :
+                      responseData ? responseData.scheduleTitle || responseData.title || 'N/A' : 'N/A'
+      });
 
-      console.log("[StudyService] 출석 상세 조회 성공:", response.data);
-      return response.data;
+      return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 상세 조회 실패:", error);
+      // 오류 응답에서 상세 정보 추출
+      if (error.response) {
+        console.error("[StudyService] 서버 응답 오류:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      }
       throw error;
     }
   },
@@ -1611,17 +1630,34 @@ export const studyService = {
   updateAttendance: async (studyId, attendanceId, newStatus) => {
     try {
       console.log(
-        `[StudyService] 출석 상태 업데이트 요청: ${studyId}, ${attendanceId}, ${newStatus}`
+        `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
+
+      // PATCH 요청 형식으로 변경, 요청 본문 구조 수정
       const response = await api.patch(
         `/studies/${studyId}/attendances/${attendanceId}`,
-        { attendanceStatus: newStatus },
-        { withCredentials: true }
+        { 
+          attendanceStatus: newStatus 
+        },
+        {
+          withCredentials: true,
+        }
       );
+
       console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
       return response.data;
     } catch (error) {
       console.error("[StudyService] 출석 상태 업데이트 실패:", error);
+      
+      // 오류 상세 정보 로깅
+      if (error.response) {
+        console.error("[StudyService] 서버 응답 오류:", {
+          status: error.response.status,
+          statusText: error.response.statusText,
+          data: error.response.data
+        });
+      }
+      
       throw error;
     }
   },

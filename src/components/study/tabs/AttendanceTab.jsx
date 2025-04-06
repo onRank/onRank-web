@@ -8,6 +8,11 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Select, MenuItem, FormControl, Box } from '@mui/material';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useContext } from 'react';
+import { AuthContext } from '../../../contexts/AuthContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
+import '../../../styles/attendanceTab.css';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -29,176 +34,193 @@ const CHART_COLORS = {
 };
 
 // 출석 상세 컴포넌트
-const AttendanceDetailView = ({ onBack }) => {
-  const { colors } = useTheme();
-  const { studyId, attendanceId } = useParams();
-  const navigate = useNavigate();
-  const [attendances, setAttendances] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+const AttendanceDetailView = ({ id, scheduleId, studyId, onClose }) => {
+  const [attendanceDetails, setAttendanceDetails] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [scheduleInfo, setScheduleInfo] = useState({
+    title: '',
+    startingAt: '',
+    id: scheduleId
+  });
   const [error, setError] = useState(null);
-  const [userRole, setUserRole] = useState('MEMBER');
+  const { role } = useContext(AuthContext);
+  const isHost = role === 'CREATOR' || role === 'HOST';
 
-  useEffect(() => {
-    const fetchAttendanceDetails = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        console.log(`[AttendanceDetailView] 출석 상세 정보 조회 요청: ${attendanceId}`);
-        const data = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
-        
-        // scheduleId가 응답에 포함되어 있는지 확인하고 로깅
-        if (data.length > 0 && data[0].scheduleId) {
-          console.log(`[AttendanceDetailView] scheduleId 확인: ${data[0].scheduleId}`);
-        }
-        
-        setAttendances(data);
-        if (data.length > 0 && data[0].memberRole) {
-          setUserRole(data[0].memberRole);
-        }
-      } catch (error) {
-        console.error('[AttendanceDetailView] 출석 상세 정보 조회 실패:', error);
-        setError('출석 상세 정보를 불러오는데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAttendanceDetails();
-  }, [studyId, attendanceId]);
-
-  const handleStatusChange = async (attendanceId, newStatus) => {
+  const fetchAttendanceDetails = async () => {
     try {
-      await studyService.updateAttendance(studyId, attendanceId, newStatus);
-      // 상태 업데이트 후 데이터 다시 조회
-      const updatedData = await studyService.getHostAttendancesByAttendance(studyId, attendanceId);
-      setAttendances(updatedData);
+      setLoading(true);
+      console.log(`[AttendanceDetailView] 출석 상세 조회 요청: studyId=${studyId}, id=${id}`);
+      
+      let response;
+      // 호스트/관리자일 경우 호스트용 API 사용
+      if (isHost) {
+        response = await studyService.getHostAttendancesByAttendance(studyId, id);
+      } else {
+        response = await studyService.getAttendanceById(studyId, id);
+      }
+      
+      console.log('[AttendanceDetailView] API 응답:', response);
+      
+      // 응답 데이터 처리
+      if (response) {
+        // 스케줄 정보 추출
+        if (!Array.isArray(response)) {
+          // 객체 형태 응답 처리 (호스트 API 응답)
+          setScheduleInfo({
+            title: response.scheduleTitle || response.title || '무제',
+            startingAt: response.scheduleStartingAt || response.startingAt || '',
+            id: response.scheduleId || scheduleId
+          });
+          
+          // 출석 데이터 배열 추출
+          const attendanceData = response.data || [];
+          console.log('[AttendanceDetailView] 추출된 출석 데이터:', attendanceData);
+          setAttendanceDetails(attendanceData);
+        } else {
+          // 배열 형태 응답 처리 (일반 참가자 API 응답)
+          // 참고: 배열의 모든 항목이 같은 일정에 속한다고 가정
+          if (response.length > 0) {
+            const firstItem = response[0];
+            setScheduleInfo({
+              title: firstItem.scheduleTitle || firstItem.title || '무제',
+              startingAt: firstItem.scheduleStartingAt || firstItem.startingAt || '',
+              id: firstItem.scheduleId || scheduleId
+            });
+          }
+          setAttendanceDetails(response);
+        }
+      } else {
+        console.error('[AttendanceDetailView] 응답 데이터가 없습니다.');
+        setError('데이터를 불러올 수 없습니다.');
+        setAttendanceDetails([]);
+      }
     } catch (error) {
-      console.error('[AttendanceDetailView] 출석 상태 변경 실패:', error);
-      alert('출석 상태 변경에 실패했습니다.');
+      console.error('[AttendanceDetailView] 출석 상세 조회 실패:', error);
+      setError('출석 정보를 불러오는 중 오류가 발생했습니다.');
+      setAttendanceDetails([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div style={{ color: `var(--error)` }}>{error}</div>;
+  const handleUpdateStatus = async (attendanceId, newStatus) => {
+    try {
+      console.log(`[AttendanceDetailView] 상태 변경: ${attendanceId}, ${newStatus}`);
+      await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      await fetchAttendanceDetails();
+    } catch (error) {
+      console.error('[AttendanceDetailView] 상태 변경 실패:', error);
+      alert('상태 변경에 실패했습니다.');
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendanceDetails();
+  }, [id, studyId]);
+
+  if (loading) {
+    return <div>로딩 중...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="attendance-error">
+        <div className="error-message">{error}</div>
+        <button onClick={onClose} className="btn-close">닫기</button>
+      </div>
+    );
+  }
+
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return '날짜 없음';
+    const date = new Date(dateTimeStr);
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    const hours = date.getHours();
+    const formattedHours = hours % 12 || 12; // 12시간제로 변환
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    return `${year}.${month}.${day} ${String(formattedHours).padStart(2, '0')}:${minutes} ${ampm}`;
+  };
 
   return (
-    <div style={{ width: '100%' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <h2 style={{ color: `var(--textPrimary)` }}>출석 현황</h2>
-        <button
-          onClick={() => navigate(`/studies/${studyId}/attendances`, { replace: true })}
-          style={{
-            padding: '0.5rem 1rem',
-            border: `1px solid var(--border)`,
-            borderRadius: '4px',
-            backgroundColor: `var(--cardBackground)`,
-            color: `var(--textPrimary)`,
-            cursor: 'pointer'
-          }}
-        >
-          목록으로
+    <div className="attendance-detail-view">
+      <div className="attendance-detail-header">
+        <h3>
+          출석 상세 정보: {scheduleInfo.title || '무제'} 
+          {scheduleInfo.startingAt && (
+            <span className="schedule-date"> ({formatDateTime(scheduleInfo.startingAt)})</span>
+          )}
+        </h3>
+        <button onClick={onClose} className="btn-close">
+          <FontAwesomeIcon icon={faXmark} />
         </button>
       </div>
 
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr',
-        gap: '1rem'
-      }}>
-        {attendances.map((attendance) => (
-          <div
-            key={attendance.attendanceId}
-            style={{
-              padding: '1rem',
-              backgroundColor: `var(--cardBackground)`,
-              border: `1px solid var(--border)`,
-              borderRadius: '8px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: `var(--textPrimary)` }}>
-                {attendance.studentName}
+      {attendanceDetails.length === 0 ? (
+        <div className="no-attendance">출석 정보가 없습니다.</div>
+      ) : (
+        <div className="attendance-list">
+          {attendanceDetails.map((attendance) => (
+            <div key={attendance.attendanceId} className="attendance-item">
+              <div className="attendee-info">
+                <span className="attendee-name">
+                  {attendance.studentName || attendance.memberName || '이름 없음'}
+                  {attendance.isMe && <span className="is-me"> (나)</span>}
+                  {attendance.role && (
+                    <span className={`role ${attendance.role.toLowerCase()}`}>
+                      {attendance.role === 'CREATOR' ? '개설자' : 
+                       attendance.role === 'HOST' ? '관리자' : ''}
+                    </span>
+                  )}
+                </span>
               </div>
-              <div style={{ fontSize: '14px', color: `var(--textSecondary)` }}>
-                {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              {userRole === 'HOST' ? (
-                <FormControl size="small">
-                  <Select
-                    value={attendance.attendanceStatus || 'UNKNOWN'}
-                    onChange={(e) => handleStatusChange(attendance.attendanceId, e.target.value)}
-                    sx={{ 
-                      minWidth: 100,
-                      height: 32,
-                      fontSize: '14px',
-                      '.MuiOutlinedInput-notchedOutline': { 
-                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color 
-                      },
-                      '&:hover .MuiOutlinedInput-notchedOutline': { 
-                        borderColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color 
-                      },
-                      color: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color,
-                      fontWeight: 'bold'
-                    }}
-                  >
-                    {Object.entries(STATUS_STYLES).map(([status, style]) => (
-                      <MenuItem key={status} value={status}>
-                        <Box sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center', 
-                          color: style.color,
-                          fontWeight: 'bold' 
-                        }}>
-                          <span style={{ marginRight: '8px' }}>{style.text}</span>
-                          {style.label}
-                        </Box>
-                      </MenuItem>
+              <div className="attendance-status">
+                {isHost ? (
+                  // 호스트인 경우 상태 변경 버튼 표시
+                  <div className="status-buttons">
+                    {['PRESENT', 'LATE', 'ABSENT', 'UNKNOWN'].map((status) => (
+                      <button
+                        key={status}
+                        className={`status-btn ${status.toLowerCase()} ${
+                          attendance.status === status ? 'active' : ''
+                        }`}
+                        onClick={() => 
+                          handleUpdateStatus(attendance.attendanceId, status)
+                        }
+                      >
+                        {getStatusText(status)}
+                      </button>
                     ))}
-                  </Select>
-                </FormControl>
-              ) : (
-                <div style={{ 
-                  width: '32px', 
-                  height: '32px',
-                  borderRadius: '50%',
-                  backgroundColor: STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].color,
-                  color: '#FFFFFF',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '16px',
-                  fontWeight: 'bold'
-                }}>
-                  {STATUS_STYLES[attendance.attendanceStatus || 'UNKNOWN'].text}
-                </div>
-              )}
+                  </div>
+                ) : (
+                  // 일반 참가자인 경우 상태만 표시
+                  <span
+                    className={`status ${
+                      attendance.status ? attendance.status.toLowerCase() : 'unknown'
+                    }`}
+                  >
+                    {getStatusText(attendance.status || 'UNKNOWN')}
+                  </span>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
 
 AttendanceDetailView.propTypes = {
-  onBack: PropTypes.func.isRequired
+  id: PropTypes.string.isRequired,
+  scheduleId: PropTypes.string.isRequired,
+  studyId: PropTypes.string.isRequired,
+  onClose: PropTypes.func.isRequired
 };
 
 // 출석률 그래프 컴포넌트
@@ -329,155 +351,159 @@ function AttendanceTab() {
   const { studyId } = useParams();
   const navigate = useNavigate();
   const [attendances, setAttendances] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
-  const [userRole, setUserRole] = useState('MEMBER');
+  const [openDetailId, setOpenDetailId] = useState(null);
+  const [error, setError] = useState(null);
+  const { role, userId } = useContext(AuthContext);
+  const isHost = role === 'CREATOR' || role === 'HOST';
+
+  const fetchAttendances = async () => {
+    try {
+      setLoading(true);
+      const response = await studyService.getAttendances(studyId);
+      console.log('[AttendanceTab] 출석 목록 응답:', response);
+      
+      let formattedAttendances = [];
+      
+      // 응답이 배열인 경우 (일반 참가자)
+      if (Array.isArray(response)) {
+        formattedAttendances = response.map((attendance) => ({
+          id: attendance.attendanceId,
+          scheduleId: attendance.scheduleId,
+          title: attendance.scheduleTitle || attendance.title || '무제',
+          date: attendance.scheduleStartingAt ? 
+                formatDateTime(attendance.scheduleStartingAt) : '날짜 없음',
+          status: attendance.status || 'UNKNOWN',
+          myStatus: attendance.myStatus || 'UNKNOWN'
+        }));
+      } 
+      // 응답이 객체인 경우 (memberContext와 data 분리)
+      else if (response && response.data) {
+        // 회원 컨텍스트 정보 추출
+        const memberContext = response.memberContext || {};
+        console.log('[AttendanceTab] 회원 컨텍스트:', memberContext);
+        
+        // 데이터 배열 처리
+        if (Array.isArray(response.data)) {
+          formattedAttendances = response.data.map((attendance) => ({
+            id: attendance.attendanceId,
+            scheduleId: attendance.scheduleId,
+            title: attendance.scheduleTitle || attendance.title || '무제',
+            date: attendance.scheduleStartingAt ? 
+                  formatDateTime(attendance.scheduleStartingAt) : '날짜 없음',
+            status: attendance.status || 'UNKNOWN',
+            myStatus: attendance.myStatus || memberContext.status || 'UNKNOWN',
+            // 회원 정보 추가
+            myRole: memberContext.role || role
+          }));
+        }
+      }
+      
+      console.log('[AttendanceTab] 처리된 출석 목록:', formattedAttendances);
+      setAttendances(formattedAttendances);
+      setError(null);
+    } catch (error) {
+      console.error('[AttendanceTab] 출석 목록 조회 실패:', error);
+      setError('출석 정보를 불러오는 중 오류가 발생했습니다.');
+      setAttendances([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAttendanceClick = (attendance) => {
+    console.log('[AttendanceTab] 출석 클릭:', attendance);
+    setSelectedAttendance(attendance);
+    setOpenDetailId(attendance.id);
+  };
+
+  const handleCloseDetail = () => {
+    setOpenDetailId(null);
+    setSelectedAttendance(null);
+  };
 
   useEffect(() => {
-    const fetchAttendances = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        console.log('[AttendanceTab] 출석 목록 조회 요청');
-        const response = await studyService.getAttendances(studyId);
-        
-        // 응답 데이터 구조 로깅
-        console.log('[AttendanceTab] 출석 목록 응답:', response);
-        
-        // 사용자 역할 설정
-        if (response.memberContext && response.memberContext.memberRole) {
-          setUserRole(response.memberContext.memberRole);
-          console.log('[AttendanceTab] 사용자 역할:', response.memberContext.memberRole);
-        }
-        
-        // 출석 데이터 설정
-        const attendancesData = Array.isArray(response.data) ? response.data : [];
-        console.log('[AttendanceTab] 출석 데이터 수:', attendancesData.length);
-        setAttendances(attendancesData);
-      } catch (error) {
-        console.error('[AttendanceTab] 출석 목록 조회 실패:', error);
-        setError('출석 목록을 불러오는데 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
     fetchAttendances();
   }, [studyId]);
 
-  const handleAttendanceClick = (attendance) => {
-    console.log('[AttendanceTab] 출석 항목 클릭:', attendance);
-    navigate(`/studies/${studyId}/attendances/${attendance.attendanceId}`);
+  // 날짜 포맷팅 함수
+  const formatDateTime = (dateTimeStr) => {
+    if (!dateTimeStr) return '날짜 없음';
+    const date = new Date(dateTimeStr);
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    
+    const hours = date.getHours();
+    const formattedHours = hours % 12 || 12; // 12시간제로 변환
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    return `${year}.${month}.${day} ${String(formattedHours).padStart(2, '0')}:${minutes} ${ampm}`;
   };
 
-  const handleCreateAttendance = () => {
-    console.log('[AttendanceTab] 출석 생성 버튼 클릭');
-    navigate(`/studies/${studyId}/schedules`);
+  // 출석 상태 텍스트 변환 함수
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'PRESENT':
+        return '출석';
+      case 'LATE':
+        return '지각';
+      case 'ABSENT':
+        return '결석';
+      case 'UNKNOWN':
+      default:
+        return '미정';
+    }
   };
-
-  if (isLoading) return <div>로딩 중...</div>;
-  if (error) return <div style={{ color: `var(--error)` }}>{error}</div>;
 
   return (
-    <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
-        <h2 style={{ color: `var(--textPrimary)` }}>출석 현황</h2>
-        {userRole === 'HOST' && (
-          <button
-            onClick={handleCreateAttendance}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: `var(--primary)`,
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            출석 등록
-          </button>
-        )}
-      </div>
-
-      {attendances.length === 0 ? (
-        <div style={{
-          padding: '2rem',
-          textAlign: 'center',
-          backgroundColor: `var(--cardBackground)`,
-          border: `1px solid var(--border)`,
-          borderRadius: '8px',
-          color: `var(--textPrimary)`
-        }}>
-          등록된 출석이 없습니다. 출석을 등록해주세요.
-        </div>
-      ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: '1rem'
-        }}>
-          <div
-            style={{
-              padding: '1rem',
-              backgroundColor: `var(--cardBackground)`,
-              border: `1px solid var(--border)`,
-              borderRadius: '8px',
-              marginBottom: '1rem'
-            }}
-          >
-            <AttendanceChart attendances={attendances} />
-          </div>
-
+    <div className="attendance-tab">
+      <h2>출석</h2>
+      
+      {loading && <div className="loading">로딩 중...</div>}
+      
+      {error && <div className="error-message">{error}</div>}
+      
+      {!loading && !error && attendances.length === 0 && (
+        <div className="no-attendance">출석 정보가 없습니다.</div>
+      )}
+      
+      {!loading && !error && attendances.length > 0 && (
+        <div className="attendance-list">
           {attendances.map((attendance) => (
             <div
-              key={attendance.scheduleId || attendance.attendanceId}
+              key={attendance.id}
+              className="attendance-item"
               onClick={() => handleAttendanceClick(attendance)}
-              style={{
-                padding: '1rem',
-                backgroundColor: `var(--cardBackground)`,
-                border: `1px solid var(--border)`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
             >
-              <div>
-                <div style={{
-                  fontWeight: 'bold',
-                  fontSize: '16px',
-                  marginBottom: '0.5rem',
-                  color: `var(--textPrimary)`
-                }}>
-                  {attendance.scheduleName || '무제'}
-                </div>
-                <div style={{
-                  fontSize: '14px',
-                  color: `var(--textSecondary)`
-                }}>
-                  {new Date(attendance.scheduleStartingAt).toLocaleString('ko-KR', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </div>
+              <div className="attendance-info">
+                <div className="attendance-title">{attendance.title || '무제'}</div>
+                <div className="attendance-date">{attendance.date}</div>
               </div>
-              <div>
-                <FaPencilAlt size={16} color={`var(--primary)`} />
+              <div className="attendance-status">
+                {isHost ? (
+                  <button className="view-detail-btn">자세히 보기</button>
+                ) : (
+                  <span className={`status ${attendance.myStatus.toLowerCase()}`}>
+                    {getStatusText(attendance.myStatus)}
+                  </span>
+                )}
               </div>
             </div>
           ))}
         </div>
+      )}
+
+      {openDetailId && selectedAttendance && (
+        <AttendanceDetailView
+          id={openDetailId}
+          scheduleId={selectedAttendance.scheduleId}
+          studyId={studyId}
+          onClose={handleCloseDetail}
+        />
       )}
     </div>
   );

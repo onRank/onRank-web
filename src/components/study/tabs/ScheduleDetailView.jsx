@@ -214,7 +214,7 @@ const ScheduleDetailView = ({
               fontSize: '14px',
               marginRight: '0.5rem'
             }}>
-              ({scheduleDate || '날짜 선택'} {scheduleTime})
+              ({scheduleDate || '날짜 선택'} {scheduleTime ? `${scheduleTime.split(':')[0]}:${scheduleTime.split(':')[1]} ${parseInt(scheduleTime.split(':')[0]) >= 12 ? 'PM' : 'AM'}` : ''})
             </div>
           </div>
           

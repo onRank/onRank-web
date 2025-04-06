@@ -32,6 +32,28 @@ function StudyContent({ activeTab, studyData }) {
     return `${year}.${month}.${day}`;
   };
 
+  // ISO 날짜 문자열에서 시간(HH:mm AM/PM) 추출하는 함수
+  const formatTime = (isoDateString) => {
+    if (!isoDateString) return '';
+    const date = new Date(isoDateString);
+    const hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    // AM/PM 포맷 적용
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12; // 12시간제로 변환 (0 → 12)
+    
+    return `${String(displayHours).padStart(2, '0')}:${minutes} ${ampm}`;
+  };
+
+  // ISO 날짜와 시간 형식으로 포맷하는 함수
+  const formatDateTime = (isoDateString) => {
+    if (!isoDateString) return '';
+    const dateStr = formatDate(isoDateString);
+    const timeStr = formatTime(isoDateString);
+    return `${dateStr} ${timeStr}`;
+  };
+
   // 일정 목록 조회
   useEffect(() => {
     if (activeTab === "일정") {
@@ -55,7 +77,8 @@ function StudyContent({ activeTab, studyData }) {
           // 응답 데이터 변환 (날짜 형식 변환)
           const formattedData = scheduleList.map(schedule => ({
             ...schedule,
-            formattedDate: formatDate(schedule.scheduleStartingAt)
+            formattedDate: formatDate(schedule.scheduleStartingAt),
+            formattedDateTime: formatDateTime(schedule.scheduleStartingAt)
           }));
           
           setSchedules(formattedData);
@@ -113,8 +136,9 @@ function StudyContent({ activeTab, studyData }) {
         scheduleId: result.scheduleId || Date.now(), // Location 헤더에서 추출한 ID 또는 임시 ID
         scheduleTitle: newSchedule.title,
         scheduleContent: newSchedule.description,
-        scheduleStartingAt: `${newSchedule.date}T00:00:00`.replace(/\./g, "-"),
+        scheduleStartingAt: `${newSchedule.date}T${newSchedule.time || '00:00:00'}`.replace(/\./g, "-"),
         formattedDate: newSchedule.date,
+        formattedDateTime: `${newSchedule.date} ${formatTime(`${newSchedule.date}T${newSchedule.time || '00:00:00'}`)}`,
         // 추가 정보
         studyName: result.studyName,
         memberRole: result.memberRole
@@ -184,6 +208,9 @@ function StudyContent({ activeTab, studyData }) {
                   ? updatedSchedule.date.replace(/\./g, "-") 
                   : `${updatedSchedule.date.replace(/\./g, "-")}T${updatedSchedule.time || '00:00:00'}`,
                 formattedDate: formatDate(updatedSchedule.date.includes('T') 
+                  ? updatedSchedule.date 
+                  : `${updatedSchedule.date}T${updatedSchedule.time || '00:00:00'}`),
+                formattedDateTime: formatDateTime(updatedSchedule.date.includes('T') 
                   ? updatedSchedule.date 
                   : `${updatedSchedule.date}T${updatedSchedule.time || '00:00:00'}`),
                 // 멤버 컨텍스트 정보 업데이트
