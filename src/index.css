@@ -481,3 +481,29 @@ div[style*="background-color: #FFEBEE"] {
 input::-webkit-calendar-picker-indicator {
   filter: invert(var(--dark-mode));
 }
+
+/* 페이지 상단 검은 바 제거 */
+body::before,
+html::before {
+  display: none !important;
+  content: none !important;
+}
+
+body, html {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* body와 html 요소에 추가적인 배경색 확인 */
+body, html {
+  background-color: var(--background) !important;
+}
+
+/* 모든 상위 요소에서 border와 배경 재설정 */
+#root, body, html, head {
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
