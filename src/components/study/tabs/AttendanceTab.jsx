@@ -4,14 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { FaPencilAlt } from "react-icons/fa";
+import { IoCloseOutline } from "react-icons/io5";
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Select, MenuItem, FormControl, Box } from '@mui/material';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { useContext } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/attendanceTab.css';
 
 // Chart.js 컴포넌트 등록
@@ -157,7 +156,7 @@ const AttendanceDetailView = ({ id, scheduleId, studyId, onClose }) => {
           )}
         </h3>
         <button onClick={onClose} className="btn-close">
-          <FontAwesomeIcon icon={faXmark} />
+          <IoCloseOutline size={24} />
         </button>
       </div>
 
