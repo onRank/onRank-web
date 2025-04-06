@@ -150,7 +150,7 @@ const AttendanceChart = ({ attendances }) => {
       <h2>출석</h2>
       <div className="attendance-chart-container">
         <div className="chart-wrapper">
-          <Doughnut data={chartData} options={chartOptions} />
+        <Doughnut data={chartData} options={chartOptions} />
           <div className="chart-center">
             <div className="percentage">{presentRate}%</div>
           </div>
@@ -166,6 +166,10 @@ AttendanceChart.propTypes = {
 
 // 출석 상세 정보 테이블 컴포넌트
 const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatus }) => {
+  // 디버깅 출력 추가
+  console.log('AttendanceDetail - attendances:', attendances);
+  console.log('AttendanceDetail - isHost:', isHost);
+  
   return (
     <div className="attendance-detail">
       <h2>출석 현황</h2>
@@ -174,52 +178,70 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
           <div className="header-cell">이름</div>
           <div className="header-cell">상태</div>
         </div>
-        {attendances.map((attendance, index) => (
-          <div key={attendance.id || `attendance-${index}`} className="table-row">
-            <div className="name-cell">
-              {attendance.studentName || attendance.memberName || '이름 없음'}
-              {attendance.isMe && <span className="is-me"> (나)</span>}
-              {attendance.role && (
-                <span className={`role ${attendance.role.toLowerCase()}`}>
-                  {attendance.role === 'CREATOR' ? '개설자' : 
-                   attendance.role === 'HOST' ? '관리자' : ''}
-                </span>
-              )}
+        {attendances.map((attendance, index) => {
+          // 출석 상태 변경 시 사용할 ID 값을 명확하게 설정
+          const attendanceId = attendance.attendanceId || attendance.id || `attendance-${index}`;
+          console.log(`AttendanceDetail - item ${index}:`, attendance, 'attendanceId:', attendanceId);
+          
+          return (
+            <div key={attendanceId} className="table-row">
+              <div className="name-cell">
+                {attendance.studentName || attendance.memberName || '이름 없음'}
+                {attendance.isMe && <span className="is-me"> (나)</span>}
+                {attendance.role && (
+                  <span className={`role ${attendance.role.toLowerCase()}`}>
+                    {attendance.role === 'CREATOR' ? '개설자' : 
+                     attendance.role === 'HOST' ? '관리자' : ''}
+                  </span>
+                )}
+              </div>
+              <div className="status-cell">
+                {isHost ? (
+                  <div className="status-buttons">
+                    <button 
+                      className={`status-btn present ${(attendance.status === 'PRESENT') ? 'active' : ''}`}
+                      onClick={() => {
+                        console.log('Updating status to PRESENT for:', attendanceId);
+                        onUpdateStatus(attendanceId, 'PRESENT');
+                      }}
+                    >
+                      O
+                    </button>
+                    <button 
+                      className={`status-btn absent ${(attendance.status === 'ABSENT') ? 'active' : ''}`}
+                      onClick={() => {
+                        console.log('Updating status to ABSENT for:', attendanceId);
+                        onUpdateStatus(attendanceId, 'ABSENT');
+                      }}
+                    >
+                      X
+                    </button>
+                    <button 
+                      className={`status-btn late ${(attendance.status === 'LATE') ? 'active' : ''}`}
+                      onClick={() => {
+                        console.log('Updating status to LATE for:', attendanceId);
+                        onUpdateStatus(attendanceId, 'LATE');
+                      }}
+                    >
+                      △
+                    </button>
+                    <button 
+                      className={`status-btn unknown ${(attendance.status === 'UNKNOWN') ? 'active' : ''}`}
+                      onClick={() => {
+                        console.log('Updating status to UNKNOWN for:', attendanceId);
+                        onUpdateStatus(attendanceId, 'UNKNOWN');
+                      }}
+                    >
+                      ?
+                    </button>
+                  </div>
+                ) : (
+                  getStatusIcon(attendance.status || attendance.attendanceStatus || 'UNKNOWN')
+                )}
+              </div>
             </div>
-            <div className="status-cell">
-              {isHost ? (
-                <div className="status-buttons">
-                  <button 
-                    className={`status-btn present ${(attendance.status === 'PRESENT') ? 'active' : ''}`}
-                    onClick={() => onUpdateStatus(attendance.attendanceId, 'PRESENT')}
-                  >
-                    O
-                  </button>
-                  <button 
-                    className={`status-btn absent ${(attendance.status === 'ABSENT') ? 'active' : ''}`}
-                    onClick={() => onUpdateStatus(attendance.attendanceId, 'ABSENT')}
-                  >
-                    X
-                  </button>
-                  <button 
-                    className={`status-btn late ${(attendance.status === 'LATE') ? 'active' : ''}`}
-                    onClick={() => onUpdateStatus(attendance.attendanceId, 'LATE')}
-                  >
-                    △
-                  </button>
-                  <button 
-                    className={`status-btn unknown ${(attendance.status === 'UNKNOWN') ? 'active' : ''}`}
-                    onClick={() => onUpdateStatus(attendance.attendanceId, 'UNKNOWN')}
-                  >
-                    ?
-                  </button>
-                </div>
-              ) : (
-                getStatusIcon(attendance.status || attendance.attendanceStatus || 'UNKNOWN')
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -283,16 +305,16 @@ function AttendanceTab() {
   const { role } = useContext(AuthContext);
   const isHost = role === 'CREATOR' || role === 'HOST';
 
-  const fetchAttendances = async () => {
-    try {
+    const fetchAttendances = async () => {
+      try {
       setLoading(true);
-      setError(null);
+        setError(null);
+        
+        console.log('[AttendanceTab] 출석 목록 조회 요청');
       
-      console.log('[AttendanceTab] 출석 목록 조회 요청');
-      
-      const response = await studyService.getAttendances(studyId);
-      console.log('[AttendanceTab] 출석 목록 응답:', response);
-      
+        const response = await studyService.getAttendances(studyId);
+        console.log('[AttendanceTab] 출석 목록 응답:', response);
+        
       // 응답 형식 처리 (핵심 수정 부분)
       let formattedAttendances = [];
       
@@ -324,16 +346,17 @@ function AttendanceTab() {
       console.log('[AttendanceTab] 처리된 출석 목록:', formattedAttendances);
       setAttendances(formattedAttendances);
       
-      // 첫 번째 항목을 기본 선택
+      // 첫 번째 항목을 기본 선택하지만 상세 뷰로 전환하지 않음
       if (formattedAttendances.length > 0 && !selectedScheduleId) {
         setSelectedScheduleId(formattedAttendances[0].id);
-        fetchAttendanceDetails(formattedAttendances[0].id);
+        // 자동으로 상세 뷰로 전환하지 않음 - 다음 줄 제거
+        // fetchAttendanceDetails(formattedAttendances[0].id);
       }
-    } catch (error) {
-      console.error('[AttendanceTab] 출석 목록 조회 실패:', error);
+      } catch (error) {
+        console.error('[AttendanceTab] 출석 목록 조회 실패:', error);
       setError('출석 정보를 불러오는 중 오류가 발생했습니다.');
       setAttendances([]);
-    } finally {
+      } finally {
       setLoading(false);
     }
   };
@@ -392,17 +415,28 @@ function AttendanceTab() {
       if (response) {
         if (Array.isArray(response)) {
           // 배열 형태인 경우
-          attendanceData = response;
+          attendanceData = response.map(item => ({
+            ...item,
+            attendanceId: item.attendanceId || item.id || attendanceId
+          }));
         } else {
           // 객체 형태인 경우
           if (response.data) {
-            attendanceData = Array.isArray(response.data) ? response.data : [response.data];
+            const dataArray = Array.isArray(response.data) ? response.data : [response.data];
+            attendanceData = dataArray.map(item => ({
+              ...item,
+              attendanceId: item.attendanceId || item.id || attendanceId
+            }));
           } else if (response.attendances) {
-            attendanceData = Array.isArray(response.attendances) ? response.attendances : [response.attendances];
+            const attendancesArray = Array.isArray(response.attendances) ? response.attendances : [response.attendances];
+            attendanceData = attendancesArray.map(item => ({
+              ...item,
+              attendanceId: item.attendanceId || item.id || attendanceId
+            }));
           } else {
             // 응답 자체를 단일 항목으로 취급
             attendanceData = [{
-              attendanceId: response.attendanceId || attendanceId,
+              attendanceId: response.attendanceId || response.id || attendanceId,
               status: response.status || 'UNKNOWN',
               studentName: response.memberName || response.studentName || '이름 없음'
             }];
@@ -426,13 +460,37 @@ function AttendanceTab() {
   // 출석 상태 업데이트
   const handleUpdateStatus = async (attendanceId, newStatus) => {
     try {
-      console.log(`[AttendanceTab] 상태 변경: ${attendanceId}, ${newStatus}`);
-      await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      console.log(`[AttendanceTab] 상태 변경 시도: attendanceId=${attendanceId}, newStatus=${newStatus}`);
+      
+      if (!attendanceId) {
+        console.error('[AttendanceTab] 출석 ID가 없어 상태를 변경할 수 없습니다.');
+        alert('출석 ID가 없어 상태를 변경할 수 없습니다.');
+        return;
+      }
+      
+      if (!studyId) {
+        console.error('[AttendanceTab] 스터디 ID가 없어 상태를 변경할 수 없습니다.');
+        alert('스터디 ID가 없어 상태를 변경할 수 없습니다.');
+        return;
+      }
+      
+      // 상태값 검증
+      if (!['PRESENT', 'ABSENT', 'LATE', 'UNKNOWN'].includes(newStatus)) {
+        console.error(`[AttendanceTab] 잘못된 상태값: ${newStatus}`);
+        alert('잘못된 상태값입니다.');
+        return;
+      }
+      
+      console.log(`[AttendanceTab] API 호출: studyService.updateAttendance(${studyId}, ${attendanceId}, ${newStatus})`);
+      const response = await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      console.log('[AttendanceTab] 상태 변경 응답:', response);
       
       // 상세 정보 다시 조회
+      console.log(`[AttendanceTab] 상태 변경 후 상세 정보 다시 조회: ${selectedScheduleId}`);
       fetchAttendanceDetails(selectedScheduleId);
       
       // 전체 목록도 새로고침
+      console.log('[AttendanceTab] 상태 변경 후 전체 목록 새로고침');
       fetchAttendances();
     } catch (error) {
       console.error('[AttendanceTab] 상태 변경 실패:', error);
@@ -442,6 +500,9 @@ function AttendanceTab() {
 
   // 일정 선택 핸들러
   const handleSelectSchedule = (scheduleId) => {
+    if (!scheduleId) return;
+    
+    console.log(`[AttendanceTab] 일정 선택: ${scheduleId}`);
     setSelectedScheduleId(scheduleId);
     fetchAttendanceDetails(scheduleId);
   };
@@ -454,6 +515,8 @@ function AttendanceTab() {
   // 컴포넌트 마운트 시 출석 목록 조회
   useEffect(() => {
     if (studyId) {
+      // 컴포넌트 마운트 시 view를 항상 overview로 설정
+      setView('overview');
       fetchAttendances();
     }
   }, [studyId]);
@@ -495,6 +558,8 @@ function AttendanceTab() {
               
               {detailLoading ? (
                 <div className="loading">상세 정보 로딩 중...</div>
+              ) : detailData.length === 0 ? (
+                <div className="no-attendance">출석 정보가 없습니다.</div>
               ) : (
                 <AttendanceDetail 
                   attendances={detailData} 
