@@ -77,23 +77,6 @@ function ManagementTab({ studyData }) {
         }}>
           스터디 관리
         </h2>
-        
-        {/* 현재 사용자 역할 표시 */}
-        {currentUserRole && (
-          <div style={{
-            display: 'inline-block',
-            padding: '0.25rem 0.75rem',
-            backgroundColor: currentUserRole === 'CREATOR' ? '#ffebee' : 
-                            currentUserRole === 'HOST' ? '#e3f2fd' : '#f1f8e9',
-            borderRadius: '4px',
-            color: currentUserRole === 'CREATOR' ? '#c62828' : 
-                  currentUserRole === 'HOST' ? '#1565c0' : '#33691e',
-            fontWeight: 'bold',
-            fontSize: '0.9rem'
-          }}>
-            {getMemberRoleDisplayName(currentUserRole)}
-          </div>
-        )}
       </div>
       
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
