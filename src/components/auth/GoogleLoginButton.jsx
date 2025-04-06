@@ -1,74 +1,45 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React from 'react'
 
+// 단순화된 Google 로그인 버튼 컴포넌트 - 2024-04-06 수정
 function GoogleLoginButton() {
-  const [showOptions, setShowOptions] = useState(false)
-  
   const handleLogin = (e) => {
     e.preventDefault()
     
-    // 디버깅을 위한 환경 변수 출력
-    console.log('[Auth Debug] 환경 변수:', {
-      VITE_API_URL: import.meta.env.VITE_API_URL,
-      VITE_FRONTEND_URL: import.meta.env.VITE_FRONTEND_URL,
-      VITE_MSW_ENABLED: import.meta.env.VITE_MSW_ENABLED,
-      mode: import.meta.env.MODE,
-      prod: import.meta.env.PROD
-    })
-    
-    // 개발 환경에서만 MSW 사용
+    // 개발 환경 체크 (이 부분은 그대로 유지)
     if (import.meta.env.MODE === 'development' && import.meta.env.VITE_MSW_ENABLED === 'true') {
       window.location.href = 'http://localhost:3000/auth/callback?code=mock_code'
       return
     }
 
-    // 기본 로그인 - prompt 파라미터만 사용
-    console.log('[Auth Debug] 기본 구글 로그인 (계정 선택 화면 표시 요청)')
-    window.location.href = 'https://onrank.kr/oauth2/authorization/google?prompt=select_account'
-  }
-
-  const handleDirectLogin = () => {
-    // 다이렉트 로그인 - 파라미터 없음
+    // 순수한 OAuth 엔드포인트 호출 (파라미터 없음)
+    console.log('[Auth] 구글 로그인 요청 - 최신 코드 확인용')
     window.location.href = 'https://onrank.kr/oauth2/authorization/google'
   }
 
-  const handleShowOptions = (e) => {
-    e.preventDefault()
-    setShowOptions(!showOptions)
-  }
-
-  const handleOpenGoogleLogout = () => {
-    // 구글 로그아웃 페이지를 새 창에서 열기
-    window.open('https://accounts.google.com/logout', '_blank')
-  }
-
   return (
-    <div className="login-button-container">
-      <button 
-        onClick={handleLogin}
-        className="google-login-button"
-      >
-        Google로 로그인하기
-      </button>
-      
-      <div className="login-options">
-        <button onClick={handleShowOptions} className="options-button">
-          {showOptions ? '옵션 닫기' : '로그인 옵션'}
-        </button>
-        
-        {showOptions && (
-          <div className="options-dropdown">
-            <p className="option-info">다른 계정으로 로그인하려면 먼저 Google에서 로그아웃하세요.</p>
-            <button onClick={handleOpenGoogleLogout} className="option-button">
-              Google 로그아웃 페이지 열기
-            </button>
-            <button onClick={handleDirectLogin} className="option-button">
-              기본 로그인 (계정 선택 화면 없음)
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
+    <button 
+      onClick={handleLogin}
+      className="google-login-button"
+      style={{
+        padding: '10px 20px',
+        backgroundColor: '#4285F4',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '10px'
+      }}
+    >
+      {/* 구글 아이콘 직접 SVG로 추가 */}
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24">
+        <path fill="#ffffff" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.35 5.3c1.26 1.26 2.07 2.99 2.18 4.9h-4.56v-2.32h.02c.81 0 1.46-.66 1.46-1.47s-.65-1.47-1.46-1.47c-.8 0-1.46.66-1.46 1.47v.32h-2.33V8.28l.89-.01C14.46 7.86 15.11 7 15.11 6c0-.81-.65-1.47-1.46-1.47c-.8 0-1.46.66-1.46 1.47c0 .18.03.34.09.5l-2.28 2.28l-2.28-2.28c.06-.15.09-.32.09-.5c0-.81-.65-1.47-1.46-1.47c-.8 0-1.45.66-1.45 1.47c0 1 .83 1.86 1.83 1.47l2.96.01v1.45h-.33c-.8 0-1.46.66-1.46 1.47s.65 1.47 1.46 1.47h2.33v-.32c0-.81.65-1.47 1.46-1.47c.8 0 1.45.66 1.45 1.47h4.56c-.12 1.91-.93 3.64-2.18 4.9c-1.26 1.26-3 2.1-4.9 2.18v-4.66h.02c.39 0 .7-.31.7-.7s-.31-.7-.7-.7h-4.66c.08-1.91.93-3.64 2.18-4.9c1.26-1.26 2.99-2.1 4.9-2.18v4.66h-.02c-.39 0-.7.31-.7.7s.31.7.7.7h4.66c-.08 1.91-.93 3.64-2.18 4.9z"/>
+      </svg>
+      Google로 로그인
+    </button>
   )
 }
 
