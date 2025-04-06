@@ -13,6 +13,8 @@ import { useContext } from 'react';
 import AuthContext from '../../../contexts/AuthContext';
 import AttendanceDetailView from './AttendanceDetailView';
 import '../../../styles/attendanceTab.css';
+import axios from 'axios';
+import { tokenUtils } from '../../../services/api';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -566,9 +568,34 @@ function AttendanceTab() {
         return;
       }
       
-      console.log(`[AttendanceTab] API 호출: studyService.updateAttendance(${studyId}, ${attendanceId}, ${newStatus})`);
-      const response = await studyService.updateAttendance(studyId, attendanceId, newStatus);
-      console.log('[AttendanceTab] 상태 변경 응답:', response);
+      // 토큰 가져오기 - tokenUtils 사용
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error('[AttendanceTab] 인증 토큰이 없습니다.');
+        alert('인증 정보가 없습니다. 다시 로그인해주세요.');
+        return;
+      }
+
+      // 직접 axios 사용하여 PUT 요청 - 서비스 레이어 우회
+      console.log(`[AttendanceTab] 직접 PUT 요청: /studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`);
+      
+      const response = await axios.put(
+        `https://onrank.kr/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
+        {}, // 빈 객체 (요청 본문 필요 없음)
+        {
+          withCredentials: true,
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        }
+      );
+      
+      console.log('[AttendanceTab] 상태 변경 응답:', response.data);
+      
+      // 성공 메시지 표시
+      alert('출석 상태가 성공적으로 변경되었습니다.');
       
       // 상세 정보 다시 조회
       console.log(`[AttendanceTab] 상태 변경 후 상세 정보 다시 조회: ${selectedScheduleId}`);
@@ -579,7 +606,23 @@ function AttendanceTab() {
       fetchAttendances();
     } catch (error) {
       console.error('[AttendanceTab] 상태 변경 실패:', error);
-      alert('상태 변경에 실패했습니다.');
+      
+      // 오류 세부 정보 로깅
+      if (error.response) {
+        // 서버 응답이 있는 경우
+        console.error('응답 상태 코드:', error.response.status);
+        console.error('응답 데이터:', error.response.data);
+        console.error('응답 헤더:', error.response.headers);
+        alert(`상태 변경에 실패했습니다 (${error.response.status}): ${error.response.data?.message || '알 수 없는 오류'}`);
+      } else if (error.request) {
+        // 요청은 보냈으나 응답을 받지 못한 경우
+        console.error('요청은 전송되었으나 응답이 없습니다:', error.request);
+        alert('서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.');
+      } else {
+        // 요청 생성 자체에 문제가 생긴 경우
+        console.error('오류 메시지:', error.message);
+        alert(`상태 변경 요청 중 오류 발생: ${error.message}`);
+      }
     }
   };
 
