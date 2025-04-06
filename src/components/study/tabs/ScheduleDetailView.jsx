@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { IoChevronBackOutline } from "react-icons/io5";
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const ScheduleDetailView = ({ 
   schedule, 
@@ -9,9 +10,11 @@ const ScheduleDetailView = ({
   onDelete, 
   isLoading 
 }) => {
+  const { colors } = useTheme();
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('00:00');
   const [scheduleRound, setScheduleRound] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -21,26 +24,36 @@ const ScheduleDetailView = ({
     if (schedule) {
       // 날짜 형식 변환 (ISO 날짜에서 yyyy-MM-dd 형식으로)
       let dateString = '';
+      let timeString = '00:00';
+      
       if (schedule.scheduleStartingAt) {
-        dateString = schedule.scheduleStartingAt.split('T')[0];
+        const dateTimeParts = schedule.scheduleStartingAt.split('T');
+        if (dateTimeParts.length >= 2) {
+          dateString = dateTimeParts[0];
+          // 시간 부분에서 초 제외하고 시:분 만 사용
+          timeString = dateTimeParts[1].substring(0, 5);
+        } else {
+          dateString = schedule.scheduleStartingAt;
+        }
       }
       
       setScheduleTitle(schedule.scheduleTitle || '');
       setScheduleContent(schedule.scheduleContent || '');
       setScheduleDate(dateString);
+      setScheduleTime(timeString);
       setScheduleRound(schedule.round || 1);
     }
   }, [schedule]);
   
   // 폼 유효성 검증
-  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '';
+  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '' && scheduleTime !== '';
 
   // 일정 수정 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      setError('제목과 날짜는 필수입니다.');
+      setError('제목, 날짜, 시간은 필수입니다.');
       return;
     }
     
@@ -52,7 +65,8 @@ const ScheduleDetailView = ({
       const scheduleData = {
         title: scheduleTitle.trim(),
         content: scheduleContent.trim(),
-        date: scheduleDate
+        date: scheduleDate,
+        time: scheduleTime
       };
       
       // 부모 컴포넌트의 수정 핸들러 호출
@@ -169,13 +183,16 @@ const ScheduleDetailView = ({
         borderRadius: '8px',
         padding: '2rem',
         marginBottom: '2rem',
-        width: '100%'
+        width: '100%',
+        backgroundColor: colors.cardBackground,
+        borderColor: colors.border
       }}>
         <form onSubmit={handleSubmit}>
           <div style={{
             marginBottom: '1rem',
             fontSize: '16px',
-            fontWeight: 'bold'
+            fontWeight: 'bold',
+            color: colors.textPrimary
           }}>
             {scheduleTitle || '제목 없음'}
           </div>
@@ -186,16 +203,17 @@ const ScheduleDetailView = ({
           }}>
             <div style={{
               fontWeight: 'bold',
-              marginRight: '0.5rem'
+              marginRight: '0.5rem',
+              color: colors.textPrimary
             }}>
               {scheduleRound}회차
             </div>
             <div style={{
-              color: '#666666',
+              color: colors.textSecondary,
               fontSize: '14px',
               marginRight: '0.5rem'
             }}>
-              ({scheduleDate || '날짜 선택'})
+              ({scheduleDate || '날짜 선택'} {scheduleTime})
             </div>
           </div>
           
@@ -210,10 +228,11 @@ const ScheduleDetailView = ({
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: '1px solid #ddd',
+                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
                 fontSize: '14px',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
+                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+                color: colors.textPrimary
               }}
             />
           </div>
@@ -225,26 +244,80 @@ const ScheduleDetailView = ({
                 display: 'block', 
                 marginBottom: '0.5rem', 
                 fontWeight: 'bold',
-                fontSize: '14px'
+                fontSize: '14px',
+                color: colors.textPrimary
               }}
             >
-              날짜 <span style={{ color: '#FF0000' }}>*</span>
+              날짜 <span style={{ color: colors.primary }}>*</span>
             </label>
-            <input
-              id="scheduleDate"
-              type="date"
-              value={scheduleDate}
-              onChange={(e) => setScheduleDate(e.target.value)}
-              disabled={isSubmitting}
-              style={{
+            <div 
+              style={{ 
+                position: 'relative', 
                 width: '100%',
-                padding: '0.75rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
+                cursor: isSubmitting ? 'not-allowed' : 'pointer'
               }}
-            />
+              onClick={() => !isSubmitting && document.getElementById('scheduleDate').showPicker()}
+            >
+              <input
+                id="scheduleDate"
+                type="date"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                disabled={isSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+                  color: colors.textPrimary,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              />
+            </div>
+          </div>
+          
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label 
+              htmlFor="scheduleTime"
+              style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: colors.textPrimary
+              }}
+            >
+              시간 <span style={{ color: colors.primary }}>*</span>
+            </label>
+            <div 
+              style={{ 
+                position: 'relative', 
+                width: '100%',
+                cursor: isSubmitting ? 'not-allowed' : 'pointer'
+              }}
+              onClick={() => !isSubmitting && document.getElementById('scheduleTime').showPicker()}
+            >
+              <input
+                id="scheduleTime"
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                step="300"
+                disabled={isSubmitting}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+                  color: colors.textPrimary,
+                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                }}
+              />
+            </div>
           </div>
           
           <div style={{ marginBottom: '1.5rem' }}>
@@ -254,7 +327,8 @@ const ScheduleDetailView = ({
                 display: 'block', 
                 marginBottom: '0.5rem', 
                 fontWeight: 'bold',
-                fontSize: '14px'
+                fontSize: '14px',
+                color: colors.textPrimary
               }}
             >
               내용을 입력해주세요
@@ -268,15 +342,16 @@ const ScheduleDetailView = ({
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: '1px solid #ddd',
+                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
                 fontSize: '14px',
                 minHeight: '200px',
                 resize: 'vertical',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
+                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+                color: colors.textPrimary
               }}
             />
-            <div style={{ textAlign: 'right', fontSize: '12px', color: '#666' }}>
+            <div style={{ textAlign: 'right', fontSize: '12px', color: colors.textSecondary }}>
               {scheduleContent.length}/10000
             </div>
           </div>

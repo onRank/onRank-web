@@ -22,6 +22,23 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
     return `${year}.${month}.${day}`;
   };
 
+  // ISO 날짜 문자열에서 시간(HH:mm) 추출하는 함수
+  const formatTime = (isoDateString) => {
+    if (!isoDateString) return '';
+    const date = new Date(isoDateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // ISO 날짜와 시간 형식으로 포맷하는 함수
+  const formatDateTime = (isoDateString) => {
+    if (!isoDateString) return '';
+    const dateStr = formatDate(isoDateString);
+    const timeStr = formatTime(isoDateString);
+    return `${dateStr} ${timeStr}`;
+  };
+
   // 일정 추가 페이지로 이동
   const handleNavigateToAddSchedule = () => {
     navigate(`/studies/${studyId}/schedules/add`);
@@ -303,7 +320,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
                     fontSize: '14px',
                     color: colors.textSecondary
                   }}>
-                    {formatDate(schedule.scheduleStartingAt)} {schedule.scheduleEndingAt ? `- ${formatDate(schedule.scheduleEndingAt)}` : ''}
+                    {formatDateTime(schedule.scheduleStartingAt)}
                   </div>
                   
                   <p style={{

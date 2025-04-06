@@ -160,22 +160,34 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
           }}>
             시간 <span style={{ color: colors.primary }}>*</span>
           </label>
-          <input
-            type="time"
-            value={scheduleTime}
-            onChange={(e) => setScheduleTime(e.target.value)}
-            disabled={isSubmitting}
-            style={{
+          <div 
+            style={{ 
+              position: 'relative', 
               width: '100%',
-              padding: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '14px',
-              backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
-              color: colors.textPrimary
+              cursor: isSubmitting ? 'not-allowed' : 'pointer'
             }}
-            required
-          />
+            onClick={() => !isSubmitting && document.getElementById('modal-time-input').showPicker()}
+          >
+            <input
+              id="modal-time-input"
+              type="time"
+              value={scheduleTime}
+              onChange={(e) => setScheduleTime(e.target.value)}
+              step="300"
+              disabled={isSubmitting}
+              style={{
+                width: '100%',
+                padding: '0.75rem',
+                border: `1px solid ${colors.border}`,
+                borderRadius: '4px',
+                fontSize: '14px',
+                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+                color: colors.textPrimary,
+                cursor: isSubmitting ? 'not-allowed' : 'pointer'
+              }}
+              required
+            />
+          </div>
         </div>
         
         <div style={{ marginBottom: '1.5rem' }}>

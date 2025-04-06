@@ -212,40 +212,63 @@ function ScheduleAddPage() {
 
             <div style={{ marginBottom: '2rem' }}>
               <h3 style={{ color: colors.textPrimary }}>날짜 <span style={{ color: colors.primary }}>*</span></h3>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                style={{
+              <div 
+                style={{ 
+                  position: 'relative', 
                   width: '100%',
-                  padding: '0.75rem',
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                  backgroundColor: colors.inputBackground,
-                  color: colors.textPrimary
+                  cursor: 'pointer'
                 }}
-                required
-              />
+                onClick={() => document.getElementById('date-input').showPicker()}
+              >
+                <input
+                  id="date-input"
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '4px',
+                    fontSize: '16px',
+                    backgroundColor: colors.inputBackground,
+                    color: colors.textPrimary,
+                    cursor: 'pointer'
+                  }}
+                  required
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
               <h3 style={{ color: colors.textPrimary }}>시간 <span style={{ color: colors.primary }}>*</span></h3>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                style={{
+              <div 
+                style={{ 
+                  position: 'relative', 
                   width: '100%',
-                  padding: '0.75rem',
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: '4px',
-                  fontSize: '16px',
-                  backgroundColor: colors.inputBackground,
-                  color: colors.textPrimary
+                  cursor: 'pointer'
                 }}
-                required
-              />
+                onClick={() => document.getElementById('time-input').showPicker()}
+              >
+                <input
+                  id="time-input"
+                  type="time"
+                  value={time}
+                  onChange={(e) => setTime(e.target.value)}
+                  step="300"
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem',
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '4px',
+                    fontSize: '16px',
+                    backgroundColor: colors.inputBackground,
+                    color: colors.textPrimary,
+                    cursor: 'pointer'
+                  }}
+                  required
+                />
+              </div>
             </div>
 
             <div style={{ marginBottom: '2rem' }}>

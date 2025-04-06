@@ -164,6 +164,7 @@ function StudyContent({ activeTab, studyData }) {
         title: updatedSchedule.title,
         content: updatedSchedule.content,
         date: updatedSchedule.date,
+        time: updatedSchedule.time // 시간 정보 추가
       };
 
       // API 호출
@@ -178,12 +179,13 @@ function StudyContent({ activeTab, studyData }) {
                 ...schedule,
                 scheduleTitle: updatedSchedule.title,
                 scheduleContent: updatedSchedule.content,
+                // 날짜와 시간 정보를 합쳐서 저장
                 scheduleStartingAt: updatedSchedule.date.includes('T') 
                   ? updatedSchedule.date.replace(/\./g, "-") 
-                  : `${updatedSchedule.date.replace(/\./g, "-")}T00:00:00`,
+                  : `${updatedSchedule.date.replace(/\./g, "-")}T${updatedSchedule.time || '00:00:00'}`,
                 formattedDate: formatDate(updatedSchedule.date.includes('T') 
                   ? updatedSchedule.date 
-                  : `${updatedSchedule.date}T00:00:00`),
+                  : `${updatedSchedule.date}T${updatedSchedule.time || '00:00:00'}`),
                 // 멤버 컨텍스트 정보 업데이트
                 studyName: result.studyName || schedule.studyName,
                 memberRole: result.memberRole || schedule.memberRole
