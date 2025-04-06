@@ -1356,15 +1356,17 @@ export const studyService = {
       console.log('[StudyService] 출석 목록 응답 구조:', {
         hasData: !!response.data,
         dataType: typeof response.data,
-        isArray: Array.isArray(response.data),
-        dataLength: Array.isArray(response.data) ? response.data.length : 'N/A',
-        hasMemberContext: !!(response.data && response.data.memberContext)
+        isArray: Array.isArray(response.data)
       });
       
-      return response.data;
+      // 에러 방지를 위한 안전한 응답 처리
+      const responseData = response.data;
+      if (!responseData) return [];
+      
+      return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 목록 조회 실패:", error);
-      throw error;
+      return []; // 오류 발생 시 빈 배열 반환
     }
   },
 
@@ -1603,26 +1605,16 @@ export const studyService = {
       console.log('[StudyService] 출석 상세 응답 구조:', {
         dataType: typeof responseData,
         isArray: Array.isArray(responseData),
-        hasData: !!(responseData && responseData.data),
-        dataArrayLength: Array.isArray(responseData) ? responseData.length : 
-                        (responseData && Array.isArray(responseData.data)) ? responseData.data.length : 'N/A',
-        scheduleTitle: Array.isArray(responseData) && responseData.length > 0 ? 
-                      responseData[0].scheduleTitle || responseData[0].scheduleName || 'N/A' :
-                      responseData ? responseData.scheduleTitle || responseData.title || 'N/A' : 'N/A'
+        hasDataProperty: !!(responseData && responseData.data)
       });
-
+      
+      // 응답이 없는 경우 기본값 반환
+      if (!responseData) return { data: [] };
+      
       return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 상세 조회 실패:", error);
-      // 오류 응답에서 상세 정보 추출
-      if (error.response) {
-        console.error("[StudyService] 서버 응답 오류:", {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
-        });
-      }
-      throw error;
+      return { data: [] }; // 오류 발생 시 기본 구조 반환
     }
   },
 
@@ -1633,7 +1625,6 @@ export const studyService = {
         `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
 
-      // PATCH 요청 형식으로 변경, 요청 본문 구조 수정
       const response = await api.patch(
         `/studies/${studyId}/attendances/${attendanceId}`,
         { 
@@ -1645,19 +1636,9 @@ export const studyService = {
       );
 
       console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
-      return response.data;
+      return response.data || {}; // 응답이 없는 경우 빈 객체 반환
     } catch (error) {
       console.error("[StudyService] 출석 상태 업데이트 실패:", error);
-      
-      // 오류 상세 정보 로깅
-      if (error.response) {
-        console.error("[StudyService] 서버 응답 오류:", {
-          status: error.response.status,
-          statusText: error.response.statusText,
-          data: error.response.data
-        });
-      }
-      
       throw error;
     }
   },
