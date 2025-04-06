@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function GoogleLoginButton() {
+  const [showOptions, setShowOptions] = useState(false)
+  
   const handleLogin = (e) => {
     e.preventDefault()
     
@@ -19,26 +22,53 @@ function GoogleLoginButton() {
       return
     }
 
-    // 로컬 스토리지에 로그인 시도 중임을 표시
-    localStorage.setItem('googleLoginInProgress', 'true')
+    // 기본 로그인 - prompt 파라미터만 사용
+    console.log('[Auth Debug] 기본 구글 로그인 (계정 선택 화면 표시 요청)')
+    window.location.href = 'https://onrank.kr/oauth2/authorization/google?prompt=select_account'
+  }
 
-    // 먼저 구글 로그아웃 수행 후 리다이렉트
-    console.log('[Auth Debug] 구글 로그아웃 후 계정 선택 화면으로 이동')
-    
-    // 현재 도메인을 인코딩하여 리다이렉트 URL로 사용
-    const redirectUrl = encodeURIComponent(window.location.origin + '/login-redirect')
-    
-    // Google 로그아웃 URL + 리다이렉트
-    window.location.href = `https://accounts.google.com/logout?continue=https://onrank.kr/oauth2/authorization/google?prompt=select_account`
+  const handleDirectLogin = () => {
+    // 다이렉트 로그인 - 파라미터 없음
+    window.location.href = 'https://onrank.kr/oauth2/authorization/google'
+  }
+
+  const handleShowOptions = (e) => {
+    e.preventDefault()
+    setShowOptions(!showOptions)
+  }
+
+  const handleOpenGoogleLogout = () => {
+    // 구글 로그아웃 페이지를 새 창에서 열기
+    window.open('https://accounts.google.com/logout', '_blank')
   }
 
   return (
-    <button 
-      onClick={handleLogin}
-      className="google-login-button"
-    >
-      Google로 로그인하기
-    </button>
+    <div className="login-button-container">
+      <button 
+        onClick={handleLogin}
+        className="google-login-button"
+      >
+        Google로 로그인하기
+      </button>
+      
+      <div className="login-options">
+        <button onClick={handleShowOptions} className="options-button">
+          {showOptions ? '옵션 닫기' : '로그인 옵션'}
+        </button>
+        
+        {showOptions && (
+          <div className="options-dropdown">
+            <p className="option-info">다른 계정으로 로그인하려면 먼저 Google에서 로그아웃하세요.</p>
+            <button onClick={handleOpenGoogleLogout} className="option-button">
+              Google 로그아웃 페이지 열기
+            </button>
+            <button onClick={handleDirectLogin} className="option-button">
+              기본 로그인 (계정 선택 화면 없음)
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
 
