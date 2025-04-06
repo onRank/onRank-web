@@ -547,8 +547,10 @@ export const authService = {
       const token = tokenUtils.getToken();
       if (!token) {
         console.log("[Auth] 토큰 없음, 로그아웃 처리만 수행");
-        tokenUtils.removeToken();
+        tokenUtils.removeToken(true); // removeBackup=true로 변경하여 백업 토큰도 제거
         localStorage.removeItem("cachedUserInfo");
+        sessionStorage.removeItem("accessToken_backup"); // 백업 토큰 명시적 제거
+        sessionStorage.removeItem("cachedUserInfo"); // 세션 스토리지의 사용자 정보도 제거
         
         // 스터디 관련 캐시 초기화
         studyService.clearCache();
@@ -572,13 +574,16 @@ export const authService = {
       );
 
       // 토큰 및 관련 데이터 삭제
-      tokenUtils.removeToken();
+      tokenUtils.removeToken(true); // removeBackup=true로 변경하여 백업 토큰도 제거
       localStorage.removeItem("cachedUserInfo");
+      sessionStorage.removeItem("accessToken_backup"); // 백업 토큰 명시적 제거
+      sessionStorage.removeItem("cachedUserInfo"); // 세션 스토리지의 사용자 정보도 제거
 
       // 스터디 관련 로컬스토리지 데이터 및 캐시 초기화
       studyService.clearCache();
 
       console.log("[Auth] 로그아웃 후 토큰 존재 여부:", !!tokenUtils.getToken());
+      console.log("[Auth] 로그아웃 후 세션 백업 토큰 존재 여부:", !!sessionStorage.getItem("accessToken_backup"));
       console.log("[Auth] 로그아웃 후 리프레시 토큰 존재 여부:", await tokenUtils.hasRefreshToken());
       console.log("[Auth] 로그아웃 성공");
 
@@ -587,8 +592,10 @@ export const authService = {
       console.error("[Auth] 로그아웃 실패:", error);
 
       // 에러가 발생해도 클라이언트 쪽에서 토큰 및 캐시 삭제
-      tokenUtils.removeToken();
+      tokenUtils.removeToken(true); // removeBackup=true로 변경하여 백업 토큰도 제거
       localStorage.removeItem("cachedUserInfo");
+      sessionStorage.removeItem("accessToken_backup"); // 백업 토큰 명시적 제거
+      sessionStorage.removeItem("cachedUserInfo"); // 세션 스토리지의 사용자 정보도 제거
       
       // 스터디 관련 캐시 초기화
       studyService.clearCache();

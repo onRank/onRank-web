@@ -54,10 +54,18 @@ const Header = () => {
         console.log(`[Header] localStorage에서 ${key} 삭제`);
       });
       
+      // 세션 스토리지 클리어
+      sessionStorage.removeItem('accessToken_backup');
+      sessionStorage.removeItem('cachedUserInfo');
+      console.log('[Header] sessionStorage에서 토큰 및 사용자 정보 삭제');
+      
       console.log('[Header] 로그아웃 API 호출 성공');
       navigate('/');
     } catch (error) {
       console.error('[Header] 로그아웃 오류:', error);
+      // 오류 발생해도 sessionStorage 클리어
+      sessionStorage.removeItem('accessToken_backup');
+      sessionStorage.removeItem('cachedUserInfo');
       navigate('/');
     }
   };

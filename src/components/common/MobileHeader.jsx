@@ -120,10 +120,18 @@ function MobileHeader() {
         console.log(`[MobileHeader] localStorage에서 ${key} 삭제`);
       });
       
+      // 세션 스토리지 클리어
+      sessionStorage.removeItem('accessToken_backup');
+      sessionStorage.removeItem('cachedUserInfo');
+      console.log('[MobileHeader] sessionStorage에서 토큰 및 사용자 정보 삭제');
+      
       // 홈으로 이동
       navigate('/');
     } catch (error) {
       console.error('[MobileHeader] 로그아웃 오류:', error);
+      // 오류 발생해도 sessionStorage 클리어
+      sessionStorage.removeItem('accessToken_backup');
+      sessionStorage.removeItem('cachedUserInfo');
       navigate('/');
     }
   };
