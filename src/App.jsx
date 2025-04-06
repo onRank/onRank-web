@@ -395,7 +395,7 @@ function AppContent() {
 
   // showHeader와 showNavigation 조건을 useMemo로 최적화
   const showHeader = useMemo(() => {
-    const hideHeaderPaths = ["/", "/auth/callback", "/auth/add"];
+    const hideHeaderPaths = ["/", "/login", "/auth/callback", "/oauth/callback", "/auth/add"];
     return !hideHeaderPaths.includes(location.pathname);
   }, [location.pathname]);
 
@@ -417,7 +417,7 @@ function AppContent() {
   const routes = useMemo(
     () => (
       <ThemeWrapper>
-        <MemoizedHeader />
+        {showHeader && <MemoizedHeader />}
         <Routes>
           {/* 루트 경로 추가 */}
           <Route
@@ -439,6 +439,14 @@ function AppContent() {
           />
           <Route
             path="/oauth/callback"
+            element={
+              <PublicRoute>
+                <OAuthCallback />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/auth/callback"
             element={
               <PublicRoute>
                 <OAuthCallback />
@@ -537,7 +545,7 @@ function AppContent() {
             }
           />
         </Routes>
-        <ThemeToggle />
+        {showHeader && <ThemeToggle />}
       </ThemeWrapper>
     ),
     [location.pathname]

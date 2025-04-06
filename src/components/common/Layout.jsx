@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import Header from "./Header";
@@ -9,6 +9,11 @@ import DeviceInfoBar from "./DeviceInfoBar";
 function Layout() {
   const { colors } = useTheme();
   const { isLoggedIn, validateToken } = useAuth();
+  const location = useLocation();
+  
+  // 헤더를 표시하지 않을 경로 목록
+  const hideHeaderPaths = ['/', '/login', '/auth/callback', '/oauth/callback', '/auth/add'];
+  const shouldShowHeader = !hideHeaderPaths.includes(location.pathname);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -26,9 +31,13 @@ function Layout() {
         color: colors.text,
       }}
     >
-      <DeviceInfoBar />
-      <Header />
-      <MobileHeader />
+      {shouldShowHeader && (
+        <>
+          <DeviceInfoBar />
+          <Header />
+          <MobileHeader />
+        </>
+      )}
       <main
         style={{
           flex: 1,

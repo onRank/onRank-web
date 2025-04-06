@@ -5,6 +5,7 @@ import { tokenUtils } from '../../utils/tokenUtils';
 import StudySidebar from '../../components/study/StudySidebar';
 import { IoHomeOutline } from 'react-icons/io5';
 import { useTheme } from '../../contexts/ThemeContext';
+import TimeSelector from '../../components/common/TimeSelector';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
@@ -242,44 +243,11 @@ function ScheduleAddPage() {
 
             <div style={{ marginBottom: '2rem' }}>
               <h3 style={{ color: colors.textPrimary }}>시간 <span style={{ color: colors.primary }}>*</span></h3>
-              <div 
-                style={{ 
-                  position: 'relative', 
-                  width: '100%',
-                  cursor: 'pointer'
-                }}
-                onClick={() => document.getElementById('time-input').showPicker()}
-              >
-                <input
-                  id="time-input"
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  step="300"
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem',
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '4px',
-                    fontSize: '16px',
-                    backgroundColor: colors.inputBackground,
-                    color: colors.textPrimary,
-                    cursor: 'pointer'
-                  }}
-                  required
-                />
-                <div style={{
-                  position: 'absolute',
-                  right: '10px', 
-                  top: '50%',
-                  transform: 'translateY(-50%)',
-                  color: colors.textSecondary,
-                  pointerEvents: 'none',
-                  fontSize: '12px'
-                }}>
-                  5분 단위
-                </div>
-              </div>
+              <TimeSelector 
+                value={time}
+                onChange={setTime}
+                disabled={isSubmitting}
+              />
             </div>
 
             <div style={{ marginBottom: '2rem' }}>

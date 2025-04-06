@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import { useAuth } from '../../contexts/AuthContext'
 import { tokenUtils, api, authService } from '../../services/api'
@@ -8,8 +8,12 @@ function OAuthCallback() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { setUser } = useAuth()
+  const location = useLocation()
   
   useEffect(() => {
+    // 현재 URL이 /auth/callback인지 확인
+    const isAuthCallback = location.pathname === '/auth/callback'
+    
     const getTokens = async () => {
       // URL 파라미터 로깅
       console.log('[OAuth Debug] 콜백 URL 파라미터:', {
@@ -17,18 +21,26 @@ function OAuthCallback() {
         state: searchParams.get('state'),
         error: searchParams.get('error'),
         isNewUser: searchParams.get('isNewUser'),
-        raw: window.location.search
+        raw: window.location.search,
+        path: location.pathname
       })
+      
+      // 서비스에서 쿼리파라미터로 isNewUser를 전달해주는지 확인
+      const isNewUser = searchParams.get('isNewUser') === 'true'
+      console.log(`[OAuth] 사용자 상태: ${isNewUser ? '신규 사용자' : '기존 사용자'}`)
+      
+      // auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
+      if (isAuthCallback) {
+        console.log('[OAuth] /auth/callback URL 감지됨, studies로 즉시 리다이렉트')
+        navigate('/studies', { replace: true })
+        return
+      }
       
       // localStorage에서 state 값 확인 (추적용)
       const savedState = localStorage.getItem('oauth_state')
       console.log(`[OAuth Debug] 저장된 state: ${savedState}, URL state: ${searchParams.get('state')}`)
       
       try {
-        // isNewUser 파라미터 미리 확인 - 여러 곳에서 사용하므로 상단에 정의
-        const isNewUser = searchParams.get('isNewUser') === 'true'
-        console.log(`[OAuth] 사용자 상태: ${isNewUser ? '신규 사용자' : '기존 사용자'}`)
-        
         // 현재 토큰이 있는지 확인
         const currentToken = tokenUtils.getToken()
         if (currentToken) {
@@ -172,7 +184,7 @@ function OAuthCallback() {
     }
 
     getTokens()
-  }, [navigate, searchParams, setUser])
+  }, [navigate, searchParams, setUser, location])
   
   return <LoadingSpinner />
 }

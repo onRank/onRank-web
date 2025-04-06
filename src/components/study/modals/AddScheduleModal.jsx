@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
 import { useTheme } from '../../../contexts/ThemeContext';
+import TimeSelector from '../../common/TimeSelector';
 
 function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initialDescription, initialDate, initialTime, isSubmitting }) {
   const { colors } = useTheme();
@@ -160,45 +161,11 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
           }}>
             시간 <span style={{ color: colors.primary }}>*</span>
           </label>
-          <div 
-            style={{ 
-              position: 'relative', 
-              width: '100%',
-              cursor: isSubmitting ? 'not-allowed' : 'pointer'
-            }}
-            onClick={() => !isSubmitting && document.getElementById('modal-time-input').showPicker()}
-          >
-            <input
-              id="modal-time-input"
-              type="time"
-              value={scheduleTime}
-              onChange={(e) => setScheduleTime(e.target.value)}
-              step="300"
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
-                color: colors.textPrimary,
-                cursor: isSubmitting ? 'not-allowed' : 'pointer'
-              }}
-              required
-            />
-            <div style={{
-              position: 'absolute',
-              right: '10px', 
-              top: '50%',
-              transform: 'translateY(-50%)',
-              color: colors.textSecondary,
-              pointerEvents: 'none',
-              fontSize: '12px'
-            }}>
-              5분 단위
-            </div>
-          </div>
+          <TimeSelector 
+            value={scheduleTime}
+            onChange={setScheduleTime}
+            disabled={isSubmitting}
+          />
         </div>
         
         <div style={{ marginBottom: '1.5rem' }}>
