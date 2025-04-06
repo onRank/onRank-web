@@ -29,10 +29,22 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
 
   // 일정 수정 팝업 열기
   const handleOpenUpdateSchedulePopup = (schedule) => {
-    // scheduleStartingAt에서 날짜 부분만 추출
-    const dateOnly = schedule.scheduleStartingAt ? 
-      schedule.scheduleStartingAt.split('T')[0].replace(/-/g, '.') : 
-      formatDate(schedule.scheduleStartingAt);
+    // scheduleStartingAt에서 날짜와 시간 부분 추출
+    let dateOnly = '';
+    let timeOnly = '00:00';
+    
+    if (schedule.scheduleStartingAt) {
+      const dateTimeParts = schedule.scheduleStartingAt.split('T');
+      if (dateTimeParts.length >= 2) {
+        dateOnly = dateTimeParts[0].replace(/-/g, '.');
+        // 시간 부분에서 초 제외하고 시:분 만 사용
+        timeOnly = dateTimeParts[1].substring(0, 5);
+      } else {
+        dateOnly = schedule.scheduleStartingAt.replace(/-/g, '.');
+      }
+    } else {
+      dateOnly = formatDate(schedule.scheduleStartingAt);
+    }
       
     // 수정을 위한 데이터 준비
     setSelectedSchedule({
@@ -40,6 +52,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
       title: schedule.scheduleTitle,
       description: schedule.scheduleContent,
       date: dateOnly,
+      time: timeOnly,
       round: schedule.round || 1
     });
     setShowUpdateSchedulePopup(true);
@@ -316,6 +329,11 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
           onSubmit={handleSubmitUpdateSchedule}
           isLoading={isUpdating}
           initialData={selectedSchedule}
+          initialTitle={selectedSchedule.title}
+          initialDescription={selectedSchedule.description}
+          initialDate={selectedSchedule.date}
+          initialTime={selectedSchedule.time}
+          initialRound={selectedSchedule.round}
           isEditing={true}
         />
       )}

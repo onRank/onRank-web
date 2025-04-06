@@ -1097,14 +1097,24 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 시간 정보를 포함한 날짜 문자열 생성
+      let dateTimeString;
+      if (scheduleData.date && scheduleData.time) {
+        // 시간 정보가 있으면 통합
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${scheduleData.time}:00`;
+      } else if (scheduleData.date && scheduleData.date.includes("T")) {
+        // 이미 ISO 형식이면 그대로 사용
+        dateTimeString = scheduleData.date.replace(/\./g, "-");
+      } else {
+        // 날짜만 있고 시간이 없으면 기본값 사용
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T00:00:00`;
+      }
+
       // 백엔드 요청 형식에 맞게 변환
       const apiScheduleData = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
-        scheduleStartingAt:
-          scheduleData.date && scheduleData.date.includes("T")
-            ? scheduleData.date.replace(/\./g, "-")
-            : `${scheduleData.date.replace(/\./g, "-")}T00:00:00`,
+        scheduleStartingAt: dateTimeString
       };
 
       console.log("[StudyService] 일정 추가 요청 데이터:", apiScheduleData);
@@ -1186,14 +1196,24 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 시간 정보를 포함한 날짜 문자열 생성
+      let dateTimeString;
+      if (scheduleData.date && scheduleData.time) {
+        // 시간 정보가 있으면 통합
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${scheduleData.time}:00`;
+      } else if (scheduleData.date && scheduleData.date.includes("T")) {
+        // 이미 ISO 형식이면 그대로 사용
+        dateTimeString = scheduleData.date.replace(/\./g, "-");
+      } else {
+        // 날짜만 있고 시간이 없으면 기본값 사용
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T00:00:00`;
+      }
+
       // 백엔드 요청 형식에 맞게 변환
       const apiScheduleData = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
-        scheduleStartingAt:
-          scheduleData.date && scheduleData.date.includes("T")
-            ? scheduleData.date.replace(/\./g, "-")
-            : `${scheduleData.date.replace(/\./g, "-")}T00:00:00`,
+        scheduleStartingAt: dateTimeString
       };
 
       console.log("[StudyService] 일정 수정 요청 데이터:", apiScheduleData);

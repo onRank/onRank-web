@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { format } from 'date-fns';
+import { useTheme } from '../../../contexts/ThemeContext';
 
-function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initialDescription, initialDate, isSubmitting }) {
+function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initialDescription, initialDate, initialTime, isSubmitting }) {
+  const { colors } = useTheme();
   const [scheduleTitle, setScheduleTitle] = useState(initialTitle || '');
   const [scheduleDescription, setScheduleDescription] = useState(initialDescription || '');
   const [scheduleRound, setScheduleRound] = useState(initialRound || 1);
   const [scheduleDate] = useState(initialDate || format(new Date(), 'yyyy.MM.dd'));
+  const [scheduleTime, setScheduleTime] = useState(initialTime || '00:00');
   
-  // 폼 유효성 검증
-  const isFormValid = scheduleTitle.trim() !== '';
+  // 폼 유효성 검증 - 제목과 시간은 필수
+  const isFormValid = scheduleTitle.trim() !== '' && scheduleTime !== '';
 
   // 일정 추가 제출
   const handleSubmitSchedule = () => {
@@ -20,7 +23,8 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
       round: scheduleRound,
       title: scheduleTitle.trim(),
       description: scheduleDescription.trim(),
-      date: scheduleDate
+      date: scheduleDate,
+      time: scheduleTime // 시간 정보 추가
     };
 
     // 부모 컴포넌트에 전달
@@ -45,18 +49,20 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
       zIndex: 1000
     }}>
       <div style={{
-        backgroundColor: 'white',
+        backgroundColor: colors.cardBackground,
         borderRadius: '8px',
         padding: '2rem',
         width: '500px',
         maxWidth: '90%',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        boxShadow: `0 4px 6px ${colors.shadowColor}`,
+        border: `1px solid ${colors.border}`
       }}>
         <h3 style={{ 
           marginTop: 0, 
           marginBottom: '1.5rem',
           fontSize: '18px',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          color: colors.textPrimary
         }}>
           {modalTitle}
         </h3>
@@ -66,9 +72,10 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             display: 'block', 
             marginBottom: '0.5rem', 
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: '14px',
+            color: colors.textPrimary
           }}>
-            일정 제목 <span style={{ color: '#FF0000' }}>*</span>
+            일정 제목 <span style={{ color: colors.primary }}>*</span>
           </label>
           <input
             type="text"
@@ -79,10 +86,11 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             style={{
               width: '100%',
               padding: '0.75rem',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
+              backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+              color: colors.textPrimary
             }}
           />
         </div>
@@ -92,7 +100,8 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             display: 'block', 
             marginBottom: '0.5rem', 
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: '14px',
+            color: colors.textPrimary
           }}>
             일정 설명
           </label>
@@ -104,12 +113,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             style={{
               width: '100%',
               padding: '0.75rem',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
               minHeight: '100px',
               resize: 'vertical',
-              backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
+              backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+              color: colors.textPrimary
             }}
           />
         </div>
@@ -119,7 +129,8 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             display: 'block', 
             marginBottom: '0.5rem', 
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: '14px',
+            color: colors.textPrimary
           }}>
             날짜
           </label>
@@ -130,11 +141,11 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             style={{
               width: '100%',
               padding: '0.75rem',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: '#f5f5f5',
-              color: '#666'
+              backgroundColor: colors.hoverBackground,
+              color: colors.textSecondary
             }}
           />
         </div>
@@ -144,7 +155,36 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             display: 'block', 
             marginBottom: '0.5rem', 
             fontWeight: 'bold',
-            fontSize: '14px'
+            fontSize: '14px',
+            color: colors.textPrimary
+          }}>
+            시간 <span style={{ color: colors.primary }}>*</span>
+          </label>
+          <input
+            type="time"
+            value={scheduleTime}
+            onChange={(e) => setScheduleTime(e.target.value)}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
+              color: colors.textPrimary
+            }}
+            required
+          />
+        </div>
+        
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ 
+            display: 'block', 
+            marginBottom: '0.5rem', 
+            fontWeight: 'bold',
+            fontSize: '14px',
+            color: colors.textPrimary
           }}>
             회차
           </label>
@@ -158,12 +198,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
               disabled={isSubmitting || scheduleRound <= 1}
               style={{
                 padding: '0.75rem 1.5rem',
-                border: '1px solid #ddd',
+                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
-                backgroundColor: isSubmitting || scheduleRound <= 1 ? '#f5f5f5' : 'white',
+                backgroundColor: isSubmitting || scheduleRound <= 1 ? colors.hoverBackground : colors.buttonBackground,
                 cursor: isSubmitting || scheduleRound <= 1 ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                width: '120px'
+                width: '120px',
+                color: colors.buttonText
               }}
             >
               - 이전 회차
@@ -171,7 +212,8 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             <div style={{
               padding: '0.75rem',
               fontSize: '16px',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              color: colors.textPrimary
             }}>
               {scheduleRound} 회차
             </div>
@@ -180,12 +222,13 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
               disabled={isSubmitting}
               style={{
                 padding: '0.75rem 1.5rem',
-                border: '1px solid #ddd',
+                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
-                backgroundColor: isSubmitting ? '#f5f5f5' : 'white',
+                backgroundColor: isSubmitting ? colors.hoverBackground : colors.buttonBackground,
                 cursor: isSubmitting ? 'not-allowed' : 'pointer',
                 fontSize: '14px',
-                width: '120px'
+                width: '120px',
+                color: colors.buttonText
               }}
             >
               다음 회차 +
@@ -204,11 +247,12 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
             disabled={isSubmitting}
             style={{
               padding: '0.75rem 1.5rem',
-              border: '1px solid #ddd',
+              border: `1px solid ${colors.border}`,
               borderRadius: '4px',
-              backgroundColor: 'white',
+              backgroundColor: colors.buttonBackground,
               cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              fontSize: '14px'
+              fontSize: '14px',
+              color: colors.buttonText
             }}
           >
             취소하기
@@ -220,7 +264,7 @@ function AddScheduleModal({ onClose, onSubmit, initialRound, initialTitle, initi
               padding: '0.75rem 1.5rem',
               border: 'none',
               borderRadius: '4px',
-              backgroundColor: isSubmitting || !isFormValid ? '#cccccc' : '#FF0000',
+              backgroundColor: isSubmitting || !isFormValid ? '#cccccc' : colors.primary,
               color: 'white',
               cursor: isSubmitting || !isFormValid ? 'not-allowed' : 'pointer',
               fontSize: '14px',
@@ -244,6 +288,7 @@ AddScheduleModal.propTypes = {
   initialTitle: PropTypes.string,
   initialDescription: PropTypes.string,
   initialDate: PropTypes.string,
+  initialTime: PropTypes.string,
   isSubmitting: PropTypes.bool
 };
 
@@ -252,6 +297,7 @@ AddScheduleModal.defaultProps = {
   initialTitle: '',
   initialDescription: '',
   initialDate: '',
+  initialTime: '',
   isSubmitting: false
 };
 

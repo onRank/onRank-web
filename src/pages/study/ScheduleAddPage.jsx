@@ -4,13 +4,16 @@ import { studyService } from '../../services/api';
 import { tokenUtils } from '../../utils/tokenUtils';
 import StudySidebar from '../../components/study/StudySidebar';
 import { IoHomeOutline } from 'react-icons/io5';
+import { useTheme } from '../../contexts/ThemeContext';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
+  const { colors } = useTheme();
   
   const [title, setTitle] = useState('');
   const [date, setDate] = useState('');
+  const [time, setTime] = useState('00:00');
   const [content, setContent] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -55,15 +58,15 @@ function ScheduleAddPage() {
     };
   }, [studyId]);
   
-  // 폼 유효성 검증
-  const isFormValid = title.trim() !== '' && date !== '';
+  // 폼 유효성 검증 - 제목, 날짜, 시간 모두 필수
+  const isFormValid = title.trim() !== '' && date !== '' && time !== '';
 
   // 일정 추가 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      setError('제목과 날짜는 필수입니다.');
+      setError('제목, 날짜, 시간은 필수입니다.');
       return;
     }
     
@@ -76,6 +79,7 @@ function ScheduleAddPage() {
         title: title.trim(),
         content: content.trim(),
         date: date,
+        time: time,
       };
       
       // API 호출
@@ -177,16 +181,17 @@ function ScheduleAddPage() {
       }}>
         <StudySidebar activeTab="일정" />
         <div style={{ flex: 1 }}>
-          <h2>일정</h2>
+          <h2 style={{ color: colors.textPrimary }}>일정</h2>
           <div style={{
-            backgroundColor: '#FFFFFF',
+            backgroundColor: colors.cardBackground,
             borderRadius: '8px',
             padding: '2rem',
             maxWidth: '800px',
-            margin: '2rem auto'
+            margin: '2rem auto',
+            border: `1px solid ${colors.border}`
           }}>
             <div style={{ marginBottom: '2rem' }}>
-              <h3>제목</h3>
+              <h3 style={{ color: colors.textPrimary }}>제목</h3>
               <input
                 type="text"
                 value={title}
@@ -195,15 +200,18 @@ function ScheduleAddPage() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  border: '1px solid #E5E5E5',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary
                 }}
+                required
               />
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
-              <h3>날짜 <span style={{ color: '#FF0000' }}>*</span></h3>
+              <h3 style={{ color: colors.textPrimary }}>날짜 <span style={{ color: colors.primary }}>*</span></h3>
               <input
                 type="date"
                 value={date}
@@ -211,16 +219,37 @@ function ScheduleAddPage() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  border: '1px solid #E5E5E5',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px',
-                  fontSize: '16px'
+                  fontSize: '16px',
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary
                 }}
                 required
               />
             </div>
 
             <div style={{ marginBottom: '2rem' }}>
-              <h3>내용을 입력해주세요</h3>
+              <h3 style={{ color: colors.textPrimary }}>시간 <span style={{ color: colors.primary }}>*</span></h3>
+              <input
+                type="time"
+                value={time}
+                onChange={(e) => setTime(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  border: `1px solid ${colors.border}`,
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary
+                }}
+                required
+              />
+            </div>
+
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{ color: colors.textPrimary }}>내용을 입력해주세요</h3>
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
@@ -228,11 +257,13 @@ function ScheduleAddPage() {
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  border: '1px solid #E5E5E5',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px',
                   fontSize: '16px',
                   minHeight: '200px',
-                  resize: 'vertical'
+                  resize: 'vertical',
+                  backgroundColor: colors.inputBackground,
+                  color: colors.textPrimary
                 }}
               />
             </div>
@@ -246,9 +277,10 @@ function ScheduleAddPage() {
                 onClick={handleCancel}
                 style={{
                   padding: '0.75rem 2rem',
-                  border: '1px solid #E5E5E5',
+                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px',
-                  backgroundColor: '#FFFFFF',
+                  backgroundColor: colors.buttonBackground,
+                  color: colors.buttonText,
                   cursor: 'pointer'
                 }}
               >
@@ -256,14 +288,14 @@ function ScheduleAddPage() {
               </button>
               <button
                 onClick={handleSubmit}
-                disabled={!date}
+                disabled={!isFormValid}
                 style={{
                   padding: '0.75rem 2rem',
-                  backgroundColor: date ? '#FF0000' : '#CCCCCC',
+                  backgroundColor: isFormValid ? colors.primary : '#CCCCCC',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: date ? 'pointer' : 'not-allowed'
+                  cursor: isFormValid ? 'pointer' : 'not-allowed'
                 }}
               >
                 작성
