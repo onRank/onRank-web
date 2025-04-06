@@ -19,10 +19,10 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 // 출석 상태 스타일 정의
 const STATUS_STYLES = {
-  PRESENT: { color: '#4CAF50', text: 'O', label: '출석' },
-  ABSENT: { color: '#F44336', text: 'X', label: '결석' },
-  LATE: { color: '#FFC107', text: '△', label: '지각' },
-  UNKNOWN: { color: '#9E9E9E', text: '?', label: '미확인' }
+  PRESENT: { color: '#4CAF50', text: 'O', label: '출석', bgColor: '#E50011', iconColor: 'white' },
+  ABSENT: { color: '#F44336', text: 'X', label: '결석', bgColor: '#000000', iconColor: 'white' },
+  LATE: { color: '#FFC107', text: '△', label: '지각', bgColor: '#007BFF', iconColor: 'white' },
+  UNKNOWN: { color: '#9E9E9E', text: '?', label: '미확인', bgColor: '#999999', iconColor: 'white' }
 };
 
 // 그래프 색상 - 출석은 빨간색, 나머지는 분홍색
@@ -52,14 +52,30 @@ const getStatusText = (status) => {
 const getStatusIcon = (status) => {
   switch (status) {
     case 'PRESENT':
-      return <span className="status-icon present">O</span>;
+      return (
+        <div className="status-icon-wrapper">
+          <div className="status-icon present" style={{ backgroundColor: '#E50011', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>O</div>
+        </div>
+      );
     case 'LATE':
-      return <span className="status-icon late">△</span>;
+      return (
+        <div className="status-icon-wrapper">
+          <div className="status-icon late" style={{ backgroundColor: '#007BFF', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>△</div>
+        </div>
+      );
     case 'ABSENT':
-      return <span className="status-icon absent">X</span>;
+      return (
+        <div className="status-icon-wrapper">
+          <div className="status-icon absent" style={{ backgroundColor: '#000000', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>X</div>
+        </div>
+      );
     case 'UNKNOWN':
     default:
-      return <span className="status-icon unknown">?</span>;
+      return (
+        <div className="status-icon-wrapper">
+          <div className="status-icon unknown" style={{ backgroundColor: '#999999', color: 'white', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px' }}>?</div>
+        </div>
+      );
   }
 };
 
@@ -181,6 +197,7 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
         {attendances.map((attendance, index) => {
           // 출석 상태 변경 시 사용할 ID 값을 명확하게 설정
           const attendanceId = attendance.attendanceId || attendance.id || `attendance-${index}`;
+          const currentStatus = attendance.status || attendance.attendanceStatus || 'UNKNOWN';
           console.log(`AttendanceDetail - item ${index}:`, attendance, 'attendanceId:', attendanceId);
           
           return (
@@ -196,83 +213,99 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                 )}
               </div>
               <div className="status-cell">
-                <div className="status-buttons">
+                <div className="status-buttons" style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
                   <button 
-                    className={`status-btn present ${(attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? 'active' : ''}`}
+                    className={`status-btn present ${currentStatus === 'PRESENT' ? 'active' : ''}`}
                     onClick={() => {
                       console.log('Updating status to PRESENT for:', attendanceId);
                       onUpdateStatus(attendanceId, 'PRESENT');
                     }}
                     style={{ 
-                      backgroundColor: (attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? '#E50011' : 'transparent',
-                      color: (attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? 'white' : '#E50011',
+                      backgroundColor: currentStatus === 'PRESENT' ? '#E50011' : 'white',
+                      color: currentStatus === 'PRESENT' ? 'white' : '#E50011',
                       border: '1px solid #E50011',
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      margin: '0 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 0,
                       fontWeight: 'bold',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     O
                   </button>
                   <button 
-                    className={`status-btn absent ${(attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? 'active' : ''}`}
+                    className={`status-btn absent ${currentStatus === 'ABSENT' ? 'active' : ''}`}
                     onClick={() => {
                       console.log('Updating status to ABSENT for:', attendanceId);
                       onUpdateStatus(attendanceId, 'ABSENT');
                     }}
                     style={{ 
-                      backgroundColor: (attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? '#000' : 'transparent',
-                      color: (attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? 'white' : '#000',
+                      backgroundColor: currentStatus === 'ABSENT' ? '#000' : 'white',
+                      color: currentStatus === 'ABSENT' ? 'white' : '#000',
                       border: '1px solid #000',
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      margin: '0 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 0,
                       fontWeight: 'bold',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     X
                   </button>
                   <button 
-                    className={`status-btn late ${(attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? 'active' : ''}`}
+                    className={`status-btn late ${currentStatus === 'LATE' ? 'active' : ''}`}
                     onClick={() => {
                       console.log('Updating status to LATE for:', attendanceId);
                       onUpdateStatus(attendanceId, 'LATE');
                     }}
                     style={{ 
-                      backgroundColor: (attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? '#007BFF' : 'transparent',
-                      color: (attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? 'white' : '#007BFF',
+                      backgroundColor: currentStatus === 'LATE' ? '#007BFF' : 'white',
+                      color: currentStatus === 'LATE' ? 'white' : '#007BFF',
                       border: '1px solid #007BFF',
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      margin: '0 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 0,
                       fontWeight: 'bold',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     △
                   </button>
                   <button 
-                    className={`status-btn unknown ${(attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? 'active' : ''}`}
+                    className={`status-btn unknown ${currentStatus === 'UNKNOWN' ? 'active' : ''}`}
                     onClick={() => {
                       console.log('Updating status to UNKNOWN for:', attendanceId);
                       onUpdateStatus(attendanceId, 'UNKNOWN');
                     }}
                     style={{ 
-                      backgroundColor: (attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? '#999' : 'transparent',
-                      color: (attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? 'white' : '#999',
+                      backgroundColor: currentStatus === 'UNKNOWN' ? '#999' : 'white',
+                      color: currentStatus === 'UNKNOWN' ? 'white' : '#999',
                       border: '1px solid #999',
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      margin: '0 5px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: 0,
                       fontWeight: 'bold',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
                   >
                     ?

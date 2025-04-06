@@ -1425,24 +1425,45 @@ export const studyService = {
   },
 
   // 출석 상태 변경 (변경 권한 있는 사용자만 가능)
-  updateAttendance: async (studyId, attendanceId, status) => {
+  updateAttendance: async (studyId, attendanceId, newStatus) => {
     try {
       console.log(
-        `[StudyService] 출석 상태 변경 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${status}`
+        `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
 
-      const response = await api.put(
-        `/studies/${studyId}/attendances/${attendanceId}`,
-        { status },
-        {
-          withCredentials: true,
+      // 토큰 가져오기
+      const token = tokenUtils.getToken();
+      const tokenWithBearer = token?.startsWith("Bearer ") ? token : `Bearer ${token}`;
+      
+      // 모든 필요한 헤더 포함하여 CORS 해결 시도
+      const config = {
+        withCredentials: true,
+        headers: {
+          'Authorization': tokenWithBearer,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
         }
+      };
+      
+      // URL 쿼리 파라미터로 status 전달 (PUT 메서드 사용)
+      const response = await api.put(
+        `/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
+        {},  // 빈 객체 (요청 본문 필요 없음)
+        config
       );
 
-      console.log("[StudyService] 출석 상태 변경 성공:", response.data);
-      return response.data;
+      console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
+      return response.data || {}; 
     } catch (error) {
-      console.error("[StudyService] 출석 상태 변경 오류:", error);
+      console.error("[StudyService] 출석 상태 업데이트 실패:", error);
+      
+      // CORS 오류 이슈 감지 및 사용자 친화적 에러 메시지
+      if (error.message && error.message.includes('Network Error')) {
+        console.error("[StudyService] CORS 또는 네트워크 오류 발생:", error);
+        alert('출석 상태 변경에 실패했습니다. 네트워크 연결 또는 서버 설정을 확인해주세요.');
+      }
+      
       throw error;
     }
   },
