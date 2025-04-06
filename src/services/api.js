@@ -981,7 +981,21 @@ export const studyService = {
         }
       );
 
+      // 응답 확인 로그
       console.log("[StudyService] 스터디 멤버 추가 성공:", response.data);
+      
+      // 응답 데이터 형식이 { studyName, memberRole }인 경우를 처리
+      // 상태 코드가 201 Created이고 응답 본문에 데이터가 있는 경우
+      if (response.status === 201 && response.data) {
+        // 응답 로깅
+        if (response.data.studyName !== undefined || response.data.memberRole !== undefined) {
+          console.log("[StudyService] 스터디 멤버 추가 응답:", {
+            studyName: response.data.studyName,
+            memberRole: response.data.memberRole
+          });
+        }
+      }
+      
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 멤버 추가 오류:", error);

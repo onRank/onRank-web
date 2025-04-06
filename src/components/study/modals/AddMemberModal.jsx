@@ -26,9 +26,17 @@ function AddMemberModal({ onClose, onSuccess }) {
     
     try {
       // 새로운 API 서비스 함수 사용하여 멤버 추가 - studentEmail만 전송
-      await studyService.addMember(studyId, {
+      const response = await studyService.addMember(studyId, {
         studentEmail: newMemberEmail.trim()
       });
+      
+      // 응답 데이터 처리 - { studyName, memberRole } 형식 처리
+      console.log('회원 추가 성공 응답:', response);
+      
+      // API 응답이 { studyName, memberRole } 형식인 경우 처리 로직
+      if (response && (response.studyName !== undefined || response.memberRole !== undefined)) {
+        console.log(`스터디 '${response.studyName}'에 '${response.memberRole}' 역할로 사용자가 추가되었습니다.`);
+      }
       
       // 성공 콜백 호출
       if (onSuccess) {

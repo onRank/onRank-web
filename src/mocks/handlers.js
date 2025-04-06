@@ -241,7 +241,7 @@ export const handlers = [
 
   // 스터디 멤버 추가
   http.post(
-    "http://localhost:8080/studies/:studyId/management/members",
+    "http://localhost:8080/studies/:studyId/management/members/add",
     async ({ params, request }) => {
       const { studyId } = params;
       const requestData = await request.json();
@@ -263,14 +263,20 @@ export const handlers = [
       // 새 멤버 ID는 현재 시간을 사용하여 임의로 생성
       const newMemberId = Date.now();
 
-      // 생성된 리소스의 위치를 Location 헤더로 반환 (RESTful API 관행)
-      return new HttpResponse(null, {
-        status: 201,
-        headers: {
-          Location: `http://localhost:8080/studies/${studyId}/management/members/${newMemberId}`,
-          "Content-Type": "application/json",
-        },
-      });
+      // 201 Created 응답 반환 및 응답 본문으로 { studyName, memberRole } 형식 반환
+      return new HttpResponse(
+        JSON.stringify({
+          studyName: "코테크루", // 예시 스터디 이름
+          memberRole: "PARTICIPANT" // 기본 역할은 참여자
+        }),
+        {
+          status: 201,
+          headers: {
+            Location: `http://localhost:8080/studies/${studyId}/management/members/${newMemberId}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
     }
   ),
 
