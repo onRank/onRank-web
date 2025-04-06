@@ -11,29 +11,46 @@ function OAuthCallback() {
   const location = useLocation()
   
   useEffect(() => {
+    // 페이지 로드 시 디버그 로그 명확하게 출력
+    console.log('[OAuth DEBUG] OAuthCallback 컴포넌트 마운트됨');
+    console.log('[OAuth DEBUG] 현재 URL:', window.location.href);
+    console.log('[OAuth DEBUG] 쿼리 파라미터:', window.location.search);
+    
+    // 쿠키에서 isNewUser 확인 (백엔드에서 쿠키로 전달하는 경우를 위해)
+    const checkCookieForNewUser = () => {
+      const cookies = document.cookie.split(';');
+      for (const cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'isNewUser' && value === 'true') {
+          console.log('[OAuth DEBUG] 쿠키에서 isNewUser=true 확인됨');
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    const isNewUserInCookie = checkCookieForNewUser();
+
     // 현재 URL이 /auth/callback인지 확인
     const isAuthCallback = location.pathname === '/auth/callback'
     
     const getTokens = async () => {
-      // URL 파라미터 로깅
-      console.log('[OAuth Debug] 콜백 URL 파라미터:', {
-        code: searchParams.get('code'),
-        state: searchParams.get('state'),
-        error: searchParams.get('error'),
-        isNewUser: searchParams.get('isNewUser'),
-        raw: window.location.search,
-        path: location.pathname
-      })
+      // URL 파라미터 로깅 - isNewUser 중점적으로 확인
+      const isNewUserParam = searchParams.get('isNewUser');
+      console.log('[OAuth DEBUG] isNewUser 파라미터 원본값:', isNewUserParam);
       
-      // 서비스에서 쿼리파라미터로 isNewUser를 전달해주는지 확인
-      const isNewUser = searchParams.get('isNewUser') === 'true'
-      console.log(`[OAuth] 사용자 상태: ${isNewUser ? '신규 사용자' : '기존 사용자'}`)
+      // 서비스에서 쿼리파라미터로 isNewUser를 전달해주는지 확인 (문자열 비교 명확하게)
+      const isNewUser = isNewUserParam === 'true';
+      console.log(`[OAuth DEBUG] 사용자 상태 판단: ${isNewUser ? '신규 사용자' : '기존 사용자'}`);
+
+      // 강화된 디버깅: 모든 쿼리 파라미터 출력
+      console.log('[OAuth DEBUG] 전체 콜백 URL 파라미터:', Object.fromEntries([...searchParams.entries()]));
       
-      // 중요: isNewUser 체크를 isAuthCallback 체크보다 먼저 수행
+      // 최우선: isNewUser가 true인 경우 즉시 회원가입 페이지로 이동
       if (isNewUser) {
-        console.log('[OAuth] 신규 사용자 감지, /auth/add로 리다이렉트')
-        navigate('/auth/add', { replace: true })
-        return
+        console.log('[OAuth DEBUG] 신규 사용자 확인됨! /auth/add로 즉시 리다이렉트');
+        navigate('/auth/add', { replace: true });
+        return; // 중요: 여기서 함수 종료
       }
       
       // isNewUser 체크 후 auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
@@ -117,29 +134,41 @@ function OAuthCallback() {
           const tokenPayload = JSON.parse(atob(authHeader.split('.')[1]))
           console.log('Token payload:', tokenPayload)
           
-          // 리프레시 토큰 쿠키 확인 - 이 부분의 로직 변경
-          // HttpOnly 쿠키는 document.cookie로 접근할 수 없으므로 이 검사는 제거
-          console.log('[Auth Debug] Refresh token cookie check - HttpOnly cookies cannot be read directly')
-          
-          // 백엔드에서 성공적으로 토큰을 받았다면 리프레시 토큰이 제대로 설정되었다고 가정
-          console.log('[Auth Debug] Server provided a valid token, assuming refresh token cookie is set')
-          
           // 사용자 정보 설정
           setUser({
             email: tokenPayload.email,
             username: tokenPayload.username
           })
 
-          // isNewUser 파라미터 확인
-          if (isNewUser) {
-            console.log('New user detected, redirecting to /auth/add')
-            navigate('/auth/add')
-            return
+          // *** 중요: 백엔드 응답 헤더나 토큰 내에 신규 사용자 정보 확인 ***
+          const isNewUserFromToken = tokenPayload.isNewUser === true || tokenPayload.new_user === true;
+          const isNewUserFromHeader = response.headers['x-new-user'] === 'true';
+          const isNewUserFromData = response.data?.isNewUser === true;
+          
+          // 모든 소스에서 신규 사용자 여부 확인
+          const isNewUserDetected = isNewUser || isNewUserFromToken || isNewUserFromHeader || 
+                                    isNewUserFromData || isNewUserInCookie;
+          
+          console.log('[OAuth DEBUG] 신규 사용자 판단 종합:', {
+            fromQueryParam: isNewUser,
+            fromToken: isNewUserFromToken,
+            fromHeader: isNewUserFromHeader,
+            fromData: isNewUserFromData,
+            fromCookie: isNewUserInCookie,
+            finalDecision: isNewUserDetected
+          });
+
+          // 어떤 소스에서든 신규 사용자로 판단되면 회원가입 페이지로 이동
+          if (isNewUserDetected) {
+            console.log('[OAuth DEBUG] 최종 판단: 신규 사용자! /auth/add로 이동');
+            navigate('/auth/add', { replace: true });
+            return;
           }
 
-          // 기존 사용자는 바로 studies 페이지로 리다이렉트
-          console.log('Existing user detected, redirecting to /studies')
-          navigate('/studies')
+          // 신규 사용자가 아니라고 판단되면 스터디 페이지로 이동
+          console.log('[OAuth DEBUG] 최종 판단: 기존 사용자. /studies로 이동');
+          navigate('/studies', { replace: true });
+          return;
         } catch (error) {
           console.error('Failed to process OAuth callback:', error)
           
@@ -147,12 +176,17 @@ function OAuthCallback() {
           console.log('[Cookie Debug] Error response headers:', error.response?.headers);
           console.log('[Cookie Debug] Cookies after error:', document.cookie);
           
-          // *** 핵심 수정 부분: 신규 사용자는 오류가 발생해도 회원정보 등록 페이지로 이동 ***
-          if (isNewUser) {
-            console.log('[OAuth] 신규 사용자 감지: 인증 오류가 발생했지만 /auth/add로 이동')
-            // 토큰 제거하지 않고 유지 (필요하다면)
-            navigate('/auth/add')
-            return
+          // *** 핵심 수정 부분: 신규 사용자 판단 강화 ***
+          // 어떤 소스에서든 신규 사용자 정보가 있으면 회원가입 페이지로 이동
+          const isErrorNewUser = isNewUser || 
+                               isNewUserInCookie || 
+                               (error.response?.headers && error.response.headers['x-new-user'] === 'true') ||
+                               (error.response?.data && error.response.data.isNewUser === true);
+                              
+          if (isErrorNewUser) {
+            console.log('[OAuth DEBUG] 오류 발생했지만 신규 사용자로 판단됨, /auth/add로 이동');
+            navigate('/auth/add', { replace: true });
+            return;
           }
           
           // 기존 사용자의 경우 일반 오류 처리

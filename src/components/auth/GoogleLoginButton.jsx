@@ -1,9 +1,15 @@
 import React from 'react'
 
-// 단순화된 Google 로그인 버튼 컴포넌트 - 2024-04-06 수정
+// 구글 로그인 버튼 컴포넌트 - 2024-04-06 수정
 function GoogleLoginButton() {
   const handleLogin = (e) => {
     e.preventDefault()
+    
+    // localStorage에서 이전 로그인 정보 제거 (새로운 로그인 시도)
+    localStorage.removeItem('accessToken')
+    
+    // 디버그 로그 추가
+    console.log('[OAuth DEBUG] 구글 로그인 시작 - 버튼 클릭')
     
     // 개발 환경 체크 (이 부분은 그대로 유지)
     if (import.meta.env.MODE === 'development' && import.meta.env.VITE_MSW_ENABLED === 'true') {
