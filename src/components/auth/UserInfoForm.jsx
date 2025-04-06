@@ -40,10 +40,9 @@ function UserInfoForm() {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       window.removeEventListener('popstate', handleNavigate);
-      // 컴포넌트 언마운트 시 토큰 제거 (단, 제출 중이거나 등록 완료가 아닐 때만)
-      if (!isSubmitting && !isRegistrationComplete) {
-        tokenUtils.removeToken();
-      }
+      
+      // 토큰 제거 로직 삭제 - 이 부분이 문제를 일으킴
+      // studies로 이동할 때는 토큰을 유지해야 함
     };
   }, [isSubmitting, isRegistrationComplete]);
 
@@ -137,8 +136,11 @@ function UserInfoForm() {
         if (newToken) {
           console.log('등록 응답에서 새 토큰 발견, 저장 중...');
           
-          // 토큰 저장 (백업 포함)
+          // 토큰 저장
           tokenUtils.setToken(newToken);
+          
+          // 이동 플래그를 sessionStorage에 저장 (중요!)
+          sessionStorage.setItem('registrationComplete', 'true');
           
           // 토큰이 localStorage에 완전히 저장되도록 지연
           console.log('토큰 저장 확인 및 페이지 이동 준비 중...');
