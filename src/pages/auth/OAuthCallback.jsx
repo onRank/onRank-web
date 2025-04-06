@@ -142,7 +142,33 @@ function OAuthCallback() {
           console.log('[OAuth DEBUG] 토큰 저장 시도:', authHeader.substring(0, 15) + '...')
           
           // 토큰 저장 확인 대기
-          await waitForTokenSaved();
+          const tokenSaved = await waitForTokenSaved();
+          
+          // 토큰 저장 실패 시 강제로 다시 저장 시도
+          if (!tokenSaved) {
+            console.warn('[OAuth DEBUG] 토큰 저장 실패, 다시 시도합니다.');
+            
+            // Bearer 접두사 확인 및 추가
+            const tokenWithBearer = authHeader.startsWith('Bearer ') 
+              ? authHeader 
+              : `Bearer ${authHeader}`;
+              
+            // 직접 localStorage에 저장
+            localStorage.setItem('accessToken', tokenWithBearer);
+            
+            // 세션 스토리지에도 백업 (중요!)
+            sessionStorage.setItem('accessToken_backup', tokenWithBearer);
+            
+            console.log('[OAuth DEBUG] 토큰 직접 저장 완료, 확인 중...');
+            
+            // 직접 저장 후 다시 확인
+            const directSavedToken = localStorage.getItem('accessToken');
+            if (directSavedToken) {
+              console.log('[OAuth DEBUG] 토큰 직접 저장 성공:', directSavedToken.substring(0, 15) + '...');
+            } else {
+              console.error('[OAuth DEBUG] 토큰 직접 저장 실패, 세션 스토리지 백업 사용 예정');
+            }
+          }
 
           // JWT 토큰에서 사용자 정보 추출
           const tokenPayload = JSON.parse(atob(authHeader.split('.')[1]))

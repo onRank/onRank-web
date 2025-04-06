@@ -154,6 +154,22 @@ export const tokenUtils = {
         }
       }
 
+      // localStorage에 토큰이 없으면 sessionStorage의 백업 토큰 확인
+      const backupToken = sessionStorage.getItem("accessToken_backup");
+      if (backupToken) {
+        console.log("[Token Debug] Using backup token from sessionStorage");
+        
+        // 백업 토큰을 localStorage에 복원
+        try {
+          localStorage.setItem("accessToken", backupToken);
+          console.log("[Token Debug] Backup token restored to localStorage");
+          return backupToken;
+        } catch (e) {
+          console.error("[Token Debug] Failed to restore backup token:", e);
+          return backupToken; // 복원 실패해도 백업 토큰 반환
+        }
+      }
+
       console.log("[Token Debug] No token found after refresh");
       return null;
     }
@@ -185,7 +201,23 @@ export const tokenUtils = {
       return token;
     }
 
-    console.log("[Token Debug] No token found in localStorage");
+    // localStorage에 토큰이 없으면 sessionStorage 백업 확인
+    const backupToken = sessionStorage.getItem("accessToken_backup");
+    if (backupToken) {
+      console.log("[Token Debug] Using backup token from sessionStorage");
+      
+      // 가능하다면 localStorage에 복원 시도
+      try {
+        localStorage.setItem("accessToken", backupToken);
+        console.log("[Token Debug] Backup token restored to localStorage");
+      } catch (e) {
+        console.error("[Token Debug] Failed to restore backup token to localStorage:", e);
+      }
+      
+      return backupToken;
+    }
+
+    console.log("[Token Debug] No token found in localStorage or sessionStorage");
     return null;
   },
 
@@ -210,6 +242,15 @@ export const tokenUtils = {
 
         // localStorage에 저장
         localStorage.setItem("accessToken", tokenWithBearer);
+        
+        // sessionStorage에도 백업 저장 (중요)
+        try {
+          sessionStorage.setItem("accessToken_backup", tokenWithBearer);
+          console.log("[Token Debug] Token backup saved to sessionStorage");
+        } catch (backupError) {
+          console.warn("[Token Debug] Failed to save token backup to sessionStorage:", backupError);
+          // 백업 저장 실패는 치명적이지 않으므로 계속 진행
+        }
 
         // 토큰 저장 후 이벤트 발행
         const postStorageEvent = new Event("post-tokensave");
@@ -223,17 +264,36 @@ export const tokenUtils = {
           console.log("[Token Debug] Token verified in localStorage");
           resolve(savedToken);
         } else {
+          // localStorage 저장에 실패했지만 sessionStorage에 백업이 있는 경우
+          const backupToken = sessionStorage.getItem("accessToken_backup");
+          if (backupToken) {
+            console.log("[Token Debug] Primary storage failed but backup exists in sessionStorage");
+            resolve(backupToken);
+            return;
+          }
+          
           // 저장에 실패한 경우 재시도
           console.warn("[Token Debug] Token not found after save, retrying...");
           
           // 약간의 지연 후 다시 저장 시도
           setTimeout(() => {
             localStorage.setItem("accessToken", tokenWithBearer);
+            // sessionStorage에도 다시 백업 시도
+            try {
+              sessionStorage.setItem("accessToken_backup", tokenWithBearer);
+            } catch (retryBackupError) {
+              console.warn("[Token Debug] Retry backup failed:", retryBackupError);
+            }
+            
             const retryToken = localStorage.getItem("accessToken");
+            const retryBackupToken = sessionStorage.getItem("accessToken_backup");
             
             if (retryToken) {
               console.log("[Token Debug] Token saved successfully on retry");
               resolve(retryToken);
+            } else if (retryBackupToken) {
+              console.log("[Token Debug] Using backup token after retry");
+              resolve(retryBackupToken);
             } else {
               console.error("[Token Debug] Failed to save token after retry");
               reject(new Error("Failed to save token to localStorage"));
@@ -242,6 +302,25 @@ export const tokenUtils = {
         }
       } catch (error) {
         console.error("[Token Debug] Error saving token:", error);
+        
+        // localStorage 저장 실패 시 sessionStorage에 백업만이라도 시도
+        try {
+          const tokenWithBearer = token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`;
+          sessionStorage.setItem("accessToken_backup", tokenWithBearer);
+          console.log("[Token Debug] Saved backup token to sessionStorage after localStorage failure");
+          
+          // 백업 저장 성공했으면 성공 처리
+          const backupToken = sessionStorage.getItem("accessToken_backup");
+          if (backupToken) {
+            resolve(backupToken);
+            return;
+          }
+        } catch (backupError) {
+          console.error("[Token Debug] Failed to save backup token:", backupError);
+        }
+        
         reject(error);
       }
     });
