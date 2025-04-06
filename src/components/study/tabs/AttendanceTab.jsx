@@ -253,7 +253,7 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      display: 'flex',
+        display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                       padding: 0,
@@ -277,8 +277,8 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                       borderRadius: '50%',
                       width: '30px',
                       height: '30px',
-                      display: 'flex',
-                      alignItems: 'center',
+            display: 'flex',
+            alignItems: 'center',
                       justifyContent: 'center',
                       padding: 0,
                       fontWeight: 'bold',
@@ -298,7 +298,7 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                       backgroundColor: currentStatus === 'UNKNOWN' ? '#999' : 'white',
                       color: currentStatus === 'UNKNOWN' ? 'white' : '#999',
                       border: '1px solid #999',
-                      borderRadius: '50%',
+              borderRadius: '50%',
                       width: '30px',
                       height: '30px',
                       display: 'flex',
@@ -576,34 +576,57 @@ function AttendanceTab() {
         return;
       }
 
-      // 직접 axios 사용하여 PUT 요청 - 서비스 레이어 우회
-      console.log(`[AttendanceTab] 직접 PUT 요청: /studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`);
-      
-      const response = await axios.put(
-        `https://onrank.kr/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
-        {}, // 빈 객체 (요청 본문 필요 없음)
-        {
-          withCredentials: true,
-          headers: {
-            'Authorization': token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
+      // 1. axios를 사용한 방법
+      try {
+        // API 문서와 정확히 일치하는 URL 구성
+        const url = `https://onrank.kr/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`;
+        console.log(`[AttendanceTab] PUT 요청: ${url}`);
+        
+        const response = await axios.put(
+          url,
+          null, // 본문 데이터 없음 (null로 설정)
+          {
+            // CORS 이슈로 withCredentials를 false로 변경 시도
+            withCredentials: false,
+            headers: {
+              'Authorization': token,
+              // 본문 데이터가 없으므로 Content-Type 제거
+              'Accept': 'application/json',
+              // CORS 헤더 추가 시도
+              'Access-Control-Allow-Origin': '*'
+            }
           }
-        }
-      );
+        );
+        
+        console.log('[AttendanceTab] 상태 변경 응답 (axios):', response.data);
+        handleSuccessfulUpdate();
+        return;
+      } catch (axiosError) {
+        console.error('[AttendanceTab] Axios 요청 실패, fetch API로 재시도:', axiosError);
+        // Axios로 실패했을 때 fetch로 다시 시도
+      }
+
+      // 2. fetch API를 사용한 대안
+      console.log(`[AttendanceTab] fetch API로 재시도`);
+      const url = `https://onrank.kr/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`;
       
-      console.log('[AttendanceTab] 상태 변경 응답:', response.data);
+      const fetchResponse = await fetch(url, {
+        method: 'PUT',
+        // mode: 'no-cors', // 마지막 수단으로 no-cors 모드 시도
+        headers: {
+          'Authorization': token,
+          'Accept': 'application/json'
+        },
+        // credentials: 'include' // 쿠키 포함이 필요한 경우에만 활성화
+      });
       
-      // 성공 메시지 표시
-      alert('출석 상태가 성공적으로 변경되었습니다.');
-      
-      // 상세 정보 다시 조회
-      console.log(`[AttendanceTab] 상태 변경 후 상세 정보 다시 조회: ${selectedScheduleId}`);
-      fetchAttendanceDetails(selectedScheduleId);
-      
-      // 전체 목록도 새로고침
-      console.log('[AttendanceTab] 상태 변경 후 전체 목록 새로고침');
-      fetchAttendances();
+      if (fetchResponse.ok) {
+        const data = await fetchResponse.json().catch(() => ({}));
+        console.log('[AttendanceTab] 상태 변경 응답 (fetch):', data);
+        handleSuccessfulUpdate();
+      } else {
+        throw new Error(`HTTP error! status: ${fetchResponse.status}`);
+      }
     } catch (error) {
       console.error('[AttendanceTab] 상태 변경 실패:', error);
       
@@ -623,6 +646,20 @@ function AttendanceTab() {
         console.error('오류 메시지:', error.message);
         alert(`상태 변경 요청 중 오류 발생: ${error.message}`);
       }
+    }
+    
+    // 성공 시 공통 처리 함수
+    function handleSuccessfulUpdate() {
+      // 성공 메시지 표시
+      alert('출석 상태가 성공적으로 변경되었습니다.');
+      
+      // 상세 정보 다시 조회
+      console.log(`[AttendanceTab] 상태 변경 후 상세 정보 다시 조회: ${selectedScheduleId}`);
+      fetchAttendanceDetails(selectedScheduleId);
+      
+      // 전체 목록도 새로고침
+      console.log('[AttendanceTab] 상태 변경 후 전체 목록 새로고침');
+      fetchAttendances();
     }
   };
 
@@ -664,7 +701,7 @@ function AttendanceTab() {
         <>
           {view === 'overview' ? (
             <div className="attendance-overview-container">
-              <AttendanceChart attendances={attendances} />
+            <AttendanceChart attendances={attendances} />
               
               <div className="attendance-history">
                 <h3>출석 현황</h3>
