@@ -190,54 +190,94 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                 {attendance.isMe && <span className="is-me"> (나)</span>}
                 {attendance.role && (
                   <span className={`role ${attendance.role.toLowerCase()}`}>
-                    {attendance.role === 'CREATOR' ? '개설자' : 
+                    {attendance.role === 'CREATOR' || attendance.role === 'CREATER' ? '개설자' : 
                      attendance.role === 'HOST' ? '관리자' : ''}
                   </span>
                 )}
               </div>
               <div className="status-cell">
-                {isHost ? (
-                  <div className="status-buttons">
-                    <button 
-                      className={`status-btn present ${(attendance.status === 'PRESENT') ? 'active' : ''}`}
-                      onClick={() => {
-                        console.log('Updating status to PRESENT for:', attendanceId);
-                        onUpdateStatus(attendanceId, 'PRESENT');
-                      }}
-                    >
-                      O
-                    </button>
-                    <button 
-                      className={`status-btn absent ${(attendance.status === 'ABSENT') ? 'active' : ''}`}
-                      onClick={() => {
-                        console.log('Updating status to ABSENT for:', attendanceId);
-                        onUpdateStatus(attendanceId, 'ABSENT');
-                      }}
-                    >
-                      X
-                    </button>
-                    <button 
-                      className={`status-btn late ${(attendance.status === 'LATE') ? 'active' : ''}`}
-                      onClick={() => {
-                        console.log('Updating status to LATE for:', attendanceId);
-                        onUpdateStatus(attendanceId, 'LATE');
-                      }}
-                    >
-                      △
-                    </button>
-                    <button 
-                      className={`status-btn unknown ${(attendance.status === 'UNKNOWN') ? 'active' : ''}`}
-                      onClick={() => {
-                        console.log('Updating status to UNKNOWN for:', attendanceId);
-                        onUpdateStatus(attendanceId, 'UNKNOWN');
-                      }}
-                    >
-                      ?
-                    </button>
-                  </div>
-                ) : (
-                  getStatusIcon(attendance.status || attendance.attendanceStatus || 'UNKNOWN')
-                )}
+                <div className="status-buttons">
+                  <button 
+                    className={`status-btn present ${(attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Updating status to PRESENT for:', attendanceId);
+                      onUpdateStatus(attendanceId, 'PRESENT');
+                    }}
+                    style={{ 
+                      backgroundColor: (attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? '#E50011' : 'transparent',
+                      color: (attendance.status === 'PRESENT' || attendance.attendanceStatus === 'PRESENT') ? 'white' : '#E50011',
+                      border: '1px solid #E50011',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      margin: '0 5px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    O
+                  </button>
+                  <button 
+                    className={`status-btn absent ${(attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Updating status to ABSENT for:', attendanceId);
+                      onUpdateStatus(attendanceId, 'ABSENT');
+                    }}
+                    style={{ 
+                      backgroundColor: (attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? '#000' : 'transparent',
+                      color: (attendance.status === 'ABSENT' || attendance.attendanceStatus === 'ABSENT') ? 'white' : '#000',
+                      border: '1px solid #000',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      margin: '0 5px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    X
+                  </button>
+                  <button 
+                    className={`status-btn late ${(attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Updating status to LATE for:', attendanceId);
+                      onUpdateStatus(attendanceId, 'LATE');
+                    }}
+                    style={{ 
+                      backgroundColor: (attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? '#007BFF' : 'transparent',
+                      color: (attendance.status === 'LATE' || attendance.attendanceStatus === 'LATE') ? 'white' : '#007BFF',
+                      border: '1px solid #007BFF',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      margin: '0 5px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    △
+                  </button>
+                  <button 
+                    className={`status-btn unknown ${(attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Updating status to UNKNOWN for:', attendanceId);
+                      onUpdateStatus(attendanceId, 'UNKNOWN');
+                    }}
+                    style={{ 
+                      backgroundColor: (attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? '#999' : 'transparent',
+                      color: (attendance.status === 'UNKNOWN' || attendance.attendanceStatus === 'UNKNOWN') ? 'white' : '#999',
+                      border: '1px solid #999',
+                      borderRadius: '50%',
+                      width: '30px',
+                      height: '30px',
+                      margin: '0 5px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ?
+                  </button>
+                </div>
               </div>
             </div>
           );
@@ -303,7 +343,9 @@ function AttendanceTab() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [view, setView] = useState('overview'); // 'overview' or 'detail'
   const { role } = useContext(AuthContext);
-  const isHost = role === 'CREATOR' || role === 'HOST';
+  // 'CREATER'도 허용 (API 응답과 일치)
+  const isHost = role === 'CREATOR' || role === 'CREATER' || role === 'HOST';
+  console.log('[AttendanceTab] 사용자 권한:', role, '관리자 여부:', isHost);
 
     const fetchAttendances = async () => {
       try {
@@ -411,33 +453,43 @@ function AttendanceTab() {
       
       // 응답 데이터 처리
       let attendanceData = [];
+      let memberRole = '';
       
       if (response) {
-        if (Array.isArray(response)) {
-          // 배열 형태인 경우
+        // 응답에서 멤버 역할 정보 추출
+        if (response.memberContext && response.memberContext.memberRole) {
+          memberRole = response.memberContext.memberRole;
+          console.log(`[AttendanceTab] 멤버 역할: ${memberRole}`);
+        }
+        
+        // 데이터 배열 처리
+        if (response.data && Array.isArray(response.data)) {
+          attendanceData = response.data.map(item => ({
+            ...item,
+            // attendanceStatus를 status로 매핑
+            status: item.attendanceStatus,
+            attendanceId: item.attendanceId,
+            // 필요한 경우 역할 정보 추가
+            role: item.memberId === response.memberContext?.memberId ? memberRole : undefined
+          }));
+        } else if (Array.isArray(response)) {
           attendanceData = response.map(item => ({
             ...item,
             attendanceId: item.attendanceId || item.id || attendanceId
           }));
         } else {
-          // 객체 형태인 경우
-          if (response.data) {
-            const dataArray = Array.isArray(response.data) ? response.data : [response.data];
-            attendanceData = dataArray.map(item => ({
-              ...item,
-              attendanceId: item.attendanceId || item.id || attendanceId
-            }));
-          } else if (response.attendances) {
+          // 다른 형태의 응답 처리 로직 유지
+          if (response.attendances) {
             const attendancesArray = Array.isArray(response.attendances) ? response.attendances : [response.attendances];
             attendanceData = attendancesArray.map(item => ({
               ...item,
               attendanceId: item.attendanceId || item.id || attendanceId
             }));
           } else {
-            // 응답 자체를 단일 항목으로 취급
+            // 단일 항목으로 처리
             attendanceData = [{
               attendanceId: response.attendanceId || response.id || attendanceId,
-              status: response.status || 'UNKNOWN',
+              status: response.status || response.attendanceStatus || 'UNKNOWN',
               studentName: response.memberName || response.studentName || '이름 없음'
             }];
           }
