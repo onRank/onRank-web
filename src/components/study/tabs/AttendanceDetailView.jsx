@@ -173,7 +173,7 @@ const AttendanceDetailView = ({ id, scheduleId, studyId, onClose }) => {
                   {attendance.isMe && <span className="is-me"> (나)</span>}
                   {attendance.role && (
                     <span className={`role ${attendance.role.toLowerCase()}`}>
-                      {attendance.role === 'CREATOR' ? '개설자' : 
+                      {attendance.role === 'CREATOR' ? '스터디 생성자' : 
                        attendance.role === 'HOST' ? '관리자' : ''}
                     </span>
                   )}

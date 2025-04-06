@@ -209,7 +209,7 @@ const AttendanceDetail = ({ attendances, selectedSchedule, isHost, onUpdateStatu
                 {attendance.isMe && <span className="is-me"> (나)</span>}
                 {attendance.role && (
                   <span className={`role ${attendance.role.toLowerCase()}`}>
-                    {attendance.role === 'CREATOR' || attendance.role === 'CREATER' ? '개설자' : 
+                    {attendance.role === 'CREATOR' || attendance.role === 'CREATER' ? '스터디 생성자' : 
                      attendance.role === 'HOST' ? '관리자' : ''}
                   </span>
                 )}

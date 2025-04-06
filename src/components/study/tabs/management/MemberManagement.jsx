@@ -26,7 +26,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
     // CREATOR는 역할 변경 불가
     const memberToChange = members.find(m => m.memberId === memberId);
     if (memberToChange?.memberRole === 'CREATOR') {
-      setStatusMessage({ text: '마스터의 역할은 변경할 수 없습니다.', type: 'error' });
+      setStatusMessage({ text: '스터디 생성자의 역할은 변경할 수 없습니다.', type: 'error' });
       setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
       return;
     }
@@ -64,7 +64,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
     
     // CREATOR, HOST 삭제 불가
     if (memberToDelete?.memberRole === 'CREATOR') {
-      setStatusMessage({ text: '마스터는 삭제할 수 없습니다.', type: 'error' });
+      setStatusMessage({ text: '스터디 생성자는 삭제할 수 없습니다.', type: 'error' });
       setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
       return;
     }
@@ -221,25 +221,25 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
                     )}
                   </td>
                   <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
-                    <button 
-                      onClick={() => handleShowDeleteConfirm(member.memberId)}
-                      disabled={processingMemberId === member.memberId || !canDeleteMember(member.memberRole)}
-                      style={{ 
-                        background: 'none', 
-                        border: 'none', 
-                        cursor: canDeleteMember(member.memberRole) ? 'pointer' : 'not-allowed',
-                        opacity: canDeleteMember(member.memberRole) ? 1 : 0.5
-                      }}
-                      title={
-                        member.memberRole === 'CREATOR' ? '마스터는 삭제할 수 없습니다' : 
-                        member.memberRole === 'HOST' ? '관리자는 삭제할 수 없습니다' : 
-                        '멤버 삭제'
-                      }
-                    >
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
-                      </svg>
-                    </button>
+                    {/* 스터디 생성자와 관리자는 삭제 버튼 표시하지 않음 */}
+                    {canDeleteMember(member.memberRole) ? (
+                      <button 
+                        onClick={() => handleShowDeleteConfirm(member.memberId)}
+                        disabled={processingMemberId === member.memberId}
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer'
+                        }}
+                        title="멤버 삭제"
+                      >
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
+                        </svg>
+                      </button>
+                    ) : (
+                      <span>-</span>
+                    )}
                   </td>
                 </tr>
               ))}

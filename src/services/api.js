@@ -2643,7 +2643,7 @@ export const postService = {
 export const getMemberRoleDisplayName = (role) => {
   switch (role) {
     case 'CREATOR':
-      return '마스터';
+      return '스터디 생성자';
     case 'HOST':
       return '관리자';
     case 'PARTICIPANT':
