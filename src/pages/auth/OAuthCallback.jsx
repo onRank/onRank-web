@@ -34,6 +34,23 @@ function OAuthCallback() {
     // 현재 URL이 /auth/callback인지 확인
     const isAuthCallback = location.pathname === '/auth/callback'
     
+    // 토큰이 저장되었는지 확인하는 헬퍼 함수 추가
+    const waitForTokenSaved = async () => {
+      // 최대 10번까지 50ms 간격으로 확인 (총 500ms)
+      for (let i = 0; i < 10; i++) {
+        const token = localStorage.getItem('accessToken');
+        if (token) {
+          console.log('[OAuth DEBUG] 토큰이 성공적으로 저장됨:', token.substring(0, 15) + '...');
+          return true;
+        }
+        console.log(`[OAuth DEBUG] 토큰 저장 확인 중... (시도 ${i+1}/10)`);
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      
+      console.warn('[OAuth DEBUG] 토큰 저장 확인 실패');
+      return false;
+    };
+    
     const getTokens = async () => {
       // URL 파라미터 로깅 - isNewUser 중점적으로 확인
       const isNewUserParam = searchParams.get('isNewUser');
@@ -46,16 +63,9 @@ function OAuthCallback() {
       // 강화된 디버깅: 모든 쿼리 파라미터 출력
       console.log('[OAuth DEBUG] 전체 콜백 URL 파라미터:', Object.fromEntries([...searchParams.entries()]));
       
-      // 최우선: isNewUser가 true인 경우 즉시 회원가입 페이지로 이동
-      if (isNewUser) {
-        console.log('[OAuth DEBUG] 신규 사용자 확인됨! /auth/add로 즉시 리다이렉트');
-        navigate('/auth/add', { replace: true });
-        return; // 중요: 여기서 함수 종료
-      }
-      
       // isNewUser 체크 후 auth/callback URL로 직접 접근한 경우 바로 studies 페이지로 리다이렉트
-      if (isAuthCallback) {
-        console.log('[OAuth] /auth/callback URL 감지됨, studies로 즉시 리다이렉트')
+      if (isAuthCallback && !isNewUser) {
+        console.log('[OAuth DEBUG] /auth/callback URL 감지됨 (기존 사용자), studies로 즉시 리다이렉트')
         navigate('/studies', { replace: true })
         return
       }
@@ -73,33 +83,34 @@ function OAuthCallback() {
           const expirationTime = tokenPayload.exp * 1000 // convert to milliseconds
           
           if (expirationTime > Date.now()) {
-            console.log('Valid token exists, skipping reissue')
+            console.log('[OAuth DEBUG] 유효한 토큰 있음, reissue 건너뛰기')
             
+            // 최우선: isNewUser가 true인 경우 - 토큰이 있는지 다시 확인하고 이동
             if (isNewUser) {
-              console.log('New user detected, redirecting to /auth/add')
-              navigate('/auth/add')
-              return
+              console.log('[OAuth DEBUG] 신규 사용자 확인됨, /auth/add로 리다이렉트');
+              navigate('/auth/add', { replace: true });
+              return;
             }
 
-            console.log('Existing user detected, redirecting to /studies')
-            navigate('/studies')
+            console.log('[OAuth DEBUG] 기존 사용자, /studies로 리다이렉트')
+            navigate('/studies', { replace: true })
             return
           }
           // 여기까지 코드가 실행된다면 토큰이 만료된 상태
-          console.log('Token expired, requesting new token')
+          console.log('[OAuth DEBUG] 토큰 만료됨, 새 토큰 요청')
         }
 
         // 토큰이 없거나 만료된 경우에만 reissue 요청
-        console.log('Sending request to /auth/reissue')
-        console.log('[Auth Debug] Request headers:', {
+        console.log('[OAuth DEBUG] /auth/reissue 요청 시작')
+        console.log('[Auth DEBUG] 요청 헤더:', {
           'Content-Type': 'application/json',
           'withCredentials': true
         })
         
         // 쿠키 디버그 정보 출력
-        console.log('[Cookie Debug] Document cookies before request:', document.cookie);
-        console.log('[Cookie Debug] 현재 도메인:', window.location.hostname);
-        console.log('[Cookie Debug] 현재 프로토콜:', window.location.protocol);
+        console.log('[Cookie DEBUG] 요청 전 쿠키:', document.cookie);
+        console.log('[Cookie DEBUG] 현재 도메인:', window.location.hostname);
+        console.log('[Cookie DEBUG] 현재 프로토콜:', window.location.protocol);
         
         try {
           const response = await api.get('/auth/reissue', {
@@ -107,18 +118,18 @@ function OAuthCallback() {
           })
           
           // 응답 후 쿠키 상태 확인
-          console.log('[Cookie Debug] Document cookies after response:', document.cookie);
-          console.log('[Cookie Debug] 응답 후 쿠키 변경 여부:', document.cookie.includes('refresh_token'));
+          console.log('[Cookie DEBUG] 응답 후 쿠키:', document.cookie);
+          console.log('[Cookie DEBUG] 응답 후 쿠키 변경 여부:', document.cookie.includes('refresh_token'));
           
-          console.log('[Auth Debug] Response headers:', response.headers)
+          console.log('[Auth DEBUG] 응답 헤더:', response.headers)
           
           const authHeader = response.headers['authorization'] || response.headers['Authorization']
           if (!authHeader) {
-            console.error('Authorization header missing in response')
+            console.error('[OAuth DEBUG] 응답에 인증 헤더 없음')
             
             // 새 사용자이면서 인증 헤더가 없는 경우에도 회원정보 페이지로 이동
             if (isNewUser) {
-              console.log('[OAuth] 토큰 없지만 신규 사용자이므로 /auth/add로 이동')
+              console.log('[OAuth DEBUG] 토큰 없지만 신규 사용자이므로 /auth/add로 이동')
               navigate('/auth/add')
               return
             }
@@ -128,11 +139,14 @@ function OAuthCallback() {
 
           // 토큰 저장
           tokenUtils.setToken(authHeader)
-          console.log('Token stored successfully:', authHeader)
+          console.log('[OAuth DEBUG] 토큰 저장 시도:', authHeader.substring(0, 15) + '...')
+          
+          // 토큰 저장 확인 대기
+          await waitForTokenSaved();
 
           // JWT 토큰에서 사용자 정보 추출
           const tokenPayload = JSON.parse(atob(authHeader.split('.')[1]))
-          console.log('Token payload:', tokenPayload)
+          console.log('[OAuth DEBUG] 토큰 페이로드:', tokenPayload)
           
           // 사용자 정보 설정
           setUser({
@@ -160,7 +174,13 @@ function OAuthCallback() {
 
           // 어떤 소스에서든 신규 사용자로 판단되면 회원가입 페이지로 이동
           if (isNewUserDetected) {
-            console.log('[OAuth DEBUG] 최종 판단: 신규 사용자! /auth/add로 이동');
+            // 토큰 확인 후 리다이렉트
+            console.log('[OAuth DEBUG] 최종 판단: 신규 사용자! 토큰 확인 후 /auth/add로 이동');
+            
+            // 최종 토큰 확인
+            const finalToken = localStorage.getItem('accessToken');
+            console.log('[OAuth DEBUG] 최종 토큰 상태:', !!finalToken);
+            
             navigate('/auth/add', { replace: true });
             return;
           }
@@ -170,11 +190,11 @@ function OAuthCallback() {
           navigate('/studies', { replace: true });
           return;
         } catch (error) {
-          console.error('Failed to process OAuth callback:', error)
+          console.error('[OAuth DEBUG] OAuth 콜백 처리 실패:', error)
           
           // 에러 응답의 헤더와 쿠키 정보 출력
-          console.log('[Cookie Debug] Error response headers:', error.response?.headers);
-          console.log('[Cookie Debug] Cookies after error:', document.cookie);
+          console.log('[Cookie DEBUG] 에러 응답 헤더:', error.response?.headers);
+          console.log('[Cookie DEBUG] 에러 후 쿠키:', document.cookie);
           
           // *** 핵심 수정 부분: 신규 사용자 판단 강화 ***
           // 어떤 소스에서든 신규 사용자 정보가 있으면 회원가입 페이지로 이동
@@ -191,12 +211,12 @@ function OAuthCallback() {
           
           // 기존 사용자의 경우 일반 오류 처리
           if (error.response?.status === 401) {
-            console.log('Authentication failed, redirecting to login')
+            console.log('[OAuth DEBUG] 인증 실패, 로그인으로 리다이렉트')
           } else if (error.response?.status === 405) {
-            console.log('Method not allowed error, check API endpoint configuration')
+            console.log('[OAuth DEBUG] 메소드 허용 안 됨 오류, API 엔드포인트 구성 확인')
           } else if (error.message === 'Network Error') {
-            console.log('Network error occurred')
-            console.log('[Auth Debug] Network error details:', {
+            console.log('[OAuth DEBUG] 네트워크 오류 발생')
+            console.log('[Auth Debug] 네트워크 오류 세부정보:', {
               config: error.config,
               headers: error.config?.headers
             })
@@ -208,12 +228,11 @@ function OAuthCallback() {
           navigate('/')
         }
       } catch (error) {
-        console.error('OAuth callback general error:', error)
+        console.error('[OAuth DEBUG] OAuth 콜백 일반 오류:', error)
         
         // 여기서도 isNewUser 확인하여 처리
-        const isNewUser = searchParams.get('isNewUser') === 'true'
         if (isNewUser) {
-          console.log('[OAuth] 일반 오류 발생했지만 신규 사용자이므로 /auth/add로 이동')
+          console.log('[OAuth DEBUG] 일반 오류 발생했지만 신규 사용자이므로 /auth/add로 이동')
           navigate('/auth/add')
           return
         }

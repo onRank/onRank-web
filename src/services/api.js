@@ -194,26 +194,57 @@ export const tokenUtils = {
       console.log(
         "[Token Debug] Attempted to save null/undefined token, ignoring"
       );
-      return;
+      return Promise.reject(new Error("Null or undefined token"));
     }
 
-    // Bearer 접두사가 없는 경우에만 추가
-    const tokenWithBearer = token.startsWith("Bearer ")
-      ? token
-      : `Bearer ${token}`;
+    return new Promise((resolve, reject) => {
+      try {
+        // Bearer 접두사가 없는 경우에만 추가
+        const tokenWithBearer = token.startsWith("Bearer ")
+          ? token
+          : `Bearer ${token}`;
 
-    // 토큰을 저장하기 전에 이벤트 발행
-    const storageEvent = new Event("pre-tokensave");
-    window.dispatchEvent(storageEvent);
+        // 토큰을 저장하기 전에 이벤트 발행
+        const storageEvent = new Event("pre-tokensave");
+        window.dispatchEvent(storageEvent);
 
-    // localStorage에 저장
-    localStorage.setItem("accessToken", tokenWithBearer);
+        // localStorage에 저장
+        localStorage.setItem("accessToken", tokenWithBearer);
 
-    // 토큰 저장 후 이벤트 발행
-    const postStorageEvent = new Event("post-tokensave");
-    window.dispatchEvent(postStorageEvent);
+        // 토큰 저장 후 이벤트 발행
+        const postStorageEvent = new Event("post-tokensave");
+        window.dispatchEvent(postStorageEvent);
 
-    console.log("[Token Debug] Token saved successfully to localStorage");
+        console.log("[Token Debug] Token saved successfully to localStorage");
+        
+        // 토큰이 실제로 저장되었는지 확인
+        const savedToken = localStorage.getItem("accessToken");
+        if (savedToken) {
+          console.log("[Token Debug] Token verified in localStorage");
+          resolve(savedToken);
+        } else {
+          // 저장에 실패한 경우 재시도
+          console.warn("[Token Debug] Token not found after save, retrying...");
+          
+          // 약간의 지연 후 다시 저장 시도
+          setTimeout(() => {
+            localStorage.setItem("accessToken", tokenWithBearer);
+            const retryToken = localStorage.getItem("accessToken");
+            
+            if (retryToken) {
+              console.log("[Token Debug] Token saved successfully on retry");
+              resolve(retryToken);
+            } else {
+              console.error("[Token Debug] Failed to save token after retry");
+              reject(new Error("Failed to save token to localStorage"));
+            }
+          }, 50);
+        }
+      } catch (error) {
+        console.error("[Token Debug] Error saving token:", error);
+        reject(error);
+      }
+    });
   },
 
   removeToken: () => {
