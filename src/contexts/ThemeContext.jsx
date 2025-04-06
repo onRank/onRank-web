@@ -6,14 +6,9 @@ const ThemeContext = createContext();
 export const ThemeProvider = ({ children }) => {
   // 초기 테마를 결정하는 함수
   const getInitialTheme = () => {
-    // localStorage에서 테마 가져오기
-    const savedTheme = localStorage.getItem("theme");
-    if (savedTheme) {
-      return savedTheme === "dark";
-    }
-    
-    // 시스템 설정 확인
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+    // 이 앱의 기본 테마는 라이트 모드로 설정
+    localStorage.setItem("theme", "light");
+    return false; // false는 라이트 모드
   };
 
   const [isDarkMode, setIsDarkMode] = useState(getInitialTheme);

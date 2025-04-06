@@ -268,6 +268,17 @@ function ScheduleAddPage() {
                   }}
                   required
                 />
+                <div style={{
+                  position: 'absolute',
+                  right: '10px', 
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: colors.textSecondary,
+                  pointerEvents: 'none',
+                  fontSize: '12px'
+                }}>
+                  5분 단위
+                </div>
               </div>
             </div>
 
