@@ -6,16 +6,29 @@ const ThemeContext = createContext();
 export const ThemeProvider = ({ children }) => {
   // 초기 테마를 결정하는 함수
   const getInitialTheme = () => {
-    // 이 앱의 기본 테마는 라이트 모드로 설정
-    localStorage.setItem("theme", "light");
-    return false; // false는 라이트 모드
+    // 세션 스토리지에서 테마 설정 가져오기
+    const savedTheme = sessionStorage.getItem("theme");
+    
+    // 세션 스토리지에 테마 설정이 없으면 기본값 설정
+    if (!savedTheme) {
+      sessionStorage.setItem("theme", "light");
+      return false; // false는 라이트 모드
+    }
+    
+    // 저장된 테마에 따라 초기값 설정
+    return savedTheme === "dark";
   };
 
   const [isDarkMode, setIsDarkMode] = useState(getInitialTheme);
 
   // 테마 변경 함수
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode(prevMode => {
+      const newMode = !prevMode;
+      // localStorage.setItem("theme", newMode ? "dark" : "light");
+      sessionStorage.setItem("theme", newMode ? "dark" : "light");
+      return newMode;
+    });
   };
 
   // 라이트모드 컬러 정의
@@ -64,7 +77,7 @@ export const ThemeProvider = ({ children }) => {
   // 테마 변경 시 localStorage 업데이트 및 CSS 변수 적용
   useEffect(() => {
     // localStorage 저장
-    localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+    // localStorage.setItem("theme", isDarkMode ? "dark" : "light");
     
     // 다크모드 클래스 적용
     document.body.classList.toggle("dark-mode", isDarkMode);
@@ -95,7 +108,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = e => {
-      if (localStorage.getItem("theme") === null) {
+      if (sessionStorage.getItem("theme") === null) {
         setIsDarkMode(e.matches);
       }
     };

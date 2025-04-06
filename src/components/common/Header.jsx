@@ -33,26 +33,32 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    console.log("[Header] 로그아웃 버튼 클릭됨");
-
     try {
-      console.log("[Header] 로그아웃 API 호출 시작");
+      console.log('[Header] 로그아웃 시도');
+      
+      // API 로그아웃 요청
       await authService.logout();
-      console.log("[Header] 로그아웃 API 호출 성공");
-
-      // 로컬 스토리지 토큰 제거
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
       
-      // 전역 상태 사용자 정보 초기화
-      setUser(null);
+      // 추가: localStorage에서 스터디 관련 데이터 정리
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('study_') || key === 'studies_list') {
+          keysToRemove.push(key);
+        }
+      }
       
-      console.log("[Header] 페이지 이동 전");
+      // 수집된 키 삭제
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`[Header] localStorage에서 ${key} 삭제`);
+      });
+      
+      console.log('[Header] 로그아웃 API 호출 성공');
       navigate('/');
-      console.log("[Header] 페이지 이동 후 (이 로그는 표시되지 않을 수 있음)");
     } catch (error) {
-      console.error("[Header] 로그아웃 실패:", error);
-      alert("로그아웃 처리 중 오류가 발생했습니다.");
+      console.error('[Header] 로그아웃 오류:', error);
+      navigate('/');
     }
   };
 

@@ -431,65 +431,67 @@ export const authService = {
   // 로그아웃
   logout: async () => {
     try {
-      console.log("[Auth] 로그아웃 시도");
+      console.log("[Auth] 로그아웃 API 호출");
 
-      // 토큰 제거 전 확인
-      const tokenBefore = tokenUtils.getToken();
-      console.log("[Auth] 로그아웃 전 토큰 존재 여부:", !!tokenBefore);
-      const hasRefreshToken = tokenUtils.hasRefreshTokenSync();
-      console.log(
-        "[Auth] 로그아웃 전 리프레시 토큰 존재 여부:",
-        hasRefreshToken
-      );
-
-      // 로그아웃 요청 - 백엔드에서 리프레시 토큰 쿠키를 제거하도록 요청
-      try {
-        // 백엔드 로그아웃 API가 구현되었다면 호출
-        await api.post(
-          "/auth/logout",
-          {},
-          {
-            withCredentials: true, // 쿠키를 전송하기 위해 필수
-          }
-        );
-        console.log("[Auth] 백엔드 로그아웃 요청 성공");
-      } catch (apiError) {
-        console.warn("[Auth] 백엔드 로그아웃 요청 실패:", apiError);
-
-        // 백엔드 로그아웃 API가 실패하거나 없는 경우, 프론트엔드에서 리프레시 토큰 쿠키 제거
-        tokenUtils.removeRefreshTokenCookie();
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.log("[Auth] 토큰 없음, 로그아웃 처리만 수행");
+        tokenUtils.removeToken();
+        localStorage.removeItem("cachedUserInfo");
+        
+        // 스터디 관련 캐시 초기화
+        studyService.clearCache();
+        
+        return { success: true, message: "로그아웃되었습니다." };
       }
 
-      // 모든 토큰 제거 (로컬 스토리지 + 쿠키)
-      tokenUtils.clearAllTokens();
-
-      // 토큰 제거 후 확인
-      const tokenAfter = tokenUtils.getToken();
-      console.log("[Auth] 로그아웃 후 토큰 존재 여부:", !!tokenAfter);
-      const hasRefreshTokenAfter = tokenUtils.hasRefreshTokenSync();
-      console.log(
-        "[Auth] 로그아웃 후 리프레시 토큰 존재 여부:",
-        hasRefreshTokenAfter
+      // API 요청
+      const response = await api.post(
+        "/auth/logout",
+        {},
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
 
-      // 세션 스토리지도 정리
-      sessionStorage.removeItem("temp_token");
-      sessionStorage.removeItem("accessTokenBackup");
-      if (window.tempAuthToken) {
-        window.tempAuthToken = null;
-      }
+      // 토큰 및 관련 데이터 삭제
+      tokenUtils.removeToken();
+      localStorage.removeItem("cachedUserInfo");
 
+      // 스터디 관련 로컬스토리지 데이터 및 캐시 초기화
+      studyService.clearCache();
+
+      console.log("[Auth] 로그아웃 후 토큰 존재 여부:", !!tokenUtils.getToken());
+      console.log("[Auth] 로그아웃 후 리프레시 토큰 존재 여부:", await tokenUtils.hasRefreshToken());
       console.log("[Auth] 로그아웃 성공");
-      return { success: true };
+
+      return response.data || { success: true, message: "로그아웃되었습니다." };
     } catch (error) {
       console.error("[Auth] 로그아웃 실패:", error);
 
-      // 오류 발생 시에도 토큰 제거 시도
-      tokenUtils.clearAllTokens();
+      // 에러가 발생해도 클라이언트 쪽에서 토큰 및 캐시 삭제
+      tokenUtils.removeToken();
+      localStorage.removeItem("cachedUserInfo");
+      
+      // 스터디 관련 캐시 초기화
+      studyService.clearCache();
 
-      throw error;
+      throw new Error("로그아웃 중 오류가 발생했습니다.");
     }
   },
+};
+
+// 메모리 캐싱을 위한 객체 추가
+const memoryCache = {
+  studiesList: null,
+  studyDetails: {}
 };
 
 // 스터디 관련 API 서비스
@@ -532,22 +534,27 @@ export const studyService = {
         withCredentials: true,
       });
 
-      // 201 상태코드 및 Location 헤더 처리
-      if (response.status === 201) {
-        const locationUrl = response.headers["location"];
-        console.log("[StudyService] 생성된 스터디 URL:", locationUrl);
+      console.log("[StudyService] 스터디 생성 응답:", response.data);
 
-        // 생성된 스터디 ID 추출 (선택적)
-        const studyId = locationUrl ? locationUrl.split("/").pop() : null;
-        if (studyId) {
-          console.log("[StudyService] 생성된 스터디 ID:", studyId);
-          // response.data에 studyId 추가
-          if (!response.data) response.data = {};
-          response.data.studyId = studyId;
+      // 2. Pre-signed URL이 있고 이미지 파일이 있는 경우 S3에 업로드
+      if (response.data.uploadUrl && studyData.imageFile) {
+        try {
+          await studyService.uploadImageToS3(
+            response.data.uploadUrl,
+            studyData.imageFile
+          );
+          console.log("[StudyService] 이미지 업로드 성공");
+        } catch (uploadError) {
+          console.error("[StudyService] 이미지 업로드 실패:", uploadError);
+          // 이미지 업로드 실패 시에도 스터디 생성은 완료된 것으로 처리
+          return {
+            ...response.data,
+            warning: "스터디는 생성되었으나 이미지 업로드에 실패했습니다.",
+          };
         }
       }
 
-      console.log("[StudyService] 스터디 생성 성공:", response.data);
+      // 3. 최종 응답 반환
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 생성 오류:", error);
@@ -557,182 +564,77 @@ export const studyService = {
         error.response &&
         (error.response.status === 401 || error.response.status === 403)
       ) {
-        console.error("[StudyService] 인증 오류:", error.response.status);
-        // 액세스 토큰만 제거하고 리프레시 토큰 쿠키는 유지
-        tokenUtils.removeTokenKeepCookies();
-        return {
-          success: false,
-          message: "인증에 실패했습니다. 다시 로그인해주세요.",
-          requireRelogin: true,
-        };
+        console.error("[StudyService] 인증 오류 발생:", error.response.status);
+
+        // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
+        const authError = new Error(
+          "인증에 실패했습니다. 다시 로그인이 필요합니다."
+        );
+        authError.type = "AUTH_ERROR";
+        authError.requireRelogin = true;
+
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes("/login")) {
+          console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
+          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
+          setTimeout(() => {
+            window.location.href = loginUrl;
+          }, 500);
+        }
+
+        throw authError;
       }
 
+      // 네트워크 에러 처리
+      if (error.message && error.message.includes("Network Error")) {
+        const networkError = new Error(
+          "네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요."
+        );
+        networkError.type = "NETWORK_ERROR";
+        throw networkError;
+      }
+
+      // 기타 에러
       throw error;
     }
   },
 
   // 스터디 목록 조회
-  getStudies: async (params = {}) => {
+  getStudies: async () => {
     try {
       console.log("[StudyService] 스터디 목록 조회 요청");
 
-      // 토큰 확인 및 갱신
-      const token = tokenUtils.getToken();
-      if (!token) {
-        console.warn(
-          "[StudyService] 토큰 없음, 스터디 목록 조회 시 인증 문제 가능성"
-        );
-      }
-
-      const response = await api.get("/studies", {
-        params,
-        withCredentials: true,
-        headers: {
-          Accept: "application/json",
-        },
+      const response = await api.get('/studies', {
+        withCredentials: true
       });
 
       console.log("[StudyService] 스터디 목록 조회 성공:", response.data);
 
-      // 응답이 문자열인 경우 안전하게 처리
-      let data = response.data;
-      if (typeof data === "string") {
-        try {
-          console.log("[StudyService] 문자열 응답 처리 시도");
+      // 응답 데이터가 있는 경우
+      if (response.data) {
+        const data = Array.isArray(response.data) ? response.data : [];
 
-          // HTML 응답인 경우 빈 배열 반환
-          if (data.includes("<!DOCTYPE html>")) {
-            console.warn("[StudyService] HTML 응답 감지, 빈 배열 반환");
-            return [];
+        // 데이터 형식 통일
+        data.forEach(study => {
+          if (!study.file) {
+            study.file = { fileId: null, fileName: null, fileUrl: null };
           }
-
-          // JSON 문자열인 경우 파싱 시도
-          try {
-            return JSON.parse(data);
-          } catch (parseError) {
-            console.error("[StudyService] 데이터 파싱 실패:", parseError);
-            return [];
-          }
-        } catch (error) {
-          console.error("[StudyService] 응답 처리 오류:", error);
-          return [];
-        }
-      }
-
-      // 배열이 아닌 경우 배열로 변환
-      if (!Array.isArray(data)) {
-        console.warn("[StudyService] 응답이 배열이 아님, 배열로 변환:", data);
-        return data ? [data] : [];
-      }
-
-      // 각 스터디 객체의 필드 확인 및 로깅
-      if (data.length > 0) {
-        console.log(
-          "[StudyService] 첫 번째 스터디 객체 필드:",
-          Object.keys(data[0])
-        );
-
-        // 필드명 확인 - 백엔드 DTO 구조에 맞게 확인
-        console.log(
-          "[StudyService] studyName 존재 여부:",
-          "studyName" in data[0]
-        );
-        console.log(
-          "[StudyService] studyContent 존재 여부:",
-          "studyContent" in data[0]
-        );
-        console.log("[StudyService] file 존재 여부:", "file" in data[0]);
-
-        // 데이터 유효성 검사
-        data = data.map((study) => {
-          // 필수 필드가 없는 경우 기본값 설정
-          if (!study.studyName) {
-            console.warn("[StudyService] studyName 필드 없음, 기본값 설정");
-            study.studyName = "제목 없음";
-          }
-
-          if (!study.studyContent) {
-            console.warn("[StudyService] studyContent 필드 없음, 기본값 설정");
-            study.studyContent = "설명 없음";
-          }
-
-          // file 객체 확인 및 처리
-          if ("file" in study) {
-            if (!study.file || !study.file.fileUrl) {
-              console.log(
-                "[StudyService] file 객체가 없거나 fileUrl이 없음, 빈 file 객체 설정"
-              );
-              study.file = { fileId: null, fileName: null, fileUrl: "" };
-            }
-          } else {
-            console.log("[StudyService] file 필드가 없음, 빈 file 객체 설정");
-            study.file = { fileId: null, fileName: null, fileUrl: "" };
-          }
-
-          // 개별 스터디 데이터를 localStorage에 캐싱 (상세 페이지 접근 시 사용)
-          if (study.studyId) {
-            try {
-              const mappedStudy = {
-                id: study.studyId,
-                title: study.studyName || "제목 없음",
-                description: study.studyContent || "설명 없음",
-                currentMembers: study.members?.length || 0,
-                maxMembers: 10,
-                status: "모집중",
-                imageUrl:
-                  study.file && study.file.fileUrl ? study.file.fileUrl : "",
-              };
-
-              localStorage.setItem(
-                `study_${study.studyId}`,
-                JSON.stringify(mappedStudy)
-              );
-              console.log(
-                `[StudyService] 스터디 ID:${study.studyId} 데이터를 localStorage에 캐싱했습니다.`
-              );
-            } catch (cacheError) {
-              console.warn(
-                `[StudyService] 스터디 ID:${study.studyId} 캐싱 실패:`,
-                cacheError
-              );
-            }
-          }
-
           return study;
         });
 
-        // 전체 스터디 목록도 캐싱 (네트워크 오류 시 사용)
-        try {
-          localStorage.setItem("studies_list", JSON.stringify(data));
-          console.log(
-            "[StudyService] 전체 스터디 목록을 localStorage에 캐싱했습니다."
-          );
-        } catch (cacheError) {
-          console.warn(
-            "[StudyService] 전체 스터디 목록 캐싱 실패:",
-            cacheError
-          );
-        }
+        // 메모리에 캐싱 (로컬스토리지 대신)
+        memoryCache.studiesList = data;
+        console.log("[StudyService] 전체 스터디 목록을 메모리에 캐싱했습니다.");
       }
 
-      return data;
+      return response.data || [];
     } catch (error) {
       console.error("[StudyService] 스터디 목록 조회 오류:", error);
 
-      // API 호출 실패 시 localStorage에서 캐시된 목록 조회
-      try {
-        const cachedListStr = localStorage.getItem("studies_list");
-        if (cachedListStr) {
-          console.log(
-            "[StudyService] API 호출 실패로 localStorage에서 캐시된 스터디 목록 사용"
-          );
-          return JSON.parse(cachedListStr);
-        }
-      } catch (cacheError) {
-        console.error(
-          "[StudyService] 캐시된 스터디 목록 사용 중 오류:",
-          cacheError
-        );
+      // API 호출 실패 시 메모리 캐시에서 확인
+      if (memoryCache.studiesList) {
+        console.log("[StudyService] API 호출 실패로 메모리 캐시에서 스터디 목록 사용");
+        return memoryCache.studiesList;
       }
 
       // 오류 발생 시 빈 배열 반환
@@ -763,7 +665,7 @@ export const studyService = {
           data.file = { fileId: null, fileName: null, fileUrl: "" };
         }
 
-        // 스터디 데이터 캐싱 (백업용)
+        // 스터디 데이터 메모리 캐싱 (로컬스토리지 대신)
         try {
           const mappedData = {
             id: data.studyId,
@@ -775,9 +677,9 @@ export const studyService = {
             imageUrl: data.file && data.file.fileUrl ? data.file.fileUrl : "",
           };
 
-          localStorage.setItem(`study_${studyId}`, JSON.stringify(mappedData));
+          memoryCache.studyDetails[studyId] = mappedData;
           console.log(
-            "[StudyService] 스터디 데이터를 localStorage에 캐싱했습니다."
+            "[StudyService] 스터디 데이터를 메모리에 캐싱했습니다."
           );
         } catch (cacheError) {
           console.warn("[StudyService] 스터디 데이터 캐싱 실패:", cacheError);
@@ -788,27 +690,22 @@ export const studyService = {
     } catch (error) {
       console.error("[StudyService] 스터디 상세 조회 오류:", error);
 
-      // API 호출 실패 시 localStorage에서 캐시된 데이터 확인
-      try {
-        const cachedDataStr = localStorage.getItem(`study_${studyId}`);
-        if (cachedDataStr) {
-          console.log(
-            "[StudyService] API 호출 실패로 localStorage에서 캐시된 데이터 사용"
-          );
-          const cachedData = JSON.parse(cachedDataStr);
+      // API 호출 실패 시 메모리 캐시에서 확인
+      const cachedData = memoryCache.studyDetails[studyId];
+      if (cachedData) {
+        console.log(
+          "[StudyService] API 호출 실패로 메모리 캐시에서 캐시된 데이터 사용"
+        );
 
-          // 캐시된 데이터를 원래 API 응답 형식으로 변환
-          return {
-            studyId: cachedData.id,
-            studyName: cachedData.title,
-            studyContent: cachedData.description,
-            file: {
-              fileUrl: cachedData.imageUrl,
-            },
-          };
-        }
-      } catch (cacheError) {
-        console.error("[StudyService] 캐시된 데이터 사용 중 오류:", cacheError);
+        // 캐시된 데이터를 원래 API 응답 형식으로 변환
+        return {
+          studyId: cachedData.id,
+          studyName: cachedData.title,
+          studyContent: cachedData.description,
+          file: {
+            fileUrl: cachedData.imageUrl,
+          },
+        };
       }
 
       // 캐시된 데이터도 없으면 원래 오류 전달
@@ -1676,6 +1573,13 @@ export const studyService = {
       console.error("[StudyService] 출석 상태 업데이트 실패:", error);
       throw error;
     }
+  },
+
+  // 로그아웃 시 메모리 캐시 초기화 함수 추가 (외부에서 호출 가능하도록)
+  clearCache: () => {
+    memoryCache.studiesList = null;
+    memoryCache.studyDetails = {};
+    console.log("[StudyService] 메모리 캐시가 초기화되었습니다.");
   },
 };
 

@@ -99,14 +99,33 @@ function MobileHeader() {
 
   const handleLogout = async () => {
     try {
+      // 메뉴 닫기
+      setIsMenuOpen(false);
+      
+      // API 로그아웃 요청
       await authService.logout();
-      setUser(null);
-      window.location.href = "/";
+      
+      // 추가: localStorage에서 스터디 관련 데이터 정리
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key.startsWith('study_') || key === 'studies_list') {
+          keysToRemove.push(key);
+        }
+      }
+      
+      // 수집된 키 삭제
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`[MobileHeader] localStorage에서 ${key} 삭제`);
+      });
+      
+      // 홈으로 이동
+      navigate('/');
     } catch (error) {
-      console.error("로그아웃 실패:", error);
-      alert("로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.");
+      console.error('[MobileHeader] 로그아웃 오류:', error);
+      navigate('/');
     }
-    setIsMenuOpen(false);
   };
 
   const ThemeIcon = () => (
