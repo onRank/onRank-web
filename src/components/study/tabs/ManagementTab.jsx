@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
-import { studyService } from '../../../services/api';
+import { studyService, getMemberRoleDisplayName } from '../../../services/api';
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
@@ -12,6 +12,7 @@ function ManagementTab({ studyData }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [currentUserRole, setCurrentUserRole] = useState(''); // 현재 사용자 역할 저장
 
   // 회원 목록 가져오기
   useEffect(() => {
@@ -19,6 +20,11 @@ function ManagementTab({ studyData }) {
       fetchMembers();
     }
   }, [managementTab, studyId]);
+
+  // 초기 로드 시 한 번 회원 목록 가져오기 (역할 확인용)
+  useEffect(() => {
+    fetchMembers();
+  }, [studyId]);
 
   // 회원 목록 API 호출 함수
   const fetchMembers = async () => {
@@ -32,6 +38,12 @@ function ManagementTab({ studyData }) {
       // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
       const membersList = Array.isArray(response) ? response : response.members || [];
       setMembers(membersList);
+      
+      // 현재 사용자 정보 찾기 (첫 번째 멤버가 현재 사용자라고 가정)
+      if (membersList.length > 0) {
+        const currentUser = membersList[0]; // 또는 로그인한 사용자 ID와 일치하는 멤버를 찾는 로직 필요
+        setCurrentUserRole(currentUser.memberRole);
+      }
     } catch (err) {
       console.error('회원 목록 조회 오류:', err);
       setError('회원 목록을 불러오는데 실패했습니다.');
@@ -42,6 +54,9 @@ function ManagementTab({ studyData }) {
         { memberId: 3, studentName: '회원3', studentEmail: 'member1@example.com', memberRole: 'PARTICIPANT' },
         { memberId: 4, studentName: '회원4', studentEmail: 'member2@example.com', memberRole: 'PARTICIPANT' }
       ]);
+      
+      // 목업 데이터에서도 현재 사용자 역할 가정
+      setCurrentUserRole('CREATOR');
     } finally {
       setLoading(false);
     }
@@ -49,14 +64,37 @@ function ManagementTab({ studyData }) {
 
   return (
     <div style={{ padding: '1rem' }}>
-      <h2 style={{ 
-        fontSize: '1.5rem', 
-        fontWeight: 'bold', 
-        marginBottom: '1.5rem',
-        color: '#333'
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '1.5rem'
       }}>
-        스터디 관리
-      </h2>
+        <h2 style={{ 
+          fontSize: '1.5rem', 
+          fontWeight: 'bold',
+          color: '#333'
+        }}>
+          스터디 관리
+        </h2>
+        
+        {/* 현재 사용자 역할 표시 */}
+        {currentUserRole && (
+          <div style={{
+            display: 'inline-block',
+            padding: '0.25rem 0.75rem',
+            backgroundColor: currentUserRole === 'CREATOR' ? '#ffebee' : 
+                            currentUserRole === 'HOST' ? '#e3f2fd' : '#f1f8e9',
+            borderRadius: '4px',
+            color: currentUserRole === 'CREATOR' ? '#c62828' : 
+                  currentUserRole === 'HOST' ? '#1565c0' : '#33691e',
+            fontWeight: 'bold',
+            fontSize: '0.9rem'
+          }}>
+            {getMemberRoleDisplayName(currentUserRole)}
+          </div>
+        )}
+      </div>
       
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
