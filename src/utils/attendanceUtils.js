@@ -1,6 +1,6 @@
-import React from 'react';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { formatDate as dateUtilsFormatDate } from './dateUtils';
 
 /**
  * 출석 상태 스타일 정의
@@ -64,7 +64,7 @@ export const getStatusText = (status) => {
 /**
  * 출석 상태 코드를 아이콘 컴포넌트로 변환하는 함수
  * @param {string} status - 출석 상태 코드 (PRESENT, ABSENT, LATE, UNKNOWN)
- * @returns {JSX.Element} - 상태에 해당하는 아이콘 컴포넌트
+ * @returns {string} - 상태에 해당하는 아이콘 문자
  */
 export const getStatusIcon = (status) => {
   return STATUS_STYLES[status]?.icon || STATUS_STYLES.UNKNOWN.icon;
@@ -78,8 +78,6 @@ export const getStatusIcon = (status) => {
  */
 export const formatAttendanceItem = (item, memberContext = null) => {
   if (!item) return null;
-  
-  const { formatDate } = require('./dateUtils');
   
   // 필수 필드 추출
   const id = item.attendanceId || item.id || '';
@@ -95,7 +93,7 @@ export const formatAttendanceItem = (item, memberContext = null) => {
     id,
     scheduleId,
     title,
-    date: startingAt ? formatDate(startingAt) : '날짜 없음',
+    date: startingAt ? dateUtilsFormatDate(startingAt) : '날짜 없음',
     status,
     myStatus
   };
