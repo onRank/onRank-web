@@ -2090,17 +2090,19 @@ export const noticeService = {
       }
 
       // 필수 필드가 없는 경우 기본값 설정
-      if (!data.noticeTitle || data.noticeTitle.trim() === "") {
-        console.warn(
-          "[NoticeService] noticeTitle 필드 없음 또는 빈 값, 기본값 설정"
-        );
+      if (data.noticeTitle === undefined || data.noticeTitle === null) {
+        console.warn("[NoticeService] noticeTitle 필드 없음, 기본값 설정");
+        data.noticeTitle = "제목 없음";
+      } else if (data.noticeTitle.trim() === "") {
+        console.warn("[NoticeService] noticeTitle 빈 값, 기본값 설정");
         data.noticeTitle = "제목 없음";
       }
 
-      if (!data.noticeContent || data.noticeContent.trim() === "") {
-        console.warn(
-          "[NoticeService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
-        );
+      if (data.noticeContent === undefined || data.noticeContent === null) {
+        console.warn("[NoticeService] noticeContent 필드 없음, 기본값 설정");
+        data.noticeContent = "내용 없음";
+      } else if (data.noticeContent.trim() === "") {
+        console.warn("[NoticeService] noticeContent 빈 값, 기본값 설정");
         data.noticeContent = "내용 없음";
       }
 
