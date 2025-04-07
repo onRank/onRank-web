@@ -6,7 +6,7 @@ import { formatDateTime, getStatusText, getStatusIcon, STATUS_STYLES } from '../
  * 출석 목록 컴포넌트
  * 출석 정보 목록을 표시하는 컴포넌트
  */
-function AttendanceList({ attendances = [], isHost, studyId }) {
+function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   // 배열이 아닌 경우 빈 배열로 처리
   const safeAttendances = Array.isArray(attendances) ? attendances : [];
   
