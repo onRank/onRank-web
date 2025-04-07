@@ -38,6 +38,8 @@ const extractBasicUserInfo = (tokenPayload) => {
     department: tokenPayload.department || '학과 정보 없음',
     // JWT 토큰에 포함된 다른 기본 정보가 있다면 여기에 추가
     username: tokenPayload.username || tokenPayload.sub || '',
+    // 역할 정보 추가
+    role: tokenPayload.role || tokenPayload.roles || 'MEMBER',
     isTokenBasedInfo: true // 이 정보가 토큰에서 추출되었음을 표시
   }
 }
@@ -213,10 +215,11 @@ export function AuthProvider({ children }) {
     isDetailedUserInfo, // 상세 사용자 정보 여부 (프로필 페이지 등에서 사용)
     isAuthenticated: !!user, // user 객체가 존재하면 true, 아니면 false
     validateToken, // 토큰 유효성 검증 함수 추가
+    role: user?.role || 'MEMBER', // user 객체에서 역할 정보 추출하여 제공
   }
 
   console.log('[Auth] Provider 렌더링')
-  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading, 'isDetailedUserInfo:', isDetailedUserInfo, 'isAuthenticated:', !!user)
+  console.log('[Auth] 현재 상태 - user:', user, 'loading:', loading, 'isDetailedUserInfo:', isDetailedUserInfo, 'isAuthenticated:', !!user, 'role:', user?.role || 'MEMBER')
 
   return (
     <AuthContext.Provider value={value}>
