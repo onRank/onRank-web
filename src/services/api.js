@@ -1482,11 +1482,8 @@ export const studyService = {
       
       // 토큰 확인
       const token = tokenUtils.getToken();
-      if (!token) {
-        console.error("[StudyService] 토큰 없음, 출석 상세 정보 조회 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
-      }
-
+      console.log('[StudyService] 토큰 상태:', !!token);
+      
       // 네트워크 요청을 직접 fetch로도 시도
       try {
         console.log(`[StudyService] fetch API로 직접 요청 시도`);
@@ -1496,7 +1493,7 @@ export const studyService = {
         const fetchResponse = await fetch(fetchUrl, {
           method: 'GET',
           headers: {
-            'Authorization': token,
+            'Authorization': token || '',
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           }
@@ -1513,17 +1510,8 @@ export const studyService = {
       
       // fetch 실패 시 axios로 시도
       console.log(`[StudyService] axios로 출석 상세 정보 조회 요청`);
-      const response = await api.get(
-        `/studies/${studyId}/attendances/${scheduleId}`,
-        {
-          headers: {
-            Authorization: token,
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
-      
+      const response = await api.get(`/studies/${studyId}/attendances/${scheduleId}`);
+
       console.log("[StudyService] 출석 상세 정보 조회 성공:", response.data);
       return response.data;
     } catch (error) {
