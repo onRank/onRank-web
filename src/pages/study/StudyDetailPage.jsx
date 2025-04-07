@@ -29,15 +29,16 @@ function StudyDetailPage() {
       dataLoadAttempted.current = true;
       
       setIsLoading(true);
-      setError(null);
       
       try {
-        const data = await studyService.getStudyDetail(studyId);
+        const data = await studyService.getStudyById(studyId);
         console.log("Fetched study data:", data);
-        setStudyData(data);
+        if (data) {
+          setStudyData(data);
+        }
       } catch (err) {
         console.error("Error fetching study data:", err);
-        setError("스터디 정보를 불러오는데 실패했습니다.");
+        // 오류 메시지를 표시하지 않고 기본값 유지
       } finally {
         setIsLoading(false);
       }
@@ -173,8 +174,8 @@ function StudyDetailPage() {
         )}
       </div>
 
-      {/* 오류 메시지 표시 */}
-      {error && <ErrorMessage message={error} />}
+      {/* 오류 메시지 표시 - 숨김 처리 */}
+      {error && false && <ErrorMessage message={error} />}
 
       {/* 메인 컨텐츠 */}
       <div
