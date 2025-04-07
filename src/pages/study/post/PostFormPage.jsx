@@ -3,11 +3,12 @@ import { PostProvider } from "../../../components/study/post/PostProvider";
 import PostForm from "../../../components/study/post/PostForm";
 import StudySidebar from "../../../components/study/StudySidebar";
 import { IoHomeOutline } from "react-icons/io5";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function PostFormPage() {
   const { studyId } = useParams();
   const navigate = useNavigate();
+  const [studyData, setStudyData] = useState({ title: "스터디" });
 
   // 스터디 정보 가져오기
   useEffect(() => {
@@ -17,7 +18,7 @@ function PostFormPage() {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[NoticeFormPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[PostFormPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -124,7 +125,7 @@ function PostFormPage() {
         </Link>
         <span>{">"}</span>
         <Link
-          to={`/studies/${studyId}/notices`}
+          to={`/studies/${studyId}/posts`}
           style={styles.breadcrumbLink}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "#F8F9FA";
