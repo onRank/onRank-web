@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import * as attendanceApi from '../../../api/attendanceApi';
+import { studyService } from '../../../services/api';
 import AttendanceList from '../../../components/study/attendance/AttendanceList';
 import AttendanceChart from '../../../components/study/attendance/AttendanceChart';
 
@@ -25,7 +25,7 @@ function AttendanceContainer() {
   const fetchAttendanceData = async () => {
     try {
       setLoading(true);
-      const response = await attendanceApi.getAttendances(studyId);
+      const response = await studyService.getAttendances(studyId);
       console.log('[AttendanceContainer] 원본 응답:', response);
       
       // 출석 데이터 추출
@@ -83,7 +83,7 @@ function AttendanceContainer() {
   // 출석 상태 업데이트 핸들러
   const handleUpdateStatus = async (attendanceId, newStatus) => {
     try {
-      await attendanceApi.updateAttendanceStatus(studyId, attendanceId, newStatus);
+      await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
       fetchAttendanceData(); // 데이터 새로고침
     } catch (error) {
       console.error('[AttendanceContainer] 출석 상태 업데이트 오류:', error);
