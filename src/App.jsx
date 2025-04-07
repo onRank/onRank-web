@@ -29,7 +29,7 @@ import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
-import ScheduleAddPage from "./pages/study/ScheduleAddPage";
+import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import AttendanceEditPage from "./pages/study/AttendanceEditPage";
 import "./App.css";
 
