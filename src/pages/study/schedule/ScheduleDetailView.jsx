@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useTheme } from '../../../contexts/ThemeContext';
-import TimeSelector from '../../common/TimeSelector';
-
+import TimeSelector from '../../../components/common/TimeSelector';
+import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 const ScheduleDetailView = ({ 
   schedule, 
   onBack, 
@@ -189,212 +189,191 @@ const ScheduleDetailView = ({
         borderColor: colors.border
       }}>
         <form onSubmit={handleSubmit}>
-          <div style={{
-            marginBottom: '1rem',
-            fontSize: '16px',
-            fontWeight: 'bold',
-            color: colors.textPrimary
-          }}>
-            {scheduleTitle || '제목 없음'}
-          </div>
-          
-          <div style={{
-            display: 'flex',
-            marginBottom: '1rem'
-          }}>
-            <div style={{
-              fontWeight: 'bold',
-              marginRight: '0.5rem',
-              color: colors.textPrimary
-            }}>
-              {scheduleRound}회차
-            </div>
-            <div style={{
-              color: colors.textSecondary,
-              fontSize: '14px',
-              marginRight: '0.5rem'
-            }}>
-              ({scheduleDate || '날짜 선택'} {scheduleTime ? `${scheduleTime.split(':')[0]}:${scheduleTime.split(':')[1]} ${parseInt(scheduleTime.split(':')[0]) >= 12 ? 'PM' : 'AM'}` : ''})
-            </div>
-          </div>
-          
           <div style={{ marginBottom: '1.5rem' }}>
+            <label 
+              htmlFor="scheduleTitle"
+              style={{
+                display: 'block',
+                marginBottom: '0.5rem',
+                fontWeight: 'bold',
+                color: colors.textPrimary
+              }}
+            >
+              제목
+            </label>
             <input
               id="scheduleTitle"
               type="text"
               value={scheduleTitle}
               onChange={(e) => setScheduleTitle(e.target.value)}
-              placeholder="일정 제목을 입력하세요"
-              disabled={isSubmitting}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
+                border: `1px solid ${colors.border}`,
                 fontSize: '14px',
-                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
-                color: colors.textPrimary
+                backgroundColor: colors.cardBackground,
+                color: colors.text
               }}
+              placeholder="일정 제목을 입력하세요"
+              required
             />
           </div>
           
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
-              htmlFor="scheduleDate"
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontWeight: 'bold',
-                fontSize: '14px',
-                color: colors.textPrimary
-              }}
-            >
-              날짜 <span style={{ color: colors.primary }}>*</span>
-            </label>
-            <div 
-              style={{ 
-                position: 'relative', 
-                width: '100%',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer'
-              }}
-              onClick={() => !isSubmitting && document.getElementById('scheduleDate').showPicker()}
-            >
+          <div style={{ marginBottom: '1.5rem', display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1 }}>
+              <label 
+                htmlFor="scheduleDate"
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: 'bold',
+                  color: colors.textPrimary
+                }}
+              >
+                날짜
+              </label>
               <input
                 id="scheduleDate"
                 type="date"
                 value={scheduleDate}
                 onChange={(e) => setScheduleDate(e.target.value)}
-                disabled={isSubmitting}
                 style={{
                   width: '100%',
                   padding: '0.75rem',
-                  border: `1px solid ${colors.border}`,
                   borderRadius: '4px',
+                  border: `1px solid ${colors.border}`,
                   fontSize: '14px',
-                  backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
-                  color: colors.textPrimary,
-                  cursor: isSubmitting ? 'not-allowed' : 'pointer'
+                  backgroundColor: colors.cardBackground,
+                  color: colors.text
                 }}
+                required
+              />
+            </div>
+            
+            <div style={{ flex: 1 }}>
+              <label 
+                htmlFor="scheduleTime"
+                style={{
+                  display: 'block',
+                  marginBottom: '0.5rem',
+                  fontWeight: 'bold',
+                  color: colors.textPrimary
+                }}
+              >
+                시간
+              </label>
+              <input
+                id="scheduleTime"
+                type="time"
+                value={scheduleTime}
+                onChange={(e) => setScheduleTime(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  borderRadius: '4px',
+                  border: `1px solid ${colors.border}`,
+                  fontSize: '14px',
+                  backgroundColor: colors.cardBackground,
+                  color: colors.text
+                }}
+                required
               />
             </div>
           </div>
           
           <div style={{ marginBottom: '1.5rem' }}>
             <label 
-              htmlFor="scheduleTime"
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
-                fontWeight: 'bold',
-                fontSize: '14px',
-                color: colors.textPrimary
-              }}
-            >
-              시간 <span style={{ color: colors.primary }}>*</span>
-            </label>
-            <TimeSelector 
-              value={scheduleTime}
-              onChange={setScheduleTime}
-              disabled={isSubmitting}
-            />
-          </div>
-          
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label 
               htmlFor="scheduleContent"
-              style={{ 
-                display: 'block', 
-                marginBottom: '0.5rem', 
+              style={{
+                display: 'block',
+                marginBottom: '0.5rem',
                 fontWeight: 'bold',
-                fontSize: '14px',
                 color: colors.textPrimary
               }}
             >
-              내용을 입력해주세요
+              내용
             </label>
             <textarea
               id="scheduleContent"
               value={scheduleContent}
               onChange={(e) => setScheduleContent(e.target.value)}
-              placeholder="일정에 대한 설명을 입력하세요"
-              disabled={isSubmitting}
               style={{
                 width: '100%',
                 padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
                 borderRadius: '4px',
+                border: `1px solid ${colors.border}`,
                 fontSize: '14px',
-                minHeight: '200px',
-                resize: 'vertical',
-                backgroundColor: isSubmitting ? colors.hoverBackground : colors.inputBackground,
-                color: colors.textPrimary
+                backgroundColor: colors.cardBackground,
+                color: colors.text,
+                minHeight: '150px',
+                resize: 'vertical'
               }}
+              placeholder="일정 내용을 입력하세요"
             />
-            <div style={{ textAlign: 'right', fontSize: '12px', color: colors.textSecondary }}>
-              {scheduleContent.length}/10000
-            </div>
           </div>
           
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '1rem',
-            marginTop: '2rem'
-          }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2rem' }}>
             <button
               type="button"
               onClick={handleDeleteSchedule}
-              disabled={isSubmitting}
               style={{
-                padding: '0.75rem 2rem',
-                border: '1px solid #f44336',
+                padding: '0.75rem 1.5rem',
+                backgroundColor: colors.error,
+                color: 'white',
+                border: 'none',
                 borderRadius: '4px',
-                backgroundColor: 'white',
-                color: '#f44336',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                cursor: 'pointer',
                 fontSize: '14px',
-                display: 'inline-block',
-                textAlign: 'center'
+                fontWeight: 'bold',
+                opacity: isSubmitting ? 0.7 : 1,
+                pointerEvents: isSubmitting ? 'none' : 'auto'
               }}
+              disabled={isSubmitting}
             >
               삭제하기
             </button>
-            <button
-              type="button"
-              onClick={onBack}
-              style={{
-                padding: '0.75rem 2rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px',
-                backgroundColor: 'white',
-                cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                textDecoration: 'none',
-                color: '#333',
-                display: 'inline-block',
-                textAlign: 'center'
-              }}
-            >
-              취소하기
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting || !isFormValid}
-              style={{
-                padding: '0.75rem 2rem',
-                border: 'none',
-                borderRadius: '4px',
-                backgroundColor: isSubmitting || !isFormValid ? '#cccccc' : '#FF0000',
-                color: 'white',
-                cursor: isSubmitting || !isFormValid ? 'not-allowed' : 'pointer',
-                fontSize: '14px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {isSubmitting ? '처리 중...' : '저장'}
-            </button>
+            
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                type="button"
+                onClick={onBack}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#e5e5e5',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  opacity: isSubmitting ? 0.7 : 1,
+                  pointerEvents: isSubmitting ? 'none' : 'auto'
+                }}
+                disabled={isSubmitting}
+              >
+                취소
+              </button>
+              
+              <button
+                type="submit"
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: colors.primary,
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  opacity: isSubmitting || !isFormValid ? 0.7 : 1,
+                  pointerEvents: isSubmitting || !isFormValid ? 'none' : 'auto'
+                }}
+                disabled={isSubmitting || !isFormValid}
+              >
+                {isSubmitting ? '저장 중...' : '저장하기'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -408,6 +387,10 @@ ScheduleDetailView.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   isLoading: PropTypes.bool
+};
+
+ScheduleDetailView.defaultProps = {
+  isLoading: false
 };
 
 export default ScheduleDetailView; 
