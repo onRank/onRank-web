@@ -26,14 +26,19 @@ function AttendanceDetailPage() {
       setIsLoading(true);
       setError(null);
       
-      // 스터디 정보 가져오기
-      const studyData = await studyService.getStudyById(studyId);
-      // 사용자가 호스트인지 확인
-      setIsHost(
-        studyData.host?.userId === user?.userId || 
-        user?.role === 'ADMIN' || 
-        user?.role === 'CREATOR'
-      );
+      try {
+        // 스터디 정보 가져오기
+        const studyData = await studyService.getStudyById(studyId);
+        // 사용자가 호스트인지 확인
+        setIsHost(
+          studyData?.host?.userId === user?.userId || 
+          user?.role === 'ADMIN' || 
+          user?.role === 'CREATOR'
+        );
+      } catch (studyError) {
+        console.error('[AttendanceDetailPage] 스터디 정보 조회 실패:', studyError);
+        // 스터디 정보 가져오기에 실패해도 출석 정보는 계속 가져오도록 진행
+      }
 
       // 출석 상세 정보 가져오기
       const data = await studyService.getAttendanceDetails(studyId, scheduleId);

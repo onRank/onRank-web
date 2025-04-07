@@ -1478,8 +1478,22 @@ export const studyService = {
   // 출석 상세 정보 조회
   getAttendanceDetails: async (studyId, scheduleId) => {
     try {
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 출석 상세 정보 조회 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
       const response = await api.get(
-        `/studies/${studyId}/attendances/${scheduleId}`
+        `/studies/${studyId}/attendances/${scheduleId}`,
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
       return response.data;
     } catch (error) {
@@ -1491,8 +1505,23 @@ export const studyService = {
   // 출석 상태 업데이트
   updateAttendanceStatus: async (studyId, attendanceId, status) => {
     try {
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("[StudyService] 토큰 없음, 출석 상태 업데이트 불가");
+        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
+      }
+
       const response = await api.put(
-        `/studies/${studyId}/attendances/${attendanceId}?status=${status}`
+        `/studies/${studyId}/attendances/${attendanceId}?status=${status}`,
+        {}, // 빈 객체를 본문으로 전송 (PUT 요청에 필요)
+        {
+          headers: {
+            Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
       );
       return response.data;
     } catch (error) {
