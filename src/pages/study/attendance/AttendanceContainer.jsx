@@ -5,6 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import ErrorMessage from '../../../components/common/ErrorMessage';
 import AttendanceList from '../../../components/study/attendance/AttendanceList';
+import AttendanceChart from '../../../components/study/attendance/AttendanceChart';
 import { getStatusText, formatAttendanceItem, formatDateTime } from '../../../utils/attendanceUtils';
 
 /**
@@ -70,16 +71,29 @@ function AttendanceContainer() {
           }
         }
         
+        console.log('[AttendanceContainer] 추출된 출석 데이터:', attendanceData);
+        
+        // 데이터가 비어있는지 확인
+        if (attendanceData.length === 0) {
+          console.log('[AttendanceContainer] 출석 데이터가 없습니다.');
+          setAttendances([]);
+          setStatistics({ present: 0, absent: 0, late: 0, unknown: 0 });
+          setIsLoading(false);
+          return;
+        }
+        
         // 포맷팅된 데이터로 변환
         const formattedData = attendanceData.map(item => {
           // 기본 형식 변환
           const formattedItem = formatAttendanceItem(item);
           // 추가 필드 포맷팅
           return {
-            ...formattedItem,
-            formattedDateTime: formatDateTime(formattedItem.startingAt || formattedItem.scheduleStartingAt),
-            status: formattedItem.status || formattedItem.attendanceStatus || 'UNKNOWN',
-            studentName: formattedItem.studentName || formattedItem.memberName || '이름 없음'
+            ...item, // 원본 데이터 유지 (scheduleId가 없는 경우에 attendanceId를 사용하기 위해)
+            id: item.attendanceId || item.id || '', 
+            scheduleId: item.scheduleId || '',
+            formattedDateTime: formatDateTime(item.scheduleStartingAt || item.startingAt),
+            status: item.attendanceStatus || item.status || 'UNKNOWN',
+            studentName: item.studentName || item.memberName || '이름 없음'
           };
         });
         
@@ -194,7 +208,7 @@ function AttendanceContainer() {
     <div style={{ width: '100%' }}>
       <h1 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '2rem' }}>출석 관리</h1>
       
-      {/* 출석 통계 */}
+      {/* 출석 통계와 그래프 */}
       <div style={{
         backgroundColor: '#FFFFFF',
         borderRadius: '8px',
@@ -203,46 +217,55 @@ function AttendanceContainer() {
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '1rem' }}>출석 통계</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <div style={{ 
-            padding: '1rem', 
-            borderRadius: '8px', 
-            backgroundColor: 'rgba(229, 0, 17, 0.1)',
-            width: '120px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '14px', color: '#666666' }}>출석</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#E50011' }}>{statistics.present}</div>
+        
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          {/* 통계 수치 */}
+          <div style={{ display: 'flex', gap: '1rem', flex: 3 }}>
+            <div style={{ 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              backgroundColor: 'rgba(229, 0, 17, 0.1)',
+              width: '120px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '14px', color: '#666666' }}>출석</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#E50011' }}>{statistics.present}</div>
+            </div>
+            <div style={{ 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              backgroundColor: 'rgba(0, 0, 0, 0.1)', 
+              width: '120px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '14px', color: '#666666' }}>결석</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000000' }}>{statistics.absent}</div>
+            </div>
+            <div style={{ 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              backgroundColor: 'rgba(0, 123, 255, 0.1)', 
+              width: '120px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '14px', color: '#666666' }}>지각</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007BFF' }}>{statistics.late}</div>
+            </div>
+            <div style={{ 
+              padding: '1rem', 
+              borderRadius: '8px', 
+              backgroundColor: 'rgba(153, 153, 153, 0.1)', 
+              width: '120px',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '14px', color: '#666666' }}>미정</div>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#999999' }}>{statistics.unknown}</div>
+            </div>
           </div>
-          <div style={{ 
-            padding: '1rem', 
-            borderRadius: '8px', 
-            backgroundColor: 'rgba(0, 0, 0, 0.1)', 
-            width: '120px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '14px', color: '#666666' }}>결석</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#000000' }}>{statistics.absent}</div>
-          </div>
-          <div style={{ 
-            padding: '1rem', 
-            borderRadius: '8px', 
-            backgroundColor: 'rgba(0, 123, 255, 0.1)', 
-            width: '120px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '14px', color: '#666666' }}>지각</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#007BFF' }}>{statistics.late}</div>
-          </div>
-          <div style={{ 
-            padding: '1rem', 
-            borderRadius: '8px', 
-            backgroundColor: 'rgba(153, 153, 153, 0.1)', 
-            width: '120px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '14px', color: '#666666' }}>미정</div>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#999999' }}>{statistics.unknown}</div>
+          
+          {/* 차트 영역 */}
+          <div style={{ flex: 2, height: '180px' }}>
+            <AttendanceChart attendances={attendances} />
           </div>
         </div>
       </div>

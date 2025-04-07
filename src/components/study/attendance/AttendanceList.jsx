@@ -7,6 +7,8 @@ import { formatDateTime, getStatusText, getStatusIcon, STATUS_STYLES } from '../
  * 출석 정보 목록을 표시하는 컴포넌트
  */
 function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
+  console.log('[AttendanceList] 렌더링, 출석 데이터:', attendances);
+  
   // 배열이 아닌 경우 빈 배열로 처리
   const safeAttendances = Array.isArray(attendances) ? attendances : [];
   
@@ -28,6 +30,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
 
   // 날짜 기준으로 정렬된 키 배열 생성 (최신 날짜가 먼저 오도록)
   const sortedDates = Object.keys(groupedAttendances).sort((a, b) => new Date(b) - new Date(a));
+  
+  console.log('[AttendanceList] 그룹화된 날짜:', sortedDates);
+  console.log('[AttendanceList] 그룹화된 데이터:', groupedAttendances);
 
   return (
     <div>
@@ -38,22 +43,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
         marginBottom: '1rem'
       }}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>출석 일정</h2>
-        {isHost && (
-          <Link 
-            to={`/studies/${studyId}/schedules/add`}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#E50011',
-              color: 'white',
-              borderRadius: '4px',
-              textDecoration: 'none',
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}
-          >
-            일정 추가
-          </Link>
-        )}
       </div>
 
       {sortedDates.length === 0 ? (
@@ -74,6 +63,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           
           if (!scheduleInfo) return null;
           
+          // scheduleId 가 없는 경우 attendanceId를 사용
+          const scheduleId = scheduleInfo.scheduleId || scheduleInfo.attendanceId;
+
           return (
             <div 
               key={date}
@@ -95,11 +87,13 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 <div>
                   <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
                     {formatDateTime(scheduleInfo.scheduleStartingAt, 'yyyy년 MM월 dd일')}
-                    {' '}
-                    {formatDateTime(scheduleInfo.scheduleStartingAt, 'HH:mm')} ~ {formatDateTime(scheduleInfo.scheduleEndingAt, 'HH:mm')}
+                    {scheduleInfo.scheduleEndingAt ? 
+                      ` ${formatDateTime(scheduleInfo.scheduleStartingAt, 'HH:mm')} ~ ${formatDateTime(scheduleInfo.scheduleEndingAt, 'HH:mm')}` : 
+                      ` ${formatDateTime(scheduleInfo.scheduleStartingAt, 'HH:mm')}`
+                    }
                   </h3>
                   <div style={{ fontSize: '14px', color: '#666666' }}>
-                    {scheduleInfo.scheduleName || '일정 이름 없음'}
+                    {scheduleInfo.scheduleTitle || scheduleInfo.title || '일정 이름 없음'}
                   </div>
                 </div>
                 
@@ -107,7 +101,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   {isHost ? (
                     <>
                       <Link
-                        to={`/studies/${studyId}/attendances/${scheduleInfo.scheduleId}/edit`}
+                        to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
                         style={{
                           padding: '0.5rem 1rem',
                           border: '1px solid #007BFF',
@@ -121,7 +115,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                         출석 관리
                       </Link>
                       <Link
-                        to={`/studies/${studyId}/attendances/${scheduleInfo.scheduleId}`}
+                        to={`/studies/${studyId}/attendances/${scheduleId}`}
                         style={{
                           padding: '0.5rem 1rem',
                           border: '1px solid #E5E5E5',
@@ -137,7 +131,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     </>
                   ) : (
                     <Link
-                      to={`/studies/${studyId}/attendances/${scheduleInfo.scheduleId}`}
+                      to={`/studies/${studyId}/attendances/${scheduleId}`}
                       style={{
                         padding: '0.5rem 1rem',
                         border: '1px solid #E5E5E5',
