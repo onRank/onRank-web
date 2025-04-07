@@ -3,8 +3,7 @@ import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import AddScheduleModal from '../../../components/study/modals/AddScheduleModal';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { formatDate, formatTime, formatDateTime } from './utils';
-
+import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
   const { colors } = useTheme();
   const { studyId } = useParams();
