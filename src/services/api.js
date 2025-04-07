@@ -16,6 +16,12 @@ export const api = axios.create({
 // 요청 인터셉터 설정
 api.interceptors.request.use(
   (config) => {
+    // 모든 요청 로깅 추가
+    console.log(`[API Request Debug] ${config.method.toUpperCase()} ${config.url}`, { 
+      headers: config.headers,
+      data: config.data
+    });
+    
     // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
     const token = tokenUtils.getToken();
     if (token) {
@@ -1415,7 +1421,33 @@ export const studyService = {
   // 출석 목록 조회
   getAttendances: async (studyId) => {
     try {
-      console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
+      // 명시적 디버깅 로그
+      console.log(`[StudyService] 출석 목록 조회 요청 시작: ${studyId}`);
+      console.log(`[StudyService] 요청 URL: /studies/${studyId}/attendances`);
+      console.log('[StudyService] 토큰 상태:', !!tokenUtils.getToken());
+      
+      // 네트워크 요청을 직접 fetch로도 시도
+      try {
+        console.log(`[StudyService] fetch API로 직접 요청 시도`);
+        const fetchUrl = `${import.meta.env.PROD ? 'https://onrank.kr' : import.meta.env.VITE_API_URL || 'http://localhost:8080'}/studies/${studyId}/attendances`;
+        console.log(`[StudyService] fetch 요청 URL: ${fetchUrl}`);
+        
+        const token = tokenUtils.getToken();
+        const fetchResponse = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': token || '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log(`[StudyService] fetch 응답 상태:`, fetchResponse.status);
+      } catch (fetchError) {
+        console.error(`[StudyService] fetch 시도 실패:`, fetchError);
+      }
+      
+      // 원래 axios 요청 실행
+      console.log(`[StudyService] axios로 출석 목록 조회 요청`);
       const response = await api.get(`/studies/${studyId}/attendances`);
 
       // 응답 구조 로깅
@@ -1432,6 +1464,13 @@ export const studyService = {
       return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 목록 조회 실패:", error);
+      console.error("[StudyService] 에러 타입:", error.name);
+      console.error("[StudyService] 에러 메시지:", error.message);
+      if (error.response) {
+        console.error("[StudyService] 에러 응답 데이터:", error.response.data);
+        console.error("[StudyService] 에러 응답 상태:", error.response.status);
+      }
+      console.error("[StudyService] 에러 콜스택:", error.stack);
       return []; // 오류 발생 시 빈 배열 반환
     }
   },
@@ -1634,9 +1673,10 @@ export const studyService = {
         // 로그인 페이지가 아닐 경우에만 리다이렉트
         if (!window.location.pathname.includes("/login")) {
           console.log("[StudyService] 인증 실패로 로그인 페이지로 리다이렉트");
+          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
           setTimeout(() => {
-            window.location.href = "/login";
-          }, 500); // 약간의 지연을 두어 에러 메시지가 UI에 표시될 시간을 줌
+            window.location.href = loginUrl;
+          }, 500);
         }
 
         throw authError;
