@@ -6,14 +6,23 @@ import { formatDateTime, getStatusText, getStatusIcon, STATUS_STYLES } from '../
  * 출석 목록 컴포넌트
  * 출석 정보 목록을 표시하는 컴포넌트
  */
-function AttendanceList({ attendances, isHost, studyId }) {
+function AttendanceList({ attendances = [], isHost, studyId }) {
+  // 배열이 아닌 경우 빈 배열로 처리
+  const safeAttendances = Array.isArray(attendances) ? attendances : [];
+  
   // 출석 일정 기준으로 그룹화
-  const groupedAttendances = attendances.reduce((acc, attendance) => {
-    const key = new Date(attendance.scheduleStartingAt).toISOString().split('T')[0];
-    if (!acc[key]) {
-      acc[key] = [];
+  const groupedAttendances = safeAttendances.reduce((acc, attendance) => {
+    if (!attendance || !attendance.scheduleStartingAt) return acc;
+    
+    try {
+      const key = new Date(attendance.scheduleStartingAt).toISOString().split('T')[0];
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(attendance);
+    } catch (error) {
+      console.error('[AttendanceList] 날짜 변환 오류:', error, attendance);
     }
-    acc[key].push(attendance);
     return acc;
   }, {});
 
@@ -62,6 +71,8 @@ function AttendanceList({ attendances, isHost, studyId }) {
           const attendancesForDate = groupedAttendances[date];
           // 각 날짜별 첫 번째 항목에서 일정 정보 추출
           const scheduleInfo = attendancesForDate[0];
+          
+          if (!scheduleInfo) return null;
           
           return (
             <div 
@@ -150,12 +161,14 @@ function AttendanceList({ attendances, isHost, studyId }) {
                   gap: '1rem'
                 }}>
                   {attendancesForDate.map(attendance => {
+                    if (!attendance) return null;
+                    
                     const status = attendance.attendanceStatus || 'UNKNOWN';
-                    const styles = STATUS_STYLES[status];
+                    const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
                     
                     return (
                       <div 
-                        key={attendance.attendanceId}
+                        key={attendance.attendanceId || `attendance-${Math.random()}`}
                         style={{
                           padding: '0.75rem',
                           borderRadius: '4px',

@@ -30,10 +30,10 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
-import AttendanceEditPage from "./pages/study/attendance/AttendanceEditPage";
-import AttendanceContainer from "./components/study/attendance/AttendanceContainer";
-import AttendanceDetailPage from "./pages/study/attendance/AttendanceDetailPage";
+import { AttendanceContainer, AttendanceDetailPage, AttendanceEditPage } from "./pages/study/attendance";
 import "./App.css";
+import { ProtectedRoute as NewProtectedRoute, AdminRoute } from "./components/auth";
+import { LoginPage as NewLoginPage, SignupPage, EmailVerificationPage } from "./pages/auth";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
@@ -501,14 +501,14 @@ function AppContent() {
                       path="posts/:postId"
                       element={<PostMyDetailPage />}
                     />
-                    <Route path="attendance" element={<StudyDetailPage />} />
+                    <Route path="attendance" element={<AttendanceContainer />} />
+                    <Route path="attendance/:scheduleId" element={<AttendanceDetailPage />} />
+                    <Route path="attendance/:scheduleId/edit" element={<AttendanceEditPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
-                    <Route path="attendances" element={<StudyDetailPage />} />
-                    <Route
-                      path="attendances/:scheduleId"
-                      element={<AttendanceEditPage />}
-                    />
+                    <Route path="attendances" element={<AttendanceContainer />} />
+                    <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
+                    <Route path="attendances/:scheduleId/edit" element={<AttendanceEditPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>
