@@ -15,7 +15,7 @@ function AttendanceContainer() {
   console.log('[AttendanceContainer] 컴포넌트 렌더링');
   const { studyId } = useParams();
   console.log('[AttendanceContainer] 스터디 ID:', studyId);
-  const { user } = useAuth();
+  const { user } = useAuth(); // 사용자 정보는 로깅용으로만 사용
   console.log('[AttendanceContainer] 사용자 정보:', user);
   const [attendances, setAttendances] = useState([]);
   const [statistics, setStatistics] = useState({
@@ -36,24 +36,21 @@ function AttendanceContainer() {
       try {
         setIsLoading(true);
         setError(null);
-        
-        console.log('[AttendanceContainer] 스터디 정보 가져오기 시작');
-        // 스터디 정보 가져오기
-        const studyData = await studyService.getStudyById(studyId);
-        console.log('[AttendanceContainer] 스터디 정보:', studyData);
-        
-        // 사용자가 호스트인지 확인
-        const isUserHost = 
-          (studyData && studyData.host?.userId === user?.userId) || 
-          user?.role === 'ADMIN' || 
-          user?.role === 'CREATOR';
-        setIsHost(isUserHost);
-        console.log('[AttendanceContainer] 호스트 여부:', isUserHost);
 
+        // 출석 정보 직접 가져오기
         console.log('[AttendanceContainer] 출석 정보 가져오기 시작');
-        // 출석 정보 가져오기
         const response = await studyService.getAttendances(studyId);
         console.log('[AttendanceContainer] 출석 데이터 원본:', response);
+        
+        // 멤버 컨텍스트 정보 저장 (있는 경우)
+        if (response && response.memberContext) {
+          console.log('[AttendanceContainer] 멤버 컨텍스트:', response.memberContext);
+          // 사용자가 호스트인지 확인 (memberRole이 CREATOR, ADMIN, HOST 중 하나인 경우)
+          const role = response.memberContext.memberRole;
+          const isUserHost = role === 'CREATOR' || role === 'ADMIN' || role === 'HOST' || role === 'CREATER';
+          setIsHost(isUserHost);
+          console.log('[AttendanceContainer] 호스트 여부:', isUserHost);
+        }
         
         // 응답 데이터 처리
         let attendanceData = [];
@@ -122,18 +119,23 @@ function AttendanceContainer() {
       setIsLoading(false);
       setError('스터디 ID가 필요합니다.');
     }
-  }, [studyId, user]);
+  }, [studyId]);
 
   // 출석 상태 업데이트 핸들러
   const handleUpdateStatus = async (attendanceId, newStatus) => {
     try {
       console.log(`[AttendanceContainer] 출석 상태 업데이트 시도. ID: ${attendanceId}, 상태: ${newStatus}`);
-      await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
+      
+      // API 호출
+      const result = await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
+      console.log("[AttendanceContainer] 출석 상태 업데이트 성공:", result);
       
       // 업데이트 성공 시 데이터 다시 조회
       const response = await studyService.getAttendances(studyId);
-      let updatedData = [];
+      console.log("[AttendanceContainer] 출석 데이터 재조회 성공:", response);
       
+      // 응답 데이터 처리
+      let updatedData = [];
       if (response) {
         if (Array.isArray(response)) {
           updatedData = response;
@@ -177,10 +179,10 @@ function AttendanceContainer() {
         setStatistics(stats);
       }
       
-      console.log('[AttendanceContainer] 출석 상태 업데이트 성공');
       return true;
     } catch (error) {
       console.error('[AttendanceContainer] 출석 상태 업데이트 실패:', error);
+      setError(`출석 상태 업데이트에 실패했습니다: ${error.message}`);
       return false;
     }
   };
