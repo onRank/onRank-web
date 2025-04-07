@@ -66,6 +66,7 @@ function StudyDetailPage() {
       schedules: "일정",
       assignment: "과제",
       posts: "게시판",
+      attendance: "출석",
       attendances: "출석", 
       management: "관리",
       ranking: "랭킹",
