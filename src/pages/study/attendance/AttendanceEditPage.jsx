@@ -81,7 +81,7 @@ function AttendanceEditPage() {
             )}
           </div>
           <button
-            onClick={() => navigate(`/studies/${studyId}/attendance`)}
+            onClick={() => navigate(`/studies/${studyId}/attendances`)}
             style={{
               padding: '0.5rem 1rem',
               border: '1px solid #E5E5E5',
