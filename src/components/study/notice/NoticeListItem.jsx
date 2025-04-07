@@ -4,23 +4,25 @@ import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeListItem({ notice, onClick }) {
   const { isDarkMode } = useTheme();
-  
+
   const styles = {
     noticeCard: {
       backgroundColor: `var(--cardBackground)`,
       padding: "12px 16px",
       borderRadius: "10px",
-      marginBottom: "12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      border: `1px solid var(--border)`,
-      boxShadow: `0 1px 4px ${isDarkMode ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.05)'}`,
+      boxShadow: `0 1px 4px ${
+        isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"
+      }`,
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
       gap: "10px",
       hover: {
-        boxShadow: `0 4px 12px ${isDarkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.1)'}`,
+        boxShadow: `0 4px 12px ${
+          isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"
+        }`,
         transform: "translateY(-2px)",
       },
     },

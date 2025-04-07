@@ -39,7 +39,6 @@ function NoticeFormPage() {
     wrapper: {
       maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#fff",
       display: "flex",
       flexDirection: "column",
     },

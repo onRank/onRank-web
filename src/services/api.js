@@ -158,7 +158,7 @@ export const tokenUtils = {
       const backupToken = sessionStorage.getItem("accessToken_backup");
       if (backupToken) {
         console.log("[Token Debug] Using backup token from sessionStorage");
-        
+
         // 백업 토큰을 localStorage에 복원
         try {
           localStorage.setItem("accessToken", backupToken);
@@ -205,19 +205,24 @@ export const tokenUtils = {
     const backupToken = sessionStorage.getItem("accessToken_backup");
     if (backupToken) {
       console.log("[Token Debug] Using backup token from sessionStorage");
-      
+
       // 가능하다면 localStorage에 복원 시도
       try {
         localStorage.setItem("accessToken", backupToken);
         console.log("[Token Debug] Backup token restored to localStorage");
       } catch (e) {
-        console.error("[Token Debug] Failed to restore backup token to localStorage:", e);
+        console.error(
+          "[Token Debug] Failed to restore backup token to localStorage:",
+          e
+        );
       }
-      
+
       return backupToken;
     }
 
-    console.log("[Token Debug] No token found in localStorage or sessionStorage");
+    console.log(
+      "[Token Debug] No token found in localStorage or sessionStorage"
+    );
     return null;
   },
 
@@ -242,13 +247,16 @@ export const tokenUtils = {
 
         // localStorage에 저장
         localStorage.setItem("accessToken", tokenWithBearer);
-        
+
         // sessionStorage에도 백업 저장 (중요)
         try {
           sessionStorage.setItem("accessToken_backup", tokenWithBearer);
           console.log("[Token Debug] Token backup saved to sessionStorage");
         } catch (backupError) {
-          console.warn("[Token Debug] Failed to save token backup to sessionStorage:", backupError);
+          console.warn(
+            "[Token Debug] Failed to save token backup to sessionStorage:",
+            backupError
+          );
           // 백업 저장 실패는 치명적이지 않으므로 계속 진행
         }
 
@@ -257,7 +265,7 @@ export const tokenUtils = {
         window.dispatchEvent(postStorageEvent);
 
         console.log("[Token Debug] Token saved successfully to localStorage");
-        
+
         // 토큰이 실제로 저장되었는지 확인
         const savedToken = localStorage.getItem("accessToken");
         if (savedToken) {
@@ -267,14 +275,16 @@ export const tokenUtils = {
           // localStorage 저장에 실패했지만 sessionStorage에 백업이 있는 경우
           const backupToken = sessionStorage.getItem("accessToken_backup");
           if (backupToken) {
-            console.log("[Token Debug] Primary storage failed but backup exists in sessionStorage");
+            console.log(
+              "[Token Debug] Primary storage failed but backup exists in sessionStorage"
+            );
             resolve(backupToken);
             return;
           }
-          
+
           // 저장에 실패한 경우 재시도
           console.warn("[Token Debug] Token not found after save, retrying...");
-          
+
           // 약간의 지연 후 다시 저장 시도
           setTimeout(() => {
             localStorage.setItem("accessToken", tokenWithBearer);
@@ -282,12 +292,16 @@ export const tokenUtils = {
             try {
               sessionStorage.setItem("accessToken_backup", tokenWithBearer);
             } catch (retryBackupError) {
-              console.warn("[Token Debug] Retry backup failed:", retryBackupError);
+              console.warn(
+                "[Token Debug] Retry backup failed:",
+                retryBackupError
+              );
             }
-            
+
             const retryToken = localStorage.getItem("accessToken");
-            const retryBackupToken = sessionStorage.getItem("accessToken_backup");
-            
+            const retryBackupToken =
+              sessionStorage.getItem("accessToken_backup");
+
             if (retryToken) {
               console.log("[Token Debug] Token saved successfully on retry");
               resolve(retryToken);
@@ -302,15 +316,17 @@ export const tokenUtils = {
         }
       } catch (error) {
         console.error("[Token Debug] Error saving token:", error);
-        
+
         // localStorage 저장 실패 시 sessionStorage에 백업만이라도 시도
         try {
           const tokenWithBearer = token.startsWith("Bearer ")
             ? token
             : `Bearer ${token}`;
           sessionStorage.setItem("accessToken_backup", tokenWithBearer);
-          console.log("[Token Debug] Saved backup token to sessionStorage after localStorage failure");
-          
+          console.log(
+            "[Token Debug] Saved backup token to sessionStorage after localStorage failure"
+          );
+
           // 백업 저장 성공했으면 성공 처리
           const backupToken = sessionStorage.getItem("accessToken_backup");
           if (backupToken) {
@@ -318,9 +334,12 @@ export const tokenUtils = {
             return;
           }
         } catch (backupError) {
-          console.error("[Token Debug] Failed to save backup token:", backupError);
+          console.error(
+            "[Token Debug] Failed to save backup token:",
+            backupError
+          );
         }
-        
+
         reject(error);
       }
     });
@@ -551,10 +570,10 @@ export const authService = {
         localStorage.removeItem("cachedUserInfo");
         sessionStorage.removeItem("accessToken_backup"); // 백업 토큰 명시적 제거
         sessionStorage.removeItem("cachedUserInfo"); // 세션 스토리지의 사용자 정보도 제거
-        
+
         // 스터디 관련 캐시 초기화
         studyService.clearCache();
-        
+
         return { success: true, message: "로그아웃되었습니다." };
       }
 
@@ -582,9 +601,18 @@ export const authService = {
       // 스터디 관련 로컬스토리지 데이터 및 캐시 초기화
       studyService.clearCache();
 
-      console.log("[Auth] 로그아웃 후 토큰 존재 여부:", !!tokenUtils.getToken());
-      console.log("[Auth] 로그아웃 후 세션 백업 토큰 존재 여부:", !!sessionStorage.getItem("accessToken_backup"));
-      console.log("[Auth] 로그아웃 후 리프레시 토큰 존재 여부:", await tokenUtils.hasRefreshToken());
+      console.log(
+        "[Auth] 로그아웃 후 토큰 존재 여부:",
+        !!tokenUtils.getToken()
+      );
+      console.log(
+        "[Auth] 로그아웃 후 세션 백업 토큰 존재 여부:",
+        !!sessionStorage.getItem("accessToken_backup")
+      );
+      console.log(
+        "[Auth] 로그아웃 후 리프레시 토큰 존재 여부:",
+        await tokenUtils.hasRefreshToken()
+      );
       console.log("[Auth] 로그아웃 성공");
 
       return response.data || { success: true, message: "로그아웃되었습니다." };
@@ -596,7 +624,7 @@ export const authService = {
       localStorage.removeItem("cachedUserInfo");
       sessionStorage.removeItem("accessToken_backup"); // 백업 토큰 명시적 제거
       sessionStorage.removeItem("cachedUserInfo"); // 세션 스토리지의 사용자 정보도 제거
-      
+
       // 스터디 관련 캐시 초기화
       studyService.clearCache();
 
@@ -608,7 +636,7 @@ export const authService = {
 // 메모리 캐싱을 위한 객체 추가
 const memoryCache = {
   studiesList: null,
-  studyDetails: {}
+  studyDetails: {},
 };
 
 // 스터디 관련 API 서비스
@@ -721,8 +749,8 @@ export const studyService = {
     try {
       console.log("[StudyService] 스터디 목록 조회 요청");
 
-      const response = await api.get('/studies', {
-        withCredentials: true
+      const response = await api.get("/studies", {
+        withCredentials: true,
       });
 
       console.log("[StudyService] 스터디 목록 조회 성공:", response.data);
@@ -732,7 +760,7 @@ export const studyService = {
         const data = Array.isArray(response.data) ? response.data : [];
 
         // 데이터 형식 통일
-        data.forEach(study => {
+        data.forEach((study) => {
           if (!study.file) {
             study.file = { fileId: null, fileName: null, fileUrl: null };
           }
@@ -750,7 +778,9 @@ export const studyService = {
 
       // API 호출 실패 시 메모리 캐시에서 확인
       if (memoryCache.studiesList) {
-        console.log("[StudyService] API 호출 실패로 메모리 캐시에서 스터디 목록 사용");
+        console.log(
+          "[StudyService] API 호출 실패로 메모리 캐시에서 스터디 목록 사용"
+        );
         return memoryCache.studiesList;
       }
 
@@ -795,9 +825,7 @@ export const studyService = {
           };
 
           memoryCache.studyDetails[studyId] = mappedData;
-          console.log(
-            "[StudyService] 스터디 데이터를 메모리에 캐싱했습니다."
-          );
+          console.log("[StudyService] 스터디 데이터를 메모리에 캐싱했습니다.");
         } catch (cacheError) {
           console.warn("[StudyService] 스터디 데이터 캐싱 실패:", cacheError);
         }
@@ -877,8 +905,8 @@ export const studyService = {
 
       // 요청 데이터 준비 - API 명세에 맞게 수정
       const requestData = {
-        studyName: roleData.studyName || "",  // 필요한 경우 전달받아 사용
-        memberRole: roleData.memberRole || "PARTICIPANT" // 기본값은 참여자
+        studyName: roleData.studyName || "", // 필요한 경우 전달받아 사용
+        memberRole: roleData.memberRole || "PARTICIPANT", // 기본값은 참여자
       };
 
       // API 요청
@@ -977,7 +1005,7 @@ export const studyService = {
 
       // API 요청 데이터 준비 (이메일만 필요)
       const requestData = {
-        studentEmail: memberData.studentEmail
+        studentEmail: memberData.studentEmail,
       };
 
       // API 요청
@@ -997,19 +1025,22 @@ export const studyService = {
 
       // 응답 확인 로그
       console.log("[StudyService] 스터디 멤버 추가 성공:", response.data);
-      
+
       // 응답 데이터 형식이 { studyName, memberRole }인 경우를 처리
       // 상태 코드가 201 Created이고 응답 본문에 데이터가 있는 경우
       if (response.status === 201 && response.data) {
         // 응답 로깅
-        if (response.data.studyName !== undefined || response.data.memberRole !== undefined) {
+        if (
+          response.data.studyName !== undefined ||
+          response.data.memberRole !== undefined
+        ) {
           console.log("[StudyService] 스터디 멤버 추가 응답:", {
             studyName: response.data.studyName,
-            memberRole: response.data.memberRole
+            memberRole: response.data.memberRole,
           });
         }
       }
-      
+
       return response.data;
     } catch (error) {
       console.error("[StudyService] 스터디 멤버 추가 오류:", error);
@@ -1056,13 +1087,16 @@ export const studyService = {
       });
 
       console.log("[StudyService] 일정 목록 조회 성공:", response.data);
-      
+
       // API 응답 형식: { memberContext: {...}, data: [...] }
       // memberContext 정보 로깅
       if (response.data && response.data.memberContext) {
-        console.log("[StudyService] 멤버 컨텍스트:", response.data.memberContext);
+        console.log(
+          "[StudyService] 멤버 컨텍스트:",
+          response.data.memberContext
+        );
       }
-      
+
       // 전체 응답 객체 그대로 반환 - 컴포넌트에서 data 필드에 접근하도록 함
       return response.data;
     } catch (error) {
@@ -1103,12 +1137,12 @@ export const studyService = {
       return response.data;
     } catch (error) {
       console.error("[StudyService] 일정 상세 조회 오류:", error);
-      
+
       // 404 Not Found - 존재하지 않는 일정
       if (error.response && error.response.status === 404) {
         throw new Error("존재하지 않는 일정입니다.");
       }
-      
+
       throw error;
     }
   },
@@ -1129,7 +1163,9 @@ export const studyService = {
       let dateTimeString;
       if (scheduleData.date && scheduleData.time) {
         // 시간 정보가 있으면 통합
-        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${scheduleData.time}:00`;
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${
+          scheduleData.time
+        }:00`;
       } else if (scheduleData.date && scheduleData.date.includes("T")) {
         // 이미 ISO 형식이면 그대로 사용
         dateTimeString = scheduleData.date.replace(/\./g, "-");
@@ -1142,7 +1178,7 @@ export const studyService = {
       const apiScheduleData = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
-        scheduleStartingAt: dateTimeString
+        scheduleStartingAt: dateTimeString,
       };
 
       console.log("[StudyService] 일정 추가 요청 데이터:", apiScheduleData);
@@ -1163,27 +1199,27 @@ export const studyService = {
       );
 
       console.log("[StudyService] 일정 추가 응답:", response);
-      
+
       // 응답 형식: { studyName: "...", memberRole: "..." }
       console.log("[StudyService] 응답 데이터:", {
         studyName: response.data?.studyName,
-        memberRole: response.data?.memberRole
+        memberRole: response.data?.memberRole,
       });
 
       // 201 성공 시 응답 데이터에 scheduleId 정보 추가
       if (response.status === 201) {
         const locationUrl = response.headers["location"];
         let scheduleId = null;
-        
+
         if (locationUrl) {
           scheduleId = locationUrl.split("/").pop();
           console.log("[StudyService] 생성된 일정 ID:", scheduleId);
         }
-        
+
         // scheduleId 정보가 있으면 응답 데이터에 추가하여 반환
         return {
           ...response.data,
-          scheduleId
+          scheduleId,
         };
       }
 
@@ -1228,7 +1264,9 @@ export const studyService = {
       let dateTimeString;
       if (scheduleData.date && scheduleData.time) {
         // 시간 정보가 있으면 통합
-        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${scheduleData.time}:00`;
+        dateTimeString = `${scheduleData.date.replace(/\./g, "-")}T${
+          scheduleData.time
+        }:00`;
       } else if (scheduleData.date && scheduleData.date.includes("T")) {
         // 이미 ISO 형식이면 그대로 사용
         dateTimeString = scheduleData.date.replace(/\./g, "-");
@@ -1241,7 +1279,7 @@ export const studyService = {
       const apiScheduleData = {
         scheduleTitle: scheduleData.title,
         scheduleContent: scheduleData.content,
-        scheduleStartingAt: dateTimeString
+        scheduleStartingAt: dateTimeString,
       };
 
       console.log("[StudyService] 일정 수정 요청 데이터:", apiScheduleData);
@@ -1262,17 +1300,17 @@ export const studyService = {
       );
 
       console.log("[StudyService] 일정 수정 응답:", response);
-      
+
       // 응답 형식: { studyName: "...", memberRole: "..." }
       console.log("[StudyService] 응답 데이터:", {
         studyName: response.data?.studyName,
-        memberRole: response.data?.memberRole
+        memberRole: response.data?.memberRole,
       });
 
       // 응답 데이터에 scheduleId 추가하여 반환
       return {
         ...response.data,
-        scheduleId: scheduleId // 전달받은 scheduleId 사용
+        scheduleId: scheduleId, // 전달받은 scheduleId 사용
       };
     } catch (error) {
       console.error("[StudyService] 일정 수정 오류:", error);
@@ -1329,18 +1367,18 @@ export const studyService = {
       );
 
       console.log("[StudyService] 일정 삭제 응답:", response);
-      
+
       // 응답 형식: { studyName: "...", memberRole: "..." }
       if (response.data) {
         console.log("[StudyService] 응답 데이터:", {
           studyName: response.data.studyName,
-          memberRole: response.data.memberRole
+          memberRole: response.data.memberRole,
         });
-        
+
         // 데이터가 있으면 그대로 반환
         return response.data;
       }
-      
+
       // 204 No Content 응답은 성공으로 처리
       if (response.status === 204) {
         return { success: true };
@@ -1379,18 +1417,18 @@ export const studyService = {
     try {
       console.log(`[StudyService] 출석 목록 조회 요청: ${studyId}`);
       const response = await api.get(`/studies/${studyId}/attendances`);
-      
+
       // 응답 구조 로깅
-      console.log('[StudyService] 출석 목록 응답 구조:', {
+      console.log("[StudyService] 출석 목록 응답 구조:", {
         hasData: !!response.data,
         dataType: typeof response.data,
-        isArray: Array.isArray(response.data)
+        isArray: Array.isArray(response.data),
       });
-      
+
       // 에러 방지를 위한 안전한 응답 처리
       const responseData = response.data;
       if (!responseData) return [];
-      
+
       return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 목록 조회 실패:", error);
@@ -1461,37 +1499,41 @@ export const studyService = {
 
       // 토큰 가져오기
       const token = tokenUtils.getToken();
-      const tokenWithBearer = token?.startsWith("Bearer ") ? token : `Bearer ${token}`;
-      
+      const tokenWithBearer = token?.startsWith("Bearer ")
+        ? token
+        : `Bearer ${token}`;
+
       // 모든 필요한 헤더 포함하여 CORS 해결 시도
       const config = {
         withCredentials: true,
         headers: {
-          'Authorization': tokenWithBearer,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        }
+          Authorization: tokenWithBearer,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
       };
-      
+
       // URL 쿼리 파라미터로 status 전달 (PUT 메서드 사용)
       const response = await api.put(
         `/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
-        {},  // 빈 객체 (요청 본문 필요 없음)
+        {}, // 빈 객체 (요청 본문 필요 없음)
         config
       );
 
       console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
-      return response.data || {}; 
+      return response.data || {};
     } catch (error) {
       console.error("[StudyService] 출석 상태 업데이트 실패:", error);
-      
+
       // CORS 오류 이슈 감지 및 사용자 친화적 에러 메시지
-      if (error.message && error.message.includes('Network Error')) {
+      if (error.message && error.message.includes("Network Error")) {
         console.error("[StudyService] CORS 또는 네트워크 오류 발생:", error);
-        alert('출석 상태 변경에 실패했습니다. 네트워크 연결 또는 서버 설정을 확인해주세요.');
+        alert(
+          "출석 상태 변경에 실패했습니다. 네트워크 연결 또는 서버 설정을 확인해주세요."
+        );
       }
-      
+
       throw error;
     }
   },
@@ -1651,15 +1693,15 @@ export const studyService = {
 
       // 응답 데이터 유형 로깅
       const responseData = response.data;
-      console.log('[StudyService] 출석 상세 응답 구조:', {
+      console.log("[StudyService] 출석 상세 응답 구조:", {
         dataType: typeof responseData,
         isArray: Array.isArray(responseData),
-        hasDataProperty: !!(responseData && responseData.data)
+        hasDataProperty: !!(responseData && responseData.data),
       });
-      
+
       // 응답이 없는 경우 기본값 반환
       if (!responseData) return { data: [] };
-      
+
       return responseData;
     } catch (error) {
       console.error("[StudyService] 출석 상세 조회 실패:", error);
@@ -1676,8 +1718,8 @@ export const studyService = {
 
       const response = await api.patch(
         `/studies/${studyId}/attendances/${attendanceId}`,
-        { 
-          attendanceStatus: newStatus 
+        {
+          attendanceStatus: newStatus,
         },
         {
           withCredentials: true,
@@ -1764,6 +1806,21 @@ export const noticeService = {
           };
         }
       }
+
+      // 응답이 { memberContext, data } 구조인지 확인
+      let noticeData = data;
+      let memberContext = null;
+
+      if (data && data.data && Array.isArray(data.data)) {
+        console.log(
+          "[NoticeService] 새 API 응답 구조 감지 (memberContext/data)"
+        );
+        noticeData = data.data;
+        memberContext = data.memberContext || null;
+      }
+
+      // 기존 data 변수를 noticeData로 변경
+      data = noticeData;
 
       // 배열이 아닌 경우 배열로 변환
       if (!Array.isArray(data)) {
@@ -2250,6 +2307,19 @@ export const postService = {
         }
       }
 
+      // 응답이 { memberContext, data } 구조인지 확인
+      let postData = data;
+      let memberContext = null;
+
+      if (data && data.data && Array.isArray(data.data)) {
+        console.log("[postService] 새 API 응답 구조 감지 (memberContext/data)");
+        postData = data.data;
+        memberContext = data.memberContext || null;
+      }
+
+      // 기존 data 변수를 postData로 변경
+      data = postData;
+
       // 배열이 아닌 경우 배열로 변환
       if (!Array.isArray(data)) {
         console.warn("[postService] 응답이 배열이 아님, 배열로 변환:", data);
@@ -2677,13 +2747,13 @@ export const postService = {
 // 멤버 역할 표시명 변환 유틸리티 (CREATOR -> 마스터)
 export const getMemberRoleDisplayName = (role) => {
   switch (role) {
-    case 'CREATOR':
-      return '스터디 생성자';
-    case 'HOST':
-      return '관리자';
-    case 'PARTICIPANT':
-      return '참여자';
+    case "CREATOR":
+      return "스터디 생성자";
+    case "HOST":
+      return "관리자";
+    case "PARTICIPANT":
+      return "참여자";
     default:
-      return role || '알 수 없음';
+      return role || "알 수 없음";
   }
 };
