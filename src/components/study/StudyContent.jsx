@@ -46,7 +46,7 @@ function StudyContent({ activeTab, studyData }) {
       case "게시판":
         return <BoardTab />;
       case "출석":
-        return <AttendanceTab />;
+        return <AttendanceContainer />;
       case "관리":
         return <ManagementTab studyData={studyData} />;
       case "랭킹":

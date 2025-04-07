@@ -30,7 +30,9 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
-import AttendanceEditPage from "./pages/study/AttendanceEditPage";
+import AttendanceEditPage from "./pages/study/attendance/AttendanceEditPage";
+import AttendanceContainer from "./components/study/attendance/AttendanceContainer";
+import AttendanceDetailPage from "./pages/study/attendance/AttendanceDetailPage";
 import "./App.css";
 
 // 레이아웃 상수
@@ -556,13 +558,13 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <ThemeProvider>
+    <ThemeProvider>
+      <Router>
+        <AuthProvider>
           <AppContent />
-        </ThemeProvider>
-      </AuthProvider>
-    </Router>
+        </AuthProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 
