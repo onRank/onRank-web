@@ -12,8 +12,11 @@ import AttendanceList from '../../../components/study/attendance/AttendanceList'
  * 스터디 출석 관련 정보를 관리하고 표시하는 컨테이너 컴포넌트
  */
 function AttendanceContainer() {
+  console.log('[AttendanceContainer] 컴포넌트 렌더링');
   const { studyId } = useParams();
+  console.log('[AttendanceContainer] 스터디 ID:', studyId);
   const { user } = useAuth();
+  console.log('[AttendanceContainer] 사용자 정보:', user);
   const [attendances, setAttendances] = useState([]);
   const [statistics, setStatistics] = useState({
     present: 0,
@@ -26,11 +29,14 @@ function AttendanceContainer() {
   const [isHost, setIsHost] = useState(false);
 
   useEffect(() => {
+    console.log('[AttendanceContainer] useEffect 실행. studyId:', studyId);
+    
     const fetchAttendanceData = async () => {
       try {
         setIsLoading(true);
         setError(null);
         
+        console.log('[AttendanceContainer] 스터디 정보 가져오기 시작');
         // 스터디 정보 가져오기
         const studyData = await studyService.getStudyById(studyId);
         console.log('[AttendanceContainer] 스터디 정보:', studyData);
@@ -43,6 +49,7 @@ function AttendanceContainer() {
         );
         console.log('[AttendanceContainer] 호스트 여부:', isHost);
 
+        console.log('[AttendanceContainer] 출석 정보 가져오기 시작');
         // 출석 정보 가져오기
         const response = await studyService.getAttendances(studyId);
         console.log('[AttendanceContainer] 출석 데이터 원본:', response);
@@ -93,7 +100,12 @@ function AttendanceContainer() {
     };
 
     if (studyId) {
+      console.log('[AttendanceContainer] studyId 존재, fetchAttendanceData 호출');
       fetchAttendanceData();
+    } else {
+      console.warn('[AttendanceContainer] studyId가 없음, API 호출 생략');
+      setIsLoading(false);
+      setError('스터디 ID가 필요합니다.');
     }
   }, [studyId, user]);
 

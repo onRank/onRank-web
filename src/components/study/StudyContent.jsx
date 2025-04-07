@@ -35,22 +35,32 @@ function StudyContent({ activeTab, studyData }) {
   }, [activeTab]);
 
   const renderContent = () => {
+    console.log("[StudyContent] renderContent 호출, activeTab:", activeTab);
+    
     switch (activeTab) {
       case "일정":
+        console.log("[StudyContent] 일정 탭 렌더링");
         return <ScheduleContainer />;
       case "과제":
+        console.log("[StudyContent] 과제 탭 렌더링");
         return <AssignmentTab assignments={assignments} studyId={studyId} />;
       case "공지사항":
+        console.log("[StudyContent] 공지사항 탭 렌더링");
         return <NoticeTab />;
       case "게시판":
+        console.log("[StudyContent] 게시판 탭 렌더링");
         return <BoardTab />;
       case "출석":
+        console.log("[StudyContent] 출석 탭 렌더링, AttendanceContainer 반환");
         return <AttendanceContainer />;
       case "관리":
+        console.log("[StudyContent] 관리 탭 렌더링");
         return <ManagementTab studyData={studyData} />;
       case "랭킹":
+        console.log("[StudyContent] 랭킹 탭 렌더링");
         return <RankingTab />;
       default:
+        console.log("[StudyContent] 기본 컨텐츠 렌더링");
         return <DefaultContent studyData={studyData} />;
     }
   };
