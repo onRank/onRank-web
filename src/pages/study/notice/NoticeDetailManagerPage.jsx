@@ -248,9 +248,6 @@ function NoticeDetailManagerPage() {
       fontWeight: "bold",
       padding: "2px 4px",
     },
-    sidebar: {
-      padding: "0 1rem",
-    },
   };
 
   return (
@@ -301,7 +298,7 @@ function NoticeDetailManagerPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar style={styles.sidebar} activeTab="공지사항" />
+            <StudySidebar activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>

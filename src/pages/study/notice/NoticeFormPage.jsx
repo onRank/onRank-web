@@ -89,9 +89,6 @@ function NoticeFormPage() {
     contentArea: {
       display: "flex",
     },
-    sidebar: {
-      padding: "0 1rem",
-    },
   };
 
   return (
@@ -140,7 +137,7 @@ function NoticeFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar style={styles.sidebar} activeTab="공지사항" />
+            <StudySidebar activeTab="공지사항" />
           </aside>
 
           <main style={styles.content}>

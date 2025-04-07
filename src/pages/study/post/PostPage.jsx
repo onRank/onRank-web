@@ -180,9 +180,6 @@ function PostPage() {
     contentArea: {
       display: "flex",
     },
-    sidebar: {
-      padding: "0 1rem",
-    },
   };
 
   return (
@@ -218,7 +215,7 @@ function PostPage() {
         <span style={styles.activeTab}>게시판</span>
       </div>
       <div style={styles.container}>
-        <StudySidebar style={styles.sidebar} activeTab="게시판" />
+        <StudySidebar activeTab="게시판" />
         <PostContent />
       </div>
     </PostProvider>

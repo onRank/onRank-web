@@ -85,11 +85,6 @@ function NoticeDetailUserContent({ onTitleLoaded }) {
       display: "flex",
       flex: 1,
     },
-    sidebar: {
-      width: "200px",
-      padding: "16px",
-      borderRight: "1px solid #e5e5e5",
-    },
     contentArea: {
       flex: 1,
       padding: "32px",
@@ -256,9 +251,6 @@ function NoticeDetailUserPage() {
       color: "#FF0000",
       fontWeight: "bold",
       padding: "2px 4px",
-    },
-    sidebar: {
-      padding: "0 1rem",
     },
   };
 

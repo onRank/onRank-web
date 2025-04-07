@@ -203,9 +203,8 @@ function PostMyDetailPage() {
 
   const styles = {
     wrapper: {
-      minHeight: "100vh",
+      maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
     },

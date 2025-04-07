@@ -184,9 +184,6 @@ function NoticeManagerPage() {
     contentArea: {
       display: "flex",
     },
-    sidebar: {
-      padding: "0 1rem",
-    },
   };
 
   return (
@@ -222,7 +219,7 @@ function NoticeManagerPage() {
         <span style={styles.activeTab}>공지사항</span>
       </div>
       <div style={styles.container}>
-        <StudySidebar style={styles.sidebar} activeTab="공지사항" />
+        <StudySidebar activeTab="공지사항" />
         <NoticeContent />
       </div>
     </NoticeProvider>

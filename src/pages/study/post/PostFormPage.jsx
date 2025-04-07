@@ -39,7 +39,6 @@ function PostFormPage() {
     wrapper: {
       maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#fff",
       display: "flex",
       flexDirection: "column",
     },
@@ -90,9 +89,6 @@ function PostFormPage() {
     contentArea: {
       display: "flex",
     },
-    sidebar: {
-      padding: "0 1rem",
-    },
   };
 
   return (
@@ -140,7 +136,7 @@ function PostFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar style={styles.sidebar} activeTab="게시판" />
+            <StudySidebar activeTab="게시판" />
           </aside>
 
           <main style={styles.content}>
