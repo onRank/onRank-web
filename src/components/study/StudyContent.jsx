@@ -5,11 +5,10 @@ import { ScheduleContainer } from "../../pages/study/schedule";
 import AssignmentTab from "./tabs/AssignmentTab";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementTab from "./tabs/ManagementTab";
-import AttendanceTab from "./tabs/AttendanceTab";
 import NoticeTab from "./tabs/NoticeTab";
 import BoardTab from "./tabs/BoardTab";
 import RankingTab from "./tabs/RankingTab";
-
+import AttendanceContainer from "../../pages/study/attendance/AttendanceContainer";
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
   const { studyId } = useParams();
