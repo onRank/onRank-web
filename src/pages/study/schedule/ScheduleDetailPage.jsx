@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { studyService } from '../../services/api';
+import { studyService } from '../../../services/api';
 import { IoChevronBackOutline } from 'react-icons/io5';
 
 function ScheduleDetailPage() {

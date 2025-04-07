@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { studyService } from '../../services/api';
-import { tokenUtils } from '../../utils/tokenUtils';
-import StudySidebar from '../../components/study/StudySidebar';
+import { studyService } from '../../../services/api';
+import { tokenUtils } from '../../../utils/tokenUtils';
+import StudySidebar from '../../../components/study/StudySidebar';
 import { IoHomeOutline } from 'react-icons/io5';
-import { useTheme } from '../../contexts/ThemeContext';
-import TimeSelector from '../../components/common/TimeSelector';
+import { useTheme } from '../../../contexts/ThemeContext';
+import TimeSelector from '../../../components/common/TimeSelector';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
