@@ -207,7 +207,6 @@ function NoticeDetailManagerPage() {
     wrapper: {
       maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
     },
