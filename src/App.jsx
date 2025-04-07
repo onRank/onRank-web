@@ -499,12 +499,12 @@ function AppContent() {
                       path="posts/:postId"
                       element={<PostMyDetailPage />}
                     />
-                    <Route path="attendance" element={<AttendanceContainer />} />
+                    <Route path="attendance" element={<StudyDetailPage />} />
                     <Route path="attendance/:scheduleId" element={<AttendanceDetailPage />} />
                     <Route path="attendance/:scheduleId/edit" element={<AttendanceEditPage />} />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
-                    <Route path="attendances" element={<AttendanceContainer />} />
+                    <Route path="attendances" element={<StudyDetailPage />} />
                     <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
                     <Route path="attendances/:scheduleId/edit" element={<AttendanceEditPage />} />
                   </Routes>
