@@ -32,8 +32,6 @@ import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import { AttendanceContainer, AttendanceDetailPage, AttendanceEditPage } from "./pages/study/attendance";
 import "./App.css";
-import { ProtectedRoute as NewProtectedRoute, AdminRoute } from "./components/auth";
-import { LoginPage as NewLoginPage, SignupPage, EmailVerificationPage } from "./pages/auth";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
