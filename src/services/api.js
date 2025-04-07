@@ -1478,6 +1478,8 @@ export const studyService = {
   // 출석 상세 정보 조회
   getAttendanceDetails: async (studyId, scheduleId) => {
     try {
+      console.log(`[StudyService] 출석 상세 정보 조회 요청: ${studyId}, 일정: ${scheduleId}`);
+      
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
@@ -1485,16 +1487,44 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 네트워크 요청을 직접 fetch로도 시도
+      try {
+        console.log(`[StudyService] fetch API로 직접 요청 시도`);
+        const fetchUrl = `${import.meta.env.PROD ? 'https://onrank.kr' : import.meta.env.VITE_API_URL || 'http://localhost:8080'}/studies/${studyId}/attendances/${scheduleId}`;
+        console.log(`[StudyService] fetch 요청 URL: ${fetchUrl}`);
+        
+        const fetchResponse = await fetch(fetchUrl, {
+          method: 'GET',
+          headers: {
+            'Authorization': token,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+        console.log(`[StudyService] fetch 응답 상태:`, fetchResponse.status);
+        
+        if (fetchResponse.ok) {
+          const data = await fetchResponse.json();
+          return data;
+        }
+      } catch (fetchError) {
+        console.error(`[StudyService] fetch 시도 실패:`, fetchError);
+      }
+      
+      // fetch 실패 시 axios로 시도
+      console.log(`[StudyService] axios로 출석 상세 정보 조회 요청`);
       const response = await api.get(
         `/studies/${studyId}/attendances/${scheduleId}`,
         {
           headers: {
-            Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            Authorization: token,
             "Content-Type": "application/json",
           },
           withCredentials: true,
         }
       );
+      
+      console.log("[StudyService] 출석 상세 정보 조회 성공:", response.data);
       return response.data;
     } catch (error) {
       console.error("[API] 출석 상세 정보 조회 실패:", error);
