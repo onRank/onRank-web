@@ -22,6 +22,29 @@ function StudyDetailPage() {
   // 데이터 로드 상태 추적을 위한 ref
   const dataLoadAttempted = useRef(false);
 
+  // 스터디 데이터 가져오기
+  useEffect(() => {
+    const fetchStudyData = async () => {
+      if (dataLoadAttempted.current) return;
+      dataLoadAttempted.current = true;
+      
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const data = await studyService.getStudyDetail(studyId);
+        console.log("Fetched study data:", data);
+        setStudyData(data);
+      } catch (err) {
+        console.error("Error fetching study data:", err);
+        setError("스터디 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchStudyData();
+  }, [studyId]);
 
   // URL에서 현재 섹션 가져오기
   useEffect(() => {
