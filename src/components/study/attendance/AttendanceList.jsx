@@ -12,40 +12,90 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   // 배열이 아닌 경우 빈 배열로 처리
   const safeAttendances = Array.isArray(attendances) ? attendances : [];
   
-  // 출석 일정 기준으로 그룹화
-  const groupedAttendances = safeAttendances.reduce((acc, attendance) => {
-    if (!attendance || !attendance.scheduleStartingAt) return acc;
-    
-    try {
-      const key = new Date(attendance.scheduleStartingAt).toISOString().split('T')[0];
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(attendance);
-    } catch (error) {
-      console.error('[AttendanceList] 날짜 변환 오류:', error, attendance);
-    }
-    return acc;
-  }, {});
+  console.log('[AttendanceList] 처리된 출석 데이터:', safeAttendances);
 
-  // 날짜 기준으로 정렬된 키 배열 생성 (최신 날짜가 먼저 오도록)
-  const sortedDates = Object.keys(groupedAttendances).sort((a, b) => new Date(b) - new Date(a));
-  
-  console.log('[AttendanceList] 그룹화된 날짜:', sortedDates);
-  console.log('[AttendanceList] 그룹화된 데이터:', groupedAttendances);
+  // 출석 상태 표시 함수
+  const renderStatus = (attendance) => {
+    const status = attendance.attendanceStatus || 'UNKNOWN';
+    
+    // 상태에 따른 아이콘 선택
+    let icon = null;
+    if (status === 'PRESENT') {
+      icon = (
+        <div style={{ 
+          width: '24px', 
+          height: '24px', 
+          borderRadius: '50%', 
+          backgroundColor: '#E50011', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white'
+        }}>
+          ✓
+        </div>
+      );
+    } else if (status === 'ABSENT') {
+      icon = (
+        <div style={{ 
+          width: '24px', 
+          height: '24px', 
+          borderRadius: '50%', 
+          backgroundColor: '#000', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white'
+        }}>
+          ✕
+        </div>
+      );
+    } else if (status === 'LATE') {
+      icon = (
+        <div style={{ 
+          width: '24px', 
+          height: '24px', 
+          borderRadius: '50%', 
+          backgroundColor: '#007BFF', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white'
+        }}>
+          -
+        </div>
+      );
+    } else {
+      icon = (
+        <div style={{ 
+          width: '24px', 
+          height: '24px', 
+          borderRadius: '50%', 
+          backgroundColor: '#999', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white'
+        }}>
+          ?
+        </div>
+      );
+    }
+    
+    return icon;
+  };
 
   return (
     <div>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1rem'
+      <h2 style={{ 
+        fontSize: '20px', 
+        fontWeight: 'bold', 
+        marginBottom: '1rem' 
       }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 'bold' }}>출석 일정</h2>
-      </div>
-
-      {sortedDates.length === 0 ? (
+        출석 일정
+      </h2>
+      
+      {safeAttendances.length === 0 ? (
         <div style={{
           padding: '2rem',
           backgroundColor: '#FFFFFF',
@@ -56,166 +106,81 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           등록된 출석 일정이 없습니다.
         </div>
       ) : (
-        sortedDates.map(date => {
-          const attendancesForDate = groupedAttendances[date];
-          // 각 날짜별 첫 번째 항목에서 일정 정보 추출
-          const scheduleInfo = attendancesForDate[0];
-          
-          if (!scheduleInfo) return null;
-          
-          // scheduleId 가 없는 경우 attendanceId를 사용
-          const scheduleId = scheduleInfo.scheduleId || scheduleInfo.attendanceId;
-
-          return (
-            <div 
-              key={date}
-              style={{
-                backgroundColor: '#FFFFFF',
-                borderRadius: '8px',
-                marginBottom: '1rem',
-                overflow: 'hidden',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-              }}
-            >
-              <div style={{
-                padding: '1rem',
-                borderBottom: '1px solid #E5E5E5',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <div>
-                  <h3 style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                    {formatDateTime(scheduleInfo.scheduleStartingAt, 'yyyy년 MM월 dd일')}
-                    {scheduleInfo.scheduleEndingAt ? 
-                      ` ${formatDateTime(scheduleInfo.scheduleStartingAt, 'HH:mm')} ~ ${formatDateTime(scheduleInfo.scheduleEndingAt, 'HH:mm')}` : 
-                      ` ${formatDateTime(scheduleInfo.scheduleStartingAt, 'HH:mm')}`
-                    }
-                  </h3>
-                  <div style={{ fontSize: '14px', color: '#666666' }}>
-                    {scheduleInfo.scheduleTitle || scheduleInfo.title || '일정 이름 없음'}
-                  </div>
-                </div>
+        <div style={{ 
+          backgroundColor: '#FFFFFF',
+          borderRadius: '8px',
+          overflow: 'hidden',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+        }}>
+          {/* 출석 일정 목록 */}
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
+                <th style={{ padding: '1rem', textAlign: 'left', width: '70%' }}>일정</th>
+                <th style={{ padding: '1rem', textAlign: 'right', width: '30%' }}>출석 상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {safeAttendances.map((attendance) => {
+                const scheduleId = attendance.scheduleId || attendance.attendanceId;
+                const formattedDate = formatDateTime(attendance.scheduleStartingAt, 'yyyy년 MM월 dd일 HH:mm');
                 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  {isHost ? (
-                    <>
-                      <Link
-                        to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #007BFF',
-                          borderRadius: '4px',
-                          backgroundColor: '#FFFFFF',
-                          color: '#007BFF',
-                          textDecoration: 'none',
-                          fontSize: '14px'
-                        }}
-                      >
-                        출석 관리
-                      </Link>
-                      <Link
-                        to={`/studies/${studyId}/attendances/${scheduleId}`}
-                        style={{
-                          padding: '0.5rem 1rem',
-                          border: '1px solid #E5E5E5',
-                          borderRadius: '4px',
-                          backgroundColor: '#FFFFFF',
-                          color: '#333333',
-                          textDecoration: 'none',
-                          fontSize: '14px'
-                        }}
-                      >
-                        상세 보기
-                      </Link>
-                    </>
-                  ) : (
-                    <Link
-                      to={`/studies/${studyId}/attendances/${scheduleId}`}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        border: '1px solid #E5E5E5',
-                        borderRadius: '4px',
-                        backgroundColor: '#FFFFFF',
-                        color: '#333333',
-                        textDecoration: 'none',
-                        fontSize: '14px'
-                      }}
-                    >
-                      상세 보기
-                    </Link>
-                  )}
-                </div>
-              </div>
-              
-              <div style={{ padding: '1rem' }}>
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
-                  gap: '1rem'
-                }}>
-                  {attendancesForDate.map(attendance => {
-                    if (!attendance) return null;
-                    
-                    const status = attendance.attendanceStatus || 'UNKNOWN';
-                    const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
-                    
-                    return (
-                      <div 
-                        key={attendance.attendanceId || `attendance-${Math.random()}`}
-                        style={{
-                          padding: '0.75rem',
-                          borderRadius: '4px',
-                          background: styles.background,
-                          border: styles.border,
-                          textAlign: 'center'
-                        }}
-                      >
-                        <div style={{ 
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginBottom: '0.5rem'
-                        }}>
-                          <div style={{
-                            width: '24px',
-                            height: '24px',
-                            borderRadius: '50%',
-                            backgroundColor: styles.color,
-                            color: 'white',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '12px',
-                            marginRight: '4px'
-                          }}>
-                            {getStatusIcon(status)}
-                          </div>
-                          <span style={{ 
-                            fontSize: '14px',
-                            fontWeight: 'bold',
-                            color: styles.color
-                          }}>
-                            {getStatusText(status)}
-                          </span>
-                        </div>
-                        <div style={{ 
-                          fontSize: '14px', 
-                          fontWeight: 'bold',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis'
-                        }}>
-                          {attendance.studentName || '이름 없음'}
-                        </div>
+                return (
+                  <tr 
+                    key={attendance.attendanceId} 
+                    style={{ borderBottom: '1px solid #e5e5e5' }}
+                  >
+                    <td style={{ padding: '1rem' }}>
+                      <div style={{ fontWeight: 'bold' }}>
+                        {formattedDate}
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          );
-        })
+                      <div style={{ color: '#666', marginTop: '0.25rem' }}>
+                        {attendance.scheduleTitle || attendance.title || '일정명 없음'}
+                      </div>
+                    </td>
+                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
+                        {renderStatus(attendance)}
+                        {isHost && (
+                          <Link
+                            to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
+                            style={{
+                              padding: '0.5rem 0.75rem',
+                              border: '1px solid #007BFF',
+                              borderRadius: '4px',
+                              backgroundColor: '#FFFFFF',
+                              color: '#007BFF',
+                              textDecoration: 'none',
+                              fontSize: '14px',
+                              display: 'inline-block'
+                            }}
+                          >
+                            출석 관리
+                          </Link>
+                        )}
+                        <Link
+                          to={`/studies/${studyId}/attendances/${scheduleId}`}
+                          style={{
+                            padding: '0.5rem 0.75rem',
+                            border: '1px solid #E5E5E5',
+                            borderRadius: '4px',
+                            backgroundColor: '#FFFFFF',
+                            color: '#333333',
+                            textDecoration: 'none',
+                            fontSize: '14px',
+                            display: 'inline-block'
+                          }}
+                        >
+                          상세 보기
+                        </Link>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   );

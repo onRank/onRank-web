@@ -2,7 +2,6 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { useTheme } from '../../../contexts/ThemeContext';
 
 // Chart.js 컴포넌트 등록
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -12,7 +11,6 @@ ChartJS.register(ArcElement, Tooltip, Legend);
  * 출석 데이터를 받아 도넛 차트로 표시합니다.
  */
 const AttendanceChart = ({ attendances }) => {
-  const { colors } = useTheme();
   // 출석 상태 통계 계산
   const stats = {
     PRESENT: 0,
@@ -33,15 +31,20 @@ const AttendanceChart = ({ attendances }) => {
     }
   });
   
-  const total = safeAttendances.length;
-  const presentRate = total > 0 ? Math.round((stats.PRESENT / total) * 100) : 0;
+  // 미인증(UNKNOWN)을 제외한 전체 일정 수 계산
+  const totalExcludingUnknown = stats.PRESENT + stats.ABSENT + stats.LATE;
+  
+  // 출석률 계산 (미인증 제외)
+  const presentRate = totalExcludingUnknown > 0 
+    ? Math.round((stats.PRESENT / totalExcludingUnknown) * 100) 
+    : 0;
   
   // 차트 데이터
   const chartData = {
     labels: ['출석', '미출석'],
     datasets: [
       {
-        data: [stats.PRESENT, (total - stats.PRESENT)],
+        data: [presentRate, (100 - presentRate)],
         backgroundColor: ['#E50011', '#FFB2B2'],
         borderWidth: 0,
       },
@@ -52,7 +55,7 @@ const AttendanceChart = ({ attendances }) => {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '70%',
+    cutout: '75%',
     plugins: {
       legend: {
         display: false
@@ -60,19 +63,34 @@ const AttendanceChart = ({ attendances }) => {
       tooltip: {
         enabled: false
       }
+    },
+    elements: {
+      arc: {
+        borderWidth: 0
+      }
     }
   };
   
   return (
-    <div className="attendance-overview">
-      <h2>출석</h2>
-      <div className="attendance-chart-container">
-        <div className="chart-wrapper">
-          <Doughnut data={chartData} options={chartOptions} />
-          <div className="chart-center">
-            <div className="percentage">{presentRate}%</div>
-          </div>
-        </div>
+    <div style={{ 
+      position: 'relative', 
+      width: '100%', 
+      height: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <Doughnut data={chartData} options={chartOptions} />
+      <div style={{ 
+        position: 'absolute', 
+        top: '50%', 
+        left: '50%', 
+        transform: 'translate(-50%, -50%)',
+        fontSize: '2.5rem',
+        fontWeight: 'bold',
+        color: '#E50011'
+      }}>
+        {presentRate}%
       </div>
     </div>
   );
