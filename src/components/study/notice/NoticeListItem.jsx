@@ -7,22 +7,20 @@ function NoticeListItem({ notice, onClick }) {
 
   const styles = {
     noticeCard: {
-      backgroundColor: `var(--cardBackground)`,
+      backgroundColor: "#ffffff",
       padding: "12px 16px",
       borderRadius: "10px",
+      marginBottom: "12px",
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      boxShadow: `0 1px 4px ${
-        isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"
-      }`,
+      border: "1px solid #eee",
+      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
       gap: "10px",
       hover: {
-        boxShadow: `0 4px 12px ${
-          isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"
-        }`,
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
         transform: "translateY(-2px)",
       },
     },
@@ -40,7 +38,7 @@ function NoticeListItem({ notice, onClick }) {
     noticeTitle: {
       fontSize: "16px",
       fontWeight: "600",
-      color: `var(--textPrimary)`,
+      color: "#333",
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
@@ -49,7 +47,7 @@ function NoticeListItem({ notice, onClick }) {
       flexShrink: 0,
       width: "28px",
       height: "28px",
-      backgroundColor: `var(--buttonBackground)`,
+      backgroundColor: "#f1f1f1",
       borderRadius: "6px",
       display: "flex",
       alignItems: "center",
@@ -58,14 +56,14 @@ function NoticeListItem({ notice, onClick }) {
     },
     noticeDate: {
       fontSize: "13px",
-      color: `var(--textSecondary)`,
+      color: "#999",
       marginLeft: "20px",
       whiteSpace: "nowrap",
       flexShrink: 0,
     },
     noticeText: {
       fontSize: "12px",
-      color: `var(--textSecondary)`,
+      color: "#666",
       marginTop: "4px",
       whiteSpace: "nowrap",
       overflow: "hidden",
