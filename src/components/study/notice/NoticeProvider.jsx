@@ -1,6 +1,13 @@
 import PropTypes from "prop-types";
-import { createContext, useContext, useState, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 import { noticeService } from "../../../services/api";
+import { useParams } from "react-router-dom";
 
 // Context 생성
 const NoticeContext = createContext();
@@ -10,10 +17,12 @@ export const useNotice = () => useContext(NoticeContext);
 
 // Provider 컴포넌트
 export function NoticeProvider({ children }) {
+  const { studyId } = useParams();
   const [notices, setNotices] = useState([]);
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [memberRole, setMemberRole] = useState(null);
 
   // 공지사항 목록 불러오기
   const getNotices = useCallback(async (studyId) => {
@@ -21,6 +30,15 @@ export function NoticeProvider({ children }) {
     setError(null);
     try {
       const response = await noticeService.getNotices(studyId);
+
+      if (response.memberContext && response.memberContext.memberRole) {
+        console.log(
+          "[NoticeProvider] API 응답에서 역할 정보 추출:",
+          response.memberContext.memberRole
+        );
+        setMemberRole(response.memberContext.memberRole);
+      }
+
       if (response.success) {
         const sortedNotices = [...(response.data || [])].sort(
           (a, b) => new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
@@ -41,12 +59,23 @@ export function NoticeProvider({ children }) {
     }
   }, []);
 
+  useEffect(() => {
+    if (studyId) {
+      getNotices(studyId);
+    }
+  }, [studyId, getNotices]);
+
   // 공지사항 상세보기
   const getNoticeById = useCallback(async (studyId, noticeId) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await noticeService.getNoticeById(studyId, noticeId);
+
+      if (response.memberContext && response.memberContext.memberRole) {
+        setMemberRole(response.memberContext.memberRole);
+      }
+
       if (response.success) {
         setSelectedNotice(response.data);
       } else {
@@ -178,6 +207,7 @@ export function NoticeProvider({ children }) {
         selectedNotice,
         isLoading,
         error,
+        memberRole,
         getNotices,
         getNoticeById,
         createNotice,
