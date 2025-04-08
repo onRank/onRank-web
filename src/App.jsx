@@ -500,7 +500,6 @@ function AppContent() {
                       path="notices"
                       element={
                         <RoleBasedRoute
-                          memberRole={noticeData.memberContext?.memberRole}
                           managerComponent={NoticeManagerPage}
                           userComponent={NoticeUserPage}
                         />
@@ -511,7 +510,6 @@ function AppContent() {
                       path="notices/:noticeId"
                       element={
                         <RoleBasedRoute
-                          memberRole={noticeData.memberContext?.memberRole}
                           managerComponent={NoticeDetailManagerPage}
                           userComponent={NoticeDetailUserPage}
                         />
