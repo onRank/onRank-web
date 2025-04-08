@@ -44,7 +44,7 @@ function RoleBasedRoute({
     return <div>로딩 중...</div>;
   }
 
-  if (role === "CREATER" || role === "HOST") {
+  if (role === "CREATOR" || role === "HOST") {
     return <ManagerComponent />;
   } else {
     return <UserComponent />;
