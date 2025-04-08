@@ -33,12 +33,13 @@ export function NoticeProvider({ children }) {
       const response = await noticeService.getNotices(studyId);
 
       // memberContext에서 역할 정보 추출
-      if (response.memberContext && response.memberContext.memberRole) {
-        console.log(
-          "[NoticeProvider] 역할 정보 설정:",
-          response.memberContext.memberRole
-        );
-        setMemberRole(response.memberContext.memberRole);
+      if (response && typeof response === "object") {
+        if (response.memberContext && response.memberContext.memberRole) {
+          setMemberRole(response.memberContext.memberRole);
+        } else {
+          // 역할 정보가 없을 경우 기본값 설정
+          setMemberRole("PARTICIPANT");
+        }
       }
 
       if (response.success) {

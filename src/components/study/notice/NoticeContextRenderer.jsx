@@ -13,7 +13,7 @@ function NoticeContextRenderer({
   }
 
   // 관리자 권한이 있는지 체크 (CREATOR 또는 HOST인 경우)
-  const isManager = memberRole === "CREATOR" || memberRole === "HOST";
+  const isManager = memberRole === "CREATOR" || memberRole === "HOST" || false;
 
   console.log("[NoticeContent] 역할에 따른 렌더링:", { memberRole, isManager });
 
@@ -29,4 +29,4 @@ NoticeContextRenderer.propTypes = {
   userComponent: PropTypes.elementType.isRequired,
 };
 
-export default NoticeContext;
+export default NoticeContextRenderer;

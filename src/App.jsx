@@ -21,6 +21,8 @@ import NoticeUserPage from "./pages/study/notice/NoticeUserPage";
 import NoticeManagerPage from "./pages/study/notice/NoticeManagerPage";
 import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
+import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
+import NoticeProvider from "./components/study/notice/NoticeProvider";
 import PostFormPage from "./pages/study/post/PostFormPage";
 import PostMyDetailPage from "./pages/study/post/PostMyDetailPage";
 import PostPage from "./pages/study/post/PostPage";
@@ -36,7 +38,6 @@ import {
   AttendanceEditPage,
 } from "./pages/study/attendance";
 import "./App.css";
-import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
@@ -499,20 +500,24 @@ function AppContent() {
                     <Route
                       path="notices"
                       element={
-                        <NoticeContextRenderer
-                          managerComponent={NoticeManagerPage}
-                          userComponent={NoticeUserPage}
-                        />
+                        <NoticeProvider>
+                          <NoticeContextRenderer
+                            managerComponent={NoticeManagerPage}
+                            userComponent={NoticeUserPage}
+                          />
+                        </NoticeProvider>
                       }
                     />
                     <Route path="notices/add" element={<NoticeFormPage />} />
                     <Route
                       path="notices/:noticeId"
                       element={
-                        <NoticeContextRenderer
-                          managerComponent={NoticeDetailManagerPage}
-                          userComponent={NoticeDetailUserPage}
-                        />
+                        <NoticeProvider>
+                          <NoticeContextRenderer
+                            managerComponent={NoticeDetailManagerPage}
+                            userComponent={NoticeDetailUserPage}
+                          />
+                        </NoticeProvider>
                       }
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
