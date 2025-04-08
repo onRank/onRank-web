@@ -36,7 +36,7 @@ import {
   AttendanceEditPage,
 } from "./pages/study/attendance";
 import "./App.css";
-import RoleBasedRoute from "./components/common/RoleBasedRoute";
+import RoleBasedRoute from "./components/study/notice/RoleBasedRoute";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";

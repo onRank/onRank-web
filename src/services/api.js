@@ -17,11 +17,14 @@ export const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // 모든 요청 로깅 추가
-    console.log(`[API Request Debug] ${config.method.toUpperCase()} ${config.url}`, { 
-      headers: config.headers,
-      data: config.data
-    });
-    
+    console.log(
+      `[API Request Debug] ${config.method.toUpperCase()} ${config.url}`,
+      {
+        headers: config.headers,
+        data: config.data,
+      }
+    );
+
     // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
     const token = tokenUtils.getToken();
     if (token) {
@@ -1424,28 +1427,32 @@ export const studyService = {
       // 명시적 디버깅 로그
       console.log(`[StudyService] 출석 목록 조회 요청 시작: ${studyId}`);
       console.log(`[StudyService] 요청 URL: /studies/${studyId}/attendances`);
-      console.log('[StudyService] 토큰 상태:', !!tokenUtils.getToken());
-      
+      console.log("[StudyService] 토큰 상태:", !!tokenUtils.getToken());
+
       // 네트워크 요청을 직접 fetch로도 시도
       try {
         console.log(`[StudyService] fetch API로 직접 요청 시도`);
-        const fetchUrl = `${import.meta.env.PROD ? 'https://onrank.kr' : import.meta.env.VITE_API_URL || 'http://localhost:8080'}/studies/${studyId}/attendances`;
+        const fetchUrl = `${
+          import.meta.env.PROD
+            ? "https://onrank.kr"
+            : import.meta.env.VITE_API_URL || "http://localhost:8080"
+        }/studies/${studyId}/attendances`;
         console.log(`[StudyService] fetch 요청 URL: ${fetchUrl}`);
-        
+
         const token = tokenUtils.getToken();
         const fetchResponse = await fetch(fetchUrl, {
-          method: 'GET',
+          method: "GET",
           headers: {
-            'Authorization': token || '',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
+            Authorization: token || "",
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
         });
         console.log(`[StudyService] fetch 응답 상태:`, fetchResponse.status);
       } catch (fetchError) {
         console.error(`[StudyService] fetch 시도 실패:`, fetchError);
       }
-      
+
       // 원래 axios 요청 실행
       console.log(`[StudyService] axios로 출석 목록 조회 요청`);
       const response = await api.get(`/studies/${studyId}/attendances`);
@@ -1478,8 +1485,10 @@ export const studyService = {
   // 출석 상세 정보 조회
   getAttendanceDetails: async (studyId, scheduleId) => {
     try {
-      console.log(`[StudyService] 출석 상세 정보 조회 요청: ${studyId}, 일정: ${scheduleId}`);
-      
+      console.log(
+        `[StudyService] 출석 상세 정보 조회 요청: ${studyId}, 일정: ${scheduleId}`
+      );
+
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
@@ -1492,7 +1501,9 @@ export const studyService = {
         `/studies/${studyId}/attendances/${scheduleId}`,
         {
           headers: {
-            Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           withCredentials: true,
@@ -1522,7 +1533,9 @@ export const studyService = {
         {}, // 빈 객체를 본문으로 전송 (PUT 요청에 필요)
         {
           headers: {
-            Authorization: token.startsWith("Bearer ") ? token : `Bearer ${token}`,
+            Authorization: token.startsWith("Bearer ")
+              ? token
+              : `Bearer ${token}`,
             "Content-Type": "application/json",
           },
           withCredentials: true,
@@ -1845,13 +1858,13 @@ export const noticeService = {
       console.log("[NoticeService] 공지사항 목록 조회 성공:", response.data);
 
       // 응답이 문자열인 경우 안전하게 처리
-      let data = response.data;
-      if (typeof data === "string") {
+      let responseData = response.data;
+      if (typeof responseData === "string") {
         try {
           console.log("[NoticeService] 문자열 응답 처리 시도");
 
           // HTML 응답인 경우 빈 배열 반환
-          if (data.includes("<!DOCTYPE html>")) {
+          if (responseData.includes("<!DOCTYPE html>")) {
             console.warn("[NoticeService] HTML 응답 감지, 빈 배열 반환");
             return {
               success: false,
@@ -1862,7 +1875,7 @@ export const noticeService = {
 
           // JSON 문자열인 경우 파싱 시도
           try {
-            data = JSON.parse(data);
+            responseData = JSON.parse(responseData);
           } catch (parseError) {
             console.error("[NoticeService] 데이터 파싱 실패:", parseError);
             return {
@@ -1881,94 +1894,135 @@ export const noticeService = {
         }
       }
 
+      // 응답이 없거나 유효하지 않은 경우
+      if (!responseData) {
+        console.warn("[NoticeService] 유효하지 않은 응답 데이터");
+        return {
+          success: false,
+          message: "유효하지 않은 응답 데이터입니다",
+          data: [],
+        };
+      }
+
       // 응답이 { memberContext, data } 구조인지 확인
-      let noticeData = data;
+      let noticeData = responseData;
       let memberContext = null;
 
-      if (data && data.data && Array.isArray(data.data)) {
+      if (responseData.data !== undefined) {
         console.log(
           "[NoticeService] 새 API 응답 구조 감지 (memberContext/data)"
         );
-        noticeData = data.data;
-        memberContext = data.memberContext || null;
+        noticeData = responseData.data;
+        memberContext = responseData.memberContext || null;
+
+        console.log("[NoticeService] 멤버 컨텍스트:", memberContext);
       }
 
-      // 기존 data 변수를 noticeData로 변경
-      data = noticeData;
+      // 데이터가 배열인지 확인
+      let dataArray = Array.isArray(noticeData)
+        ? noticeData
+        : noticeData
+        ? [noticeData]
+        : [];
 
-      // 배열이 아닌 경우 배열로 변환
-      if (!Array.isArray(data)) {
-        console.warn("[NoticeService] 응답이 배열이 아님, 배열로 변환:", data);
-        data = data ? [data] : [];
-      }
-
-      if (data.length > 0) {
+      if (dataArray.length > 0) {
         console.log(
           "[NoticeService] 첫 번째 공지사항 객체 필드:",
-          Object.keys(data[0])
+          Object.keys(dataArray[0])
         );
 
         // 필드명 확인 - 백엔드 DTO 구조에 맞게 확인
         console.log(
           "[NoticeService] noticeId 존재 여부:",
-          "noticeId" in data[0]
+          "noticeId" in dataArray[0]
         );
         console.log(
           "[NoticeService] noticeTitle 존재 여부:",
-          "noticeTitle" in data[0]
+          "noticeTitle" in dataArray[0]
         );
         console.log(
           "[NoticeService] noticeContent 존재 여부:",
-          "noticeContent" in data[0]
+          "noticeContent" in dataArray[0]
         );
 
-        // 데이터 유효성 검사
-        data = data.map((notice) => {
+        // 데이터 유효성 검사 및 기본값 설정
+        dataArray = dataArray.map((notice) => {
+          const processedNotice = { ...notice };
+
           // noticeId가 없거나 유효하지 않은 경우
-          if (!notice.noticeId || isNaN(notice.noticeId)) {
+          if (!processedNotice.noticeId || isNaN(processedNotice.noticeId)) {
             console.warn(
               "[NoticeService] noticeId 필드 없음 또는 유효하지 않음, 임의 ID 설정"
             );
-            notice.noticeId = Math.floor(Math.random() * 10000);
+            processedNotice.noticeId = Math.floor(Math.random() * 10000);
           }
 
-          // 제목이 없거나 빈 문자열인 경우
-          if (!notice.noticeTitle || notice.noticeTitle.trim() === "") {
+          // 제목이 없거나, null이거나, 빈 문자열인 경우
+          if (
+            processedNotice.noticeTitle === undefined ||
+            processedNotice.noticeTitle === null ||
+            processedNotice.noticeTitle.trim() === ""
+          ) {
             console.warn(
               "[NoticeService] noticeTitle 필드 없음 또는 빈 값, 기본값 설정"
             );
-            notice.noticeTitle = "제목 없음";
+            processedNotice.noticeTitle = "제목 없음";
           }
 
-          // 내용이 없거나 빈 문자열인 경우
-          if (!notice.noticeContent || notice.noticeContent.trim() === "") {
+          // 내용이 없거나, null이거나, 빈 문자열인 경우
+          if (
+            processedNotice.noticeContent === undefined ||
+            processedNotice.noticeContent === null ||
+            processedNotice.noticeContent.trim() === ""
+          ) {
             console.warn(
               "[NoticeService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
             );
-            notice.noticeContent = "내용 없음";
+            processedNotice.noticeContent = "내용 없음";
           }
 
           // 생성일이 없는 경우
-          if (!notice.noticeCreatedAt) {
+          if (!processedNotice.noticeCreatedAt) {
             console.warn(
               "[NoticeService] noticeCreatedAt 필드 없음, 현재 시간으로 설정"
             );
-            notice.noticeCreatedAt = new Date().toISOString();
+            processedNotice.noticeCreatedAt = new Date().toISOString();
           }
 
           // 수정일이 없는 경우
-          if (!notice.noticeModifiedAt) {
+          if (!processedNotice.noticeModifiedAt) {
             console.warn(
               "[NoticeService] noticeModifiedAt 필드 없음, 생성일과 동일하게 설정"
             );
-            notice.noticeModifiedAt = notice.noticeCreatedAt;
+            processedNotice.noticeModifiedAt = processedNotice.noticeCreatedAt;
           }
 
-          return notice;
+          // 작성자가 없는 경우
+          if (
+            !processedNotice.noticeWritenBy ||
+            processedNotice.noticeWritenBy.trim() === ""
+          ) {
+            console.warn(
+              "[NoticeService] noticeWritenBy 필드 없음, 기본값 설정"
+            );
+            processedNotice.noticeWritenBy = "작성자 없음";
+          }
+
+          // 파일 배열 확인
+          if (!processedNotice.files) {
+            processedNotice.files = [];
+          }
+
+          return processedNotice;
         });
       }
 
-      return { success: true, data: data };
+      // 최종 결과 반환
+      return {
+        success: true,
+        data: dataArray,
+        memberContext: memberContext,
+      };
     } catch (error) {
       console.error("[NoticeService] 공지사항 목록 조회 오류:", error);
       // 오류 발생 시 오류 정보와 함께 빈 배열 반환
@@ -1977,159 +2031,6 @@ export const noticeService = {
         message:
           error.message || "공지사항 목록을 불러오는 중 오류가 발생했습니다",
         data: [],
-      };
-    }
-  },
-
-  // 공지사항 생성
-  createNotice: async (studyId, newNotice, files = []) => {
-    try {
-      console.log("[NoticeService] 공지사항 생성 요청:", newNotice);
-      // 백엔드 DTO 구조에 맞게 데이터 변환
-      const requestData = {
-        noticeTitle: newNotice.noticeTitle || "",
-        noticeContent: newNotice.noticeContent || "",
-        fileNames: newNotice.fileNames || [],
-      };
-
-      console.log("[NoticeService] 변환된 요청 데이터:", requestData);
-
-      // 토큰 확인
-      const token = tokenUtils.getToken();
-      if (!token) {
-        console.error("[NoticeService] 토큰 없음, 공지사항 생성 불가");
-        throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
-      }
-
-      // 토큰 형식 확인
-      const tokenWithBearer = token.startsWith("Bearer ")
-        ? token
-        : `Bearer ${token}`;
-
-      // API 요청
-      const response = await api.post(
-        `/studies/${studyId}/notices/add`,
-        requestData,
-        {
-          headers: {
-            Authorization: tokenWithBearer,
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
-            Accept: "application/json", // JSON 응답 요청
-          },
-          withCredentials: true,
-        }
-      );
-
-      // 응답이 HTML인 경우 (로그인 페이지 등)
-      if (
-        typeof response.data === "string" &&
-        response.data.includes("<!DOCTYPE html>")
-      ) {
-        console.warn(
-          "[NoticeService] HTML 응답 감지, 인증 문제 가능성:",
-          response.data.substring(0, 100) + "..."
-        );
-
-        // 토큰 만료 여부 확인
-        const isTokenExpired = tokenUtils.isTokenExpired(token);
-
-        // 토큰이 만료된 경우에만 재발급 시도
-        if (isTokenExpired) {
-          try {
-            console.log("[NoticeService] 토큰 만료됨, 재발급 시도");
-            const refreshResponse = await api.get("/auth/reissue");
-            const newToken =
-              refreshResponse.headers["authorization"] ||
-              refreshResponse.headers["Authorization"];
-
-            if (newToken) {
-              console.log("[NoticeService] 토큰 재발급 성공, 요청 재시도");
-              tokenUtils.setToken(newToken);
-
-              // 새 토큰으로 요청 재시도
-              const retryResponse = await api.post(
-                `/studies/${studyId}/notices/add`,
-                requestData,
-                {
-                  headers: {
-                    Authorization: newToken,
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json",
-                  },
-                  withCredentials: true,
-                }
-              );
-
-              console.log(
-                "[NoticeService] 공지사항 생성 재시도 결과:",
-                retryResponse.data
-              );
-
-              // 파일 업로드 처리
-              await handleFileUpload(retryResponse.data, files);
-
-              return { success: true, data: retryResponse.data };
-            }
-          } catch (refreshError) {
-            console.error("[NoticeService] 토큰 재발급 실패:", refreshError);
-            return {
-              success: false,
-              message: "인증이 만료되었습니다. 다시 로그인해주세요.",
-              requireRelogin: true,
-            };
-          }
-        } else {
-          console.log(
-            "[NoticeService] 토큰이 유효하지만 권한 문제 발생, 로그아웃 후 재로그인 필요"
-          );
-          // 토큰이 유효하지만 권한 문제가 있는 경우 로그아웃 처리
-          tokenUtils.removeToken(true);
-          // 로그인 페이지로 리다이렉트하지 않고 오류 메시지 반환
-          return {
-            success: false,
-            message: "권한이 없습니다. 로그아웃 후 다시 로그인해주세요.",
-            requireRelogin: true,
-          };
-        }
-      }
-
-      console.log("[NoticeService] 공지사항 생성 성공:", response.data);
-
-      // 파일 업로드 처리
-      if (files && files.length > 0 && response.data.uploadUrls) {
-        try {
-          await handleFileUpload(response.data, files);
-        } catch (uploadError) {
-          console.error("[NoticeService] 파일 업로드 중 오류:", uploadError);
-          return {
-            success: true,
-            data: response.data,
-            warning: "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
-          };
-        }
-      }
-
-      return { success: true, data: response.data };
-    } catch (error) {
-      console.error("[NoticeService] 공지사항 생성 오류:", error);
-
-      // 인증 오류인 경우 (403)
-      if (error.response && error.response.status === 403) {
-        console.error("[NoticeService] 인증 오류:", error.response.status);
-        // 토큰만 제거하고 리다이렉트는 하지 않음
-        tokenUtils.removeToken(true);
-        return {
-          success: false,
-          message: "인증에 실패했습니다. 다시 로그인해주세요.",
-          requireRelogin: true,
-        };
-      }
-
-      return {
-        success: false,
-        message: error.message || "공지사항 생성 중 오류가 발생했습니다.",
       };
     }
   },
@@ -2151,10 +2052,10 @@ export const noticeService = {
       console.log("[NoticeService] 공지사항 상세 조회 성공:", response.data);
 
       // 데이터 유효성 검사 추가
-      let data = response.data;
+      let responseData = response.data;
 
       // 데이터가 없거나 잘못된 형식인 경우 처리
-      if (!data) {
+      if (!responseData) {
         console.warn("[NoticeService] 응답 데이터 없음");
         return {
           success: false,
@@ -2163,38 +2064,88 @@ export const noticeService = {
         };
       }
 
-      // 필수 필드가 없는 경우 기본값 설정
-      if (data.noticeTitle === undefined || data.noticeTitle === null) {
-        console.warn("[NoticeService] noticeTitle 필드 없음, 기본값 설정");
-        data.noticeTitle = "제목 없음";
-      } else if (data.noticeTitle.trim() === "") {
-        console.warn("[NoticeService] noticeTitle 빈 값, 기본값 설정");
-        data.noticeTitle = "제목 없음";
-      }
+      // API 응답 구조 분석 (memberContext, data 구조 처리)
+      let data = responseData;
+      let memberContext = null;
 
-      if (data.noticeContent === undefined || data.noticeContent === null) {
-        console.warn("[NoticeService] noticeContent 필드 없음, 기본값 설정");
-        data.noticeContent = "내용 없음";
-      } else if (data.noticeContent.trim() === "") {
-        console.warn("[NoticeService] noticeContent 빈 값, 기본값 설정");
-        data.noticeContent = "내용 없음";
-      }
-
-      if (!data.noticeCreatedAt) {
-        console.warn(
-          "[NoticeService] noticeCreatedAt 필드 없음, 현재 시간으로 설정"
+      // 새로운 API 응답 형식 확인 (memberContext/data 구조)
+      if (responseData.data !== undefined) {
+        console.log(
+          "[NoticeService] 새 API 응답 구조 감지 (memberContext/data)"
         );
-        data.noticeCreatedAt = new Date().toISOString();
+        data = responseData.data;
+        memberContext = responseData.memberContext || null;
       }
 
-      if (!data.noticeModifiedAt) {
-        console.warn(
-          "[NoticeService] noticeModifiedAt 필드 없음, 생성일과 동일하게 설정"
-        );
-        data.noticeModifiedAt = data.noticeCreatedAt;
+      // 백엔드 응답 구조 로깅
+      console.log("[NoticeService] 게시판 상세 응답 구조:", {
+        hasData: !!data,
+        dataType: typeof data,
+        fields: data ? Object.keys(data) : [],
+      });
+
+      // 데이터가 없는 경우 기본 구조 생성
+      if (!data) {
+        data = {
+          noticeId: noticeId,
+          noticeTitle: "제목 없음",
+          noticeContent: "내용 없음",
+          noticeCreatedAt: new Date().toISOString(),
+          noticeModifiedAt: new Date().toISOString(),
+          files: [],
+        };
+      } else {
+        // 필수 필드가 없는 경우 기본값 설정
+        if (
+          data.noticeTitle === undefined ||
+          data.noticeTitle === null ||
+          data.noticeTitle.trim() === ""
+        ) {
+          console.warn(
+            "[NoticeService] noticeTitle 필드 없음 또는 빈 값, 기본값 설정"
+          );
+          data.noticeTitle = "제목 없음";
+        }
+
+        if (
+          data.noticeContent === undefined ||
+          data.noticeContent === null ||
+          data.noticeContent.trim() === ""
+        ) {
+          console.warn(
+            "[noticeService] noticeContent 필드 없음 또는 빈 값, 기본값 설정"
+          );
+          data.noticeContent = "내용 없음";
+        }
+
+        if (!data.noticeCreatedAt) {
+          console.warn(
+            "[noticeService] noticeCreatedAt 필드 없음, 현재 시간으로 설정"
+          );
+          data.noticeCreatedAt = new Date().toISOString();
+        }
+
+        if (!data.noticeModifiedAt) {
+          console.warn(
+            "[noticeService] noticeModifiedAt 필드 없음, 생성일과 동일하게 설정"
+          );
+          data.noticeModifiedAt = data.noticeCreatedAt;
+        }
+
+        // 파일 배열 확인
+        if (!data.files) {
+          data.files = [];
+        }
       }
 
-      return { success: true, data: data };
+      console.log("[noticeService] 가공된 공지사항 상세 데이터:", data);
+
+      // memberContext가 있으면 함께 반환
+      return {
+        success: true,
+        data: data,
+        memberContext: memberContext,
+      };
     } catch (error) {
       console.error("[NoticeService] 공지사항 상세 조회 오류:", error);
       return {
@@ -2651,10 +2602,10 @@ export const postService = {
       console.log("[postService] 게시판 상세 조회 성공:", response.data);
 
       // 데이터 유효성 검사 추가
-      let data = response.data;
+      let responseData = response.data;
 
       // 데이터가 없거나 잘못된 형식인 경우 처리
-      if (!data) {
+      if (!responseData) {
         console.warn("[postService] 응답 데이터 없음");
         return {
           success: false,
@@ -2663,43 +2614,94 @@ export const postService = {
         };
       }
 
-      // 필수 필드가 없는 경우 기본값 설정
-      if (!data.postTitle || data.postTitle.trim() === "") {
-        console.warn(
-          "[postService] postTitle 필드 없음 또는 빈 값, 기본값 설정"
-        );
-        data.postTitle = "제목 없음";
+      // API 응답 구조 분석 (memberContext, data 구조 처리)
+      let data = responseData;
+      let memberContext = null;
+
+      // 새로운 API 응답 형식 확인 (memberContext/data 구조)
+      if (responseData.data !== undefined) {
+        console.log("[postService] 새 API 응답 구조 감지 (memberContext/data)");
+        data = responseData.data;
+        memberContext = responseData.memberContext || null;
       }
 
-      if (!data.postContent || data.postContent.trim() === "") {
-        console.warn(
-          "[postService] postContent 필드 없음 또는 빈 값, 기본값 설정"
-        );
-        data.postContent = "내용 없음";
+      // 백엔드 응답 구조 로깅
+      console.log("[postService] 게시판 상세 응답 구조:", {
+        hasData: !!data,
+        dataType: typeof data,
+        fields: data ? Object.keys(data) : [],
+      });
+
+      // 데이터가 없는 경우 기본 구조 생성
+      if (!data) {
+        data = {
+          postId: postId,
+          postTitle: "제목 없음",
+          postContent: "내용 없음",
+          postCreatedAt: new Date().toISOString(),
+          postModifiedAt: new Date().toISOString(),
+          postWritenBy: "작성자 없음",
+          files: [],
+        };
+      } else {
+        // 필수 필드가 없는 경우 기본값 설정
+        if (
+          data.postTitle === undefined ||
+          data.postTitle === null ||
+          data.postTitle.trim() === ""
+        ) {
+          console.warn(
+            "[postService] postTitle 필드 없음 또는 빈 값, 기본값 설정"
+          );
+          data.postTitle = "제목 없음";
+        }
+
+        if (
+          data.postContent === undefined ||
+          data.postContent === null ||
+          data.postContent.trim() === ""
+        ) {
+          console.warn(
+            "[postService] postContent 필드 없음 또는 빈 값, 기본값 설정"
+          );
+          data.postContent = "내용 없음";
+        }
+
+        if (!data.postCreatedAt) {
+          console.warn(
+            "[postService] postCreatedAt 필드 없음, 현재 시간으로 설정"
+          );
+          data.postCreatedAt = new Date().toISOString();
+        }
+
+        if (!data.postModifiedAt) {
+          console.warn(
+            "[postService] postModifiedAt 필드 없음, 생성일과 동일하게 설정"
+          );
+          data.postModifiedAt = data.postCreatedAt;
+        }
+
+        if (!data.postWritenBy || data.postWritenBy.trim() === "") {
+          console.warn(
+            "[postService] postWritenBy 필드 없음 또는 빈 값, 기본값 설정"
+          );
+          data.postWritenBy = "작성자 없음";
+        }
+
+        // 파일 배열 확인
+        if (!data.files) {
+          data.files = [];
+        }
       }
 
-      if (!data.postCreatedAt) {
-        console.warn(
-          "[postService] postCreatedAt 필드 없음, 현재 시간으로 설정"
-        );
-        data.postCreatedAt = new Date().toISOString();
-      }
+      console.log("[postService] 가공된 게시판 상세 데이터:", data);
 
-      if (!data.postModifiedAt) {
-        console.warn(
-          "[postService] postModifiedAt 필드 없음, 생성일과 동일하게 설정"
-        );
-        data.postModifiedAt = data.postCreatedAt;
-      }
-
-      if (!data.postWritenBy || data.postWritenBy.trim() === "") {
-        console.warn(
-          "[postService] postWritenBy 필드 없음 또는 빈 값, 기본값 설정"
-        );
-        data.postWritenBy = "작성자 없음";
-      }
-
-      return { success: true, data: data };
+      // memberContext가 있으면 함께 반환
+      return {
+        success: true,
+        data: data,
+        memberContext: memberContext,
+      };
     } catch (error) {
       console.error("[postService] 게시판 상세 조회 오류:", error);
       return {
