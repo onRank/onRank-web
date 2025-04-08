@@ -36,7 +36,7 @@ import {
   AttendanceEditPage,
 } from "./pages/study/attendance";
 import "./App.css";
-import RoleBasedRoute from "./components/auth/RoleBasedRoute";
+import RoleBasedRoute from "./components/common/RoleBasedRoute";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
@@ -496,7 +496,15 @@ function AppContent() {
                 <StudyLayout>
                   <Routes>
                     <Route index element={<StudyDetailPage />} />
-                    <Route path="notices" element={<NoticeManagerPage />} />
+                    <Route
+                      path="notices"
+                      element={
+                        <RoleBasedRoute
+                          managerComponent={NoticeManagerPage}
+                          userComponent={NoticeUserPage}
+                        />
+                      }
+                    />
                     <Route path="notices/add" element={<NoticeFormPage />} />
                     <Route
                       path="notices/:noticeId"
