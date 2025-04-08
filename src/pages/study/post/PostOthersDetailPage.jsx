@@ -9,11 +9,13 @@ import {
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
+import PostEditForm from "../../../components/study/post/PostEditForm";
 
-function PostDetailOthersContent({ onTitleLoaded }) {
+function PostDetailManagerContent({ onTitleLoaded }) {
   const { studyId, postId } = useParams();
   const navigate = useNavigate();
   const { selectedPost, isLoading, error, getPostById } = usePost();
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // 컴포넌트 마운트 시 게시판 정보 가져오기
   useEffect(() => {
@@ -126,16 +128,16 @@ function PostDetailOthersContent({ onTitleLoaded }) {
 }
 
 // PropTypes 추가
-PostDetailOthersContent.propTypes = {
+PostDetailManagerContent.propTypes = {
   onTitleLoaded: PropTypes.func,
 };
 
 // 기본 props 설정
-PostDetailOthersContent.defaultProps = {
+PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostOthersDetailPage() {
+function PostOtherDetailPage() {
   const { studyId, postId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("게시판 상세");
@@ -148,7 +150,7 @@ function PostOthersDetailPage() {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[PostOthersDetailPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[PostDetailManagerPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -160,11 +162,11 @@ function PostOthersDetailPage() {
 
   const styles = {
     wrapper: {
-      minHeight: "100vh",
+      maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
+      padding: "0 1rem",
     },
     main: {
       display: "flex",
@@ -259,7 +261,7 @@ function PostOthersDetailPage() {
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <PostDetailOthersContent onTitleLoaded={updatePageTitle} />
+            <PostDetailManagerContent onTitleLoaded={updatePageTitle} />
           </main>
         </div>
       </div>
@@ -267,4 +269,4 @@ function PostOthersDetailPage() {
   );
 }
 
-export default PostOthersDetailPage;
+export default PostOtherDetailPage;

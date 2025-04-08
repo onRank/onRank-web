@@ -41,6 +41,7 @@ function PostFormPage() {
       fontFamily: "sans-serif",
       display: "flex",
       flexDirection: "column",
+      padding: "0 1rem",
     },
     main: {
       display: "flex",
