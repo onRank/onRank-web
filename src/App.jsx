@@ -22,7 +22,7 @@ import NoticeManagerPage from "./pages/study/notice/NoticeManagerPage";
 import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
 import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
-import NoticeProvider from "./components/study/notice/NoticeProvider";
+import { NoticeProvider } from "./components/study/notice/NoticeProvider";
 import PostFormPage from "./pages/study/post/PostFormPage";
 import PostMyDetailPage from "./pages/study/post/PostMyDetailPage";
 import PostPage from "./pages/study/post/PostPage";
