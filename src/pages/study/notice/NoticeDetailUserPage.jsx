@@ -24,15 +24,10 @@ function NoticeDetailContent({ onTitleLoaded }) {
 
   // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
-    if (
-      selectedNotice &&
-      selectedNotice.noticeTitle &&
-      onTitleLoaded &&
-      !isEditMode
-    ) {
+    if (selectedNotice && selectedNotice.noticeTitle && onTitleLoaded) {
       onTitleLoaded(selectedNotice.noticeTitle);
     }
-  }, [selectedNotice, onTitleLoaded, isEditMode]);
+  }, [selectedNotice, onTitleLoaded]);
 
   // 닫기 버튼 핸들러 - 공지사항 목록으로 이동
   const handleClose = () => {
