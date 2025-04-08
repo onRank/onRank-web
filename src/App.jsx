@@ -30,8 +30,13 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
-import { AttendanceContainer, AttendanceDetailPage, AttendanceEditPage } from "./pages/study/attendance";
+import {
+  AttendanceContainer,
+  AttendanceDetailPage,
+  AttendanceEditPage,
+} from "./pages/study/attendance";
 import "./App.css";
+import RoleBasedRoute from "./components/auth/RoleBasedRoute";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
@@ -42,7 +47,7 @@ const MemoizedHeader = memo(Header);
 // 스터디 레이아웃 컴포넌트 (테마 적용)
 const StudyLayout = memo(({ children }) => {
   const { colors } = useTheme();
-  
+
   return (
     <div
       style={{
@@ -51,7 +56,7 @@ const StudyLayout = memo(({ children }) => {
         display: "flex",
         justifyContent: "center",
         backgroundColor: colors.background,
-        color: colors.text
+        color: colors.text,
       }}
     >
       <div
@@ -81,12 +86,15 @@ StudyLayout.displayName = "StudyLayout";
 // 기본 레이아웃 컴포넌트 (테마 적용)
 const DefaultLayout = memo(() => {
   const { colors } = useTheme();
-  
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6" style={{ 
-      backgroundColor: colors.background, 
-      color: colors.text 
-    }}>
+    <div
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6"
+      style={{
+        backgroundColor: colors.background,
+        color: colors.text,
+      }}
+    >
       <Outlet />
     </div>
   );
@@ -133,13 +141,15 @@ const PublicRoute = ({ children }) => {
 // ThemeWrapper 컴포넌트 추가
 const ThemeWrapper = ({ children }) => {
   const { colors } = useTheme();
-  
+
   return (
-    <div style={{ 
-      backgroundColor: colors.background,
-      color: colors.text,
-      minHeight: '100vh'
-    }}>
+    <div
+      style={{
+        backgroundColor: colors.background,
+        color: colors.text,
+        minHeight: "100vh",
+      }}
+    >
       {children}
     </div>
   );
@@ -152,24 +162,24 @@ const ThemeToggle = () => {
     <button
       onClick={toggleTheme}
       style={{
-        position: 'fixed',
-        bottom: '20px',
-        right: '20px',
-        width: '40px',
-        height: '40px',
-        borderRadius: '50%',
+        position: "fixed",
+        bottom: "20px",
+        right: "20px",
+        width: "40px",
+        height: "40px",
+        borderRadius: "50%",
         backgroundColor: `var(--cardBackground)`,
         border: `1px solid var(--border)`,
         color: `var(--textPrimary)`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
         zIndex: 1000,
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)'
+        boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
       }}
     >
-      {isDarkMode ? '🌞' : '🌙'}
+      {isDarkMode ? "🌞" : "🌙"}
     </button>
   );
 };
@@ -395,7 +405,13 @@ function AppContent() {
 
   // showHeader와 showNavigation 조건을 useMemo로 최적화
   const showHeader = useMemo(() => {
-    const hideHeaderPaths = ["/", "/login", "/auth/callback", "/oauth/callback", "/auth/add"];
+    const hideHeaderPaths = [
+      "/",
+      "/login",
+      "/auth/callback",
+      "/oauth/callback",
+      "/auth/add",
+    ];
     return !hideHeaderPaths.includes(location.pathname);
   }, [location.pathname]);
 
@@ -484,7 +500,12 @@ function AppContent() {
                     <Route path="notices/add" element={<NoticeFormPage />} />
                     <Route
                       path="notices/:noticeId"
-                      element={<NoticeDetailManagerPage />}
+                      element={
+                        <RoleBasedRoute
+                          managerComponent={NoticeDetailManagerPage}
+                          userComponent={NoticeDetailUserPage}
+                        />
+                      }
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<ScheduleAddPage />} />
@@ -500,8 +521,14 @@ function AppContent() {
                       element={<PostMyDetailPage />}
                     />
                     <Route path="attendances" element={<StudyDetailPage />} />
-                    <Route path="attendances/:scheduleId" element={<AttendanceDetailPage />} />
-                    <Route path="attendances/:scheduleId/edit" element={<AttendanceEditPage />} />
+                    <Route
+                      path="attendances/:scheduleId"
+                      element={<AttendanceDetailPage />}
+                    />
+                    <Route
+                      path="attendances/:scheduleId/edit"
+                      element={<AttendanceEditPage />}
+                    />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />
                   </Routes>

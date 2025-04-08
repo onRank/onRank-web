@@ -3,7 +3,6 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import {
@@ -54,7 +53,8 @@ function NoticeContent() {
   const styles = {
     contentArea: {
       flex: 1,
-      padding: "20px",
+      height: "fit-content",
+      padding: "20px 40px",
       minWidth: 0, // 중요: 플렉스 아이템이 너비를 초과하지 않도록 설정
       overflow: "hidden", // 필요한 경우에만 스크롤 표시
     },
@@ -66,7 +66,7 @@ function NoticeContent() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {
@@ -83,7 +83,6 @@ function NoticeContent() {
           noticeId={selectedNoticeId}
           selectedNotice={selectedNotice}
           handleBack={handleBack}
-          handleEdit={handleEdit}
           isLoading={isLoading}
           error={error}
         />
@@ -91,7 +90,6 @@ function NoticeContent() {
         <NoticeList
           notices={notices}
           onNoticeClick={handleNoticeClick}
-          handleCreate={handleCreate}
           isLoading={isLoading}
         />
       )}
@@ -100,7 +98,7 @@ function NoticeContent() {
 }
 
 // 메인 공지사항 페이지 컴포넌트
-function NoticeManagerPage() {
+function NoticeUserPage() {
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
 
@@ -120,8 +118,9 @@ function NoticeManagerPage() {
   const styles = {
     container: {
       display: "flex",
-      minHeight: "100vh",
+      maxHeight: "100vh",
       overflow: "hidden",
+      height: "fit-content",
     },
     breadcrumb: {
       display: "flex",
@@ -193,4 +192,4 @@ function NoticeManagerPage() {
   );
 }
 
-export default NoticeManagerPage;
+export default NoticeUserPage;

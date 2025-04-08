@@ -6,7 +6,6 @@ import {
   NoticeProvider,
   useNotice,
 } from "../../../components/study/notice/NoticeProvider";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
@@ -65,7 +64,7 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {

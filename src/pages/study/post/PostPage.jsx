@@ -3,7 +3,6 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "../../../components/study/post/PostDetail";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
@@ -85,7 +84,7 @@ function PostContent() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {

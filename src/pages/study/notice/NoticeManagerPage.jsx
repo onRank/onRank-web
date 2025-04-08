@@ -3,7 +3,6 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
@@ -91,7 +90,7 @@ function NoticeContent() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {

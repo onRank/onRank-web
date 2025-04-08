@@ -6,7 +6,6 @@ import {
   PostProvider,
   usePost,
 } from "../../../components/study/post/PostProvider";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
@@ -65,7 +64,7 @@ function PostDetailManagerContent({ onTitleLoaded }) {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {

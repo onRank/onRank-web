@@ -7,7 +7,6 @@ import {
   NoticeProvider,
   useNotice,
 } from "../../../components/study/notice/NoticeProvider";
-import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import Button from "../../../components/common/Button";
 import { formatDate } from "../../../utils/dateUtils";
@@ -43,7 +42,7 @@ function NoticeDetailUserContent({ onTitleLoaded }) {
   };
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <div>로딩중...</div>;
   }
 
   if (error) {
