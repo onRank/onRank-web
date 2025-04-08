@@ -134,12 +134,12 @@ function NoticeDetailContent({ onTitleLoaded }) {
 }
 
 // PropTypes 추가
-NoticeDetailManagerContent.propTypes = {
+NoticeDetailContent.propTypes = {
   onTitleLoaded: PropTypes.func,
 };
 
 // 기본 props 설정
-NoticeDetailManagerContent.defaultProps = {
+NoticeDetailContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
@@ -156,7 +156,7 @@ function NoticeUserManagerPage() {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[NoticeDetailManagerPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[NoticeDetailUserPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
