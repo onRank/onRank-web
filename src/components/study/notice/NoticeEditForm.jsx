@@ -187,7 +187,7 @@ function NoticeEditForm({
     },
     textarea: {
       width: "100%",
-      minHeight: "313px",
+      minHeight: "280px",
       padding: "10px",
       borderRadius: "8px",
       border: "1px solid #ccc",

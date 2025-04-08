@@ -5,27 +5,33 @@ import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
   const { colors } = useTheme();
-  
+
   if (isLoading) return <LoadingSpinner />;
 
   return (
     <div>
-      <div style={{
-        backgroundColor: `var(--cardBackground)`,
-        border: `1px solid var(--border)`,
-        borderRadius: '0.5rem',
-        overflow: 'hidden'
-      }}>
+      <div
+        style={{
+          backgroundColor: `var(--cardBackground)`,
+          border: `1px solid var(--border)`,
+          borderRadius: "0.5rem",
+          overflow: "hidden",
+        }}
+      >
         {notices.length === 0 ? (
-          <div style={{
-            padding: '1.5rem',
-            textAlign: 'center',
-            color: `var(--textSecondary)`
-          }}>
+          <div
+            style={{
+              padding: "1.5rem",
+              textAlign: "center",
+              color: `var(--textSecondary)`,
+            }}
+          >
             등록된 공지사항이 없습니다.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
+          >
             {notices.map((notice) => (
               <div key={notice.noticeId}>
                 <NoticeListItem
