@@ -60,6 +60,7 @@ function NoticeFormPage() {
       maxHeight: "100vh",
       overflow: "hidden",
       height: "fit-content",
+      padding: "0 1rem",
     },
     breadcrumb: {
       display: "flex",
