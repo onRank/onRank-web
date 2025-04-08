@@ -1,21 +1,20 @@
-// 나중에 수정해야함
-
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import PropTypes from "prop-types";
 import { IoHomeOutline } from "react-icons/io5";
 import {
   NoticeProvider,
   useNotice,
 } from "../../../components/study/notice/NoticeProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
+import StudySidebar from "../../../components/study/StudySidebar";
 import Button from "../../../components/common/Button";
-import { formatDate } from "../../../utils/dateUtils";
-import PropTypes from "prop-types";
 
-function NoticeDetailUserContent({ onTitleLoaded }) {
-  const { studyId, noticeId } = useParams(); // URL에서 studyId와 noticeId 추출
+function NoticeDetailContent({ onTitleLoaded }) {
+  const { studyId, noticeId } = useParams();
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // 컴포넌트 마운트 시 공지사항 정보 가져오기
   useEffect(() => {
@@ -26,19 +25,19 @@ function NoticeDetailUserContent({ onTitleLoaded }) {
 
   // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
-    if (selectedNotice && selectedNotice.noticeTitle && onTitleLoaded) {
+    if (
+      selectedNotice &&
+      selectedNotice.noticeTitle &&
+      onTitleLoaded &&
+      !isEditMode
+    ) {
       onTitleLoaded(selectedNotice.noticeTitle);
     }
-  }, [selectedNotice, onTitleLoaded]);
+  }, [selectedNotice, onTitleLoaded, isEditMode]);
 
-  // 뒤로 가기 처리
-  const handleBack = () => {
+  // 닫기 버튼 핸들러 - 공지사항 목록으로 이동
+  const handleClose = () => {
     navigate(`/studies/${studyId}/notices`);
-  };
-
-  // 파일 다운로드 처리
-  const handleDownload = (fileUrl, fileName) => {
-    window.open(fileUrl, "_blank");
   };
 
   if (isLoading) {
@@ -47,144 +46,105 @@ function NoticeDetailUserContent({ onTitleLoaded }) {
 
   if (error) {
     return (
-      <div>
-        <Button onClick={handleBack} variant="back" />
+      <div style={{ padding: "24px" }}>
         <ErrorMessage message={error} />
       </div>
     );
   }
 
   if (!selectedNotice) {
-    return <div>해당 공지사항을 찾을 수 없습니다.</div>;
+    return (
+      <div style={{ padding: "24px" }}>
+        <div style={{ marginTop: "16px" }}>
+          해당 공지사항을 찾을 수 없습니다.
+        </div>
+      </div>
+    );
   }
 
+  // 스타일 정의
   const styles = {
-    wrapper: {
-      maxHeight: "100vh",
-      fontFamily: "sans-serif",
+    container: {
+      padding: 0,
       display: "flex",
       flexDirection: "column",
-    },
-    topbar: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      borderBottom: "1px solid #e0e0e0",
-      padding: "12px 24px",
-    },
-    topbarLeft: {
-      display: "flex",
-      alignItems: "center",
       gap: "24px",
-    },
-    logo: {
-      fontWeight: "bold",
-    },
-    main: {
-      display: "flex",
-      flex: 1,
-    },
-    contentArea: {
-      flex: 1,
-      padding: "32px",
-    },
-    title: {
-      fontSize: "20px",
-      fontWeight: "bold",
-      marginBottom: "4px",
     },
     date: {
       fontSize: "12px",
       color: "#888",
-      marginBottom: "24px",
     },
     contentBox: {
-      border: "1px solid #ddd",
-      borderRadius: "6px",
-      minHeight: "200px",
+      border: "1px solid #e0e0e0",
+      borderRadius: "8px",
+      minHeight: "313px",
       padding: "16px",
-      marginBottom: "32px",
+      background: "#fff",
     },
-    fileLabel: {
-      fontSize: "14px",
+    attachmentWrapper: {
+      marginTop: "12px",
+    },
+    attachmentTitle: {
+      fontSize: "16px",
       fontWeight: "bold",
       marginBottom: "8px",
     },
-    fileList: {
-      listStyle: "none",
-      padding: 0,
-      marginBottom: "32px",
-    },
-    fileItem: {
+    attachmentItem: {
+      fontSize: "14px",
       marginBottom: "6px",
+      color: "#333",
       cursor: "pointer",
     },
-    fileName: {
-      fontSize: "14px",
-      color: "#0066cc",
-      textDecoration: "underline",
-    },
-    fileSize: {
-      fontSize: "12px",
-      color: "#999",
-      marginLeft: "8px",
-    },
-    buttonWrap: {
-      textAlign: "right",
+    buttonContainer: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "12px",
     },
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.main}>
-        <main style={styles.contentArea}>
-          <h1 style={styles.title}>{selectedNotice.noticeTitle}</h1>
-          <div style={styles.date}>
-            {formatDate(selectedNotice.noticeCreatedAt)}
-          </div>
-
-          <div style={styles.contentBox}>
-            {selectedNotice.noticeContent || <p>&nbsp;</p>}
-          </div>
-
-          {selectedNotice.files && selectedNotice.files.length > 0 && (
-            <>
-              <div style={styles.fileLabel}>첨부 파일</div>
-              <ul style={styles.fileList}>
-                {selectedNotice.files.map((file) => (
-                  <li
-                    key={file.fileId}
-                    style={styles.fileItem}
-                    onClick={() => handleDownload(file.fileUrl, file.fileName)}
-                  >
-                    <span style={styles.fileName}>{file.fileName}</span>
-                  </li>
-                ))}
-              </ul>
-            </>
-          )}
-
-          <div style={styles.buttonWrap}>
-            <Button onClick={handleBack} variant="back" />
-          </div>
-        </main>
+    <div style={styles.container}>
+      <div style={styles.date}>
+        {new Date(selectedNotice.noticeCreatedAt).toLocaleDateString()}
+      </div>
+      <div style={styles.contentBox}>
+        {selectedNotice.noticeContent || <p>내용이 없습니다.</p>}
+      </div>
+      {selectedNotice.files?.length > 0 && (
+        <div style={styles.attachmentWrapper}>
+          <div style={styles.attachmentTitle}>첨부 파일</div>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {selectedNotice.files.map((file) => (
+              <li
+                key={file.fileId}
+                style={styles.attachmentItem}
+                onClick={() => window.open(file.fileUrl, "_blank")}
+              >
+                {file.fileName}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <div style={styles.buttonContainer}>
+        <Button variant="back" onClick={handleClose} />
       </div>
     </div>
   );
 }
 
 // PropTypes 추가
-NoticeDetailUserContent.propTypes = {
+NoticeDetailManagerContent.propTypes = {
   onTitleLoaded: PropTypes.func,
 };
 
 // 기본 props 설정
-NoticeDetailUserContent.defaultProps = {
+NoticeDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function NoticeDetailUserPage() {
-  const { studyId } = useParams();
+function NoticeUserManagerPage() {
+  const { studyId, noticeId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("공지사항 상세");
 
@@ -196,7 +156,7 @@ function NoticeDetailUserPage() {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[NoticeDetailUserPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[NoticeDetailManagerPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -208,23 +168,23 @@ function NoticeDetailUserPage() {
 
   const styles = {
     wrapper: {
+      maxHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#ffffff",
       display: "flex",
       flexDirection: "column",
     },
     main: {
       display: "flex",
-      flex: 1,
     },
     content: {
       flex: 1,
-      padding: "48px 64px",
+      padding: "0 40px",
+      margin: "0 auto",
     },
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "32px",
+      marginBottom: "10px",
     },
     breadcrumb: {
       display: "flex",
@@ -300,9 +260,12 @@ function NoticeDetailUserPage() {
           <span style={styles.activeTab}>{pageTitle}</span>
         </div>
         <div style={styles.main}>
+          <aside>
+            <StudySidebar activeTab="공지사항" />
+          </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <NoticeDetailUserContent onTitleLoaded={updatePageTitle} />
+            <NoticeDetailContent onTitleLoaded={updatePageTitle} />
           </main>
         </div>
       </div>
@@ -310,4 +273,4 @@ function NoticeDetailUserPage() {
   );
 }
 
-export default NoticeDetailUserPage;
+export default NoticeUserManagerPage;

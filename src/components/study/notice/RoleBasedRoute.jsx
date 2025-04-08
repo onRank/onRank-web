@@ -7,42 +7,43 @@ import PropTypes from "prop-types";
 function RoleBasedRoute({
   managerComponent: ManagerComponent,
   userComponent: UserComponent,
+  memberRole: initialMemberRole,
 }) {
   const { studyId } = useParams();
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [role, setRole] = useState(initialMemberRole || null);
+  const [loading, setLoading] = useState(initialMemberRole ? false : true);
 
   useEffect(() => {
-    // 스터디 정보 가져오기
+    if (initialMemberRole) {
+      setRole(initialMemberRole);
+      setLoading(false);
+      return;
+    }
+
     const fetchStudyRole = () => {
       try {
-        // 로컬 스토리지에서 스터디 정보 가져오기
         const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
         if (cachedStudyDataStr) {
           const cachedStudyData = JSON.parse(cachedStudyDataStr);
-          // 멤버 롤 정보 설정
           setRole(cachedStudyData.memberRole || "PARTICIPANT");
         } else {
-          // 정보가 없으면 기본적으로 일반 사용자 권한 설정
           setRole("PARTICIPANT");
         }
       } catch (err) {
         console.error("역할 정보 가져오기 오류:", err);
-        setRole("PARTICIPANT"); // 오류 발생 시 기본값
+        setRole("PARTICIPANT");
       } finally {
         setLoading(false);
       }
     };
 
     fetchStudyRole();
-  }, [studyId]);
+  }, [studyId, initialMemberRole]);
 
-  // 로딩 중일 때 표시할 내용
   if (loading) {
     return <div>로딩 중...</div>;
   }
 
-  // 역할에 따라 적절한 컴포넌트 렌더링
   if (role === "CREATOR" || role === "HOST") {
     return <ManagerComponent />;
   } else {
@@ -53,6 +54,7 @@ function RoleBasedRoute({
 RoleBasedRoute.propTypes = {
   managerComponent: PropTypes.elementType.isRequired,
   userComponent: PropTypes.elementType.isRequired,
+  memberRole: PropTypes.string,
 };
 
 export default RoleBasedRoute;
