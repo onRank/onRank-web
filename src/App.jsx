@@ -36,7 +36,7 @@ import {
   AttendanceEditPage,
 } from "./pages/study/attendance";
 import "./App.css";
-import RoleBasedRoute from "./components/study/notice/RoleBasedRoute";
+import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
 
 // 레이아웃 상수
 const HEADER_HEIGHT = "64px";
@@ -499,7 +499,7 @@ function AppContent() {
                     <Route
                       path="notices"
                       element={
-                        <RoleBasedRoute
+                        <NoticeContextRenderer
                           managerComponent={NoticeManagerPage}
                           userComponent={NoticeUserPage}
                         />
@@ -509,7 +509,7 @@ function AppContent() {
                     <Route
                       path="notices/:noticeId"
                       element={
-                        <RoleBasedRoute
+                        <NoticeContextRenderer
                           managerComponent={NoticeDetailManagerPage}
                           userComponent={NoticeDetailUserPage}
                         />

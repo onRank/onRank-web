@@ -10,22 +10,9 @@ function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
 
   return (
     <div>
-      <div
-        style={{
-          backgroundColor: `var(--cardBackground)`,
-          border: `1px solid var(--border)`,
-          borderRadius: "0.5rem",
-          overflow: "hidden",
-        }}
-      >
+      <div className="bg-white border rounded-lg overflow-hidden">
         {notices.length === 0 ? (
-          <div
-            style={{
-              padding: "1.5rem",
-              textAlign: "center",
-              color: `var(--textSecondary)`,
-            }}
-          >
+          <div className="p-6 text-center text-gray-500">
             등록된 공지사항이 없습니다.
           </div>
         ) : (

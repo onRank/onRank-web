@@ -9,13 +9,10 @@ import {
 import { noticeService } from "../../../services/api";
 import { useParams } from "react-router-dom";
 
-// Context 생성
 const NoticeContext = createContext();
 
-// Context를 사용하기 위한 커스텀 훅
 export const useNotice = () => useContext(NoticeContext);
 
-// Provider 컴포넌트
 export function NoticeProvider({ children }) {
   const { studyId } = useParams();
   const [notices, setNotices] = useState([]);
@@ -23,17 +20,22 @@ export function NoticeProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [memberRole, setMemberRole] = useState(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false); // 초기 로드 완료 상태
 
-  // 공지사항 목록 불러오기
+  // 공지사항 목록 불러오기 (memberRole 정보도 함께 가져옴)
   const getNotices = useCallback(async (studyId) => {
+    if (!studyId) return;
+
     setIsLoading(true);
     setError(null);
     try {
+      console.log("[NoticeProvider] 공지사항 목록 요청:", studyId);
       const response = await noticeService.getNotices(studyId);
 
+      // memberContext에서 역할 정보 추출
       if (response.memberContext && response.memberContext.memberRole) {
         console.log(
-          "[NoticeProvider] API 응답에서 역할 정보 추출:",
+          "[NoticeProvider] 역할 정보 설정:",
           response.memberContext.memberRole
         );
         setMemberRole(response.memberContext.memberRole);
@@ -51,19 +53,21 @@ export function NoticeProvider({ children }) {
         setNotices([]);
       }
     } catch (err) {
-      console.error("공지사항 목록 조회 실패:", err);
+      console.error("[NoticeProvider] 공지사항 목록 조회 실패:", err);
       setError(err.message || "공지사항 목록을 불러오는데 실패했습니다.");
       setNotices([]);
     } finally {
       setIsLoading(false);
+      setInitialLoadDone(true); // 로드 완료 표시
     }
   }, []);
 
+  // 컴포넌트 마운트 시 한 번만 공지사항 목록 가져오기
   useEffect(() => {
-    if (studyId) {
+    if (studyId && !initialLoadDone) {
       getNotices(studyId);
     }
-  }, [studyId, getNotices]);
+  }, [studyId, initialLoadDone]);
 
   // 공지사항 상세보기
   const getNoticeById = useCallback(async (studyId, noticeId) => {
@@ -207,7 +211,7 @@ export function NoticeProvider({ children }) {
         selectedNotice,
         isLoading,
         error,
-        memberRole,
+        memberRole, // 역할 정보 제공
         getNotices,
         getNoticeById,
         createNotice,

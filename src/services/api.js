@@ -1997,17 +1997,6 @@ export const noticeService = {
             processedNotice.noticeModifiedAt = processedNotice.noticeCreatedAt;
           }
 
-          // 작성자가 없는 경우
-          if (
-            !processedNotice.noticeWritenBy ||
-            processedNotice.noticeWritenBy.trim() === ""
-          ) {
-            console.warn(
-              "[NoticeService] noticeWritenBy 필드 없음, 기본값 설정"
-            );
-            processedNotice.noticeWritenBy = "작성자 없음";
-          }
-
           // 파일 배열 확인
           if (!processedNotice.files) {
             processedNotice.files = [];
