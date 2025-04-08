@@ -2051,7 +2051,7 @@ export const noticeService = {
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
-        console.error("[noticeService] 토큰 없음, 게시판 생성 불가");
+        console.error("[noticeService] 토큰 없음, 공지사항 생성 불가");
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
@@ -2081,7 +2081,7 @@ export const noticeService = {
         response.data.includes("<!DOCTYPE html>")
       ) {
         console.warn(
-          "[postService] HTML 응답 감지, 인증 문제 가능성:",
+          "[noticeService] HTML 응답 감지, 인증 문제 가능성:",
           response.data.substring(0, 100) + "..."
         );
 
@@ -2117,7 +2117,7 @@ export const noticeService = {
               );
 
               console.log(
-                "[noticeService] 게시판 생성 재시도 결과:",
+                "[noticeService] 공지사항 생성 재시도 결과:",
                 retryResponse.data
               );
 
@@ -2149,7 +2149,7 @@ export const noticeService = {
         }
       }
 
-      console.log("[noticeService] 게시판 생성 성공:", response.data);
+      console.log("[noticeService] 공지사항 생성 성공:", response.data);
 
       // 파일 업로드 처리
       if (files && files.length > 0 && response.data.uploadUrls) {
@@ -2160,7 +2160,7 @@ export const noticeService = {
           return {
             success: true,
             data: response.data,
-            warning: "게시판은 생성되었으나 일부 파일 업로드에 실패했습니다.",
+            warning: "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
           };
         }
       }
