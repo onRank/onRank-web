@@ -14,7 +14,6 @@ function NoticeDetailContent({ onTitleLoaded }) {
   const { studyId, noticeId } = useParams();
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
-  const [isEditMode, setIsEditMode] = useState(false);
 
   // 컴포넌트 마운트 시 공지사항 정보 가져오기
   useEffect(() => {
