@@ -1721,17 +1721,18 @@ export const studyService = {
       console.log(
         `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
-
+  
       const response = await api.put(
-        `/studies/${studyId}/attendances/${attendanceId}`,
-        {
-          attendanceStatus: newStatus,
-        },
+        `/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
+        {}, // 빈 객체 (요청 본문 필요 없음)
         {
           withCredentials: true,
+        },
+        {
+          attendanceStatus: newStatus,
         }
       );
-
+  
       console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
       return response.data || {}; // 응답이 없는 경우 빈 객체 반환
     } catch (error) {
