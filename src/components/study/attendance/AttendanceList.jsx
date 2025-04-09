@@ -93,8 +93,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
     const isHovered = hoveredId === attendance.attendanceId;
     
-    console.log(`아이템 ${attendance.attendanceId} 호버 상태:`, isHovered, '호스트 상태:', isHost); // 디버깅 로그
-    
     return (
       <Link
         to={`/studies/${studyId}/attendances/${scheduleId}`}
@@ -110,11 +108,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           textDecoration: 'none',
           fontSize: '14px',
           marginRight: '8px',
-          opacity: 1, // 임시로 항상 보이게 설정
+          opacity: isHovered ? 1 : 0,
           transition: 'opacity 0.2s ease',
-          border: isHovered ? '2px solid red' : '2px solid blue', // 항상 테두리 보이게
-          zIndex: 100, // z-index 값 높게 설정
-          position: 'relative' // position 설정
+          zIndex: 10
         }}
         title="출석 상세"
       >
@@ -167,14 +163,8 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   <tr 
                     key={attendance.attendanceId} 
                     style={{ borderBottom: '1px solid #e5e5e5' }}
-                    onMouseEnter={() => {
-                      console.log('마우스 엔터:', attendance.attendanceId, '호스트 상태:', isHost); // 디버깅 로그
-                      setHoveredId(attendance.attendanceId);
-                    }}
-                    onMouseLeave={() => {
-                      console.log('마우스 리브:', attendance.attendanceId); // 디버깅 로그
-                      setHoveredId(null);
-                    }}
+                    onMouseEnter={() => setHoveredId(attendance.attendanceId)}
+                    onMouseLeave={() => setHoveredId(null)}
                   >
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: 'bold' }}>
@@ -186,7 +176,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
-                        {renderEditIcon(attendance)}
+                        {isHost && renderEditIcon(attendance)}
                         {isHost && (
                           <Link
                             to={`/studies/${studyId}/attendances/${scheduleId}/edit`}

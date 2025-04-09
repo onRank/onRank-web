@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import AttendanceList from '../../../components/study/attendance/AttendanceList';
 import AttendanceChart from '../../../components/study/attendance/AttendanceChart';
+import { isStudyHost } from '../../../utils/studyRoleUtils';
 
 /**
  * 출석 컨테이너 컴포넌트
@@ -69,8 +70,11 @@ function AttendanceContainer() {
       setAttendances(formattedAttendances);
       setStatistics(stats);
       
-      // 호스트 권한 확인
-      setIsHost(response.isHost || false);
+      // 호스트 권한 확인 - 유틸리티 함수 사용
+      const userIsHost = isStudyHost(response);
+      console.log('[AttendanceContainer] 호스트 여부:', userIsHost);
+      
+      setIsHost(userIsHost);
       
     } catch (error) {
       console.error('[AttendanceContainer] 출석 데이터 가져오기 오류:', error);
