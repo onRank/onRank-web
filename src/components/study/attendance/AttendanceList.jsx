@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { formatDateTime, getStatusText, getStatusIcon, STATUS_STYLES } from '../../../utils/attendanceUtils';
 
@@ -13,6 +13,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   const safeAttendances = Array.isArray(attendances) ? attendances : [];
   
   console.log('[AttendanceList] 처리된 출석 데이터:', safeAttendances);
+
+  // 마우스 오버 상태 관리
+  const [hoveredId, setHoveredId] = useState(null);
 
   // 출석 상태 표시 함수
   const renderStatus = (attendance) => {
@@ -85,6 +88,35 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     return icon;
   };
 
+  // 연필 아이콘 렌더링 함수
+  const renderEditIcon = (attendance) => {
+    const scheduleId = attendance.scheduleId || attendance.attendanceId;
+    
+    return (
+      <Link
+        to={`/studies/${studyId}/attendances/${scheduleId}`}
+        style={{
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          backgroundColor: '#f5f5f5',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#666',
+          textDecoration: 'none',
+          fontSize: '14px',
+          marginRight: '8px',
+          opacity: hoveredId === attendance.attendanceId ? 1 : 0,
+          transition: 'opacity 0.2s ease'
+        }}
+        title="출석 상세"
+      >
+        ✎
+      </Link>
+    );
+  };
+
   return (
     <div>
       <h2 style={{ 
@@ -129,6 +161,8 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   <tr 
                     key={attendance.attendanceId} 
                     style={{ borderBottom: '1px solid #e5e5e5' }}
+                    onMouseEnter={() => setHoveredId(attendance.attendanceId)}
+                    onMouseLeave={() => setHoveredId(null)}
                   >
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: 'bold' }}>
@@ -140,7 +174,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
-                        {renderStatus(attendance)}
+                        {isHost && renderEditIcon(attendance)}
                         {isHost && (
                           <Link
                             to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
@@ -158,21 +192,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                             출석 관리
                           </Link>
                         )}
-                        <Link
-                          to={`/studies/${studyId}/attendances/${scheduleId}`}
-                          style={{
-                            padding: '0.5rem 0.75rem',
-                            border: '1px solid #E5E5E5',
-                            borderRadius: '4px',
-                            backgroundColor: '#FFFFFF',
-                            color: '#333333',
-                            textDecoration: 'none',
-                            fontSize: '14px',
-                            display: 'inline-block'
-                          }}
-                        >
-                          상세 보기
-                        </Link>
+                        {renderStatus(attendance)}
                       </div>
                     </td>
                   </tr>
