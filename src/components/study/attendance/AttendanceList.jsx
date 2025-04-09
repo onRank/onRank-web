@@ -20,17 +20,26 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     
     return (
       <div style={{ 
-        width: '24px', 
-        height: '24px', 
-        borderRadius: '50%', 
-        backgroundColor: styles.color, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center',
-        color: 'white',
-        border: styles.border
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem'
       }}>
-        {styles.icon}
+        <div style={{ 
+          width: '24px', 
+          height: '24px', 
+          borderRadius: '50%', 
+          backgroundColor: styles.color, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          color: 'white',
+          border: styles.border
+        }}>
+          {styles.icon}
+        </div>
+        <span style={{ color: styles.color }}>
+          {getStatusText(status)}
+        </span>
       </div>
     );
   };
