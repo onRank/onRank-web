@@ -1714,31 +1714,6 @@ export const studyService = {
     }
   },
 
-  // 출석 상세 정보 조회 (HOST 권한)
-  getHostAttendancesByAttendance: async (studyId, id) => {
-    try {
-      console.log(`[StudyService] 출석 상세 조회 요청: ${studyId}, ID: ${id}`);
-      const response = await api.get(`/studies/${studyId}/attendances/${id}`, {
-        withCredentials: true,
-      });
-
-      // 응답 데이터 유형 로깅
-      const responseData = response.data;
-      console.log("[StudyService] 출석 상세 응답 구조:", {
-        dataType: typeof responseData,
-        isArray: Array.isArray(responseData),
-        hasDataProperty: !!(responseData && responseData.data),
-      });
-
-      // 응답이 없는 경우 기본값 반환
-      if (!responseData) return { data: [] };
-
-      return responseData;
-    } catch (error) {
-      console.error("[StudyService] 출석 상세 조회 실패:", error);
-      return { data: [] }; // 오류 발생 시 기본 구조 반환
-    }
-  },
 
   // 출석 상태 업데이트
   updateAttendance: async (studyId, attendanceId, newStatus) => {
@@ -1747,7 +1722,7 @@ export const studyService = {
         `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
 
-      const response = await api.patch(
+      const response = await api.put(
         `/studies/${studyId}/attendances/${attendanceId}`,
         {
           attendanceStatus: newStatus,
