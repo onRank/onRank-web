@@ -16,72 +16,23 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   // 출석 상태 표시 함수
   const renderStatus = (attendance) => {
     const status = attendance.attendanceStatus || 'UNKNOWN';
+    const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
     
-    // 상태에 따른 아이콘 선택
-    let icon = null;
-    if (status === 'PRESENT') {
-      icon = (
-        <div style={{ 
-          width: '24px', 
-          height: '24px', 
-          borderRadius: '50%', 
-          backgroundColor: '#E50011', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          ✓
-        </div>
-      );
-    } else if (status === 'ABSENT') {
-      icon = (
-        <div style={{ 
-          width: '24px', 
-          height: '24px', 
-          borderRadius: '50%', 
-          backgroundColor: '#000', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          ✕
-        </div>
-      );
-    } else if (status === 'LATE') {
-      icon = (
-        <div style={{ 
-          width: '24px', 
-          height: '24px', 
-          borderRadius: '50%', 
-          backgroundColor: '#007BFF', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          -
-        </div>
-      );
-    } else {
-      icon = (
-        <div style={{ 
-          width: '24px', 
-          height: '24px', 
-          borderRadius: '50%', 
-          backgroundColor: '#999', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          color: 'white'
-        }}>
-          ?
-        </div>
-      );
-    }
-    
-    return icon;
+    return (
+      <div style={{ 
+        width: '24px', 
+        height: '24px', 
+        borderRadius: '50%', 
+        backgroundColor: styles.color, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        color: 'white',
+        border: styles.border
+      }}>
+        {styles.icon}
+      </div>
+    );
   };
 
   // 연필 아이콘 렌더링 함수
