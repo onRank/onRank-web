@@ -91,6 +91,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   // 연필 아이콘 렌더링 함수
   const renderEditIcon = (attendance) => {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
+    const isHovered = hoveredId === attendance.attendanceId;
+    
+    console.log(`아이템 ${attendance.attendanceId} 호버 상태:`, isHovered); // 디버깅 로그
     
     return (
       <Link
@@ -107,8 +110,10 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           textDecoration: 'none',
           fontSize: '14px',
           marginRight: '8px',
-          opacity: hoveredId === attendance.attendanceId ? 1 : 0,
-          transition: 'opacity 0.2s ease'
+          opacity: isHovered ? 1 : 0,
+          transition: 'opacity 0.2s ease',
+          border: isHovered ? '1px solid red' : 'none', // 디버깅용 테두리
+          pointerEvents: isHovered ? 'auto' : 'none' // 보이는 상태에서만 클릭 가능
         }}
         title="출석 상세"
       >
@@ -161,8 +166,14 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   <tr 
                     key={attendance.attendanceId} 
                     style={{ borderBottom: '1px solid #e5e5e5' }}
-                    onMouseEnter={() => setHoveredId(attendance.attendanceId)}
-                    onMouseLeave={() => setHoveredId(null)}
+                    onMouseEnter={() => {
+                      console.log('마우스 엔터:', attendance.attendanceId); // 디버깅 로그
+                      setHoveredId(attendance.attendanceId);
+                    }}
+                    onMouseLeave={() => {
+                      console.log('마우스 리브:', attendance.attendanceId); // 디버깅 로그
+                      setHoveredId(null);
+                    }}
                   >
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: 'bold' }}>
