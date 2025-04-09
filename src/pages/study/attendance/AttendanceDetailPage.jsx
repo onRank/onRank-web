@@ -3,9 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import StudySidebar from '../../../components/study/StudySidebar';
-import AttendanceDetail from '../../../components/study/attendance/AttendanceDetail';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import ErrorMessage from '../../../components/common/ErrorMessage';
+import { getStatusText, getStatusIcon } from '../../../utils/attendanceUtils';
+import { isStudyHost, getStudyName } from '../../../utils/studyRoleUtils';
 
 /**
  * 출석 상세 페이지
@@ -19,41 +20,31 @@ function AttendanceDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isHost, setIsHost] = useState(false);
+  const [scheduleTitle, setScheduleTitle] = useState('');
+  const [scheduleStartingAt, setScheduleStartingAt] = useState('');
 
- // 출석 상세 정보 가져오기
-const fetchAttendanceDetails = async () => {
-  try {
-    setIsLoading(true);
-    setError(null);
-    
-    // 출석 상세 정보 가져오기
-    const response = await studyService.getAttendanceDetails(studyId, scheduleId);
-    console.log('응답 데이터:', response);
-    
-    // data 배열의 각 항목에 일정 정보 추가
-    if (response.data && Array.isArray(response.data)) {
-      const formattedData = response.data.map(item => ({
-        ...item,
-        scheduleTitle: response.scheduleTitle,
-        scheduleStartingAt: response.scheduleStartingAt,
-        scheduleEndingAt: response.scheduleEndingAt || response.scheduleStartingAt
-      }));
-      
-      setAttendanceDetails(formattedData);
-    } else {
-      setError('출석 데이터 형식이 올바르지 않습니다.');
+  const fetchAttendanceDetails = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await studyService.getAttendanceDetails(studyId, scheduleId);
+      console.log('응답 데이터:', response);
+
+      if (response.data && Array.isArray(response.data)) {
+        setAttendanceDetails(response.data);
+        setScheduleTitle(response.scheduleTitle);
+        setScheduleStartingAt(response.scheduleStartingAt);
+        setIsHost(isStudyHost(response));
+      } else {
+        setError('출석 데이터 형식이 올바르지 않습니다.');
+      }
+    } catch (error) {
+      console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
+      setError('출석 상세 정보를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
     }
-    
-    // 호스트 여부는 사용자 권한으로 판단
-    setIsHost(user?.role === 'ADMIN' || user?.role === 'CREATOR');
-
-  } catch (error) {
-    console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
-    setError('출석 상세 정보를 불러오는데 실패했습니다.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // 출석 상태 업데이트 함수
   const handleUpdateStatus = async (attendanceId, newStatus) => {
@@ -81,7 +72,7 @@ const fetchAttendanceDetails = async () => {
           alignItems: 'center',
           marginBottom: '2rem'
         }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>출석 상세</h1>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{scheduleTitle}</h1>
           <div>
             {isHost && (
               <button
@@ -120,11 +111,36 @@ const fetchAttendanceDetails = async () => {
         ) : error ? (
           <ErrorMessage message={error} />
         ) : (
-          <AttendanceDetail
-            attendanceDetails={attendanceDetails}
-            isHost={isHost}
-            onUpdateStatus={handleUpdateStatus}
-          />
+          <div style={{ backgroundColor: '#FFFFFF', borderRadius: '8px', padding: '1rem' }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '1rem' }}>출석 현황</h2>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left' }}>이름</th>
+                  <th style={{ padding: '1rem', textAlign: 'left' }}>상태</th>
+                </tr>
+              </thead>
+              <tbody>
+                {attendanceDetails.map((attendance) => (
+                  <tr key={attendance.attendanceId} style={{ borderBottom: '1px solid #e5e5e5' }}>
+                    <td style={{ padding: '1rem' }}>{attendance.studentName}</td>
+                    <td style={{ padding: '1rem' }}>
+                      <span style={{
+                        display: 'inline-block',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        backgroundColor: getStatusIcon(attendance.attendanceStatus).background,
+                        color: getStatusIcon(attendance.attendanceStatus).color,
+                        border: getStatusIcon(attendance.attendanceStatus).border
+                      }}>
+                        {getStatusText(attendance.attendanceStatus)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>
