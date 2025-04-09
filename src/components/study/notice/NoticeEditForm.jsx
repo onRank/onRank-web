@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useNotice } from "./NoticeProvider";
@@ -32,11 +32,18 @@ function NoticeEditForm({
     initialData?.noticeContent || ""
   );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState(initialData?.files || []);
-  const [filesToRemove, setFilesToRemove] = useState([]);
+  const [hasOriginalFiles, setHasOriginalFiles] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
+
+  // 컴포넌트 마운트 시 한 번만 실행
+  useEffect(() => {
+    // 기존 파일이 있는지 확인
+    if (initialData?.files && initialData.files.length > 0) {
+      setHasOriginalFiles(true); // 원본 파일이 있었음을 표시
+    }
+  }, [initialData]);
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
@@ -47,20 +54,6 @@ function NoticeEditForm({
     const newFiles = files.filter(
       (file) => !selectedFiles.some((f) => f.name === file.name)
     );
-
-    // 기존 파일과 이름 중복 확인 (수정 모드에서)
-    const duplicateWithExisting = newFiles.filter((file) =>
-      existingFiles.some((f) => f.fileName === file.name)
-    );
-
-    if (duplicateWithExisting.length > 0) {
-      setSubmitError(
-        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
 
     // 파일 크기 제한 (10MB)
     const oversizedFiles = newFiles.filter(
@@ -86,12 +79,6 @@ function NoticeEditForm({
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  // 기존 파일 제거 핸들러
-  const handleRemoveExistingFile = (file) => {
-    setExistingFiles((prev) => prev.filter((f) => f.fileId !== file.fileId));
-    setFilesToRemove((prev) => [...prev, file]);
-  };
-
   // 저장 핸들러
   const handleSave = async (e) => {
     e.preventDefault();
@@ -110,10 +97,8 @@ function NoticeEditForm({
         noticeTitle,
         noticeContent,
         fileNames: selectedFiles.map((file) => file.name),
-        // 유지할 기존 파일 목록
-        existingFileIds: existingFiles.map((file) => file.fileId),
-        // 제거할 파일 목록
-        removeFileIds: filesToRemove.map((file) => file.fileId),
+        // 기존 파일이 있었다면 모두 제거 플래그 설정
+        removeAllFiles: hasOriginalFiles,
       };
 
       const result = await editNotice(
@@ -238,11 +223,37 @@ function NoticeEditForm({
       display: "flex",
       gap: "12px",
     },
+    fileListHeader: {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontWeight: "bold",
+      marginBottom: "8px",
+    },
+    removeFilesNotice: {
+      backgroundColor: "#f8f9fa",
+      border: "1px dashed #ccc",
+      borderRadius: "4px",
+      padding: "10px",
+      marginTop: "8px",
+      marginBottom: "16px",
+      color: "#e74c3c",
+      fontSize: "14px",
+      textAlign: "center",
+    },
   };
 
   return (
     <form onSubmit={handleSave} style={styles.formContainer}>
       {submitError && <div style={styles.errorMessage}>{submitError}</div>}
+
+      {/* 파일 자동 제거 안내 메시지 */}
+      {hasOriginalFiles && (
+        <div style={styles.removeFilesNotice}>
+          수정 시 기존에 첨부된 모든 파일이 삭제됩니다. 필요한 파일은 다시
+          첨부해주세요.
+        </div>
+      )}
 
       <div style={styles.inputGroup}>
         <label style={styles.label} htmlFor="title">
@@ -275,39 +286,12 @@ function NoticeEditForm({
         </div>
       </div>
 
-      {/* 기존 파일 목록 표시 */}
-      {existingFiles.length > 0 && (
-        <div style={styles.fileList}>
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-            기존 파일
-          </div>
-          {existingFiles.map((file) => (
-            <div key={file.fileId} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.fileName}
-              <button
-                type="button"
-                onClick={() => handleRemoveExistingFile(file)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: "#e74c3c",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* 새로 선택된 파일 목록 표시 */}
       {selectedFiles.length > 0 && (
         <div style={styles.fileList}>
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>새 파일</div>
+          <div style={styles.fileListHeader}>
+            <span>새 파일</span>
+          </div>
           {selectedFiles.map((file, index) => (
             <div key={index} style={styles.fileItem}>
               <span style={styles.fileIcon}>📎</span>

@@ -4,15 +4,13 @@ import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 
-const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
+const NoticeForm = ({ studyId, notice = null, onFinish }) => {
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState([]);
-  const [filesToRemove, setFilesToRemove] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { isLoading, createNotice, editNotice } = useNotice();
+  const { isLoading, createNotice } = useNotice();
   const { colors } = useTheme();
   const maxLength = 10000;
 
@@ -20,11 +18,6 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     if (notice) {
       setNoticeTitle(notice.noticeTitle);
       setNoticeContent(notice.noticeContent);
-
-      // 기존 파일이 있으면 설정
-      if (notice.files && Array.isArray(notice.files)) {
-        setExistingFiles(notice.files);
-      }
     }
   }, [notice]);
 
@@ -37,20 +30,6 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     const newFiles = files.filter(
       (file) => !selectedFiles.some((f) => f.name === file.name)
     );
-
-    // 기존 파일과 이름 중복 확인 (수정 모드에서)
-    const duplicateWithExisting = newFiles.filter((file) =>
-      existingFiles.some((f) => f.fileName === file.name)
-    );
-
-    if (duplicateWithExisting.length > 0) {
-      setError(
-        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
 
     // 파일 크기 제한 (10MB)
     const oversizedFiles = newFiles.filter(
@@ -90,62 +69,32 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
     }
 
     try {
-      if (mode === "create") {
-        // 생성 모드
-        const newNotice = {
-          noticeTitle,
-          noticeContent,
-          fileNames: selectedFiles.map((file) => file.name),
-        };
+      // 생성 모드
+      const newNotice = {
+        noticeTitle,
+        noticeContent,
+        fileNames: selectedFiles.map((file) => file.name),
+      };
 
-        const result = await createNotice(studyId, newNotice, selectedFiles);
-        if (!result.success) {
-          setError(result.message || "공지사항 저장 중 오류가 발생했습니다.");
-          return;
-        }
-        if (result.warning) {
-          setError(result.warning);
-        }
+      const result = await createNotice(studyId, newNotice, selectedFiles);
+      if (!result.success) {
+        setError(result.message || "공지사항 저장 중 오류가 발생했습니다.");
+        return;
+      }
+      if (result.warning) {
+        setError(result.warning);
+      }
 
-        // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
-        if (result.data && result.data.noticeId) {
-          console.log("[NoticeForm] 생성된 공지사항 ID:", result.data.noticeId);
-          onFinish?.(result.data.noticeId);
-        } else {
-          console.warn(
-            "[NoticeForm] 생성된 공지사항에 ID가 없습니다:",
-            result.data
-          );
-          onFinish?.();
-        }
+      // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
+      if (result.data && result.data.noticeId) {
+        console.log("[NoticeForm] 생성된 공지사항 ID:", result.data.noticeId);
+        onFinish?.(result.data.noticeId);
       } else {
-        // 수정 모드
-        const updatedNotice = {
-          noticeTitle,
-          noticeContent,
-          fileNames: selectedFiles.map((file) => file.name),
-          // 유지할 기존 파일 목록
-          existingFileIds: existingFiles.map((file) => file.fileId),
-          // 제거할 파일 목록
-          removeFileIds: filesToRemove.map((file) => file.fileId),
-        };
-
-        const result = await editNotice(
-          studyId,
-          notice.noticeId,
-          updatedNotice,
-          selectedFiles
+        console.warn(
+          "[NoticeForm] 생성된 공지사항에 ID가 없습니다:",
+          result.data
         );
-        if (!result.success) {
-          setError(result.message || "공지사항 수정 중 오류가 발생했습니다.");
-          return;
-        }
-        if (result.warning) {
-          setError(result.warning);
-        }
-
-        // 수정 모드에서는 기존 ID 전달
-        onFinish?.(notice.noticeId);
+        onFinish?.();
       }
     } catch (error) {
       setError(
@@ -292,7 +241,11 @@ const NoticeForm = ({ studyId, notice = null, mode = "create", onFinish }) => {
               <span style={styles.fileIcon}>📎</span>
               {file.name}
               <span
-                style={{ marginLeft: "10px", color: `var(--textSecondary)`, fontSize: "12px" }}
+                style={{
+                  marginLeft: "10px",
+                  color: `var(--textSecondary)`,
+                  fontSize: "12px",
+                }}
               >
                 ({(file.size / 1024).toFixed(1)} KB)
               </span>

@@ -1518,8 +1518,6 @@ export const studyService = {
     }
   },
 
-
-
   // 출석 상태 변경 (변경 권한 있는 사용자만 가능)
   updateAttendance: async (studyId, attendanceId, newStatus) => {
     try {
@@ -1714,14 +1712,13 @@ export const studyService = {
     }
   },
 
-
   // 출석 상태 업데이트
   updateAttendance: async (studyId, attendanceId, newStatus) => {
     try {
       console.log(
         `[StudyService] 출석 상태 업데이트 요청: ${studyId}, 출석ID: ${attendanceId}, 상태: ${newStatus}`
       );
-  
+
       const response = await api.put(
         `/studies/${studyId}/attendances/${attendanceId}?status=${newStatus}`,
         {}, // 빈 객체 (요청 본문 필요 없음)
@@ -1732,7 +1729,7 @@ export const studyService = {
           attendanceStatus: newStatus,
         }
       );
-  
+
       console.log("[StudyService] 출석 상태 업데이트 성공:", response.data);
       return response.data || {}; // 응답이 없는 경우 빈 객체 반환
     } catch (error) {
