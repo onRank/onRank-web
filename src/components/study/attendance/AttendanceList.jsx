@@ -93,7 +93,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
     const isHovered = hoveredId === attendance.attendanceId;
     
-    console.log(`아이템 ${attendance.attendanceId} 호버 상태:`, isHovered); // 디버깅 로그
+    console.log(`아이템 ${attendance.attendanceId} 호버 상태:`, isHovered, '호스트 상태:', isHost); // 디버깅 로그
     
     return (
       <Link
@@ -110,10 +110,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           textDecoration: 'none',
           fontSize: '14px',
           marginRight: '8px',
-          opacity: isHovered ? 1 : 0,
+          opacity: 1, // 임시로 항상 보이게 설정
           transition: 'opacity 0.2s ease',
-          border: isHovered ? '1px solid red' : 'none', // 디버깅용 테두리
-          pointerEvents: isHovered ? 'auto' : 'none' // 보이는 상태에서만 클릭 가능
+          border: isHovered ? '2px solid red' : '2px solid blue', // 항상 테두리 보이게
+          zIndex: 100, // z-index 값 높게 설정
+          position: 'relative' // position 설정
         }}
         title="출석 상세"
       >
@@ -167,7 +168,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     key={attendance.attendanceId} 
                     style={{ borderBottom: '1px solid #e5e5e5' }}
                     onMouseEnter={() => {
-                      console.log('마우스 엔터:', attendance.attendanceId); // 디버깅 로그
+                      console.log('마우스 엔터:', attendance.attendanceId, '호스트 상태:', isHost); // 디버깅 로그
                       setHoveredId(attendance.attendanceId);
                     }}
                     onMouseLeave={() => {
@@ -185,7 +186,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     </td>
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
-                        {isHost && renderEditIcon(attendance)}
+                        {renderEditIcon(attendance)}
                         {isHost && (
                           <Link
                             to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
