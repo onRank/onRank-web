@@ -5,7 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import StudySidebar from '../../../components/study/StudySidebar';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import ErrorMessage from '../../../components/common/ErrorMessage';
-import { getStatusText, getStatusIcon, STATUS_STYLES } from '../../../utils/attendanceUtils';
+import { getStatusText, getStatusIcon, STATUS_STYLES, formatDateTime } from '../../../utils/attendanceUtils';
 import { isStudyHost, getStudyName } from '../../../utils/studyRoleUtils';
 
 /**
@@ -46,15 +46,12 @@ function AttendanceDetailPage() {
     }
   };
 
-  // 출석 상태 업데이트 함수
-  const handleUpdateStatus = async (attendanceId, newStatus) => {
+  const handleStatusChange = async (attendanceId, newStatus) => {
     try {
-      await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
-      // 상태 변경 후 데이터 다시 불러오기
-      await fetchAttendanceDetails();
+      await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      fetchAttendanceDetails();
     } catch (error) {
-      console.error('[AttendanceDetailPage] 출석 상태 업데이트 실패:', error);
-      alert('출석 상태 변경에 실패했습니다.');
+      console.error('출석 상태 변경 실패:', error);
     }
   };
 
@@ -72,7 +69,10 @@ function AttendanceDetailPage() {
           alignItems: 'center',
           marginBottom: '2rem'
         }}>
-          <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{scheduleTitle}</h1>
+          <div>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{scheduleTitle}</h1>
+            <p style={{ color: '#666', marginTop: '0.5rem' }}>{formatDateTime(scheduleStartingAt, 'M월 d일 a h시')}</p>
+          </div>
           <button
             onClick={() => navigate(`/studies/${studyId}/attendances`)}
             style={{
@@ -98,19 +98,19 @@ function AttendanceDetailPage() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
-                  <th style={{ padding: '1rem', textAlign: 'left' }}>이름</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', paddingLeft: '2rem' }}>이름</th>
                   <th style={{ padding: '1rem', textAlign: 'right' }}>상태</th>
                 </tr>
               </thead>
               <tbody>
                 {attendanceDetails.map((attendance) => (
                   <tr key={attendance.attendanceId} style={{ borderBottom: '1px solid #e5e5e5' }}>
-                    <td style={{ padding: '1rem' }}>{attendance.studentName}</td>
+                    <td style={{ padding: '1rem', paddingLeft: '2rem' }}>{attendance.studentName}</td>
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.5rem'
+                        gap: '1rem'
                       }}>
                         <div style={{
                           width: '24px',
@@ -120,8 +120,14 @@ function AttendanceDetailPage() {
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          color: STATUS_STYLES[attendance.attendanceStatus].color
-                        }}>
+                          color: STATUS_STYLES[attendance.attendanceStatus].color,
+                          cursor: 'pointer'
+                        }}
+                          onClick={() => {
+                            const newStatus = prompt('출석 상태를 선택하세요: PRESENT, ABSENT, LATE, UNKNOWN');
+                            if (newStatus) handleStatusChange(attendance.attendanceId, newStatus);
+                          }}
+                        >
                           {STATUS_STYLES[attendance.attendanceStatus].icon}
                         </div>
                         {getStatusText(attendance.attendanceStatus)}
