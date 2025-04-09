@@ -33,9 +33,7 @@ import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import {
-  AttendanceContainer,
-  AttendanceDetailPage,
-  AttendanceEditPage,
+  AttendanceDetailPage
 } from "./pages/study/attendance";
 import "./App.css";
 
@@ -537,10 +535,6 @@ function AppContent() {
                     <Route
                       path="attendances/:scheduleId"
                       element={<AttendanceDetailPage />}
-                    />
-                    <Route
-                      path="attendances/:scheduleId/edit"
-                      element={<AttendanceEditPage />}
                     />
                     <Route path="management" element={<StudyDetailPage />} />
                     <Route path="ranking" element={<StudyDetailPage />} />

@@ -122,100 +122,85 @@ function AttendanceContainer() {
         </h2>
         
         <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center', 
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           padding: '2rem',
           backgroundColor: '#FFFFFF',
           borderRadius: '8px',
           marginBottom: '2rem'
         }}>
-          <div style={{ width: '300px', height: '300px' }}>
+          {/* 왼쪽에 차트 배치 */}
+          <div style={{ width: '240px', height: '240px' }}>
             <AttendanceChart attendances={attendances} />
           </div>
-        </div>
-      </div>
-      
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ 
-          fontSize: '20px', 
-          fontWeight: 'bold', 
-          marginBottom: '1rem' 
-        }}>
-          출석 통계
-        </h2>
-        
-        <div style={{ 
-          display: 'flex', 
-          gap: '1rem', 
-          marginBottom: '2rem' 
-        }}>
-          {/* 출석 통계 카드 */}
-          <div style={{ 
-            flex: 1, 
-            padding: '1.5rem', 
-            borderRadius: '8px', 
-            backgroundColor: '#FFE5E5', 
-            textAlign: 'center' 
-          }}>
-            <div style={{ fontSize: '14px', marginBottom: '0.5rem' }}>출석</div>
-            <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold',
-              color: '#E50011'
-            }}>
-              {statistics.present}
-            </div>
-          </div>
           
+          {/* 오른쪽에 텍스트 통계 배치 */}
           <div style={{ 
-            flex: 1, 
-            padding: '1.5rem', 
-            borderRadius: '8px', 
-            backgroundColor: '#F0F0F0', 
-            textAlign: 'center' 
+            display: 'flex', 
+            flexDirection: 'column',
+            gap: '1rem',
+            marginLeft: '2rem'
           }}>
-            <div style={{ fontSize: '14px', marginBottom: '0.5rem' }}>결석</div>
             <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold',
-              color: '#000000'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              {statistics.absent}
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                borderRadius: '50%', 
+                backgroundColor: '#E50011' 
+              }}></div>
+              <span style={{ fontWeight: '500', color: '#E50011' }}>출석:</span>
+              <span style={{ fontWeight: 'bold', color: '#E50011' }}>{statistics.present}</span>
             </div>
-          </div>
-          
-          <div style={{ 
-            flex: 1, 
-            padding: '1.5rem', 
-            borderRadius: '8px', 
-            backgroundColor: '#E6F3FF', 
-            textAlign: 'center' 
-          }}>
-            <div style={{ fontSize: '14px', marginBottom: '0.5rem' }}>지각</div>
+            
             <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold',
-              color: '#007BFF'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              {statistics.late}
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                borderRadius: '50%', 
+                backgroundColor: '#000000' 
+              }}></div>
+              <span style={{ fontWeight: '500' }}>결석:</span>
+              <span style={{ fontWeight: 'bold' }}>{statistics.absent}</span>
             </div>
-          </div>
-          
-          <div style={{ 
-            flex: 1, 
-            padding: '1.5rem', 
-            borderRadius: '8px', 
-            backgroundColor: '#F8F8F8', 
-            textAlign: 'center' 
-          }}>
-            <div style={{ fontSize: '14px', marginBottom: '0.5rem' }}>미정</div>
+            
             <div style={{ 
-              fontSize: '24px', 
-              fontWeight: 'bold',
-              color: '#999999'
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              {statistics.unknown}
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                borderRadius: '50%', 
+                backgroundColor: '#007BFF' 
+              }}></div>
+              <span style={{ fontWeight: '500', color: '#007BFF' }}>지각:</span>
+              <span style={{ fontWeight: 'bold', color: '#007BFF' }}>{statistics.late}</span>
+            </div>
+            
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <div style={{ 
+                width: '12px', 
+                height: '12px', 
+                borderRadius: '50%', 
+                backgroundColor: '#999999' 
+              }}></div>
+              <span style={{ fontWeight: '500', color: '#999999' }}>미정:</span>
+              <span style={{ fontWeight: 'bold', color: '#999999' }}>{statistics.unknown}</span>
             </div>
           </div>
         </div>
