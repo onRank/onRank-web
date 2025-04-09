@@ -20,26 +20,40 @@ function AttendanceDetailPage() {
   const [error, setError] = useState(null);
   const [isHost, setIsHost] = useState(false);
 
-  // 출석 상세 정보 가져오기
-  const fetchAttendanceDetails = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+ // 출석 상세 정보 가져오기
+const fetchAttendanceDetails = async () => {
+  try {
+    setIsLoading(true);
+    setError(null);
+    
+    // 출석 상세 정보 가져오기
+    const response = await studyService.getAttendanceDetails(studyId, scheduleId);
+    console.log('응답 데이터:', response);
+    
+    // data 배열의 각 항목에 일정 정보 추가
+    if (response.data && Array.isArray(response.data)) {
+      const formattedData = response.data.map(item => ({
+        ...item,
+        scheduleTitle: response.scheduleTitle,
+        scheduleStartingAt: response.scheduleStartingAt,
+        scheduleEndingAt: response.scheduleEndingAt || response.scheduleStartingAt
+      }));
       
-      // 출석 상세 정보 가져오기
-      const data = await studyService.getAttendanceDetails(studyId, scheduleId);
-      setAttendanceDetails(data);
-      
-      // 호스트 여부는 사용자 권한으로 판단
-      setIsHost(user?.role === 'ADMIN' || user?.role === 'CREATOR');
-
-    } catch (error) {
-      console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
-      setError('출석 상세 정보를 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
+      setAttendanceDetails(formattedData);
+    } else {
+      setError('출석 데이터 형식이 올바르지 않습니다.');
     }
-  };
+    
+    // 호스트 여부는 사용자 권한으로 판단
+    setIsHost(user?.role === 'ADMIN' || user?.role === 'CREATOR');
+
+  } catch (error) {
+    console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
+    setError('출석 상세 정보를 불러오는데 실패했습니다.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // 출석 상태 업데이트 함수
   const handleUpdateStatus = async (attendanceId, newStatus) => {
