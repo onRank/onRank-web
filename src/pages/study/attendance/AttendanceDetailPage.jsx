@@ -5,7 +5,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import StudySidebar from '../../../components/study/StudySidebar';
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import ErrorMessage from '../../../components/common/ErrorMessage';
-import { getStatusText, getStatusIcon } from '../../../utils/attendanceUtils';
+import { getStatusText, getStatusIcon, STATUS_STYLES } from '../../../utils/attendanceUtils';
 import { isStudyHost, getStudyName } from '../../../utils/studyRoleUtils';
 
 /**
@@ -73,37 +73,19 @@ function AttendanceDetailPage() {
           marginBottom: '2rem'
         }}>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{scheduleTitle}</h1>
-          <div>
-            {isHost && (
-              <button
-                onClick={() => navigate(`/studies/${studyId}/attendances/${scheduleId}/edit`)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  border: '1px solid #007BFF',
-                  borderRadius: '4px',
-                  backgroundColor: '#FFFFFF',
-                  color: '#007BFF',
-                  marginRight: '0.5rem',
-                  cursor: 'pointer'
-                }}
-              >
-                출석 관리
-              </button>
-            )}
-            <button
-              onClick={() => navigate(`/studies/${studyId}/attendances`)}
-              style={{
-                padding: '0.5rem 1rem',
-                border: '1px solid #E5E5E5',
-                borderRadius: '4px',
-                backgroundColor: '#FFFFFF',
-                color: '#333333',
-                cursor: 'pointer'
-              }}
-            >
-              목록으로
-            </button>
-          </div>
+          <button
+            onClick={() => navigate(`/studies/${studyId}/attendances`)}
+            style={{
+              padding: '0.5rem 1rem',
+              border: '1px solid #E5E5E5',
+              borderRadius: '4px',
+              backgroundColor: '#FFFFFF',
+              color: '#333333',
+              cursor: 'pointer'
+            }}
+          >
+            목록으로
+          </button>
         </div>
 
         {isLoading ? (
@@ -117,24 +99,33 @@ function AttendanceDetailPage() {
               <thead>
                 <tr style={{ borderBottom: '1px solid #e5e5e5' }}>
                   <th style={{ padding: '1rem', textAlign: 'left' }}>이름</th>
-                  <th style={{ padding: '1rem', textAlign: 'left' }}>상태</th>
+                  <th style={{ padding: '1rem', textAlign: 'right' }}>상태</th>
                 </tr>
               </thead>
               <tbody>
                 {attendanceDetails.map((attendance) => (
                   <tr key={attendance.attendanceId} style={{ borderBottom: '1px solid #e5e5e5' }}>
                     <td style={{ padding: '1rem' }}>{attendance.studentName}</td>
-                    <td style={{ padding: '1rem' }}>
-                      <span style={{
-                        display: 'inline-block',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '4px',
-                        backgroundColor: getStatusIcon(attendance.attendanceStatus).background,
-                        color: getStatusIcon(attendance.attendanceStatus).color,
-                        border: getStatusIcon(attendance.attendanceStatus).border
+                    <td style={{ padding: '1rem', textAlign: 'right' }}>
+                      <div style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
                       }}>
+                        <div style={{
+                          width: '24px',
+                          height: '24px',
+                          borderRadius: '50%',
+                          backgroundColor: STATUS_STYLES[attendance.attendanceStatus].background,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: STATUS_STYLES[attendance.attendanceStatus].color
+                        }}>
+                          {STATUS_STYLES[attendance.attendanceStatus].icon}
+                        </div>
                         {getStatusText(attendance.attendanceStatus)}
-                      </span>
+                      </div>
                     </td>
                   </tr>
                 ))}
