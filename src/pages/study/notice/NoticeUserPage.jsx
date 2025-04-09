@@ -26,10 +26,16 @@ function NoticeContent() {
     getNoticeById,
   } = useNotice();
 
-  // 페이지 마운트 시 공지사항 목록 가져오기
+  // 페이지 마운트 시 공지사항 목록 가져오기 (최적화)
   useEffect(() => {
-    getNotices(studyId);
-  }, [studyId, getNotices]);
+    // notices가 비어있는 경우에만 API 요청
+    if (!notices || notices.length === 0) {
+      console.log("[NoticeContent] 공지사항 목록 요청 (notices 비어있음)");
+      getNotices(studyId);
+    } else {
+      console.log("[NoticeContent] 이미 공지사항 목록이 있어 요청 생략");
+    }
+  }, [studyId, getNotices, notices]);
 
   // 선택된 공지사항 ID가 변경될 때 상세 정보 가져오기
   useEffect(() => {

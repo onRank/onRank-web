@@ -15,12 +15,22 @@ function NoticeDetailContent({ onTitleLoaded }) {
   const navigate = useNavigate();
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
 
-  // 컴포넌트 마운트 시 공지사항 정보 가져오기
+  // 컴포넌트 마운트 시 공지사항 정보 가져오기 (최적화)
   useEffect(() => {
     if (studyId && noticeId) {
-      getNoticeById(studyId, parseInt(noticeId, 10));
+      const parsedId = parseInt(noticeId, 10);
+      // selectedNotice가 없거나 현재 요청한 ID와 다른 경우에만 API 요청
+      if (!selectedNotice || selectedNotice.noticeId !== parsedId) {
+        console.log("[NoticeDetailContent] 공지사항 상세 요청:", noticeId);
+        getNoticeById(studyId, parsedId);
+      } else {
+        console.log(
+          "[NoticeDetailContent] 이미 선택된 공지사항과 동일하여 요청 생략:",
+          noticeId
+        );
+      }
     }
-  }, [studyId, noticeId, getNoticeById]);
+  }, [studyId, noticeId, getNoticeById, selectedNotice]);
 
   // 공지사항 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
