@@ -125,23 +125,27 @@ function AttendanceContainer() {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           padding: '2rem',
           backgroundColor: '#FFFFFF',
           borderRadius: '8px',
           marginBottom: '2rem'
         }}>
-          {/* 왼쪽에 차트 배치 */}
-          <div style={{ width: '240px', height: '240px' }}>
+          {/* 차트 배치 - 가운데 정렬 */}
+          <div style={{ 
+            width: '240px', 
+            height: '240px',
+            marginRight: '4rem' 
+          }}>
             <AttendanceChart attendances={attendances} />
           </div>
           
-          {/* 오른쪽에 텍스트 통계 배치 */}
+          {/* 오른쪽에 텍스트 통계 배치 - 약간 왼쪽으로 이동 */}
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
             gap: '1rem',
-            marginLeft: '2rem'
+            marginLeft: '1rem'
           }}>
             <div style={{ 
               display: 'flex',
