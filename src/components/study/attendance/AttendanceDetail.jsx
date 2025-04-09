@@ -33,7 +33,7 @@ function AttendanceDetail({ attendanceDetails, isLoading, isHost, onUpdateStatus
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
       }}>
         <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '1rem' }}>
-          {scheduleInfo.scheduleName || '일정 이름 없음'}
+          {scheduleInfo.scheduleTitle || '일정 이름 없음'}
         </h2>
         <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
           <div style={{ flex: 1 }}>
@@ -83,7 +83,7 @@ function AttendanceDetail({ attendanceDetails, isLoading, isHost, onUpdateStatus
             >
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                  {attendance.studentName || '이름 없음'}
+                  {attendance.studentTitle || '이름 없음'}
                 </div>
                 <div style={{ 
                   display: 'flex',

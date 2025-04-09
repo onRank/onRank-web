@@ -83,7 +83,7 @@ function AttendanceContainer() {
   // 출석 상태 업데이트 핸들러
   const handleUpdateStatus = async (attendanceId, newStatus) => {
     try {
-      await studyService.updateAttendanceStatus(studyId, attendanceId, newStatus);
+      await studyService.updateAttendance(studyId, attendanceId, newStatus);
       fetchAttendanceData(); // 데이터 새로고침
     } catch (error) {
       console.error('[AttendanceContainer] 출석 상태 업데이트 오류:', error);
