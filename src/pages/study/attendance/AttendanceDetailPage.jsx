@@ -22,6 +22,7 @@ function AttendanceDetailPage() {
   const [isHost, setIsHost] = useState(false);
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleStartingAt, setScheduleStartingAt] = useState('');
+  const [openDropdownId, setOpenDropdownId] = useState(null);
 
   const fetchAttendanceDetails = async () => {
     try {
@@ -49,6 +50,7 @@ function AttendanceDetailPage() {
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
       await studyService.updateAttendance(studyId, attendanceId, newStatus);
+      setOpenDropdownId(null);
       fetchAttendanceDetails();
     } catch (error) {
       console.error('출석 상태 변경 실패:', error);
@@ -58,6 +60,14 @@ function AttendanceDetailPage() {
   useEffect(() => {
     fetchAttendanceDetails();
   }, [studyId, scheduleId]);
+
+  const toggleDropdown = (attendanceId) => {
+    if (openDropdownId === attendanceId) {
+      setOpenDropdownId(null);
+    } else {
+      setOpenDropdownId(attendanceId);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -110,7 +120,8 @@ function AttendanceDetailPage() {
                       <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '1rem'
+                        gap: '1rem',
+                        position: 'relative'
                       }}>
                         <div style={{
                           width: '24px',
@@ -123,14 +134,100 @@ function AttendanceDetailPage() {
                           color: STATUS_STYLES[attendance.attendanceStatus].color,
                           cursor: 'pointer'
                         }}
-                          onClick={() => {
-                            const newStatus = prompt('출석 상태를 선택하세요: PRESENT, ABSENT, LATE, UNKNOWN');
-                            if (newStatus) handleStatusChange(attendance.attendanceId, newStatus);
-                          }}
+                          onClick={() => toggleDropdown(attendance.attendanceId)}
                         >
                           {STATUS_STYLES[attendance.attendanceStatus].icon}
                         </div>
                         {getStatusText(attendance.attendanceStatus)}
+                        
+                        {/* 드롭다운 메뉴 */}
+                        {openDropdownId === attendance.attendanceId && (
+                          <div style={{ 
+                            position: 'absolute', 
+                            top: '100%', 
+                            right: '0', 
+                            backgroundColor: 'white', 
+                            boxShadow: '0 2px 10px rgba(0,0,0,0.1)', 
+                            borderRadius: '4px', 
+                            padding: '0.5rem',
+                            display: 'flex',
+                            gap: '0.5rem',
+                            zIndex: 10
+                          }}>
+                            <div 
+                              onClick={() => handleStatusChange(attendance.attendanceId, 'PRESENT')}
+                              style={{
+                                width: '36px', 
+                                height: '36px', 
+                                borderRadius: '50%', 
+                                backgroundColor: STATUS_STYLES['PRESENT'].background,
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: STATUS_STYLES['PRESENT'].color,
+                                cursor: 'pointer',
+                                border: `1px solid ${STATUS_STYLES['PRESENT'].color}`
+                              }}
+                              title="출석"
+                            >
+                              {STATUS_STYLES['PRESENT'].icon}
+                            </div>
+                            <div 
+                              onClick={() => handleStatusChange(attendance.attendanceId, 'LATE')}
+                              style={{
+                                width: '36px', 
+                                height: '36px', 
+                                borderRadius: '50%', 
+                                backgroundColor: STATUS_STYLES['LATE'].background,
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: STATUS_STYLES['LATE'].color,
+                                cursor: 'pointer',
+                                border: `1px solid ${STATUS_STYLES['LATE'].color}`
+                              }}
+                              title="지각"
+                            >
+                              {STATUS_STYLES['LATE'].icon}
+                            </div>
+                            <div 
+                              onClick={() => handleStatusChange(attendance.attendanceId, 'ABSENT')}
+                              style={{
+                                width: '36px', 
+                                height: '36px', 
+                                borderRadius: '50%', 
+                                backgroundColor: STATUS_STYLES['ABSENT'].background,
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: STATUS_STYLES['ABSENT'].color,
+                                cursor: 'pointer',
+                                border: `1px solid ${STATUS_STYLES['ABSENT'].color}`
+                              }}
+                              title="결석"
+                            >
+                              {STATUS_STYLES['ABSENT'].icon}
+                            </div>
+                            <div 
+                              onClick={() => handleStatusChange(attendance.attendanceId, 'UNKNOWN')}
+                              style={{
+                                width: '36px', 
+                                height: '36px', 
+                                borderRadius: '50%', 
+                                backgroundColor: STATUS_STYLES['UNKNOWN'].background,
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                justifyContent: 'center',
+                                color: STATUS_STYLES['UNKNOWN'].color,
+                                cursor: 'pointer',
+                                border: `1px solid ${STATUS_STYLES['UNKNOWN'].color}`
+                              }}
+                              title="미정"
+                            >
+                              {STATUS_STYLES['UNKNOWN'].icon}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>
