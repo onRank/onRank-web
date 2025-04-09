@@ -7,12 +7,8 @@ import { formatDateTime, getStatusText, getStatusIcon, STATUS_STYLES } from '../
  * 출석 정보 목록을 표시하는 컴포넌트
  */
 function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
-  console.log('[AttendanceList] 렌더링, 출석 데이터:', attendances);
-  
   // 배열이 아닌 경우 빈 배열로 처리
   const safeAttendances = Array.isArray(attendances) ? attendances : [];
-  
-  console.log('[AttendanceList] 처리된 출석 데이터:', safeAttendances);
 
   // 마우스 오버 상태 관리
   const [hoveredId, setHoveredId] = useState(null);
@@ -177,23 +173,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     <td style={{ padding: '1rem', textAlign: 'right' }}>
                       <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '0.5rem' }}>
                         {isHost && renderEditIcon(attendance)}
-                        {isHost && (
-                          <Link
-                            to={`/studies/${studyId}/attendances/${scheduleId}/edit`}
-                            style={{
-                              padding: '0.5rem 0.75rem',
-                              border: '1px solid #007BFF',
-                              borderRadius: '4px',
-                              backgroundColor: '#FFFFFF',
-                              color: '#007BFF',
-                              textDecoration: 'none',
-                              fontSize: '14px',
-                              display: 'inline-block'
-                            }}
-                          >
-                            출석 관리
-                          </Link>
-                        )}
                         {renderStatus(attendance)}
                       </div>
                     </td>
