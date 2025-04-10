@@ -87,16 +87,13 @@ export const managementService = {
   changeMemberRole: async (studyId, memberId, roleData) => {
     try {
       console.log(
-        `[ManagementService] 회원 역할 변경 요청: 스터디 ${studyId}, 회원 ${memberId}, 역할 ${typeof roleData === 'string' ? roleData : roleData.memberRole}`
+        `[ManagementService] 회원 역할 변경 요청: 스터디 ${studyId}, 회원 ${memberId}, 역할 ${typeof roleData === 'string' ? roleData : JSON.stringify(roleData)}`
       );
       
-      // 문자열로 전달된 경우 객체로 변환
+      // 요청 데이터는 memberRole만 필요
       const requestData = typeof roleData === 'string' 
         ? { memberRole: roleData } 
-        : { 
-            studyName: roleData.studyName || "",
-            memberRole: roleData.memberRole
-          };
+        : { memberRole: roleData.memberRole };
 
       const response = await api.put(
         `/studies/${studyId}/management/members/${memberId}/role`,

@@ -84,13 +84,25 @@ function MemberManagement() {
       // API 요청 보내기
       const response = await managementService.changeMemberRole(studyId, memberId, newRole);
       
-      if (response && response.success) {
-        // 성공 시 목록 새로고침
-        setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
+      // 백엔드 응답 확인
+      console.log('역할 변경 응답:', response);
+      
+      // 응답에 memberRole 속성이 있는지 확인
+      if (response && response.memberRole) {
+        // 응답에 studyName, memberRole, file 객체가 포함됨
+        const studyName = response.studyName || '스터디';
+        const updatedRole = response.memberRole;
+        
+        setStatusMessage({ 
+          text: `'${studyName}'에서 '${getRoleDisplayName(updatedRole)}' 역할로 변경되었습니다.`, 
+          type: 'success' 
+        });
+        
+        // 목록 새로고침
         fetchMembers();
-        console.log('역할 변경 성공:', memberId, newRole);
+        console.log('역할 변경 성공:', memberId, updatedRole);
       } else {
-        console.error('역할 변경 실패:', response);
+        console.error('역할 변경 실패: 응답에 memberRole이 없습니다', response);
         setStatusMessage({ text: '역할 변경에 실패했습니다.', type: 'error' });
       }
     } catch (error) {
