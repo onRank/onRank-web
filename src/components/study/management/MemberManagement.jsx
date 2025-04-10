@@ -20,10 +20,49 @@ function MemberManagement() {
     
     try {
       const response = await managementService.getMembers(studyId);
-      setMembers(response.data || []);
+      console.log('[MemberManagement] 받은 회원 데이터:', response);
+      
+      // API 응답 구조에 따라 적절히 데이터 추출
+      if (response && response.data) {
+        // data 필드가 배열인 경우
+        if (Array.isArray(response.data)) {
+          setMembers(response.data);
+        } 
+        // data 필드가 객체이고 내부에 members 배열이 있는 경우
+        else if (response.data.members && Array.isArray(response.data.members)) {
+          setMembers(response.data.members);
+        }
+        // data 필드 자체가 객체인 경우 (배열 형태로 변환 필요)
+        else if (typeof response.data === 'object') {
+          // 적절한 키로 멤버 데이터 배열 찾기 (API 구조에 따라 조정 필요)
+          let foundMembers = null;
+          const possibleArrays = ['members', 'memberList', 'data'];
+          for (const key of possibleArrays) {
+            if (response.data[key] && Array.isArray(response.data[key])) {
+              foundMembers = response.data[key];
+              setMembers(foundMembers);
+              break;
+            }
+          }
+          
+          // 배열을 찾지 못한 경우 빈 배열 설정
+          if (!foundMembers) {
+            console.warn('[MemberManagement] 회원 데이터 배열을 찾을 수 없습니다:', response.data);
+            setMembers([]);
+          }
+        } else {
+          console.warn('[MemberManagement] 예상치 못한 데이터 형식:', response.data);
+          setMembers([]);
+        }
+      } else {
+        // 데이터 필드가 없는 경우
+        console.warn('[MemberManagement] 회원 데이터가 없습니다:', response);
+        setMembers([]);
+      }
     } catch (err) {
       console.error('멤버 목록 조회 실패:', err);
       setError('멤버 목록을 불러오는데 실패했습니다.');
+      setMembers([]);
     } finally {
       setLoading(false);
     }

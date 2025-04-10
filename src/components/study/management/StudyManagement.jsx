@@ -30,17 +30,21 @@ function StudyManagement() {
       setError(null);
       
       try {
-        const response = await managementService.getStudyInfo(studyId);
-        const data = response.data;
+        console.log('[StudyManagement] 스터디 정보 조회 시작:', studyId);
+        const response = await managementService.getManagementData(studyId);
+        console.log('[StudyManagement] 스터디 정보 조회 결과:', response);
         
-        setStudyName(data.name || '');
-        setStudyDescription(data.description || '');
-        setStudyImageUrl(data.imageUrl || '');
-        setStudyStatus(data.status || 'PROGRESS');
-        setGoogleFormUrl(data.googleFormUrl || '');
-        setPresentPoint(data.presentPoint || 5);
-        setAbsentPoint(data.absentPoint || -10);
-        setLatePoint(data.latePoint || -2);
+        // API 응답 구조에 따라 데이터 추출
+        const data = response.data || {};
+        
+        setStudyName(data.studyName || '');
+        setStudyDescription(data.studyContent || '');
+        setStudyImageUrl(data.studyImageUrl || '');
+        setStudyStatus(data.studyStatus || 'PROGRESS');
+        setGoogleFormUrl(data.studyGoogleFormUrl || '');
+        setPresentPoint(data.presentPoint ?? 5);
+        setAbsentPoint(data.absentPoint ?? -10);
+        setLatePoint(data.latePoint ?? -2);
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);
         setError('스터디 정보를 불러오는데 실패했습니다.');
@@ -124,21 +128,26 @@ function StudyManagement() {
     setSuccess(null);
     
     try {
+      console.log('[StudyManagement] 스터디 정보 업데이트 시작:', studyId);
+      
+      // FormData 객체 생성
       const formData = new FormData();
-      formData.append('name', studyName);
-      formData.append('description', studyDescription);
+      formData.append('studyName', studyName);
+      formData.append('studyContent', studyDescription);
       
       if (studyImageFile) {
-        formData.append('image', studyImageFile);
+        formData.append('file', studyImageFile);
       }
       
-      formData.append('googleFormUrl', googleFormUrl);
+      formData.append('studyGoogleFormUrl', googleFormUrl || '');
       formData.append('presentPoint', presentPoint);
       formData.append('absentPoint', absentPoint);
       formData.append('latePoint', latePoint);
       
-      await managementService.updateStudyInfo(studyId, formData);
+      // 스터디 정보 업데이트
+      const response = await managementService.updateStudyInfo(studyId, formData);
       
+      console.log('[StudyManagement] 스터디 정보 업데이트 성공:', response);
       setSuccess('스터디 정보가 성공적으로 업데이트되었습니다.');
       setIsEditing(false);
     } catch (err) {

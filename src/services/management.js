@@ -18,22 +18,10 @@ export const managementService = {
   },
 
   // 스터디 정보 수정 (파일 업로드 포함)
-  updateStudyInfo: async (studyId, studyData) => {
+  updateStudyInfo: async (studyId, formData) => {
     try {
-      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`, studyData);
+      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`, formData);
       
-      const formData = new FormData();
-      formData.append('studyName', studyData.studyName);
-      formData.append('studyContent', studyData.studyContent);
-      formData.append('studyGoogleFormUrl', studyData.studyGoogleFormUrl || '');
-      formData.append('presentPoint', studyData.presentPoint);
-      formData.append('absentPoint', studyData.absentPoint);
-      formData.append('latePoint', studyData.latePoint);
-      
-      if (studyData.imageFile) {
-        formData.append('file', studyData.imageFile);
-      }
-
       const response = await api.put(`/studies/${studyId}/management`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
