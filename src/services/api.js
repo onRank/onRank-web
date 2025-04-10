@@ -1945,12 +1945,15 @@ export const noticeService = {
   createNotice: async (studyId, newNotice, files = []) => {
     try {
       console.log("[noticeService] 공지사항 생성 요청:", newNotice);
+      const fileNames = files.map((file) => file.fileName);
+      const presignedUrls = files.map((file) => file.fileUrl);
+
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        fileNames: files.fileName || [],
-        presignedUrls: files.fileUrl || [],
+        fileNames: fileNames || [],
+        presignedUrls: presignedUrls || [],
       };
 
       console.log("[noticeService] 변환된 요청 데이터:", requestData);
@@ -2074,7 +2077,7 @@ export const noticeService = {
               continue;
             }
 
-            const uploadResponse = await axios.put(presignedUrl, file.file, {
+            const uploadResponse = await axios.put(presignedUrls, file.file, {
               headers: {
                 "Content-Type": file.file.type,
               },
