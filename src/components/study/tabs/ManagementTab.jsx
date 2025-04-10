@@ -647,22 +647,12 @@ function ManagementTab() {
               {studyImageUrl ? (
                 <div style={{ marginBottom: '20px' }}>
                   <h3>스터디 이미지</h3>
-                  <div style={{
-                    border: '1px solid #ddd',
-                    borderRadius: '4px',
-                    padding: '10px',
-                    marginBottom: '10px',
-                    backgroundColor: '#f5f5f5',
-                    wordBreak: 'break-all'
-                  }}>
-                    <b>이미지 URL:</b> {studyImageUrl}
-                  </div>
                   <div style={{ 
-                    border: '2px solid #F00', 
+                    border: '1px solid #ddd', 
                     borderRadius: '8px', 
-                    padding: '10px', 
+                    padding: '15px', 
                     display: 'inline-block',
-                    backgroundColor: '#f8f8f8'
+                    backgroundColor: '#fff'
                   }}>
                     <img 
                       src={studyImageUrl} 
@@ -671,26 +661,8 @@ function ManagementTab() {
                         maxWidth: '300px', 
                         maxHeight: '200px', 
                         borderRadius: '4px', 
-                        display: 'block',
-                        border: '1px solid blue'
+                        display: 'block'
                       }} 
-                      onError={(e) => {
-                        console.error('이미지 로드 실패:', studyImageUrl);
-                        e.target.onerror = null;
-                        e.target.style.display = 'none';
-                        e.target.parentNode.innerHTML += '<div style="color: red; padding: 20px;">이미지 로드 실패 - 직접 링크를 브라우저에서 열어보세요</div>';
-                      }}
-                      onLoad={() => console.log('이미지 로드 성공:', studyImageUrl)}
-                    />
-                  </div>
-                  
-                  {/* 대체 이미지 테스트 */}
-                  <div style={{ marginTop: '20px' }}>
-                    <h4>테스트용 이미지 (로드 확인용)</h4>
-                    <img 
-                      src="https://via.placeholder.com/150" 
-                      alt="테스트 이미지"
-                      style={{ width: '150px', height: '150px', border: '1px solid green' }}
                     />
                   </div>
                 </div>
