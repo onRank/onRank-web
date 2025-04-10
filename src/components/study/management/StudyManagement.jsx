@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
+import { convertToCloudFrontUrl, saveImageUrlToCache, getImageUrlFromCache } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -24,6 +24,21 @@ function StudyManagement() {
   const [absentPoint, setAbsentPoint] = useState(0);
   const [latePoint, setLatePoint] = useState(0);
 
+  // localStorage에서 캐시된 이미지 URL 가져오기
+  useEffect(() => {
+    const cachedImageUrl = getImageUrlFromCache(studyId);
+    if (cachedImageUrl) {
+      setStudyImageUrl(cachedImageUrl);
+    }
+  }, [studyId]);
+
+  // 이미지 URL이 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    if (studyImageUrl) {
+      saveImageUrlToCache(studyId, studyImageUrl);
+    }
+  }, [studyImageUrl, studyId]);
+
   // 스터디 정보 조회
   useEffect(() => {
     const fetchStudyData = async () => {
@@ -31,9 +46,7 @@ function StudyManagement() {
       setError(null);
       
       try {
-        console.log('[StudyManagement] 스터디 정보 조회 시작:', studyId);
         const response = await managementService.getManagementData(studyId);
-        console.log('스터디 관리 데이터 조회:', response);
         
         const data = response.data || {};
         
@@ -48,12 +61,10 @@ function StudyManagement() {
           // S3 URL을 CloudFront URL로 변환
           const s3Url = response.memberContext.file.fileUrl;
           const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          console.log('원본 이미지 URL:', s3Url);
-          console.log('변환된 CloudFront URL:', cloudFrontUrl);
           setStudyImageUrl(cloudFrontUrl);
-        } else {
-          console.log('이미지 URL이 없습니다:', response);
-          setStudyImageUrl('');
+          
+          // localStorage에 이미지 URL 저장
+          saveImageUrlToCache(studyId, cloudFrontUrl);
         }
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);
@@ -96,18 +107,14 @@ function StudyManagement() {
     const fetchStudyData = async () => {
       try {
         const response = await managementService.getManagementData(studyId);
-        console.log('취소 후 데이터 조회:', response);
         
         // 올바른 경로에서 이미지 URL 가져오기
         if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
           // S3 URL을 CloudFront URL로 변환
           const s3Url = response.memberContext.file.fileUrl;
           const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          console.log('취소 후 원본 이미지 URL:', s3Url);
-          console.log('취소 후 변환된 CloudFront URL:', cloudFrontUrl);
           setStudyImageUrl(cloudFrontUrl);
         } else {
-          console.log('취소 후 이미지 URL 없음');
           setStudyImageUrl('');
         }
       } catch (err) {
@@ -163,8 +170,6 @@ function StudyManagement() {
     setSuccess(null);
     
     try {
-      console.log('[StudyManagement] 스터디 정보 업데이트 시작:', studyId);
-      
       // API 요청 데이터 준비
       const requestData = {
         studyName: studyName,
@@ -176,19 +181,13 @@ function StudyManagement() {
         latePoint: latePoint
       };
       
-      console.log('[StudyManagement] 업데이트 요청 데이터:', requestData);
-      
       // 스터디 정보 업데이트 요청
       const response = await managementService.updateStudyInfo(studyId, requestData);
-      
-      console.log('[StudyManagement] 스터디 정보 업데이트 응답:', response);
       
       // 이미지 파일이 있고 업로드 URL이 있는 경우 S3에 직접 업로드
       if (studyImageFile && response.uploadUrl) {
         try {
-          console.log('[StudyManagement] S3에 이미지 업로드 시작');
           await studyService.uploadImageToS3(response.uploadUrl, studyImageFile);
-          console.log('[StudyManagement] S3에 이미지 업로드 성공');
         } catch (uploadError) {
           console.error('[StudyManagement] S3에 이미지 업로드 실패:', uploadError);
           setSuccess('스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.');
@@ -197,7 +196,6 @@ function StudyManagement() {
         }
       }
       
-      console.log('[StudyManagement] 스터디 정보 업데이트 성공:', response);
       setSuccess('스터디 정보가 성공적으로 업데이트되었습니다.');
       setIsEditing(false);
     } catch (err) {

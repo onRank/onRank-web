@@ -12,7 +12,7 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
-import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
+import { convertToCloudFrontUrl, saveImageUrlToCache, getImageUrlFromCache } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -193,6 +193,21 @@ function ManagementTab() {
   const [studyStatus, setStudyStatus] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  // localStorage에서 캐시된 이미지 URL 가져오기
+  useEffect(() => {
+    const cachedImageUrl = getImageUrlFromCache(studyId);
+    if (cachedImageUrl) {
+      setStudyImageUrl(cachedImageUrl);
+    }
+  }, [studyId]);
+
+  // 이미지 URL이 변경될 때마다 localStorage에 저장
+  useEffect(() => {
+    if (studyImageUrl && !studyImageUrl.startsWith('blob:')) {
+      saveImageUrlToCache(studyId, studyImageUrl);
+    }
+  }, [studyImageUrl, studyId]);
+
   // 관리 탭 데이터 가져오기
   useEffect(() => {
     const fetchManagementData = async () => {
@@ -202,8 +217,6 @@ function ManagementTab() {
         const response = await api.get(`/studies/${studyId}/management`, {
           withCredentials: true
         });
-        
-        console.log('전체 서버 응답 (ManagementTab):', response);
         
         const { data } = response.data;
         
@@ -216,12 +229,10 @@ function ManagementTab() {
           // S3 URL을 CloudFront URL로 변환
           const s3Url = response.data.memberContext.file.fileUrl;
           const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          console.log('ManagementTab: 원본 이미지 URL:', s3Url);
-          console.log('ManagementTab: 변환된 CloudFront URL:', cloudFrontUrl);
           setStudyImageUrl(cloudFrontUrl);
-        } else {
-          console.log('ManagementTab: 이미지 URL이 없습니다');
-          setStudyImageUrl('');
+          
+          // localStorage에 이미지 URL 저장
+          saveImageUrlToCache(studyId, cloudFrontUrl);
         }
         
         setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");
@@ -266,7 +277,6 @@ function ManagementTab() {
       const response = await api.get(`/studies/${studyId}/management/members`, {
         withCredentials: true
       });
-      console.log('회원 목록 조회 결과:', response);
       
       // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
       const membersList = Array.isArray(response.data) ? response.data : response.data.members || [];
@@ -312,8 +322,6 @@ function ManagementTab() {
           withCredentials: true
         });
         
-        console.log('취소 후 데이터 조회 (ManagementTab):', response);
-        
         const { data } = response.data;
         
         setStudyName(data.studyName);
@@ -324,11 +332,8 @@ function ManagementTab() {
           // S3 URL을 CloudFront URL로 변환
           const s3Url = response.data.memberContext.file.fileUrl;
           const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          console.log('ManagementTab: 취소 후 원본 이미지 URL:', s3Url);
-          console.log('ManagementTab: 취소 후 변환된 CloudFront URL:', cloudFrontUrl);
           setStudyImageUrl(cloudFrontUrl);
         } else {
-          console.log('ManagementTab: 취소 후 이미지 URL 없음');
           setStudyImageUrl('');
         }
         
@@ -351,7 +356,6 @@ function ManagementTab() {
       // 이미지 미리보기 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setStudyImageUrl(previewUrl);
-      console.log('이미지 선택됨, 미리보기 URL 생성:', previewUrl);
     }
   };
 

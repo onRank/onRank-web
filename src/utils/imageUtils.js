@@ -63,3 +63,50 @@ export const isImageUrlValid = (url) => {
 
 // 이미지 URL이 없을 때 사용할 기본 이미지
 export const DEFAULT_IMAGE_URL = 'https://via.placeholder.com/300x200?text=No+Image'; 
+
+/**
+ * 스터디 이미지 URL을 localStorage에 저장하는 함수
+ * 
+ * @param {string} studyId - 스터디 ID
+ * @param {string} imageUrl - 저장할 이미지 URL
+ * @returns {void}
+ */
+export const saveImageUrlToCache = (studyId, imageUrl) => {
+  if (!studyId || !imageUrl) return;
+  
+  // blob URL은 캐싱하지 않음 (로컬 파일 선택 시 생성되는 임시 URL)
+  if (imageUrl.startsWith('blob:')) return;
+  
+  try {
+    const cacheKey = `study_image_${studyId}`;
+    console.log(`이미지 URL 캐싱: ${cacheKey}`, imageUrl);
+    localStorage.setItem(cacheKey, imageUrl);
+  } catch (error) {
+    console.error('이미지 URL 캐싱 실패:', error);
+  }
+};
+
+/**
+ * localStorage에서 스터디 이미지 URL을 가져오는 함수
+ * 
+ * @param {string} studyId - 스터디 ID
+ * @returns {string|null} 캐시된 이미지 URL 또는 null
+ */
+export const getImageUrlFromCache = (studyId) => {
+  if (!studyId) return null;
+  
+  try {
+    const cacheKey = `study_image_${studyId}`;
+    const cachedUrl = localStorage.getItem(cacheKey);
+    
+    if (cachedUrl) {
+      console.log(`캐시된 이미지 URL 사용: ${cacheKey}`, cachedUrl);
+      return cachedUrl;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('캐시된 이미지 URL 조회 실패:', error);
+    return null;
+  }
+}; 
