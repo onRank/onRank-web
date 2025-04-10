@@ -419,14 +419,31 @@ function StudyManagement() {
             </div>
           </div>
           
-          {studyImageUrl && (
+          {studyImageUrl ? (
             <div style={{ marginBottom: '2rem' }}>
               <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
-              <img 
-                src={studyImageUrl} 
-                alt="스터디 이미지" 
-                style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px' }} 
-              />
+              <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '10px', display: 'inline-block' }}>
+                <img 
+                  src={studyImageUrl} 
+                  alt="스터디 이미지" 
+                  style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px', display: 'block' }} 
+                />
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginBottom: '2rem' }}>
+              <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
+              <div style={{ 
+                border: '1px dashed #ccc', 
+                borderRadius: '8px', 
+                padding: '30px', 
+                textAlign: 'center',
+                backgroundColor: '#f9f9f9',
+                color: '#999',
+                maxWidth: '300px'
+              }}>
+                등록된 이미지가 없습니다
+              </div>
             </div>
           )}
           
