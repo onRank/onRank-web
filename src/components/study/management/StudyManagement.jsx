@@ -3,17 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { 
-  convertToCloudFrontUrl, 
-  saveImageUrlToCache, 
-  getImageUrlFromCache,
-  preloadImage,
-  refreshImageSrc,
-  getUncachedImageUrl,
-  handleImageLoading,
-  getBackgroundImageStyle,
-  getSafeImageUrl
-} from '../../../utils/imageUtils';
+import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -46,67 +36,50 @@ function StudyManagement() {
     console.error('이미지 로드 실패:', studyImageUrl);
     setImageLoaded(false);
     
-    // 이미지 로드 실패 시 캐시 무시하고 다시 로드 시도
-    if (imageRef.current && studyImageUrl) {
-      refreshImageSrc(imageRef, studyImageUrl);
-    }
+    // 이미지 로드 실패 시 다시 서버에서 최신 데이터 가져오기
+    fetchStudyData();
   };
 
-  // localStorage에서 캐시된 이미지 URL 가져오기 (컴포넌트 마운트 시 즉시 실행)
+  // 컴포넌트 마운트 시 데이터 로드
   useEffect(() => {
-    const cachedImageUrl = getImageUrlFromCache(studyId);
-    if (cachedImageUrl) {
-      setStudyImageUrl(cachedImageUrl);
-      // 이미지 미리 로드
-      preloadImage(cachedImageUrl);
-    } else {
-      fetchStudyData();
-    }
-  }, [studyId]);
-
-  // 이미지 URL이 변경될 때마다 localStorage에 저장
-  useEffect(() => {
-    if (studyImageUrl && !studyImageUrl.startsWith('blob:')) {
-      saveImageUrlToCache(studyId, studyImageUrl);
-    }
-  }, [studyImageUrl, studyId]);
-
-  // 스터디 정보 조회
-  useEffect(() => {
-    const fetchStudyData = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        const response = await managementService.getManagementData(studyId);
-        
-        const data = response.data || {};
-        
-        setStudyName(data.studyName || '');
-        setStudyDescription(data.studyContent || '');
-        setStudyStatus(data.studyStatus || '');
-        setPresentPoint(data.presentPoint || 0);
-        setAbsentPoint(data.absentPoint || 0);
-        setLatePoint(data.latePoint || 0);
-        
-        if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-          // 통합 이미지 로딩 처리 유틸 함수 사용
-          await handleImageLoading(
-            response.memberContext.file.fileUrl,
-            setStudyImageUrl,
-            studyId
-          );
-        }
-      } catch (err) {
-        console.error('스터디 정보 조회 실패:', err);
-        setError('스터디 정보를 불러오는데 실패했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchStudyData();
   }, [studyId]);
+
+  // 스터디 정보 조회 함수
+  const fetchStudyData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const response = await managementService.getManagementData(studyId);
+      
+      const data = response.data || {};
+      
+      setStudyName(data.studyName || '');
+      setStudyDescription(data.studyContent || '');
+      setStudyStatus(data.studyStatus || '');
+      setPresentPoint(data.presentPoint || 0);
+      setAbsentPoint(data.absentPoint || 0);
+      setLatePoint(data.latePoint || 0);
+      
+      if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
+        // S3 URL을 CloudFront URL로 변환
+        const s3Url = response.memberContext.file.fileUrl;
+        const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+        
+        // 캐시 방지를 위해 타임스탬프 추가
+        const timestamp = new Date().getTime();
+        const uncachedUrl = `${cloudFrontUrl}?t=${timestamp}`;
+        
+        setStudyImageUrl(uncachedUrl);
+      }
+    } catch (err) {
+      console.error('스터디 정보 조회 실패:', err);
+      setError('스터디 정보를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // 이미지 파일 업로드 핸들러
   const handleImageChange = (e) => {
@@ -134,7 +107,7 @@ function StudyManagement() {
     // 이미지 파일 선택 상태 초기화
     setStudyImageFile(null);
     
-    // 취소 시 원본 이미지 URL 복원
+    // 취소 시 서버에서 다시 데이터 가져오기
     fetchStudyData();
   };
 
@@ -197,19 +170,42 @@ function StudyManagement() {
         minHeight: '150px',
         minWidth: '200px'
       }}>
-        {/* 이미지 태그 대신 배경 이미지를 사용하는 div로 대체 */}
-        <div 
-          style={{
-            ...getBackgroundImageStyle(studyImageUrl),
-            width: '100%',
-            height: '300px',
-            borderRadius: '4px', 
-            border: '1px solid #000',
-            backgroundColor: '#FFF',
-            display: 'inline-block'
-          }}
-          aria-label="스터디 이미지"
-        />
+        {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
+        {studyImageUrl.startsWith('blob:') ? (
+          <img 
+            ref={imageRef}
+            src={studyImageUrl} 
+            alt="스터디 이미지 (미리보기)" 
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            style={{ 
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              maxHeight: '300px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }} 
+          />
+        ) : (
+          <div 
+            style={{
+              backgroundImage: `url(${studyImageUrl})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              width: '100%',
+              height: '300px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }}
+            aria-label="스터디 이미지"
+          />
+        )}
       </div>
     );
   };
@@ -245,9 +241,15 @@ function StudyManagement() {
       // 이미지 파일이 있고 업로드 URL이 있는 경우 S3에 직접 업로드
       if (studyImageFile && response.uploadUrl) {
         try {
+          // S3에 이미지 업로드
           await studyService.uploadImageToS3(response.uploadUrl, studyImageFile);
+          
+          // 이미지 업로드 후 서버에서 최신 데이터 다시 가져오기 (1초 지연)
+          setTimeout(() => {
+            fetchStudyData();
+          }, 1000);
         } catch (uploadError) {
-          console.error('[StudyManagement] S3에 이미지 업로드 실패:', uploadError);
+          console.error('S3에 이미지 업로드 실패:', uploadError);
           setSuccess('스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.');
           setIsEditing(false);
           return;
@@ -256,6 +258,12 @@ function StudyManagement() {
       
       setSuccess('스터디 정보가 성공적으로 업데이트되었습니다.');
       setIsEditing(false);
+      
+      // 임시 blob URL 제거를 위해 이미지 파일 상태 초기화
+      setStudyImageFile(null);
+      
+      // 업데이트된 정보 다시 가져오기
+      fetchStudyData();
     } catch (err) {
       console.error('스터디 정보 업데이트 실패:', err);
       setError(err.response?.data?.message || '스터디 정보 업데이트에 실패했습니다.');
@@ -374,10 +382,12 @@ function StudyManagement() {
               />
               {studyImageUrl && (
                 <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-                  {/* 이미지 태그 대신 배경 이미지를 사용하는 div로 대체 */}
+                  {/* 이미지 미리보기 */}
                   <div 
                     style={{
-                      ...getBackgroundImageStyle(studyImageUrl),
+                      backgroundImage: `url(${studyImageUrl})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
                       width: '100%',
                       height: '100%'
                     }}
@@ -524,10 +534,7 @@ function StudyManagement() {
                     새 탭에서 이미지 열기
                   </a>
                   <button
-                    onClick={() => {
-                      // 이미지 새로고침 로직
-                      setStudyImageUrl(getSafeImageUrl(studyImageUrl));
-                    }}
+                    onClick={fetchStudyData}
                     style={{
                       padding: '2px 8px',
                       fontSize: '0.8rem',

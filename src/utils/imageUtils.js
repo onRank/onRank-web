@@ -17,21 +17,14 @@ export const convertToCloudFrontUrl = (s3Url) => {
     if (studyIndex !== -1) {
       // '/study/1/file.png' 형태로 경로 추출
       const objectPath = s3Url.substring(studyIndex);
-      console.log('원본 URL:', s3Url);
-      console.log('추출된 경로:', objectPath);
-      
       // CloudFront URL 생성
       const cloudFrontUrl = `${cloudFrontDomain}${objectPath}`;
-      console.log('CloudFront URL:', cloudFrontUrl);
-      
       return cloudFrontUrl;
     }
     
     // 기존 방식 (fallback)
     const urlObj = new URL(s3Url);
     const pathname = urlObj.pathname;
-    console.log('원본 URL:', s3Url);
-    console.log('추출된 경로 (fallback):', pathname);
     return `${cloudFrontDomain}${pathname}`;
     
   } catch (error) {
@@ -65,50 +58,22 @@ export const isImageUrlValid = (url) => {
 export const DEFAULT_IMAGE_URL = 'https://via.placeholder.com/300x200?text=No+Image'; 
 
 /**
- * 스터디 이미지 URL을 localStorage에 저장하는 함수
+ * 이미지 URL에 타임스탬프를 추가하여 캐시를 방지하는 함수
  * 
- * @param {string} studyId - 스터디 ID
- * @param {string} imageUrl - 저장할 이미지 URL
- * @returns {void}
+ * @param {string} imageUrl - 원본 이미지 URL
+ * @returns {string} 타임스탬프가 추가된 이미지 URL
  */
-export const saveImageUrlToCache = (studyId, imageUrl) => {
-  if (!studyId || !imageUrl) return;
+export const getUncachedImageUrl = (imageUrl) => {
+  if (!imageUrl) return '';
   
-  // blob URL은 캐싱하지 않음 (로컬 파일 선택 시 생성되는 임시 URL)
-  if (imageUrl.startsWith('blob:')) return;
-  
-  try {
-    const cacheKey = `study_image_${studyId}`;
-    console.log(`이미지 URL 캐싱: ${cacheKey}`, imageUrl);
-    localStorage.setItem(cacheKey, imageUrl);
-  } catch (error) {
-    console.error('이미지 URL 캐싱 실패:', error);
+  // blob URL에는 타임스탬프를 추가하지 않음
+  if (imageUrl.startsWith('blob:')) {
+    return imageUrl;
   }
-};
-
-/**
- * localStorage에서 스터디 이미지 URL을 가져오는 함수
- * 
- * @param {string} studyId - 스터디 ID
- * @returns {string|null} 캐시된 이미지 URL 또는 null
- */
-export const getImageUrlFromCache = (studyId) => {
-  if (!studyId) return null;
   
-  try {
-    const cacheKey = `study_image_${studyId}`;
-    const cachedUrl = localStorage.getItem(cacheKey);
-    
-    if (cachedUrl) {
-      console.log(`캐시된 이미지 URL 사용: ${cacheKey}`, cachedUrl);
-      return cachedUrl;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('캐시된 이미지 URL 조회 실패:', error);
-    return null;
-  }
+  const timestamp = new Date().getTime();
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}t=${timestamp}`;
 };
 
 /**
@@ -132,20 +97,6 @@ export const preloadImage = (imageUrl) => {
     // 이미 캐시된 경우 onload가 발생하지 않을 수 있으므로 timeout 설정
     setTimeout(() => resolve(true), 500);
   });
-};
-
-/**
- * 이미지 URL에 타임스탬프를 추가하여 캐시를 방지하는 함수
- * 
- * @param {string} imageUrl - 원본 이미지 URL
- * @returns {string} 타임스탬프가 추가된 이미지 URL
- */
-export const getUncachedImageUrl = (imageUrl) => {
-  if (!imageUrl) return '';
-  
-  const timestamp = new Date().getTime();
-  const separator = imageUrl.includes('?') ? '&' : '?';
-  return `${imageUrl}${separator}t=${timestamp}`;
 };
 
 /**
@@ -182,7 +133,7 @@ export const handleImageLoading = async (s3Url, setImageUrl, studyId) => {
       // URL 상태 업데이트 및 캐싱
       setImageUrl(cloudFrontUrl);
       if (studyId) {
-        saveImageUrlToCache(studyId, cloudFrontUrl);
+        // 캐싱 로직 제거
       }
       return cloudFrontUrl;
     }
