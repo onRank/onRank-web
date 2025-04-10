@@ -170,42 +170,24 @@ function StudyManagement() {
         minHeight: '150px',
         minWidth: '200px'
       }}>
-        {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
-        {studyImageUrl.startsWith('blob:') ? (
-          <img 
-            ref={imageRef}
-            src={studyImageUrl} 
-            alt="스터디 이미지 (미리보기)" 
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            style={{ 
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '300px',
-              borderRadius: '4px', 
-              border: '1px solid #000',
-              backgroundColor: '#FFF',
-              display: 'inline-block'
-            }} 
-          />
-        ) : (
-          <div 
-            style={{
-              backgroundImage: `url(${studyImageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              width: '100%',
-              height: '300px',
-              borderRadius: '4px', 
-              border: '1px solid #000',
-              backgroundColor: '#FFF',
-              display: 'inline-block'
-            }}
-            aria-label="스터디 이미지"
-          />
-        )}
+        <img 
+          ref={imageRef}
+          src={studyImageUrl} 
+          alt="스터디 이미지" 
+          crossOrigin="anonymous"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          style={{ 
+            width: 'auto',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '300px',
+            borderRadius: '4px', 
+            border: '1px solid #000',
+            backgroundColor: '#FFF',
+            display: 'inline-block'
+          }} 
+        />
       </div>
     );
   };
