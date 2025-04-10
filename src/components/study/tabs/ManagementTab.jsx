@@ -648,22 +648,46 @@ function ManagementTab() {
                 <div style={{ marginBottom: '20px' }}>
                   <h3>스터디 이미지</h3>
                   <div style={{ 
-                    border: '1px solid #ddd', 
+                    border: '3px solid #FF0000', 
                     borderRadius: '8px', 
                     padding: '15px', 
                     display: 'inline-block',
-                    backgroundColor: '#fff'
+                    backgroundColor: '#f0f0f0',
+                    minHeight: '150px',
+                    minWidth: '200px'
                   }}>
                     <img 
                       src={studyImageUrl} 
                       alt="스터디 이미지" 
                       style={{ 
-                        maxWidth: '300px', 
-                        maxHeight: '200px', 
+                        width: 'auto',
+                        height: 'auto',
+                        maxWidth: '100%',
+                        maxHeight: '300px',
                         borderRadius: '4px', 
-                        display: 'block'
+                        border: '1px solid #000',
+                        backgroundColor: '#FFF',
+                        display: 'inline-block'
                       }} 
                     />
+                  </div>
+                  
+                  <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                    <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
+                    <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
+                    <a 
+                      href={studyImageUrl}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ 
+                        display: 'inline-block',
+                        marginTop: '8px',
+                        color: '#0066cc',
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      새 탭에서 이미지 열기
+                    </a>
                   </div>
                 </div>
               ) : (
