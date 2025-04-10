@@ -428,12 +428,61 @@ function StudyManagement() {
           {studyImageUrl ? (
             <div style={{ marginBottom: '2rem' }}>
               <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
+              <div style={{
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                padding: '10px',
+                marginBottom: '10px',
+                backgroundColor: '#f5f5f5',
+                wordBreak: 'break-all'
+              }}>
+                <b>이미지 URL (저장됨):</b> {studyImageUrl}
+              </div>
               <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '10px', display: 'inline-block' }}>
                 <img 
                   src={studyImageUrl} 
                   alt="스터디 이미지" 
                   style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px', display: 'block' }} 
+                  onError={(e) => {
+                    console.error('이미지 로드 실패:', studyImageUrl);
+                    e.target.onerror = null;
+                    e.target.style.display = 'none';
+                    e.target.parentNode.innerHTML += '<div style="color: red; padding: 20px;">이미지 로드 실패</div>';
+                  }}
+                  onLoad={() => console.log('이미지 로드 성공:', studyImageUrl)}
                 />
+              </div>
+              
+              {/* S3 이미지 로드 문제 디버깅 */}
+              <div style={{ marginTop: '1rem' }}>
+                <h4>테스트 이미지 (같은 URL 다른 형식)</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div>
+                    <p>1. crossOrigin 속성 추가</p>
+                    <img 
+                      src={studyImageUrl} 
+                      crossOrigin="anonymous"
+                      alt="테스트 이미지 1" 
+                      style={{ maxWidth: '200px', border: '1px solid red' }} 
+                    />
+                  </div>
+                  <div>
+                    <p>2. 하드코딩 URL (테스트용)</p>
+                    <img 
+                      src="https://onrank-bucket.s3.ap-northeast-2.amazonaws.com/study/1/8082e806-fa8b-4ebb-87e3-5eba6aa4c7d2_0.png" 
+                      alt="테스트 이미지 2" 
+                      style={{ maxWidth: '200px', border: '1px solid blue' }} 
+                    />
+                  </div>
+                  <div>
+                    <p>3. 일반 테스트 이미지</p>
+                    <img 
+                      src="https://via.placeholder.com/150" 
+                      alt="테스트 이미지 3" 
+                      style={{ maxWidth: '200px', border: '1px solid green' }} 
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           ) : (
