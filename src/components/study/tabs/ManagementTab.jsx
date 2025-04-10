@@ -205,7 +205,16 @@ function ManagementTab() {
         
         setStudyName(data.studyName);
         setStudyContent(data.studyContent);
-        setStudyImageUrl(data.studyImageUrl || "");
+        
+        // 이미지 URL 추출 로직 수정
+        if (data.memberContext && data.memberContext.file && data.memberContext.file.fileUrl) {
+          setStudyImageUrl(data.memberContext.file.fileUrl);
+          console.log('이미지 URL 설정:', data.memberContext.file.fileUrl);
+        } else {
+          console.log('이미지 URL이 없습니다:', data);
+          setStudyImageUrl('');
+        }
+        
         setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");
         setPresentPoint(data.presentPoint);
         setAbsentPoint(data.absentPoint);
@@ -283,6 +292,38 @@ function ManagementTab() {
 
   const handleCancel = () => {
     setIsEditing(false);
+    
+    // 이미지 파일 선택 상태 초기화
+    setStudyImageFile(null);
+    
+    // 원래 데이터로 복원
+    const fetchManagementData = async () => {
+      try {
+        const response = await api.get(`/studies/${studyId}/management`, {
+          withCredentials: true
+        });
+        const { data } = response.data;
+        
+        setStudyName(data.studyName);
+        setStudyContent(data.studyContent);
+        
+        // 이미지 URL 복원
+        if (data.memberContext && data.memberContext.file && data.memberContext.file.fileUrl) {
+          setStudyImageUrl(data.memberContext.file.fileUrl);
+        } else {
+          setStudyImageUrl('');
+        }
+        
+        setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");
+        setPresentPoint(data.presentPoint);
+        setAbsentPoint(data.absentPoint);
+        setLatePoint(data.latePoint);
+      } catch (err) {
+        console.error('스터디 정보 조회 실패:', err);
+      }
+    };
+    
+    fetchManagementData();
   };
 
   const handleImageChange = (e) => {
@@ -496,7 +537,7 @@ function ManagementTab() {
                     style={{ flex: 1 }}
                   />
                   {studyImageUrl && (
-                    <div style={{ width: '80px', height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                    <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
                       <img 
                         src={studyImageUrl} 
                         alt="스터디 이미지" 
@@ -505,6 +546,11 @@ function ManagementTab() {
                     </div>
                   )}
                 </div>
+                {studyImageUrl && (
+                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
+                    현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
+                  </div>
+                )}
               </InputContainer>
               
               <InputContainer>
@@ -579,13 +625,29 @@ function ManagementTab() {
                 {renderStudyStatus()}
               </StatusContainer>
               
-              {studyImageUrl && (
+              {studyImageUrl ? (
                 <div style={{ marginBottom: '20px' }}>
-                  <img 
-                    src={studyImageUrl} 
-                    alt="스터디 이미지" 
-                    style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px' }} 
-                  />
+                  <div style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '10px', display: 'inline-block' }}>
+                    <img 
+                      src={studyImageUrl} 
+                      alt="스터디 이미지" 
+                      style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px', display: 'block' }} 
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginBottom: '20px' }}>
+                  <div style={{ 
+                    border: '1px dashed #ccc', 
+                    borderRadius: '8px', 
+                    padding: '30px', 
+                    textAlign: 'center',
+                    backgroundColor: '#f9f9f9',
+                    color: '#999',
+                    maxWidth: '300px'
+                  }}>
+                    등록된 이미지가 없습니다
+                  </div>
                 </div>
               )}
               

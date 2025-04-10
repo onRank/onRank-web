@@ -32,18 +32,24 @@ function StudyManagement() {
       try {
         console.log('[StudyManagement] 스터디 정보 조회 시작:', studyId);
         const response = await managementService.getManagementData(studyId);
-        console.log('[StudyManagement] 스터디 정보 조회 결과:', response);
+        console.log('스터디 관리 데이터 조회:', response);
         
-        // API 응답 구조에 따라 데이터 추출
         const data = response.data || {};
         
         setStudyName(data.studyName || '');
         setStudyDescription(data.studyContent || '');
-        setStudyImageUrl(data.studyImageUrl || '');
-        setStudyStatus(data.studyStatus || 'PROGRESS');
-        setPresentPoint(data.presentPoint ?? 5);
-        setAbsentPoint(data.absentPoint ?? -10);
-        setLatePoint(data.latePoint ?? -2);
+        setStudyStatus(data.studyStatus || '');
+        setPresentPoint(data.presentPoint || 0);
+        setAbsentPoint(data.absentPoint || 0);
+        setLatePoint(data.latePoint || 0);
+        
+        if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
+          setStudyImageUrl(response.memberContext.file.fileUrl);
+          console.log('이미지 URL 설정:', response.memberContext.file.fileUrl);
+        } else {
+          console.log('이미지 URL이 없습니다:', response);
+          setStudyImageUrl('');
+        }
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);
         setError('스터디 정보를 불러오는데 실패했습니다.');
