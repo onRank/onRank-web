@@ -8,7 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 1500 !important;
 }
 
 .modal-content {
@@ -110,6 +110,7 @@
   font-size: 14px;
 }
 
+/* 모달 액션 컨테이너 */
 .modal-actions {
   display: flex;
   justify-content: center;
@@ -117,38 +118,73 @@
   margin-top: 30px;
 }
 
-.modal-actions button {
-  min-width: 120px;
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
+/* 모든 버튼 공통 스타일 */
+.modal-button {
+  min-width: 120px !important;
+  height: 40px !important;
+  line-height: 1 !important;
+  padding: 0 20px !important;
+  border-radius: 4px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  border: 1px solid transparent !important;
+  outline: none !important;
+  overflow: hidden !important;
 }
 
+/* 버튼 내부 텍스트 스타일 */
+.button-text {
+  display: inline-block !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  pointer-events: none !important;
+}
+
+/* 취소 버튼 스타일 */
 .cancel-button {
-  background-color: #f5f7fa;
-  color: #4a5568;
-  border: 1px solid #e2e8f0;
+  background-color: #f5f7fa !important;
+  color: #4a5568 !important;
+  border-color: #e2e8f0 !important;
 }
 
 .cancel-button:hover:not(:disabled) {
-  background-color: #edf2f7;
+  background-color: #edf2f7 !important;
 }
 
+/* 추가 버튼 스타일 */
 .submit-button {
-  background-color: #4285f4;
-  color: white;
-  border: 1px solid #4285f4;
+  background-color: #4285f4 !important;
+  color: white !important;
+  border-color: #4285f4 !important;
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: #3b78e7;
+  background-color: #3b78e7 !important;
 }
 
-.modal-actions button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+/* 비활성화된 버튼 */
+.modal-button:disabled {
+  opacity: 0.7 !important;
+  cursor: not-allowed !important;
+}
+
+/* 기존 버튼 스타일 없애기 */
+.modal-actions button {
+  border: none;
+  background: none;
+  font: inherit;
+  outline: none;
+  margin: 0;
+}
+
+/* 모달 내 모든 요소에 border-box 적용 */
+.modal-content * {
+  box-sizing: border-box !important;
 } 
