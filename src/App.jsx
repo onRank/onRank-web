@@ -35,6 +35,7 @@ import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import {
   AttendanceDetailPage
 } from "./pages/study/attendance";
+import ManagementContainer from "./pages/study/management/ManagementContainer";
 import "./App.css";
 
 // 레이아웃 상수
