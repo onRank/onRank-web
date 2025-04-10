@@ -401,11 +401,12 @@ function ManagementTab() {
         <div style={{ 
           border: '1px dashed #ccc', 
           borderRadius: '8px', 
-          padding: '30px', 
+          padding: '50px', 
           textAlign: 'center',
           backgroundColor: '#f9f9f9',
           color: '#999',
-          maxWidth: '300px'
+          width: '400px',
+          margin: '0 auto 20px auto'
         }}>
           등록된 이미지가 없습니다
         </div>
@@ -417,10 +418,13 @@ function ManagementTab() {
         border: '3px solid #FF0000', 
         borderRadius: '8px', 
         padding: '15px', 
-        display: 'inline-block',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         backgroundColor: '#f0f0f0',
-        minHeight: '150px',
-        minWidth: '200px'
+        margin: '0 auto 20px auto',
+        maxWidth: '600px',
+        minHeight: '200px'
       }}>
         {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
         {studyImageUrl.startsWith('blob:') ? (
@@ -432,11 +436,11 @@ function ManagementTab() {
               width: 'auto',
               height: 'auto',
               maxWidth: '100%',
-              maxHeight: '300px',
+              maxHeight: '400px',
               borderRadius: '4px', 
               border: '1px solid #000',
               backgroundColor: '#FFF',
-              display: 'inline-block'
+              display: 'block'
             }} 
           />
         ) : (
@@ -446,12 +450,11 @@ function ManagementTab() {
               backgroundSize: 'cover',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
-              width: '100%',
-              height: '300px',
+              width: '500px',
+              height: '350px',
               borderRadius: '4px', 
               border: '1px solid #000',
-              backgroundColor: '#FFF',
-              display: 'inline-block'
+              backgroundColor: '#FFF'
             }}
             aria-label="스터디 이미지"
           />
@@ -672,15 +675,22 @@ function ManagementTab() {
           
           <InputContainer>
             <InputLabel>이미지</InputLabel>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                style={{ flex: 1 }}
-              />
+            <div style={{ 
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '15px'
+            }}>
+              {/* 이미지 미리보기 먼저 표시 */}
               {studyImageUrl && (
-                <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
+                <div style={{ 
+                  width: '400px', 
+                  height: '300px', 
+                  overflow: 'hidden', 
+                  borderRadius: '8px', 
+                  border: '2px solid #ddd',
+                  margin: '0 auto 15px auto'
+                }}>
                   {/* 이미지 미리보기 */}
                   <div 
                     style={{
@@ -694,9 +704,25 @@ function ManagementTab() {
                   />
                 </div>
               )}
+              
+              {/* 파일 선택 버튼 */}
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ 
+                  maxWidth: '400px',
+                  margin: '0 auto'
+                }}
+              />
             </div>
             {studyImageUrl && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
+              <div style={{ 
+                marginTop: '0.5rem', 
+                fontSize: '0.8rem', 
+                color: '#666',
+                textAlign: 'center'
+              }}>
                 현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
               </div>
             )}
