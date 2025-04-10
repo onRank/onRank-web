@@ -73,9 +73,9 @@ const Header = () => {
   return (
     <header
       style={{
-        backgroundColor: `var(--cardBackground)`,
-        color: `var(--textPrimary)`,
-        padding: '1rem',
+        backgroundColor: 'white',
+        color: '#333',
+        padding: '0.5rem 1rem',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         display: 'flex',
         justifyContent: 'space-between',
@@ -83,6 +83,8 @@ const Header = () => {
         position: 'sticky',
         top: 0,
         zIndex: 100,
+        height: '60px',
+        borderBottom: '1px solid #eaeaea'
       }}
     >
       {/* 로고 영역 */}
@@ -97,43 +99,35 @@ const Header = () => {
         <img
           src="/logo1.png"
           alt="onRank 로고"
-          style={{ height: "24px", cursor: "pointer" }}
+          style={{ height: "32px", cursor: "pointer" }}
         />
-        <span
-          style={{
-            fontWeight: 'bold',
-            fontSize: '1.2rem',
-            color: `var(--textPrimary)`,
-            marginLeft: '0.5rem'
-          }}
-        >
-          OnRank
-        </span>
       </div>
 
       {/* 네비게이션 링크 영역 */}
       <nav
         style={{
           display: 'flex',
-          gap: '1.5rem',
+          gap: '2rem',
         }}
       >
         <div
           onClick={handleStudylistClick}
           style={{
             cursor: 'pointer',
-            color: `var(--textPrimary)`,
+            color: pathname.includes('/studies') ? '#000' : '#555',
             fontWeight: pathname.includes('/studies') ? 'bold' : 'normal',
+            fontSize: '15px',
           }}
         >
-          스터디
+          스터디 목록
         </div>
         <div
           onClick={handleCalendarClick}
           style={{
             cursor: 'pointer',
-            color: `var(--textPrimary)`,
+            color: pathname.includes('/calendar') ? '#000' : '#555',
             fontWeight: pathname.includes('/calendar') ? 'bold' : 'normal',
+            fontSize: '15px',
           }}
         >
           캘린더
@@ -142,11 +136,12 @@ const Header = () => {
           onClick={handleProfileClick}
           style={{
             cursor: 'pointer',
-            color: `var(--textPrimary)`,
-            fontWeight: pathname.includes('/profile') ? 'bold' : 'normal',
+            color: pathname.includes('/mypage') ? '#000' : '#555',
+            fontWeight: pathname.includes('/mypage') ? 'bold' : 'normal',
+            fontSize: '15px',
           }}
         >
-          프로필
+          마이페이지
         </div>
       </nav>
 
@@ -158,42 +153,27 @@ const Header = () => {
           gap: '1rem',
         }}
       >
-        {/* 알림 팝오버 */}
-        <div onClick={handleNotificationToggle} style={{ cursor: 'pointer', color: `var(--textPrimary)` }}>
-          🔔
+        {/* 알림 아이콘 */}
+        <div onClick={handleNotificationToggle} style={{ cursor: 'pointer' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="black"/>
+          </svg>
         </div>
-        
-        {/* 테마 토글 버튼 */}
-        <button
-          onClick={toggleTheme}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontSize: '1.2rem',
-            color: `var(--textPrimary)`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {isDarkMode ? '🌞' : '🌙'}
-        </button>
 
         {/* 로그아웃 버튼 */}
         <button
           onClick={handleLogout}
           style={{
-            backgroundColor: `var(--primary)`,
-            color: '#fff',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '0.5rem 1rem',
-            fontWeight: 'bold',
+            backgroundColor: 'white',
+            color: '#333',
+            border: '1px solid #ddd',
+            borderRadius: '20px',
+            padding: '5px 15px',
+            fontSize: '14px',
             cursor: 'pointer',
           }}
         >
-          로그아웃
+          logout
         </button>
       </div>
     </header>
