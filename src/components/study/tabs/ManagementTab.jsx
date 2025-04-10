@@ -12,7 +12,6 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
-import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -215,15 +214,12 @@ function ManagementTab() {
       
       // 이미지 URL 추출 및 처리
       if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-        // S3 URL을 CloudFront URL로 변환
-        const s3Url = response.data.memberContext.file.fileUrl;
-        const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+        // 원본 S3 URL 그대로 사용
+        const imageUrl = response.data.memberContext.file.fileUrl;
+        console.log('원본 이미지 URL:', imageUrl);
         
-        // 캐시 방지를 위해 타임스탬프 추가
-        const timestamp = new Date().getTime();
-        const uncachedUrl = `${cloudFrontUrl}?t=${timestamp}`;
-        
-        setStudyImageUrl(uncachedUrl);
+        // S3 URL을 그대로 사용
+        setStudyImageUrl(imageUrl);
       }
       
       setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");

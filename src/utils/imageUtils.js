@@ -2,15 +2,24 @@
  * S3 URL을 CloudFront URL로 변환하는 유틸리티 함수
  * 
  * @param {string} s3Url - S3에서 제공하는 이미지 URL
- * @returns {string} CloudFront를 통한 이미지 URL
+ * @returns {string} CloudFront를 통한 이미지 URL 또는 원본 URL
  */
 export const convertToCloudFrontUrl = (s3Url) => {
-  console.log('백엔드에서 제공한 URL:', s3Url);
+  // 백엔드에서 제공하는 URL을 그대로 사용하는 것이 가장 안전
+  console.log('imageUtils: 원본 URL:', s3Url);
   
-  // 백엔드에서 제공하는 URL을 그대로 사용
   if (!s3Url) return '';
   
-  // CloudFront 도메인 확인용
+  // URL이 아닌 경우 그대로 반환
+  if (!s3Url.startsWith('http')) {
+    return s3Url;
+  }
+  
+  // ⚠️ 중요: 대부분의 경우 변환이 필요 없으므로 원본 URL 그대로 반환
+  // 특별한 요구사항이 있는 경우에만 아래 코드 활성화
+  
+  /*
+  // CloudFront 도메인
   const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
   
   // 이미 CloudFront URL인 경우 그대로 반환
@@ -18,18 +27,21 @@ export const convertToCloudFrontUrl = (s3Url) => {
     return s3Url;
   }
   
-  // S3 URL인 경우에만 기본 변환 처리
-  // 이 부분은 백엔드와 협의하여 필요한 경우에만 사용
+  // S3 URL을 CloudFront URL로 변환해야 하는 경우
   try {
     const urlObj = new URL(s3Url);
     const pathname = urlObj.pathname;
     const cloudFrontUrl = `${cloudFrontDomain}${pathname}`;
-    console.log('S3 URL을 CloudFront URL로 변환:', cloudFrontUrl);
+    console.log('imageUtils: CloudFront URL로 변환:', cloudFrontUrl);
     return cloudFrontUrl;
   } catch (error) {
     console.error('URL 변환 중 오류 발생:', error);
     return s3Url;
   }
+  */
+  
+  // 현재는 변환 없이 원본 URL 그대로 반환
+  return s3Url;
 };
 
 /**

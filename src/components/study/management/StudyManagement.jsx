@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { convertToCloudFrontUrl, getBackgroundImageStyle } from '../../../utils/imageUtils';
+import { getBackgroundImageStyle } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -72,11 +72,8 @@ function StudyManagement() {
         const imageUrl = response.memberContext.file.fileUrl;
         console.log('원본 이미지 URL:', imageUrl);
         
-        // S3 URL을 CloudFront URL로 변환 (필요한 경우)
-        const cloudFrontUrl = convertToCloudFrontUrl(imageUrl);
-        console.log('최종 사용할 이미지 URL:', cloudFrontUrl);
-        
-        setStudyImageUrl(cloudFrontUrl);
+        // 원본 S3 URL을 직접 사용 (CloudFront URL로 변환하지 않음)
+        setStudyImageUrl(imageUrl);
       } else {
         console.log('이미지 URL이 없음:', response);
         setStudyImageUrl('');
