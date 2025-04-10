@@ -36,8 +36,9 @@ function StudyManagement() {
     console.error('이미지 로드 실패:', studyImageUrl);
     setImageLoaded(false);
     
-    // 이미지 로드 실패 시 다시 서버에서 최신 데이터 가져오기
-    fetchStudyData();
+    // 무한 루프 방지: fetchStudyData 호출 제거
+    // 대신 오류 메시지만 표시
+    setError('이미지 로드에 실패했습니다. URL: ' + studyImageUrl);
   };
 
   // 컴포넌트 마운트 시 데이터 로드
