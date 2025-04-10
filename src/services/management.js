@@ -18,45 +18,34 @@ export const managementService = {
   },
 
   // 스터디 정보 수정 (파일 업로드 포함)
-  updateStudyInfo: async (studyId, formData) => {
+  updateStudyInfo: async (studyId, requestData) => {
     try {
-      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`);
+      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`, requestData);
       
       // 필수 입력 항목 검증
-      if (!formData.get('studyName')) {
+      if (!requestData.studyName) {
         throw new Error('스터디 이름은 필수 항목입니다.');
       }
       
       // 출석 점수 검증
-      const presentPoint = formData.get('presentPoint');
-      const absentPoint = formData.get('absentPoint');
-      const latePoint = formData.get('latePoint');
-      
-      if (presentPoint === null || absentPoint === null || latePoint === null) {
+      if (requestData.presentPoint === undefined || 
+          requestData.absentPoint === undefined || 
+          requestData.latePoint === undefined) {
         throw new Error('출석, 결석, 지각 점수는 필수 항목입니다.');
       }
       
-      // FormData가 올바르게 전송되도록 확인
-      if (!formData.has('fileName')) {
-        console.warn('[ManagementService] fileName 필드가 누락되었습니다. null로 설정합니다.');
-        formData.append('fileName', 'null');
-      }
-      
       // studyStatus 필드 확인
-      if (!formData.has('studyStatus')) {
+      if (!requestData.studyStatus) {
         console.warn('[ManagementService] studyStatus 필드가 누락되었습니다. PROGRESS로 설정합니다.');
-        formData.append('studyStatus', 'PROGRESS');
+        requestData.studyStatus = 'PROGRESS';
       }
       
-      // 로깅: 전송되는 FormData 내용
-      console.log('[ManagementService] FormData 전송 내용:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${key === 'file' ? '파일 객체' : value}`);
-      }
+      // 로깅: 전송되는 데이터 내용
+      console.log('[ManagementService] 요청 데이터:', requestData);
 
-      const response = await api.put(`/studies/${studyId}/management`, formData, {
+      const response = await api.put(`/studies/${studyId}/management`, requestData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json'
         },
         withCredentials: true
       });

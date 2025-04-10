@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
+import { studyService } from '../../../services/api';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -128,33 +129,37 @@ function StudyManagement() {
     try {
       console.log('[StudyManagement] 스터디 정보 업데이트 시작:', studyId);
       
-      // FormData 객체 생성
-      const formData = new FormData();
-      formData.append('studyName', studyName);
-      formData.append('studyContent', studyDescription);
-      formData.append('studyStatus', studyStatus);
+      // API 요청 데이터 준비
+      const requestData = {
+        studyName: studyName,
+        studyContent: studyDescription,
+        studyStatus: studyStatus,
+        fileName: studyImageFile ? studyImageFile.name : null,
+        presentPoint: presentPoint,
+        absentPoint: absentPoint,
+        latePoint: latePoint
+      };
       
-      // 파일 관련 필드 처리
-      if (studyImageFile) {
-        formData.append('file', studyImageFile);
-        formData.append('fileName', studyImageFile.name);
-      } else {
-        // 파일이 없을 경우 fileName을 명시적으로 null로 전송
-        formData.append('fileName', 'null');
+      console.log('[StudyManagement] 업데이트 요청 데이터:', requestData);
+      
+      // 스터디 정보 업데이트 요청
+      const response = await managementService.updateStudyInfo(studyId, requestData);
+      
+      console.log('[StudyManagement] 스터디 정보 업데이트 응답:', response);
+      
+      // 이미지 파일이 있고 업로드 URL이 있는 경우 S3에 직접 업로드
+      if (studyImageFile && response.uploadUrl) {
+        try {
+          console.log('[StudyManagement] S3에 이미지 업로드 시작');
+          await studyService.uploadImageToS3(response.uploadUrl, studyImageFile);
+          console.log('[StudyManagement] S3에 이미지 업로드 성공');
+        } catch (uploadError) {
+          console.error('[StudyManagement] S3에 이미지 업로드 실패:', uploadError);
+          setSuccess('스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.');
+          setIsEditing(false);
+          return;
+        }
       }
-      
-      formData.append('presentPoint', presentPoint);
-      formData.append('absentPoint', absentPoint);
-      formData.append('latePoint', latePoint);
-      
-      // 디버깅: FormData 내용 확인
-      console.log('[StudyManagement] FormData 내용:');
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${key === 'file' ? '파일 객체' : value}`);
-      }
-      
-      // 스터디 정보 업데이트
-      const response = await managementService.updateStudyInfo(studyId, formData);
       
       console.log('[StudyManagement] 스터디 정보 업데이트 성공:', response);
       setSuccess('스터디 정보가 성공적으로 업데이트되었습니다.');
