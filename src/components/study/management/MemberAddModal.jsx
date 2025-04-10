@@ -89,6 +89,15 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
               onClick={onClose} 
               disabled={loading} 
               className="cancel-button"
+              style={{ 
+                height: '40px', 
+                minWidth: '120px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 20px'
+              }}
             >
               취소하기
             </button>
@@ -96,6 +105,15 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
               type="submit" 
               disabled={loading} 
               className="submit-button"
+              style={{ 
+                height: '40px', 
+                minWidth: '120px',
+                boxSizing: 'border-box',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '0 20px'
+              }}
             >
               {loading ? '처리 중...' : '추가하기'}
             </button>
