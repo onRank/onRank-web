@@ -8,7 +8,7 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { ImCheckboxUnchecked } from "react-icons/im";
 import { MdOutlineAccessTimeFilled } from "react-icons/md";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import axios from "axios";
+import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
@@ -195,7 +195,9 @@ function ManagementTab() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`https://onrank.kr/studies/${studyId}/management`);
+        const response = await api.get(`/studies/${studyId}/management`, {
+          withCredentials: true
+        });
         const { data } = response.data;
         
         setStudyName(data.studyName);
@@ -238,7 +240,9 @@ function ManagementTab() {
     setError(null);
     try {
       // studyService를 사용하여 멤버 목록 조회
-      const response = await axios.get(`https://onrank.kr/studies/${studyId}/members`);
+      const response = await api.get(`/studies/${studyId}/members`, {
+        withCredentials: true
+      });
       console.log('회원 목록 조회 결과:', response);
       
       // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
@@ -278,12 +282,22 @@ function ManagementTab() {
 
   const handleSave = async () => {
     try {
-      await axios.put(`https://onrank.kr/studies/${studyId}/management`, {
+      // 토큰 확인
+      const token = tokenUtils.getToken();
+      if (!token) {
+        console.error("토큰 없음, 스터디 정보 수정 불가");
+        setError("인증 토큰이 없습니다. 로그인이 필요합니다.");
+        return;
+      }
+
+      await api.put(`/studies/${studyId}/management`, {
         studyName,
         studyContent,
         presentPoint,
         absentPoint,
         latePoint
+      }, {
+        withCredentials: true
       });
       setIsEditing(false);
     } catch (err) {
