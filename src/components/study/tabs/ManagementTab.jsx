@@ -183,6 +183,9 @@ function ManagementTab() {
   const [isEditing, setIsEditing] = useState(false);
   const [studyName, setStudyName] = useState("");
   const [studyContent, setStudyContent] = useState("");
+  const [studyImageUrl, setStudyImageUrl] = useState("");
+  const [studyImageFile, setStudyImageFile] = useState(null);
+  const [studyGoogleFormUrl, setStudyGoogleFormUrl] = useState("");
   const [presentPoint, setPresentPoint] = useState(0);
   const [absentPoint, setAbsentPoint] = useState(0);
   const [latePoint, setLatePoint] = useState(0);
@@ -202,6 +205,8 @@ function ManagementTab() {
         
         setStudyName(data.studyName);
         setStudyContent(data.studyContent);
+        setStudyImageUrl(data.studyImageUrl || "");
+        setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");
         setPresentPoint(data.presentPoint);
         setAbsentPoint(data.absentPoint);
         setLatePoint(data.latePoint);
@@ -280,6 +285,16 @@ function ManagementTab() {
     setIsEditing(false);
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setStudyImageFile(file);
+      // 이미지 미리보기 URL 생성
+      const previewUrl = URL.createObjectURL(file);
+      setStudyImageUrl(previewUrl);
+    }
+  };
+
   const handleSave = async () => {
     try {
       // 토큰 확인
@@ -290,15 +305,29 @@ function ManagementTab() {
         return;
       }
 
-      await api.put(`/studies/${studyId}/management`, {
-        studyName,
-        studyContent,
-        presentPoint,
-        absentPoint,
-        latePoint
-      }, {
+      // FormData 객체 생성하여 모든 데이터를 한 번에 보냄
+      const formData = new FormData();
+      formData.append('studyName', studyName);
+      formData.append('studyContent', studyContent);
+      formData.append('studyGoogleFormUrl', studyGoogleFormUrl || '');
+      formData.append('presentPoint', presentPoint);
+      formData.append('absentPoint', absentPoint);
+      formData.append('latePoint', latePoint);
+      
+      // 이미지 파일이 있는 경우 추가
+      if (studyImageFile) {
+        formData.append('file', studyImageFile);
+      }
+
+      // 통합 API 요청 - 한 번에 모든 정보 업데이트
+      const response = await api.put(`/studies/${studyId}/management`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
         withCredentials: true
       });
+
+      console.log("스터디 정보 수정 성공:", response.data);
       setIsEditing(false);
     } catch (err) {
       console.error("스터디 정보 수정에 실패했습니다.", err);
@@ -433,6 +462,10 @@ function ManagementTab() {
         <>
           {isEditing ? (
             <>
+              <div style={{ marginBottom: '24px' }}>
+                <TabTitle>스터디 정보 수정</TabTitle>
+              </div>
+              
               <InputContainer>
                 <InputLabel>스터디 이름</InputLabel>
                 <Input
@@ -444,14 +477,47 @@ function ManagementTab() {
               </InputContainer>
               
               <InputContainer>
-                <InputLabel>스터디 설명</InputLabel>
+                <InputLabel>소개</InputLabel>
                 <TextArea
                   value={studyContent}
                   onChange={(e) => setStudyContent(e.target.value)}
                   placeholder="스터디 설명"
+                  rows={4}
                 />
               </InputContainer>
               
+              <InputContainer>
+                <InputLabel>이미지</InputLabel>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    style={{ flex: 1 }}
+                  />
+                  {studyImageUrl && (
+                    <div style={{ width: '80px', height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                      <img 
+                        src={studyImageUrl} 
+                        alt="스터디 이미지" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                      />
+                    </div>
+                  )}
+                </div>
+              </InputContainer>
+              
+              <InputContainer>
+                <InputLabel>구글폼링크(선택)</InputLabel>
+                <Input
+                  type="text"
+                  value={studyGoogleFormUrl}
+                  onChange={(e) => setStudyGoogleFormUrl(e.target.value)}
+                  placeholder="구글 폼 URL"
+                />
+              </InputContainer>
+              
+              <TabTitle>출석 점수 설정</TabTitle>
               <PointContainer>
                 <InputContainer>
                   <InputLabel>출석 점수</InputLabel>
@@ -499,8 +565,29 @@ function ManagementTab() {
                   <StatusValue>{studyContent}</StatusValue>
                 </StatusItem>
                 
+                {studyGoogleFormUrl && (
+                  <StatusItem>
+                    <StatusLabel>구글 폼:</StatusLabel>
+                    <StatusValue>
+                      <a href={studyGoogleFormUrl} target="_blank" rel="noopener noreferrer">
+                        {studyGoogleFormUrl}
+                      </a>
+                    </StatusValue>
+                  </StatusItem>
+                )}
+                
                 {renderStudyStatus()}
               </StatusContainer>
+              
+              {studyImageUrl && (
+                <div style={{ marginBottom: '20px' }}>
+                  <img 
+                    src={studyImageUrl} 
+                    alt="스터디 이미지" 
+                    style={{ maxWidth: '300px', maxHeight: '200px', borderRadius: '4px' }} 
+                  />
+                </div>
+              )}
               
               <TabTitle>출석 점수 설정</TabTitle>
               <PointContainer>
