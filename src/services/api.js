@@ -1941,19 +1941,63 @@ export const noticeService = {
     }
   },
 
-  // 공지사항 생성
+  // 이미지 업로드 함수
+  ImageUploadToS3: async (presignedUrl, imageFile) => {
+    try {
+      console.log("[ImageUploadToS3] 이미지 업로드 시작:", imageFile.name);
+
+      const uploadResponse = await axios.put(presignedUrl, imageFile, {
+        headers: {
+          "Content-Type": imageFile.type,
+        },
+      });
+
+      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+        console.log("[ImageUploadToS3] 이미지 업로드 성공:", imageFile.name);
+      } else {
+        console.error("[ImageUploadToS3] 이미지 업로드 실패:", imageFile.name);
+        throw new Error(`이미지 업로드 실패: ${imageFile.name}`);
+      }
+    } catch (error) {
+      console.error("[ImageUploadToS3] 이미지 업로드 중 오류:", error);
+      throw error;
+    }
+  },
+
+  // 파일 업로드 함수
+  FileUploadToS3: async (presignedUrl, file) => {
+    try {
+      console.log("[FileUploadToS3] 파일 업로드 시작:", file.name);
+
+      const uploadResponse = await axios.put(presignedUrl, file, {
+        headers: {
+          "Content-Type": file.type || "application/octet-stream",
+        },
+      });
+
+      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+        console.log("[FileUploadToS3] 파일 업로드 성공:", file.name);
+      } else {
+        console.error("[FileUploadToS3] 파일 업로드 실패:", file.name);
+        throw new Error(`파일 업로드 실패: ${file.name}`);
+      }
+    } catch (error) {
+      console.error("[FileUploadToS3] 파일 업로드 중 오류:", error);
+      throw error;
+    }
+  },
+
+  // createNotice 함수
   createNotice: async (studyId, newNotice, files = []) => {
     try {
       console.log("[noticeService] 공지사항 생성 요청:", newNotice);
 
-      // 1. 먼저 공지사항 생성 요청 (파일명만 전송)
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
         fileNames: files.map((file) => file.fileName) || [],
       };
 
-      // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
         console.error("[noticeService] 토큰 없음, 공지사항 생성 불가");
@@ -1964,7 +2008,6 @@ export const noticeService = {
         ? token
         : `Bearer ${token}`;
 
-      // API 요청
       const response = await api.post(
         `/studies/${studyId}/notices/add`,
         requestData,
@@ -1979,10 +2022,8 @@ export const noticeService = {
         }
       );
 
-      // 2. 공지사항 생성 성공 후, 파일 업로드 처리
       if (response.data && response.data.presignedUrls && files.length > 0) {
         try {
-          // 3. 각 파일에 대해 presigned URL로 S3에 직접 업로드
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const presignedUrl = response.data.presignedUrls[i];
@@ -1995,27 +2036,10 @@ export const noticeService = {
               continue;
             }
 
-            const uploadResponse = await axios.put(presignedUrl, file.file, {
-              headers: {
-                "Content-Type": file.file.type,
-              },
-            });
-
-            if (
-              uploadResponse.status === 200 ||
-              uploadResponse.status === 201
-            ) {
-              console.log(`[noticeService] 파일 업로드 성공: ${file.fileName}`);
+            if (file.type.startsWith("image/")) {
+              await noticeService.ImageUploadToS3(presignedUrl, file);
             } else {
-              console.error(
-                `[noticeService] 파일 업로드 실패: ${file.fileName}`
-              );
-              return {
-                success: true,
-                data: response.data,
-                warning:
-                  "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
-              };
+              await noticeService.FileUploadToS3(presignedUrl, file);
             }
           }
         } catch (uploadError) {
