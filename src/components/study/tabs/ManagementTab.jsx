@@ -244,8 +244,8 @@ function ManagementTab() {
     setLoading(true);
     setError(null);
     try {
-      // studyService를 사용하여 멤버 목록 조회
-      const response = await api.get(`/studies/${studyId}/members`, {
+      // 올바른 API 경로로 요청
+      const response = await api.get(`/studies/${studyId}/management/members`, {
         withCredentials: true
       });
       console.log('회원 목록 조회 결과:', response);

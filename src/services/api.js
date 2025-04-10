@@ -918,7 +918,7 @@ export const studyService = {
         memberRole: roleData.memberRole || "PARTICIPANT", // 기본값은 참여자
       };
 
-      // API 요청
+      // API 요청 - 올바른 경로로 수정
       const response = await api.put(
         `/studies/${studyId}/management/members/${memberId}/role`,
         requestData,
@@ -966,7 +966,7 @@ export const studyService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
-      // API 요청
+      // API 요청 - 올바른 경로로 수정
       const response = await api.delete(
         `/studies/${studyId}/management/members/${memberId}`,
         {
@@ -1017,7 +1017,7 @@ export const studyService = {
         studentEmail: memberData.studentEmail,
       };
 
-      // API 요청
+      // API 요청 - 올바른 경로로 수정
       const response = await api.post(
         `/studies/${studyId}/management/members/add`,
         requestData,
