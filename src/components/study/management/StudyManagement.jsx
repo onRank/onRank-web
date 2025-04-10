@@ -28,18 +28,16 @@ function StudyManagement() {
 
   // 이미지 로드 완료 핸들러
   const handleImageLoad = () => {
-    console.log('이미지 로드 성공:', imageRef.current?.src);
     setImageLoaded(true);
     setError(null); // 이미지가 로드되면 이전 오류 메시지 제거
   };
 
   // 이미지 로드 실패 핸들러
   const handleImageError = () => {
-    console.error('이미지 로드 실패:', studyImageUrl);
     setImageLoaded(false);
     
     // 에러 메시지 표시
-    setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
+    setError(`이미지 로드에 실패했습니다.`);
   };
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -64,18 +62,11 @@ function StudyManagement() {
       setAbsentPoint(data.absentPoint || 0);
       setLatePoint(data.latePoint || 0);
       
-      // 디버깅용 로그
-      console.log('서버 응답 데이터:', response);
-      
       // 이미지 URL 처리
       if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
         const imageUrl = response.memberContext.file.fileUrl;
-        console.log('원본 이미지 URL:', imageUrl);
-        
-        // 원본 S3 URL을 직접 사용 (CloudFront URL로 변환하지 않음)
         setStudyImageUrl(imageUrl);
       } else {
-        console.log('이미지 URL이 없음:', response);
         setStudyImageUrl('');
       }
     } catch (err) {
@@ -214,7 +205,6 @@ function StudyManagement() {
             objectFit: 'cover' 
           }}
           onError={(e) => {
-            console.error('미리보기 이미지 로드 실패:', e.target.src);
             e.target.onerror = null;
             e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22100%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%2250%22%20y%3D%2250%22%20font-size%3D%2210%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%9D%B4%EB%AF%B8%EC%A7%80%20%EC%98%A4%EB%A5%98%3C%2Ftext%3E%3C%2Fsvg%3E';
           }} 
@@ -237,15 +227,6 @@ function StudyManagement() {
     setSuccess(null);
     
     try {
-      console.log('[StudyManagement] 폼 제출 시작', {
-        hasImageFile: !!studyImageFile,
-        imageFileInfo: studyImageFile ? {
-          name: studyImageFile.name,
-          size: studyImageFile.size,
-          type: studyImageFile.type
-        } : null
-      });
-      
       // API 요청 데이터 준비
       const requestData = {
         studyName: studyName,
@@ -257,12 +238,8 @@ function StudyManagement() {
         latePoint: latePoint
       };
       
-      console.log('[StudyManagement] 요청 데이터:', requestData);
-      
       // 스터디 정보 업데이트 요청
       const response = await managementService.updateStudyInfo(studyId, requestData);
-      
-      console.log('[StudyManagement] 업데이트 응답:', response);
       
       // 이미지 파일이 있는 경우 S3에 업로드
       if (studyImageFile) {
@@ -275,8 +252,6 @@ function StudyManagement() {
         } else if (response.uploadUrl) {
           uploadUrl = response.uploadUrl;
         } else {
-          console.warn('[StudyManagement] uploadUrl을 찾을 수 없음:', response);
-          
           // 응답 구조 탐색
           const extractUploadUrl = (obj) => {
             if (!obj || typeof obj !== 'object') return null;
@@ -306,13 +281,9 @@ function StudyManagement() {
           return;
         }
         
-        console.log('[StudyManagement] 찾은 uploadUrl:', uploadUrl.substring(0, 100) + '...');
-        
         try {
           // S3에 이미지 업로드
-          console.log('[StudyManagement] S3 이미지 업로드 시작');
           await studyService.uploadImageToS3(uploadUrl, studyImageFile);
-          console.log('[StudyManagement] S3 이미지 업로드 완료');
           
           // 이미지 업로드 후 브라우저 캐시 방지를 위한 지연
           setSuccess('스터디 정보가 성공적으로 업데이트되었습니다. 이미지 업로드 완료!');
@@ -335,7 +306,6 @@ function StudyManagement() {
       
       // 지연 후 업데이트된 정보 다시 가져오기 (S3 업로드 처리 시간 고려)
       setTimeout(() => {
-        console.log('[StudyManagement] 업데이트 후 데이터 새로고침');
         fetchStudyData();
       }, 2000);
     } catch (err) {
@@ -576,38 +546,6 @@ function StudyManagement() {
             <div style={{ marginBottom: '2rem' }}>
               <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
               {renderStudyImage()}
-              
-              <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
-                <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <a 
-                    href={studyImageUrl}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ 
-                      display: 'inline-block',
-                      color: '#0066cc',
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    새 탭에서 이미지 열기
-                  </a>
-                  <button
-                    onClick={fetchStudyData}
-                    style={{
-                      padding: '2px 8px',
-                      fontSize: '0.8rem',
-                      backgroundColor: '#f0f0f0',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    이미지 새로고침
-                  </button>
-                </div>
-              </div>
             </div>
           ) : (
             <div style={{ marginBottom: '2rem' }}>
