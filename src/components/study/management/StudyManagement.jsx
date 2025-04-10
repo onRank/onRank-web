@@ -10,7 +10,9 @@ import {
   preloadImage,
   refreshImageSrc,
   getUncachedImageUrl,
-  handleImageLoading
+  handleImageLoading,
+  getBackgroundImageStyle,
+  getSafeImageUrl
 } from '../../../utils/imageUtils';
 
 function StudyManagement() {
@@ -163,6 +165,51 @@ function StudyManagement() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <span>스터디 상태:</span>
         <span style={{ color: statusColor, fontWeight: 'bold' }}>{statusText}</span>
+      </div>
+    );
+  };
+
+  // 이미지 부분을 렌더링하는 코드
+  const renderStudyImage = () => {
+    if (!studyImageUrl) {
+      return (
+        <div style={{ 
+          border: '1px dashed #ccc', 
+          borderRadius: '8px', 
+          padding: '30px', 
+          textAlign: 'center',
+          backgroundColor: '#f9f9f9',
+          color: '#999',
+          maxWidth: '300px'
+        }}>
+          등록된 이미지가 없습니다
+        </div>
+      );
+    }
+    
+    return (
+      <div style={{ 
+        border: '3px solid #FF0000', 
+        borderRadius: '8px', 
+        padding: '15px', 
+        display: 'inline-block',
+        backgroundColor: '#f0f0f0',
+        minHeight: '150px',
+        minWidth: '200px'
+      }}>
+        {/* 이미지 태그 대신 배경 이미지를 사용하는 div로 대체 */}
+        <div 
+          style={{
+            ...getBackgroundImageStyle(studyImageUrl),
+            width: '100%',
+            height: '300px',
+            borderRadius: '4px', 
+            border: '1px solid #000',
+            backgroundColor: '#FFF',
+            display: 'inline-block'
+          }}
+          aria-label="스터디 이미지"
+        />
       </div>
     );
   };
@@ -327,14 +374,14 @@ function StudyManagement() {
               />
               {studyImageUrl && (
                 <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-                  <img 
-                    ref={imageRef}
-                    src={studyImageUrl} 
-                    alt="스터디 이미지" 
-                    crossOrigin="anonymous"
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  {/* 이미지 태그 대신 배경 이미지를 사용하는 div로 대체 */}
+                  <div 
+                    style={{
+                      ...getBackgroundImageStyle(studyImageUrl),
+                      width: '100%',
+                      height: '100%'
+                    }}
+                    aria-label="스터디 이미지 미리보기"
                   />
                 </div>
               )}
@@ -458,34 +505,7 @@ function StudyManagement() {
           {studyImageUrl ? (
             <div style={{ marginBottom: '2rem' }}>
               <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
-              <div style={{ 
-                border: '3px solid #FF0000', 
-                borderRadius: '8px', 
-                padding: '15px', 
-                display: 'inline-block',
-                backgroundColor: '#f0f0f0',
-                minHeight: '150px',
-                minWidth: '200px'
-              }}>
-                <img 
-                  ref={imageRef}
-                  src={getUncachedImageUrl(studyImageUrl)} 
-                  alt="스터디 이미지" 
-                  crossOrigin="anonymous"
-                  onLoad={handleImageLoad}
-                  onError={handleImageError}
-                  style={{ 
-                    width: 'auto',
-                    height: 'auto',
-                    maxWidth: '100%',
-                    maxHeight: '300px',
-                    borderRadius: '4px', 
-                    border: '1px solid #000',
-                    backgroundColor: '#FFF',
-                    display: 'inline-block'
-                  }} 
-                />
-              </div>
+              {renderStudyImage()}
               
               <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
@@ -504,7 +524,10 @@ function StudyManagement() {
                     새 탭에서 이미지 열기
                   </a>
                   <button
-                    onClick={() => refreshImageSrc(imageRef, studyImageUrl)}
+                    onClick={() => {
+                      // 이미지 새로고침 로직
+                      setStudyImageUrl(getSafeImageUrl(studyImageUrl));
+                    }}
                     style={{
                       padding: '2px 8px',
                       fontSize: '0.8rem',
@@ -522,17 +545,7 @@ function StudyManagement() {
           ) : (
             <div style={{ marginBottom: '2rem' }}>
               <h4 style={{ marginBottom: '1rem' }}>스터디 이미지</h4>
-              <div style={{ 
-                border: '1px dashed #ccc', 
-                borderRadius: '8px', 
-                padding: '30px', 
-                textAlign: 'center',
-                backgroundColor: '#f9f9f9',
-                color: '#999',
-                maxWidth: '300px'
-              }}>
-                등록된 이미지가 없습니다
-              </div>
+              {renderStudyImage()}
             </div>
           )}
           

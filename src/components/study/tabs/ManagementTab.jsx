@@ -19,7 +19,9 @@ import {
   preloadImage,
   refreshImageSrc,
   getUncachedImageUrl,
-  handleImageLoading
+  handleImageLoading,
+  getBackgroundImageStyle,
+  getSafeImageUrl
 } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
@@ -491,23 +493,17 @@ function ManagementTab() {
         minHeight: '150px',
         minWidth: '200px'
       }}>
-        <img 
-          ref={imageRef}
-          src={getUncachedImageUrl(studyImageUrl)} 
-          alt="스터디 이미지" 
-          crossOrigin="anonymous"
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          style={{ 
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '100%',
-            maxHeight: '300px',
+        <div 
+          style={{
+            ...getBackgroundImageStyle(studyImageUrl),
+            width: '100%',
+            height: '300px',
             borderRadius: '4px', 
             border: '1px solid #000',
             backgroundColor: '#FFF',
             display: 'inline-block'
-          }} 
+          }}
+          aria-label="스터디 이미지"
         />
       </div>
     );
@@ -649,7 +645,10 @@ function ManagementTab() {
                     새 탭에서 이미지 열기
                   </a>
                   <button
-                    onClick={() => refreshImageSrc(imageRef, studyImageUrl)}
+                    onClick={() => {
+                      // 이미지 새로고침 로직
+                      setStudyImageUrl(getSafeImageUrl(studyImageUrl));
+                    }}
                     style={{
                       padding: '2px 8px',
                       fontSize: '0.8rem',
@@ -734,14 +733,13 @@ function ManagementTab() {
               />
               {studyImageUrl && (
                 <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-                  <img 
-                    ref={imageRef}
-                    src={studyImageUrl} 
-                    alt="스터디 이미지"
-                    crossOrigin="anonymous"
-                    onLoad={handleImageLoad}
-                    onError={handleImageError}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  <div 
+                    style={{
+                      ...getBackgroundImageStyle(studyImageUrl),
+                      width: '100%',
+                      height: '100%'
+                    }}
+                    aria-label="스터디 이미지 미리보기"
                   />
                 </div>
               )}

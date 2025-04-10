@@ -192,4 +192,40 @@ export const handleImageLoading = async (s3Url, setImageUrl, studyId) => {
     console.error('이미지 로딩 처리 실패:', error);
     return null;
   }
+};
+
+/**
+ * CORS 이슈를 피하기 위해 이미지를 외부 링크로 렌더링하는 컴포넌트 대신 사용할 URL을 생성
+ * 
+ * @param {string} imageUrl - 원본 이미지 URL
+ * @returns {JSX.Element} 이미지를 표시하는 JSX 요소
+ */
+export const getSafeImageUrl = (imageUrl) => {
+  if (!imageUrl) return DEFAULT_IMAGE_URL;
+  
+  // CORS 문제를 피하기 위해 URL을 수정
+  // 1. 타임스탬프 추가
+  const timestampedUrl = getUncachedImageUrl(imageUrl);
+  
+  // 2. URL을 복사하여 반환
+  return timestampedUrl;
+};
+
+/**
+ * 이미지 URL을 직접 사용하는 대신 이미지를 div 배경으로 표시하는 스타일을 생성
+ * 
+ * @param {string} imageUrl - 이미지 URL
+ * @returns {Object} 배경 이미지 스타일 객체
+ */
+export const getBackgroundImageStyle = (imageUrl) => {
+  if (!imageUrl) return {};
+  
+  const safeUrl = getSafeImageUrl(imageUrl);
+  
+  return {
+    backgroundImage: `url(${safeUrl})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat'
+  };
 }; 
