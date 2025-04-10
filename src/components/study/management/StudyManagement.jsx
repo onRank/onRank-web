@@ -80,6 +80,19 @@ function StudyManagement() {
     setSuccess(null);
     // 이미지 파일 선택 상태 초기화
     setStudyImageFile(null);
+    
+    // 취소 시 원본 이미지 URL 복원
+    const fetchStudyData = async () => {
+      try {
+        const response = await managementService.getManagementData(studyId);
+        const data = response.data || {};
+        setStudyImageUrl(data.studyImageUrl || '');
+      } catch (err) {
+        console.error('스터디 정보 조회 실패:', err);
+      }
+    };
+    
+    fetchStudyData();
   };
 
   // 스터디 상태 표시
@@ -281,7 +294,7 @@ function StudyManagement() {
                 disabled={loading}
               />
               {studyImageUrl && (
-                <div style={{ width: '80px', height: '80px', overflow: 'hidden', borderRadius: '4px' }}>
+                <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
                   <img 
                     src={studyImageUrl} 
                     alt="스터디 이미지" 
@@ -290,6 +303,11 @@ function StudyManagement() {
                 </div>
               )}
             </div>
+            {studyImageUrl && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
+                현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
+              </div>
+            )}
           </div>
           
           <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>출석 점수 설정</h4>
