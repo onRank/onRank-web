@@ -118,7 +118,7 @@
 }
 
 .modal-actions button {
-  padding: 10px 24px;
+  padding: 9px 24px;
   border-radius: 4px;
   font-size: 14px;
   font-weight: 500;
@@ -126,6 +126,12 @@
   transition: all 0.2s ease;
   min-width: 100px;
   text-align: center;
+  height: 42px;
+  box-sizing: border-box;
+  line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cancel-button {
@@ -141,7 +147,7 @@
 .submit-button {
   background-color: #4285f4;
   color: white;
-  border: none;
+  border: 1px solid #4285f4;
   box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
