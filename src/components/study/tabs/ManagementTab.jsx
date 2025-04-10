@@ -312,10 +312,21 @@ function ManagementTab() {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      console.log("이미지 파일 선택됨:", {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
+      
       setStudyImageFile(file);
       // 이미지 미리보기 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setStudyImageUrl(previewUrl);
+      
+      console.log("이미지 상태 업데이트 완료:", {
+        file: file.name,
+        previewUrl: previewUrl.substring(0, 30) + "..."
+      });
     }
   };
 
@@ -328,6 +339,14 @@ function ManagementTab() {
         setError("인증 토큰이 없습니다. 로그인이 필요합니다.");
         return;
       }
+
+      console.log("저장 시작 - 이미지 파일 상태:", {
+        exists: !!studyImageFile,
+        name: studyImageFile?.name,
+        size: studyImageFile?.size,
+        type: studyImageFile?.type,
+        previewUrl: studyImageUrl?.substring(0, 30) + "..."
+      });
 
       setLoading(true);
       setError(null);
@@ -355,12 +374,21 @@ function ManagementTab() {
       });
 
       console.log("스터디 정보 수정 응답:", response.data);
+      console.log("응답 구조 확인:", {
+        hasData: !!response.data.data,
+        dataProps: response.data.data ? Object.keys(response.data.data) : [],
+        hasUploadUrl: !!response.data.data?.uploadUrl,
+        uploadUrl: response.data.data?.uploadUrl ? (response.data.data.uploadUrl.substring(0, 50) + "...") : "없음"
+      });
       
       // 이미지 파일이 있는 경우 S3에 직접 업로드
       if (studyImageFile) {
+        console.log("이미지 업로드 프로세스 시작 - 파일 존재");
         try {
-          // 통합 이미지 업로드 함수 사용
+          // 통합 이미지 업로드 함수 호출
           const uploadResult = await handleStudyImageUpload(response.data, studyImageFile);
+          
+          console.log("이미지 업로드 결과:", uploadResult);
           
           if (uploadResult.success) {
             console.log("S3 이미지 업로드 성공:", uploadResult.fileUrl);
@@ -378,6 +406,8 @@ function ManagementTab() {
           setLoading(false);
           return;
         }
+      } else {
+        console.log("이미지 파일이 없어 업로드 건너뜀");
       }
 
       console.log("스터디 정보 수정 성공");
