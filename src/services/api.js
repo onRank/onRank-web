@@ -1941,7 +1941,7 @@ export const noticeService = {
     }
   },
 
-  // 공지사항항 생성
+  // 공지사항 생성
   createNotice: async (studyId, newNotice, files = []) => {
     try {
       console.log("[noticeService] 공지사항항 생성 요청:", newNotice);
@@ -2894,3 +2894,102 @@ export const getMemberRoleDisplayName = (role) => {
       return role || "알 수 없음";
   }
 };
+
+// 파일 업로드 유틸리티 함수
+// response.data에서 uploadUrls를 추출하고 files와 매칭하여 S3에 업로드합니다.
+async function handleFileUpload(responseData, files) {
+  try {
+    console.log("[FileUpload] 파일 업로드 시작", {
+      fileCount: files?.length || 0,
+      hasUploadUrls: !!responseData?.uploadUrls,
+      uploadUrlsCount: responseData?.uploadUrls?.length || 0,
+    });
+
+    // uploadUrls가 없거나 파일이 없는 경우 바로 종료
+    if (!responseData?.uploadUrls || !files || files.length === 0) {
+      console.warn("[FileUpload] 업로드할 파일이 없거나 uploadUrls가 없습니다");
+      return;
+    }
+
+    // 파일명과 파일 객체를 맵핑하는 객체 생성
+    const fileMap = {};
+    files.forEach((file) => {
+      fileMap[file.name] = file;
+    });
+
+    // 각 uploadUrl에 대해 파일 업로드 실행
+    const uploadPromises = responseData.uploadUrls.map(async (item) => {
+      try {
+        // item = { fileName: "파일명", url: "업로드URL" } 형태로 가정
+        const fileName = item.fileName || item.name;
+        const uploadUrl = item.url || item;
+
+        // 파일명에 해당하는 파일 객체 찾기
+        const file = fileMap[fileName];
+
+        if (!file) {
+          console.warn(`[FileUpload] ${fileName} 파일을 찾을 수 없습니다`);
+          return { success: false, fileName, error: "파일을 찾을 수 없습니다" };
+        }
+
+        if (!uploadUrl) {
+          console.warn(`[FileUpload] ${fileName}의 업로드 URL이 없습니다`);
+          return { success: false, fileName, error: "업로드 URL이 없습니다" };
+        }
+
+        console.log(`[FileUpload] ${fileName} 업로드 시작`, {
+          fileSize: file.size,
+          fileType: file.type,
+        });
+
+        // S3에 PUT 요청으로 파일 업로드
+        await axios.put(uploadUrl, file, {
+          headers: {
+            "Content-Type": file.type,
+            // S3는 Content-Length 헤더를 자동으로 설정합니다
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+        });
+
+        console.log(`[FileUpload] ${fileName} 업로드 성공`);
+        return { success: true, fileName };
+      } catch (error) {
+        console.error(`[FileUpload] 파일 업로드 실패:`, error);
+        return {
+          success: false,
+          fileName: item.fileName || item.name,
+          error: error.message || "업로드 중 오류 발생",
+        };
+      }
+    });
+
+    // 모든 업로드 작업 완료 대기
+    const results = await Promise.all(uploadPromises);
+
+    // 결과 로깅
+    const successCount = results.filter((r) => r.success).length;
+    const failCount = results.length - successCount;
+
+    console.log(
+      `[FileUpload] 모든 파일 업로드 완료: 성공 ${successCount}개, 실패 ${failCount}개`
+    );
+
+    // 실패한 파일이 있으면 경고 로그 출력
+    if (failCount > 0) {
+      const failedFiles = results
+        .filter((r) => !r.success)
+        .map((r) => r.fileName);
+      console.warn(
+        `[FileUpload] 업로드 실패한 파일: ${failedFiles.join(", ")}`
+      );
+    }
+
+    return results;
+  } catch (error) {
+    console.error("[FileUpload] 파일 업로드 처리 중 오류 발생:", error);
+    throw new Error(
+      "파일 업로드 처리 중 오류가 발생했습니다: " + error.message
+    );
+  }
+}
