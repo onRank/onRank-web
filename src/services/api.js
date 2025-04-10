@@ -1987,7 +1987,7 @@ export const noticeService = {
     }
   },
 
-  createNotice: async (newNotice) => {
+  createNotice: async (studyId, newNotice) => {
     try {
       console.log("[NoticeService] 공지사항 생성 요청:", newNotice);
 
@@ -1995,7 +1995,7 @@ export const noticeService = {
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        noticeImageUrl: newNotice.noticeImageUrl || null,
+        fileNames: newNotice.fileNames || [],
       };
 
       console.log("[NoticeService] 변환된 요청 데이터:", requestData);
