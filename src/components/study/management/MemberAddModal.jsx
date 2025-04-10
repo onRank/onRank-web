@@ -5,7 +5,7 @@ import './MemberAddModal.css';
 
 function MemberAddModal({ studyId, onClose, onMemberAdded }) {
   const [email, setEmail] = useState('');
-  const [memberRole, setMemberRole] = useState('MEMBER');
+  const [memberRole, setMemberRole] = useState('PARTICIPANT');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,7 +23,7 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
     setSuccess('');
     
     try {
-      const response = await managementService.addMember(studyId, { email, memberRole });
+      const response = await managementService.addMember(studyId, { studentEmail: email, memberRole });
       
       if (response && response.data) {
         setSuccess('회원이 추가되었습니다.');
@@ -38,7 +38,13 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
       }
     } catch (err) {
       console.error('[MemberAddModal] 회원 추가 실패:', err);
-      setError(err.response?.data?.message || '회원 추가에 실패했습니다.');
+      
+      // 에러 메시지가 있으면 그대로 표시하고, 없으면 기본 메시지 표시
+      if (err.message) {
+        setError(err.message);
+      } else {
+        setError(err.response?.data?.message || '회원 추가에 실패했습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -73,8 +79,8 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
               onChange={(e) => setMemberRole(e.target.value)}
               disabled={loading}
             >
-              <option value="MEMBER">일반 회원</option>
-              <option value="HOST">호스트</option>
+              <option value="PARTICIPANT">일반 회원</option>
+              <option value="HOST">관리자</option>
             </select>
           </div>
           

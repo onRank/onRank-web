@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import MemberAddModal from './MemberAddModal';
 import { managementService } from '../../../services/management';
+import './MemberManagement.css';
 
 function MemberManagement() {
   const { studyId } = useParams();
@@ -74,29 +75,28 @@ function MemberManagement() {
   }, [studyId]);
 
   // 역할 변경 처리 함수
-  const handleChangeRole = async (memberId, newRole) => {
-    if (!memberId || !newRole) return;
-    
-    // 스터디 생성자는 역할 변경 불가
-    const memberToChange = members.find(m => m.id === memberId);
-    if (memberToChange?.role === 'OWNER') {
-      setStatusMessage({ text: '스터디 생성자의 역할은 변경할 수 없습니다.', type: 'error' });
-      setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
-      return;
-    }
-    
+  const handleRoleChange = async (memberId, newRole) => {
     try {
+      console.log('역할 변경 시도:', memberId, newRole);
       setProcessingMemberId(memberId);
-      setStatusMessage({ text: '처리 중...', type: 'info' });
+      setStatusMessage({ text: '역할 변경 중...', type: 'info' });
       
-      await managementService.updateMemberRole(studyId, memberId, newRole);
+      // API 요청 보내기
+      const response = await managementService.changeMemberRole(studyId, memberId, newRole);
       
-      setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
-      fetchMembers(); // 멤버 목록 갱신
+      if (response && response.success) {
+        // 성공 시 목록 새로고침
+        setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
+        fetchMembers();
+        console.log('역할 변경 성공:', memberId, newRole);
+      } else {
+        console.error('역할 변경 실패:', response);
+        setStatusMessage({ text: '역할 변경에 실패했습니다.', type: 'error' });
+      }
     } catch (error) {
-      console.error('역할 변경 실패:', error);
+      console.error('역할 변경 오류:', error);
       setStatusMessage({ 
-        text: error.response?.data?.message || '역할 변경에 실패했습니다.', 
+        text: error.response?.data?.message || '역할 변경 중 오류가 발생했습니다.', 
         type: 'error' 
       });
     } finally {
@@ -110,14 +110,14 @@ function MemberManagement() {
     if (!memberId) return;
     
     // 스터디 생성자와 관리자는 삭제 불가
-    const memberToDelete = members.find(m => m.id === memberId);
-    if (memberToDelete?.role === 'OWNER') {
+    const memberToDelete = members.find(m => m.memberId === memberId);
+    if (memberToDelete?.memberRole === 'CREATOR') {
       setStatusMessage({ text: '스터디 생성자는 삭제할 수 없습니다.', type: 'error' });
       setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
       return;
     }
     
-    if (memberToDelete?.role === 'MANAGER') {
+    if (memberToDelete?.memberRole === 'HOST') {
       setStatusMessage({ text: '관리자는 삭제할 수 없습니다.', type: 'error' });
       setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
       return;
@@ -148,9 +148,9 @@ function MemberManagement() {
   // 역할 표시명 가져오기
   const getRoleDisplayName = (role) => {
     switch (role) {
-      case 'OWNER': return '생성자';
-      case 'MANAGER': return '관리자';
-      case 'MEMBER': return '일반 회원';
+      case 'CREATOR': return '스터디 생성자';
+      case 'HOST': return '관리자';
+      case 'PARTICIPANT': return '일반 회원';
       default: return role;
     }
   };
@@ -160,42 +160,62 @@ function MemberManagement() {
     fetchMembers();
   };
 
+  // 디버깅을 위한 회원 데이터 출력
+  console.log('[MemberManagement] 렌더링 중인 회원 데이터:', members);
+
+  const renderRole = (member) => {
+    // CREATOR 역할은 선택 변경할 수 없음
+    if (member.memberRole === 'CREATOR') {
+      return <div className="role-badge creator">스터디 생성자</div>;
+    }
+
+    // HOST 역할도 배지로 표시하되, 역할 변경 가능
+    if (member.memberRole === 'HOST') {
+      return (
+        <select
+          value={member.memberRole}
+          onChange={(e) => handleRoleChange(member.memberId, e.target.value)}
+          className="role-select host"
+          disabled={processingMemberId === member.memberId}
+        >
+          <option value="HOST">관리자</option>
+          <option value="PARTICIPANT">일반 회원</option>
+        </select>
+      );
+    }
+
+    // PARTICIPANT는 기본 역할
+    return (
+      <select
+        value={member.memberRole}
+        onChange={(e) => handleRoleChange(member.memberId, e.target.value)}
+        className="role-select participant"
+        disabled={processingMemberId === member.memberId}
+      >
+        <option value="HOST">관리자</option>
+        <option value="PARTICIPANT">일반 회원</option>
+      </select>
+    );
+  };
+
   return (
-    <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <div className="member-management-container">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h3 style={{ margin: 0 }}>회원 관리</h3>
         <button 
           onClick={() => setShowAddMemberModal(true)}
-          style={{
-            backgroundColor: '#000',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            padding: '0.5rem 1rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
+          className="add-member-button"
         >
-          <span>+</span> 회원 추가
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="currentColor"/>
+          </svg>
+          회원 추가
         </button>
       </div>
       
       {/* 상태 메시지 표시 */}
       {statusMessage.text && (
-        <div 
-          style={{ 
-            marginBottom: '1rem', 
-            padding: '0.5rem 1rem', 
-            backgroundColor: statusMessage.type === 'success' ? '#e6f7e6' : 
-                            statusMessage.type === 'error' ? '#ffebee' : '#e3f2fd',
-            color: statusMessage.type === 'success' ? '#2e7d32' : 
-                  statusMessage.type === 'error' ? '#c62828' : '#1565c0',
-            borderRadius: '4px',
-            fontSize: '0.9rem'
-          }}
-        >
+        <div className={`status-message ${statusMessage.type}`}>
           {statusMessage.text}
         </div>
       )}
@@ -205,13 +225,13 @@ function MemberManagement() {
       ) : error ? (
         <div style={{ textAlign: 'center', padding: '2rem', color: 'red' }}>{error}</div>
       ) : (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="member-table">
           <thead>
-            <tr style={{ borderBottom: '2px solid #E5E5E5' }}>
-              <th style={{ padding: '0.75rem', textAlign: 'left' }}>이름</th>
-              <th style={{ padding: '0.75rem', textAlign: 'left' }}>이메일</th>
-              <th style={{ padding: '0.75rem', textAlign: 'left' }}>역할</th>
-              <th style={{ padding: '0.75rem', textAlign: 'center' }}>관리</th>
+            <tr>
+              <th>이름</th>
+              <th>이메일</th>
+              <th>역할</th>
+              <th style={{ textAlign: 'center' }}>관리</th>
             </tr>
           </thead>
           <tbody>
@@ -223,61 +243,27 @@ function MemberManagement() {
               </tr>
             ) : (
               members.map((member) => (
-                <tr key={member.id} style={{ 
-                  borderBottom: '1px solid #E5E5E5',
-                  backgroundColor: processingMemberId === member.id ? '#fafafa' : 'transparent'
-                }}>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {member.name}
+                <tr key={member.memberId}>
+                  <td>
+                    {member.studentName || '이름 없음'}
                   </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {member.email}
+                  <td>
+                    {member.studentEmail || '이메일 없음'}
                   </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {member.role !== 'OWNER' ? (
-                      <select 
-                        value={member.role} 
-                        onChange={(e) => handleChangeRole(member.id, e.target.value)}
-                        disabled={processingMemberId === member.id}
-                        style={{ 
-                          padding: '0.25rem 0.5rem', 
-                          borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          backgroundColor: member.role === 'OWNER' ? '#ffebee' :
-                                          member.role === 'MANAGER' ? '#e3f2fd' : 'white'
-                        }}
-                      >
-                        <option value="MANAGER">관리자</option>
-                        <option value="MEMBER">일반 회원</option>
-                      </select>
-                    ) : (
-                      <span style={{ 
-                        display: 'inline-block',
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: '#ffebee',
-                        borderRadius: '4px',
-                        color: '#c62828',
-                        fontWeight: 'bold'
-                      }}>
-                        {getRoleDisplayName(member.role)}
-                      </span>
-                    )}
+                  <td>
+                    {renderRole(member)}
                   </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
+                  <td style={{ textAlign: 'center' }}>
                     {/* 스터디 생성자와 관리자는 삭제 버튼 표시하지 않음 */}
-                    {member.role !== 'OWNER' && member.role !== 'MANAGER' ? (
+                    {member.memberRole !== 'CREATOR' && member.memberRole !== 'HOST' ? (
                       <button 
-                        onClick={() => handleDeleteMember(member.id)}
-                        disabled={processingMemberId === member.id}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          cursor: 'pointer'
-                        }}
+                        onClick={() => handleDeleteMember(member.memberId)}
+                        disabled={processingMemberId === member.memberId}
+                        className="delete-button"
                         title="멤버 삭제"
                       >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="currentColor"/>
                         </svg>
                       </button>
                     ) : (
