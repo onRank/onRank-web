@@ -192,12 +192,25 @@ function ManagementTab() {
   const [latePoint, setLatePoint] = useState(0);
   const [studyStatus, setStudyStatus] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoading, setImageLoading] = useState(false); // 이미지 로딩 상태 추가
   const imageRef = useRef(null);
 
   // 관리 탭 데이터 가져오기
   useEffect(() => {
     fetchManagementData();
   }, [studyId]);
+
+  // 이미지 로드 완료 핸들러
+  const handleImageLoad = () => {
+    console.log("이미지 로드 완료");
+    setImageLoading(false);
+  };
+
+  // 이미지 로드 오류 핸들러
+  const handleImageError = () => {
+    console.error("이미지 로드 실패");
+    setImageLoading(false);
+  };
 
   // 데이터 가져오는 함수
   const fetchManagementData = async () => {
@@ -220,6 +233,9 @@ function ManagementTab() {
       
       // 이미지 URL 추출 및 처리
       if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
+        // 이미지 로딩 상태 설정
+        setImageLoading(true);
+        
         // 원본 S3 URL 그대로 사용
         const imageUrl = response.data.memberContext.file.fileUrl;
         console.log('원본 이미지 URL:', imageUrl);
@@ -385,6 +401,9 @@ function ManagementTab() {
       if (studyImageFile) {
         console.log("이미지 업로드 프로세스 시작 - 파일 존재");
         try {
+          // 이미지 로딩 상태 설정
+          setImageLoading(true);
+          
           // 응답에서 uploadUrl 추출
           const uploadUrl = response.data.data?.uploadUrl;
           
@@ -406,6 +425,7 @@ function ManagementTab() {
         } catch (uploadError) {
           console.error("S3 이미지 업로드 중 예외 발생:", uploadError);
           setError("스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.");
+          setImageLoading(false);
           setIsEditing(false);
           setLoading(false);
           return;
@@ -424,6 +444,7 @@ function ManagementTab() {
     } catch (err) {
       console.error("스터디 정보 수정에 실패했습니다.", err);
       setError("스터디 정보 수정에 실패했습니다. 다시 시도해주세요.");
+      setImageLoading(false);
     } finally {
       setLoading(false);
     }
@@ -484,6 +505,29 @@ function ManagementTab() {
       );
     }
     
+    // 이미지 로딩 중일 때 로딩 인디케이터 표시
+    if (imageLoading) {
+      return (
+        <div style={{ 
+          border: '3px solid #0066ff', 
+          borderRadius: '8px', 
+          padding: '15px', 
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: '#f0f0f0',
+          margin: '0 auto 20px auto',
+          maxWidth: '600px',
+          minHeight: '300px'
+        }}>
+          <div style={{ textAlign: 'center' }}>
+            <LoadingIcon style={{ fontSize: '40px', color: '#0066ff' }} />
+            <p style={{ marginTop: '10px', color: '#666' }}>이미지 로딩 중...</p>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div style={{ 
         border: '3px solid #FF0000', 
@@ -497,42 +541,41 @@ function ManagementTab() {
         maxWidth: '600px',
         minHeight: '200px'
       }}>
-        {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
-        {studyImageUrl.startsWith('blob:') ? (
-          <img 
-            ref={imageRef}
-            src={studyImageUrl} 
-            alt="스터디 이미지 (미리보기)" 
-            style={{ 
-              width: 'auto',
-              height: 'auto',
-              maxWidth: '100%',
-              maxHeight: '400px',
-              borderRadius: '4px', 
-              border: '1px solid #000',
-              backgroundColor: '#FFF',
-              display: 'block'
-            }} 
-          />
-        ) : (
-          <div 
-            style={{
-              backgroundImage: `url(${studyImageUrl})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              width: '500px',
-              height: '350px',
-              borderRadius: '4px', 
-              border: '1px solid #000',
-              backgroundColor: '#FFF'
-            }}
-            aria-label="스터디 이미지"
-          />
-        )}
+        {/* 모든 이미지 타입에 대해 img 태그 사용 */}
+        <img 
+          ref={imageRef}
+          src={studyImageUrl} 
+          alt="스터디 이미지" 
+          style={{ 
+            width: 'auto',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '400px',
+            borderRadius: '4px', 
+            border: '1px solid #000',
+            backgroundColor: '#FFF',
+            display: 'block',
+            objectFit: 'contain'
+          }} 
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+        />
       </div>
     );
   };
+
+  // 컴포넌트 마운트 시 및 이미지 URL 변경 시 이미지 로딩 상태 설정
+  useEffect(() => {
+    if (studyImageUrl && !studyImageUrl.startsWith('blob:')) {
+      setImageLoading(true);
+      
+      // 이미지 프리로드
+      const img = new Image();
+      img.onload = handleImageLoad;
+      img.onerror = handleImageError;
+      img.src = studyImageUrl;
+    }
+  }, [studyImageUrl]);
 
   if (loading) {
     return (
