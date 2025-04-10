@@ -11,36 +11,29 @@ export const convertToCloudFrontUrl = (s3Url) => {
   const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
   
   try {
-    // S3 URL 예시: https://onrank-bucket.s3.ap-northeast-2.amazonaws.com/study/1/file.png
-    const urlObj = new URL(s3Url);
+    // 'study' 키워드 위치 찾기 - S3 URL에는 항상 '/study/' 경로가 포함됨
+    const studyIndex = s3Url.indexOf('/study/');
     
-    // /onrank-bucket/study/1/file.png 또는 /study/1/file.png 형태로 추출
-    const fullPath = urlObj.pathname;
-    
-    // 버킷 이름을 제외한 실제 객체 경로 추출 (/study/1/file.png)
-    let objectPath = fullPath;
-    
-    // URL 패턴에서 버킷 이름이 포함된 경우 처리
-    if (fullPath.startsWith('/')) {
-      // 첫 번째 슬래시 이후 다음 슬래시까지가 버킷 이름일 수 있음
-      const secondSlashIndex = fullPath.indexOf('/', 1);
-      if (secondSlashIndex !== -1) {
-        // 버킷 이름 이후의 경로만 추출
-        objectPath = fullPath.substring(secondSlashIndex);
-      }
+    if (studyIndex !== -1) {
+      // '/study/1/file.png' 형태로 경로 추출
+      const objectPath = s3Url.substring(studyIndex);
+      console.log('원본 URL:', s3Url);
+      console.log('추출된 경로:', objectPath);
+      
+      // CloudFront URL 생성
+      const cloudFrontUrl = `${cloudFrontDomain}${objectPath}`;
+      console.log('CloudFront URL:', cloudFrontUrl);
+      
+      return cloudFrontUrl;
     }
     
-    // onrank-bucket.s3.ap...com/study/1/file.png 형태인 경우
-    // pathname은 /study/1/file.png 형태로 추출됨
-    
+    // 기존 방식 (fallback)
+    const urlObj = new URL(s3Url);
+    const pathname = urlObj.pathname;
     console.log('원본 URL:', s3Url);
-    console.log('추출된 경로:', objectPath);
+    console.log('추출된 경로 (fallback):', pathname);
+    return `${cloudFrontDomain}${pathname}`;
     
-    // CloudFront URL 생성
-    const cloudFrontUrl = `${cloudFrontDomain}${objectPath}`;
-    console.log('CloudFront URL:', cloudFrontUrl);
-    
-    return cloudFrontUrl;
   } catch (error) {
     console.error('URL 변환 오류:', error);
     // 오류 발생 시 원래 URL 반환
