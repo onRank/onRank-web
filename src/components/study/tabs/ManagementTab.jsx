@@ -1,18 +1,229 @@
-import { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
-import { studyService, getMemberRoleDisplayName } from '../../../services/api';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import styled from "styled-components";
+import { MdAttachMoney } from "react-icons/md";
+import { BiMoney } from "react-icons/bi";
+import { GrFormClose } from "react-icons/gr";
+import { BsPatchCheckFill } from "react-icons/bs";
+import { ImCheckboxUnchecked } from "react-icons/im";
+import { MdOutlineAccessTimeFilled } from "react-icons/md";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import api from "../../../api/axios";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
 
-function ManagementTab({ studyData }) {
+// 스타일 컴포넌트 정의
+const ManagementTabContainer = styled.div`
+  padding: 24px;
+`;
+
+const TabTitle = styled.h2`
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+`;
+
+const StatusContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+`;
+
+const StatusItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const StatusLabel = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+`;
+
+const StatusValue = styled.span`
+  font-size: 16px;
+  font-weight: 400;
+`;
+
+const PointContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+`;
+
+const PointItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+const PointLabel = styled.span`
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+const PointValue = styled.span`
+  font-size: 16px;
+  font-weight: 400;
+`;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+`;
+
+const Button = styled.button`
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+const SaveButton = styled(Button)`
+  background-color: #0066ff;
+  color: white;
+  border: none;
+`;
+
+const CancelButton = styled(Button)`
+  background-color: white;
+  color: #333;
+  border: 1px solid #ddd;
+`;
+
+const InputContainer = styled.div`
+  margin-bottom: 16px;
+`;
+
+const InputLabel = styled.label`
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+`;
+
+const Input = styled.input`
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+
+  &:focus {
+    outline: none;
+    border-color: #0066ff;
+  }
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-height: 100px;
+  resize: vertical;
+
+  &:focus {
+    outline: none;
+    border-color: #0066ff;
+  }
+`;
+
+const LoadingWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+`;
+
+const LoadingIcon = styled(AiOutlineLoading3Quarters)`
+  font-size: 32px;
+  color: #0066ff;
+  animation: spin 1s linear infinite;
+
+  @keyframes spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+`;
+
+const ErrorMessage = styled.div`
+  padding: 16px;
+  background-color: #ffdddd;
+  color: #ff0000;
+  border-radius: 4px;
+  margin-bottom: 16px;
+`;
+
+function ManagementTab() {
   const { studyId } = useParams();
   const [managementTab, setManagementTab] = useState('스터디'); // 관리 탭 내부 탭 (회원, 스터디, 포인트)
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentUserRole, setCurrentUserRole] = useState(''); // 현재 사용자 역할 저장
+  const [isEditing, setIsEditing] = useState(false);
+  const [studyName, setStudyName] = useState("");
+  const [studyContent, setStudyContent] = useState("");
+  const [presentPoint, setPresentPoint] = useState(0);
+  const [absentPoint, setAbsentPoint] = useState(0);
+  const [latePoint, setLatePoint] = useState(0);
+  const [studyStatus, setStudyStatus] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 관리 탭 데이터 가져오기
+  useEffect(() => {
+    const fetchManagementData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await api.get(`/api/studies/${studyId}/management`);
+        const { data } = response.data;
+        
+        setStudyName(data.studyName);
+        setStudyContent(data.studyContent);
+        setPresentPoint(data.presentPoint);
+        setAbsentPoint(data.absentPoint);
+        setLatePoint(data.latePoint);
+        setStudyStatus(data.studyStatus);
+        
+        // 회원 정보 설정 (memberContext가 있는 경우)
+        if (data && data.memberContext) {
+          setCurrentUserRole(data.memberContext.role);
+        }
+      } catch (err) {
+        console.error('관리 데이터 조회 오류:', err);
+        setError('관리 데이터를 불러오는데 실패했습니다.');
+        // 개발 중에는 임시 데이터 사용
+        setPresentPoint(5);
+        setAbsentPoint(-10);
+        setLatePoint(-2);
+        setStudyStatus('PROGRESS');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchManagementData();
+  }, [studyId]);
 
   // 회원 목록 가져오기
   useEffect(() => {
@@ -21,22 +232,17 @@ function ManagementTab({ studyData }) {
     }
   }, [managementTab, studyId]);
 
-  // 초기 로드 시 한 번 회원 목록 가져오기 (역할 확인용)
-  useEffect(() => {
-    fetchMembers();
-  }, [studyId]);
-
   // 회원 목록 API 호출 함수
   const fetchMembers = async () => {
     setLoading(true);
     setError(null);
     try {
       // studyService를 사용하여 멤버 목록 조회
-      const response = await studyService.getStudyMembers(studyId);
+      const response = await api.get(`/api/studies/${studyId}/members`);
       console.log('회원 목록 조회 결과:', response);
       
       // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
-      const membersList = Array.isArray(response) ? response : response.members || [];
+      const membersList = Array.isArray(response.data) ? response.data : response.data.members || [];
       setMembers(membersList);
       
       // 현재 사용자 정보 찾기 (첫 번째 멤버가 현재 사용자라고 가정)
@@ -62,8 +268,80 @@ function ManagementTab({ studyData }) {
     }
   };
 
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    try {
+      await api.put(`/api/studies/${studyId}/management`, {
+        studyName,
+        studyContent,
+        presentPoint,
+        absentPoint,
+        latePoint
+      });
+      setIsEditing(false);
+    } catch (err) {
+      console.error("스터디 정보 수정에 실패했습니다.", err);
+      setError("스터디 정보 수정에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const renderStudyStatus = () => {
+    switch (studyStatus) {
+      case "PROGRESS":
+        return (
+          <StatusItem>
+            <BsPatchCheckFill color="green" />
+            <StatusLabel>스터디 상태:</StatusLabel>
+            <StatusValue>진행 중</StatusValue>
+          </StatusItem>
+        );
+      case "COMPLETED":
+        return (
+          <StatusItem>
+            <ImCheckboxUnchecked color="blue" />
+            <StatusLabel>스터디 상태:</StatusLabel>
+            <StatusValue>완료됨</StatusValue>
+          </StatusItem>
+        );
+      case "PENDING":
+        return (
+          <StatusItem>
+            <MdOutlineAccessTimeFilled color="orange" />
+            <StatusLabel>스터디 상태:</StatusLabel>
+            <StatusValue>대기 중</StatusValue>
+          </StatusItem>
+        );
+      default:
+        return (
+          <StatusItem>
+            <StatusLabel>스터디 상태:</StatusLabel>
+            <StatusValue>알 수 없음</StatusValue>
+          </StatusItem>
+        );
+    }
+  };
+
+  if (loading) {
+    return (
+      <LoadingWrapper>
+        <LoadingIcon />
+      </LoadingWrapper>
+    );
+  }
+
+  if (error) {
+    return <ErrorMessage>{error}</ErrorMessage>;
+  }
+
   return (
-    <div style={{ padding: '1rem' }}>
+    <ManagementTabContainer>
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 
@@ -138,22 +416,120 @@ function ManagementTab({ studyData }) {
       
       {/* 스터디 관리 컴포넌트 */}
       {managementTab === '스터디' && (
-        <StudyManagement studyData={studyData} />
+        <>
+          {isEditing ? (
+            <>
+              <InputContainer>
+                <InputLabel>스터디 이름</InputLabel>
+                <Input
+                  type="text"
+                  value={studyName}
+                  onChange={(e) => setStudyName(e.target.value)}
+                  placeholder="스터디 이름"
+                />
+              </InputContainer>
+              
+              <InputContainer>
+                <InputLabel>스터디 설명</InputLabel>
+                <TextArea
+                  value={studyContent}
+                  onChange={(e) => setStudyContent(e.target.value)}
+                  placeholder="스터디 설명"
+                />
+              </InputContainer>
+              
+              <PointContainer>
+                <InputContainer>
+                  <InputLabel>출석 점수</InputLabel>
+                  <Input
+                    type="number"
+                    value={presentPoint}
+                    onChange={(e) => setPresentPoint(parseInt(e.target.value))}
+                  />
+                </InputContainer>
+                
+                <InputContainer>
+                  <InputLabel>결석 점수</InputLabel>
+                  <Input
+                    type="number"
+                    value={absentPoint}
+                    onChange={(e) => setAbsentPoint(parseInt(e.target.value))}
+                  />
+                </InputContainer>
+                
+                <InputContainer>
+                  <InputLabel>지각 점수</InputLabel>
+                  <Input
+                    type="number"
+                    value={latePoint}
+                    onChange={(e) => setLatePoint(parseInt(e.target.value))}
+                  />
+                </InputContainer>
+              </PointContainer>
+              
+              <ButtonContainer>
+                <SaveButton onClick={handleSave}>저장</SaveButton>
+                <CancelButton onClick={handleCancel}>취소</CancelButton>
+              </ButtonContainer>
+            </>
+          ) : (
+            <>
+              <StatusContainer>
+                <StatusItem>
+                  <StatusLabel>스터디 이름:</StatusLabel>
+                  <StatusValue>{studyName}</StatusValue>
+                </StatusItem>
+                
+                <StatusItem>
+                  <StatusLabel>스터디 설명:</StatusLabel>
+                  <StatusValue>{studyContent}</StatusValue>
+                </StatusItem>
+                
+                {renderStudyStatus()}
+              </StatusContainer>
+              
+              <TabTitle>출석 점수 설정</TabTitle>
+              <PointContainer>
+                <PointItem>
+                  <PointLabel>
+                    <BsPatchCheckFill color="green" /> 출석:
+                  </PointLabel>
+                  <PointValue>{presentPoint > 0 ? `+${presentPoint}` : presentPoint} 점</PointValue>
+                </PointItem>
+                
+                <PointItem>
+                  <PointLabel>
+                    <GrFormClose color="red" /> 결석:
+                  </PointLabel>
+                  <PointValue>{absentPoint > 0 ? `+${absentPoint}` : absentPoint} 점</PointValue>
+                </PointItem>
+                
+                <PointItem>
+                  <PointLabel>
+                    <MdOutlineAccessTimeFilled color="orange" /> 지각:
+                  </PointLabel>
+                  <PointValue>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</PointValue>
+                </PointItem>
+              </PointContainer>
+              
+              <ButtonContainer>
+                <SaveButton onClick={handleEdit}>수정</SaveButton>
+              </ButtonContainer>
+            </>
+          )}
+        </>
       )}
       
       {/* 포인트 관리 컴포넌트 */}
       {managementTab === '포인트' && (
-        <PointManagement />
+        <PointManagement 
+          presentPoint={presentPoint} 
+          absentPoint={absentPoint} 
+          latePoint={latePoint} 
+        />
       )}
-    </div>
+    </ManagementTabContainer>
   );
 }
-
-ManagementTab.propTypes = {
-  studyData: PropTypes.shape({
-    title: PropTypes.string,
-    description: PropTypes.string
-  }).isRequired
-};
 
 export default ManagementTab; 

@@ -55,7 +55,7 @@ function StudyContent({ activeTab, studyData }) {
         return <AttendanceContainer />;
       case "관리":
         console.log("[StudyContent] 관리 탭 렌더링");
-        return <ManagementTab studyData={studyData} />;
+        return <ManagementTab />;
       case "랭킹":
         console.log("[StudyContent] 랭킹 탭 렌더링");
         return <RankingTab />;
