@@ -8,7 +8,7 @@ if (!import.meta.env.VITE_API_URL) {
 export const api = axios.create({
   baseURL: import.meta.env.PROD
     ? "https://onrank.kr"
-    : import.meta.env.VITE_API_URL || "http://localhost:8080",
+    : import.meta.env.VITE_API_URL || "https://localhost:8080",
   timeout: 5000,
   withCredentials: true,
 });
