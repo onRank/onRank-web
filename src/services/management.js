@@ -20,7 +20,21 @@ export const managementService = {
   // 스터디 정보 수정 (파일 업로드 포함)
   updateStudyInfo: async (studyId, formData) => {
     try {
-      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`, formData);
+      console.log(`[ManagementService] 스터디 정보 수정 요청: ${studyId}`);
+      
+      // 필수 입력 항목 검증
+      if (!formData.get('studyName')) {
+        throw new Error('스터디 이름은 필수 항목입니다.');
+      }
+      
+      // 출석 점수 검증
+      const presentPoint = formData.get('presentPoint');
+      const absentPoint = formData.get('absentPoint');
+      const latePoint = formData.get('latePoint');
+      
+      if (presentPoint === null || absentPoint === null || latePoint === null) {
+        throw new Error('출석, 결석, 지각 점수는 필수 항목입니다.');
+      }
       
       const response = await api.put(`/studies/${studyId}/management`, formData, {
         headers: {

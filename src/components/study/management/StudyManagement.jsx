@@ -16,7 +16,6 @@ function StudyManagement() {
   const [studyImageUrl, setStudyImageUrl] = useState('');
   const [studyImageFile, setStudyImageFile] = useState(null);
   const [studyStatus, setStudyStatus] = useState('');
-  const [googleFormUrl, setGoogleFormUrl] = useState('');
   
   // 출석 점수 상태
   const [presentPoint, setPresentPoint] = useState(0);
@@ -41,7 +40,6 @@ function StudyManagement() {
         setStudyDescription(data.studyContent || '');
         setStudyImageUrl(data.studyImageUrl || '');
         setStudyStatus(data.studyStatus || 'PROGRESS');
-        setGoogleFormUrl(data.studyGoogleFormUrl || '');
         setPresentPoint(data.presentPoint ?? 5);
         setAbsentPoint(data.absentPoint ?? -10);
         setLatePoint(data.latePoint ?? -2);
@@ -134,12 +132,13 @@ function StudyManagement() {
       const formData = new FormData();
       formData.append('studyName', studyName);
       formData.append('studyContent', studyDescription);
+      formData.append('studyStatus', studyStatus);
       
       if (studyImageFile) {
         formData.append('file', studyImageFile);
+        formData.append('fileName', studyImageFile.name);
       }
       
-      formData.append('studyGoogleFormUrl', googleFormUrl || '');
       formData.append('presentPoint', presentPoint);
       formData.append('absentPoint', absentPoint);
       formData.append('latePoint', latePoint);
@@ -235,6 +234,27 @@ function StudyManagement() {
           
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
+              스터디 상태
+            </label>
+            <select
+              value={studyStatus}
+              onChange={(e) => setStudyStatus(e.target.value)}
+              style={{ 
+                width: '100%',
+                padding: '0.5rem',
+                border: '1px solid #ddd',
+                borderRadius: '4px'
+              }}
+              disabled={loading}
+            >
+              <option value="PREPARING">준비 중</option>
+              <option value="PROGRESS">진행 중</option>
+              <option value="COMPLETED">완료</option>
+            </select>
+          </div>
+          
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
               스터디 이미지
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -255,25 +275,6 @@ function StudyManagement() {
                 </div>
               )}
             </div>
-          </div>
-          
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: '500' }}>
-              구글 폼 URL (선택사항)
-            </label>
-            <input
-              type="text"
-              value={googleFormUrl}
-              onChange={(e) => setGoogleFormUrl(e.target.value)}
-              placeholder="구글 폼 URL"
-              style={{ 
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #ddd',
-                borderRadius: '4px'
-              }}
-              disabled={loading}
-            />
           </div>
           
           <h4 style={{ marginTop: '2rem', marginBottom: '1rem' }}>출석 점수 설정</h4>
@@ -380,15 +381,6 @@ function StudyManagement() {
                 <span style={{ fontWeight: '500' }}>스터디 설명:</span>
                 <span>{studyDescription}</span>
               </div>
-              
-              {googleFormUrl && (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <span style={{ fontWeight: '500' }}>구글 폼:</span>
-                  <a href={googleFormUrl} target="_blank" rel="noopener noreferrer">
-                    {googleFormUrl}
-                  </a>
-                </div>
-              )}
               
               {renderStudyStatus()}
             </div>

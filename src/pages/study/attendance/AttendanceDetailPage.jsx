@@ -24,28 +24,28 @@ function AttendanceDetailPage() {
   const [scheduleStartingAt, setScheduleStartingAt] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
-  const fetchAttendanceDetails = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await studyService.getAttendanceDetails(studyId, scheduleId);
-      console.log('응답 데이터:', response);
-
-      if (response.data && Array.isArray(response.data)) {
+const fetchAttendanceDetails = async () => {
+  try {
+    setIsLoading(true);
+    setError(null);
+    const response = await studyService.getAttendanceDetails(studyId, scheduleId);
+    console.log('응답 데이터:', response);
+    
+    if (response.data && Array.isArray(response.data)) {
         setAttendanceDetails(response.data);
         setScheduleTitle(response.scheduleTitle);
         setScheduleStartingAt(response.scheduleStartingAt);
         setIsHost(isStudyHost(response));
-      } else {
-        setError('출석 데이터 형식이 올바르지 않습니다.');
-      }
-    } catch (error) {
-      console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
-      setError('출석 상세 정보를 불러오는데 실패했습니다.');
-    } finally {
-      setIsLoading(false);
+    } else {
+      setError('출석 데이터 형식이 올바르지 않습니다.');
     }
-  };
+  } catch (error) {
+    console.error('[AttendanceDetailPage] 출석 상세 정보 조회 실패:', error);
+    setError('출석 상세 정보를 불러오는데 실패했습니다.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
@@ -83,19 +83,19 @@ function AttendanceDetailPage() {
             <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{scheduleTitle}</h1>
             <p style={{ color: '#666', marginTop: '0.5rem' }}>{formatDateTime(scheduleStartingAt, 'M월 d일 a h시')}</p>
           </div>
-          <button
-            onClick={() => navigate(`/studies/${studyId}/attendances`)}
-            style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #E5E5E5',
-              borderRadius: '4px',
-              backgroundColor: '#FFFFFF',
-              color: '#333333',
-              cursor: 'pointer'
-            }}
-          >
-            목록으로
-          </button>
+            <button
+              onClick={() => navigate(`/studies/${studyId}/attendances`)}
+              style={{
+                padding: '0.5rem 1rem',
+                border: '1px solid #E5E5E5',
+                borderRadius: '4px',
+                backgroundColor: '#FFFFFF',
+                color: '#333333',
+                cursor: 'pointer'
+              }}
+            >
+              목록으로
+            </button>
         </div>
 
         {isLoading ? (
