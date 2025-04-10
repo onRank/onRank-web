@@ -1,19 +1,12 @@
 import PropTypes from 'prop-types'
 import { useTheme } from '../../contexts/ThemeContext';
+import { DEFAULT_IMAGE_SVG, handleImageError } from '../../utils/imageUtils';
 
 function StudyCard({ study, onClick }) {
   const { colors } = useTheme();
   
   // 디버깅 로그 추가
   console.log('[StudyCard] 렌더링:', study);
-  
-  // 이미지 로딩 오류 처리
-  const handleImageError = (e) => {
-    // 더 안정적인 대체 이미지 URL 사용
-    e.target.src = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E';
-    // 오류 로깅
-    console.log('[StudyCard] 이미지 로딩 실패, 대체 이미지 사용:', study.imageUrl);
-  };
   
   return (
     <div 
@@ -43,9 +36,9 @@ function StudyCard({ study, onClick }) {
         backgroundColor: colors.secondaryBackground
       }}>
         <img 
-          src={study.imageUrl || 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E'} 
+          src={study.imageUrl || DEFAULT_IMAGE_SVG} 
           alt={study.title}
-          onError={handleImageError}
+          onError={(e) => handleImageError(e, study.imageUrl)}
           style={{
             width: '100%',
             height: '100%',
