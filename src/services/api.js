@@ -1945,18 +1945,13 @@ export const noticeService = {
   createNotice: async (studyId, newNotice, files = []) => {
     try {
       console.log("[noticeService] 공지사항 생성 요청:", newNotice);
-      const fileNames = files.map((file) => file.fileName);
-      const presignedUrls = files.map((file) => file.fileUrl);
 
-      // 백엔드 DTO 구조에 맞게 데이터 변환
+      // 1. 먼저 공지사항 생성 요청 (파일명만 전송)
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        fileNames: fileNames || [],
-        presignedUrls: presignedUrls || [],
+        fileNames: files.map((file) => file.fileName) || [],
       };
-
-      console.log("[noticeService] 변환된 요청 데이터:", requestData);
 
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -1965,7 +1960,6 @@ export const noticeService = {
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
-      // 토큰 형식 확인
       const tokenWithBearer = token.startsWith("Bearer ")
         ? token
         : `Bearer ${token}`;
@@ -1978,93 +1972,17 @@ export const noticeService = {
           headers: {
             Authorization: tokenWithBearer,
             "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
-            Accept: "application/json", // JSON 응답 요청
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json",
           },
           withCredentials: true,
         }
       );
 
-      // 응답이 HTML인 경우 (로그인 페이지 등)
-      if (
-        typeof response.data === "string" &&
-        response.data.includes("<!DOCTYPE html>")
-      ) {
-        console.warn(
-          "[noticeService] HTML 응답 감지, 인증 문제 가능성:",
-          response.data.substring(0, 100) + "..."
-        );
-
-        // 토큰 만료 여부 확인
-        const isTokenExpired = tokenUtils.isTokenExpired(token);
-
-        // 토큰이 만료된 경우에만 재발급 시도
-        if (isTokenExpired) {
-          try {
-            console.log("[noticeService] 토큰 만료됨, 재발급 시도");
-            const refreshResponse = await api.get("/auth/reissue");
-            const newToken =
-              refreshResponse.headers["authorization"] ||
-              refreshResponse.headers["Authorization"];
-
-            if (newToken) {
-              console.log("[noticeService] 토큰 재발급 성공, 요청 재시도");
-              tokenUtils.setToken(newToken);
-
-              // 새 토큰으로 요청 재시도
-              const retryResponse = await api.post(
-                `/studies/${studyId}/notices/add`,
-                requestData,
-                {
-                  headers: {
-                    Authorization: newToken,
-                    "Content-Type": "application/json",
-                    "X-Requested-With": "XMLHttpRequest",
-                    Accept: "application/json",
-                  },
-                  withCredentials: true,
-                }
-              );
-
-              console.log(
-                "[noticeService] 공지사항 생성 재시도 결과:",
-                retryResponse.data
-              );
-
-              // 파일 업로드 처리
-              await handleFileUpload(retryResponse.data, files);
-
-              return { success: true, data: retryResponse.data };
-            }
-          } catch (refreshError) {
-            console.error("[noticeService] 토큰 재발급 실패:", refreshError);
-            return {
-              success: false,
-              message: "인증이 만료되었습니다. 다시 로그인해주세요.",
-              requireRelogin: true,
-            };
-          }
-        } else {
-          console.log(
-            "[noticeService] 토큰이 유효하지만 권한 문제 발생, 로그아웃 후 재로그인 필요"
-          );
-          // 토큰이 유효하지만 권한 문제가 있는 경우 로그아웃 처리
-          tokenUtils.removeToken(true);
-          // 로그인 페이지로 리다이렉트하지 않고 오류 메시지 반환
-          return {
-            success: false,
-            message: "권한이 없습니다. 로그아웃 후 다시 로그인해주세요.",
-            requireRelogin: true,
-          };
-        }
-      }
-
-      console.log("[noticeService] 공지사항 생성 성공:", response.data);
-
-      // 파일 업로드 처리
+      // 2. 공지사항 생성 성공 후, 파일 업로드 처리
       if (response.data && response.data.presignedUrls && files.length > 0) {
         try {
-          // presignedUrls와 files 배열을 매칭하여 업로드
+          // 3. 각 파일에 대해 presigned URL로 S3에 직접 업로드
           for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const presignedUrl = response.data.presignedUrls[i];
@@ -2072,12 +1990,12 @@ export const noticeService = {
             if (!presignedUrl) {
               console.error(
                 "[noticeService] presignedUrl이 없습니다:",
-                file.originalName
+                file.fileName
               );
               continue;
             }
 
-            const uploadResponse = await axios.put(presignedUrls, file.file, {
+            const uploadResponse = await axios.put(presignedUrl, file.file, {
               headers: {
                 "Content-Type": file.file.type,
               },
@@ -2087,23 +2005,26 @@ export const noticeService = {
               uploadResponse.status === 200 ||
               uploadResponse.status === 201
             ) {
-              console.log(
-                `[noticeService] 파일 업로드 성공: ${file.originalName}`
-              );
+              console.log(`[noticeService] 파일 업로드 성공: ${file.fileName}`);
             } else {
               console.error(
-                `[noticeService] 파일 업로드 실패: ${file.originalName}`
+                `[noticeService] 파일 업로드 실패: ${file.fileName}`
               );
-              setUploadMessage("[noticeService] 일부 파일 업로드 실패");
+              return {
+                success: true,
+                data: response.data,
+                warning:
+                  "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
+              };
             }
           }
-          setUploadMessage("[noticeService] 파일 업로드 성공");
         } catch (uploadError) {
           console.error("[noticeService] 파일 업로드 중 오류:", uploadError);
           return {
             success: true,
             data: response.data,
-            warning: "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
+            warning:
+              "공지사항은 생성되었으나 파일 업로드 중 오류가 발생했습니다.",
           };
         }
       }
@@ -2112,10 +2033,7 @@ export const noticeService = {
     } catch (error) {
       console.error("[noticeService] 공지사항 생성 오류:", error);
 
-      // 인증 오류인 경우 (403)
       if (error.response && error.response.status === 403) {
-        console.error("[noticeService] 인증 오류:", error.response.status);
-        // 토큰만 제거하고 리다이렉트는 하지 않음
         tokenUtils.removeToken(true);
         return {
           success: false,
