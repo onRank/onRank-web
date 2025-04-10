@@ -5,31 +5,34 @@
  * @returns {string} CloudFront를 통한 이미지 URL
  */
 export const convertToCloudFrontUrl = (s3Url) => {
-  if (!s3Url) return '';
-  
-  // CloudFront 도메인
-  const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
+  console.log('원본 S3 URL:', s3Url);
   
   try {
-    // 'study' 키워드 위치 찾기 - S3 URL에는 항상 '/study/' 경로가 포함됨
-    const studyIndex = s3Url.indexOf('/study/');
+    if (!s3Url) return '';
     
-    if (studyIndex !== -1) {
-      // '/study/1/file.png' 형태로 경로 추출
-      const objectPath = s3Url.substring(studyIndex);
-      // CloudFront URL 생성
-      const cloudFrontUrl = `${cloudFrontDomain}${objectPath}`;
-      return cloudFrontUrl;
+    // URL에서 경로 부분 추출
+    const urlObj = new URL(s3Url);
+    const pathParts = urlObj.pathname.split('/');
+    
+    // 가능한 경우 study/{studyId}/{filename} 형태에서 필요한 부분 추출
+    // S3 버킷 이름과 'study' 부분은 제외하고 나머지 경로만 사용
+    let relevantPath = '';
+    
+    // 일반적으로 S3 URL은 /bucket-name/path 형태
+    if (pathParts.length >= 3) {
+      // 첫 번째 빈 문자열('/')과 버킷 이름을 제외한 나머지 경로
+      relevantPath = pathParts.slice(2).join('/');
     }
     
-    // 기존 방식 (fallback)
-    const urlObj = new URL(s3Url);
-    const pathname = urlObj.pathname;
-    return `${cloudFrontDomain}${pathname}`;
+    // CloudFront 도메인으로 URL 구성
+    const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
+    const cloudFrontUrl = `${cloudFrontDomain}/${relevantPath}`;
     
+    console.log('변환된 CloudFront URL:', cloudFrontUrl);
+    return cloudFrontUrl;
   } catch (error) {
-    console.error('URL 변환 오류:', error);
-    // 오류 발생 시 원래 URL 반환
+    console.error('URL 변환 중 오류 발생:', error);
+    // 오류 발생 시 원본 URL 반환
     return s3Url;
   }
 };
@@ -179,4 +182,27 @@ export const getBackgroundImageStyle = (imageUrl) => {
     backgroundPosition: 'center',
     backgroundRepeat: 'no-repeat'
   };
+};
+
+// localStorage에 이미지 URL 캐싱
+export const saveImageUrlToCache = (key, url) => {
+  try {
+    if (key && url) {
+      localStorage.setItem(`image_url_${key}`, url);
+    }
+  } catch (error) {
+    console.error('이미지 URL 캐싱 중 오류 발생:', error);
+  }
+};
+
+// localStorage에서 이미지 URL 가져오기
+export const getImageUrlFromCache = (key) => {
+  try {
+    if (key) {
+      return localStorage.getItem(`image_url_${key}`);
+    }
+  } catch (error) {
+    console.error('캐시된 이미지 URL 가져오기 중 오류 발생:', error);
+  }
+  return null;
 }; 

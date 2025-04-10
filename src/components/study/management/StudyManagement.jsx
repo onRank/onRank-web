@@ -36,9 +36,16 @@ function StudyManagement() {
     console.error('이미지 로드 실패:', studyImageUrl);
     setImageLoaded(false);
     
-    // 무한 루프 방지: fetchStudyData 호출 제거
-    // 대신 오류 메시지만 표시
-    setError('이미지 로드에 실패했습니다. URL: ' + studyImageUrl);
+    // 직접 이미지 URL을 설정해보기
+    if (studyImageUrl && studyImageUrl.includes('cloudfront.net')) {
+      const originalUrl = studyImageUrl.split('?')[0]; // 타임스탬프 제거
+      
+      // 원본 이미지 URL 직접 사용 시도
+      console.log('원본 URL로 다시 시도:', originalUrl);
+      setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
+    } else {
+      setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
+    }
   };
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -63,6 +70,9 @@ function StudyManagement() {
       setAbsentPoint(data.absentPoint || 0);
       setLatePoint(data.latePoint || 0);
       
+      // memberContext 확인하고 이미지 URL 설정
+      console.log('서버 응답 데이터:', response);
+      
       if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
         // S3 URL을 CloudFront URL로 변환
         const s3Url = response.memberContext.file.fileUrl;
@@ -72,7 +82,11 @@ function StudyManagement() {
         const timestamp = new Date().getTime();
         const uncachedUrl = `${cloudFrontUrl}?t=${timestamp}`;
         
+        console.log('사용할 이미지 URL:', uncachedUrl);
         setStudyImageUrl(uncachedUrl);
+      } else {
+        console.log('이미지 URL이 없음:', response);
+        setStudyImageUrl('');
       }
     } catch (err) {
       console.error('스터디 정보 조회 실패:', err);
@@ -161,6 +175,9 @@ function StudyManagement() {
       );
     }
     
+    // 이미지 URL에서 타임스탬프 제거 - 캐시 이점 활용
+    const displayUrl = studyImageUrl.split('?')[0];
+    
     return (
       <div style={{ 
         border: '3px solid #FF0000', 
@@ -173,7 +190,7 @@ function StudyManagement() {
       }}>
         <img 
           ref={imageRef}
-          src={studyImageUrl} 
+          src={displayUrl} 
           alt="스터디 이미지" 
           crossOrigin="anonymous"
           onLoad={handleImageLoad}
@@ -187,6 +204,26 @@ function StudyManagement() {
             border: '1px solid #000',
             backgroundColor: '#FFF',
             display: 'inline-block'
+          }} 
+        />
+      </div>
+    );
+  };
+
+  // 수정 모드에서 이미지 미리보기 수정
+  const renderImagePreview = () => {
+    if (!studyImageUrl) return null;
+    
+    return (
+      <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
+        <img 
+          src={studyImageUrl} 
+          alt="스터디 이미지 미리보기"
+          crossOrigin="anonymous"
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'cover' 
           }} 
         />
       </div>
@@ -363,21 +400,7 @@ function StudyManagement() {
                 style={{ flex: 1 }}
                 disabled={loading}
               />
-              {studyImageUrl && (
-                <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-                  {/* 이미지 미리보기 */}
-                  <div 
-                    style={{
-                      backgroundImage: `url(${studyImageUrl})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      width: '100%',
-                      height: '100%'
-                    }}
-                    aria-label="스터디 이미지 미리보기"
-                  />
-                </div>
-              )}
+              {renderImagePreview()}
             </div>
             {studyImageUrl && (
               <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
