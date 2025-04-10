@@ -1,0 +1,58 @@
+/**
+ * S3 URL을 CloudFront URL로 변환하는 유틸리티 함수
+ * 
+ * @param {string} s3Url - S3에서 제공하는 이미지 URL
+ * @returns {string} CloudFront를 통한 이미지 URL
+ */
+export const convertToCloudFrontUrl = (s3Url) => {
+  if (!s3Url) return '';
+  
+  // CloudFront 도메인
+  const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
+  
+  try {
+    // S3 URL에서 경로 추출
+    // 예: https://onrank-bucket.s3.ap-northeast-2.amazonaws.com/study/1/file.png -> /study/1/file.png
+    const s3UrlObj = new URL(s3Url);
+    const pathRegex = /\/([^/]+?)(?:\.s3\.[^/]+?\.amazonaws\.com)?(\/.*)/;
+    const match = s3UrlObj.pathname.match(pathRegex) || s3UrlObj.host.match(pathRegex);
+    
+    if (match && match[2]) {
+      const path = match[2]; // /study/1/file.png 부분
+      return `${cloudFrontDomain}${path}`;
+    }
+    
+    // 정규식으로 추출하지 못한 경우, 원래 URL에서 마지막 경로 부분만 추출
+    const pathParts = s3Url.split('/');
+    const filename = pathParts[pathParts.length - 1];
+    return `${cloudFrontDomain}/${filename}`;
+    
+  } catch (error) {
+    console.error('URL 변환 오류:', error);
+    // 오류 발생 시 원래 URL 반환
+    return s3Url;
+  }
+};
+
+/**
+ * 이미지 URL이 유효한지 확인하는 함수
+ * 
+ * @param {string} url - 확인할 이미지 URL
+ * @returns {Promise<boolean>} URL이 유효한 이미지를 가리키는지 여부
+ */
+export const isImageUrlValid = (url) => {
+  return new Promise((resolve) => {
+    if (!url) {
+      resolve(false);
+      return;
+    }
+    
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+};
+
+// 이미지 URL이 없을 때 사용할 기본 이미지
+export const DEFAULT_IMAGE_URL = 'https://via.placeholder.com/300x200?text=No+Image'; 

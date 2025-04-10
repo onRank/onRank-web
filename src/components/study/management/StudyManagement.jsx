@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
+import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -44,8 +45,12 @@ function StudyManagement() {
         setLatePoint(data.latePoint || 0);
         
         if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-          setStudyImageUrl(response.memberContext.file.fileUrl);
-          console.log('이미지 URL 설정:', response.memberContext.file.fileUrl);
+          // S3 URL을 CloudFront URL로 변환
+          const s3Url = response.memberContext.file.fileUrl;
+          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+          console.log('원본 이미지 URL:', s3Url);
+          console.log('변환된 CloudFront URL:', cloudFrontUrl);
+          setStudyImageUrl(cloudFrontUrl);
         } else {
           console.log('이미지 URL이 없습니다:', response);
           setStudyImageUrl('');
@@ -95,11 +100,15 @@ function StudyManagement() {
         
         // 올바른 경로에서 이미지 URL 가져오기
         if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-          setStudyImageUrl(response.memberContext.file.fileUrl);
-          console.log('취소 후 이미지 URL 복원:', response.memberContext.file.fileUrl);
+          // S3 URL을 CloudFront URL로 변환
+          const s3Url = response.memberContext.file.fileUrl;
+          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+          console.log('취소 후 원본 이미지 URL:', s3Url);
+          console.log('취소 후 변환된 CloudFront URL:', cloudFrontUrl);
+          setStudyImageUrl(cloudFrontUrl);
         } else {
-          setStudyImageUrl('');
           console.log('취소 후 이미지 URL 없음');
+          setStudyImageUrl('');
         }
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);

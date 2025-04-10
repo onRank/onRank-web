@@ -12,6 +12,7 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
+import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -212,9 +213,12 @@ function ManagementTab() {
         // 이미지 URL 추출 로직 수정
         // 올바른 경로에서 이미지 URL 가져오기
         if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-          const imageUrl = response.data.memberContext.file.fileUrl;
-          console.log('ManagementTab: 이미지 URL 직접 추출:', imageUrl);
-          setStudyImageUrl(imageUrl);
+          // S3 URL을 CloudFront URL로 변환
+          const s3Url = response.data.memberContext.file.fileUrl;
+          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+          console.log('ManagementTab: 원본 이미지 URL:', s3Url);
+          console.log('ManagementTab: 변환된 CloudFront URL:', cloudFrontUrl);
+          setStudyImageUrl(cloudFrontUrl);
         } else {
           console.log('ManagementTab: 이미지 URL이 없습니다');
           setStudyImageUrl('');
@@ -317,9 +321,12 @@ function ManagementTab() {
         
         // 이미지 URL 복원 - 올바른 경로 사용
         if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-          const imageUrl = response.data.memberContext.file.fileUrl;
-          console.log('ManagementTab: 취소 후 이미지 URL 복원:', imageUrl);
-          setStudyImageUrl(imageUrl);
+          // S3 URL을 CloudFront URL로 변환
+          const s3Url = response.data.memberContext.file.fileUrl;
+          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+          console.log('ManagementTab: 취소 후 원본 이미지 URL:', s3Url);
+          console.log('ManagementTab: 취소 후 변환된 CloudFront URL:', cloudFrontUrl);
+          setStudyImageUrl(cloudFrontUrl);
         } else {
           console.log('ManagementTab: 취소 후 이미지 URL 없음');
           setStudyImageUrl('');
@@ -344,6 +351,7 @@ function ManagementTab() {
       // 이미지 미리보기 URL 생성
       const previewUrl = URL.createObjectURL(file);
       setStudyImageUrl(previewUrl);
+      console.log('이미지 선택됨, 미리보기 URL 생성:', previewUrl);
     }
   };
 
