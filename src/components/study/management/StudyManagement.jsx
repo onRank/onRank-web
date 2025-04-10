@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
+import { convertToCloudFrontUrl, getBackgroundImageStyle } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -178,23 +178,39 @@ function StudyManagement() {
         minHeight: '150px',
         minWidth: '200px'
       }}>
-        <img 
-          ref={imageRef}
-          src={studyImageUrl} 
-          alt="스터디 이미지" 
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          style={{ 
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '100%',
-            maxHeight: '300px',
-            borderRadius: '4px', 
-            border: '1px solid #000',
-            backgroundColor: '#FFF',
-            display: 'inline-block'
-          }} 
-        />
+        {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
+        {studyImageUrl.startsWith('blob:') ? (
+          <img 
+            ref={imageRef}
+            src={studyImageUrl} 
+            alt="스터디 이미지 (미리보기)" 
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            style={{ 
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              maxHeight: '300px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }} 
+          />
+        ) : (
+          <div 
+            style={{
+              ...getBackgroundImageStyle(studyImageUrl),
+              width: '300px',
+              height: '200px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }}
+            aria-label="스터디 이미지"
+          />
+        )}
       </div>
     );
   };
@@ -205,19 +221,29 @@ function StudyManagement() {
     
     return (
       <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-        <img 
-          src={studyImageUrl} 
-          alt="스터디 이미지 미리보기"
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover' 
-          }}
-          onError={(e) => {
-            console.error('미리보기 이미지 로드 실패:', e.target.src);
-            // 오류 처리 로직 유지
-          }} 
-        />
+        {studyImageUrl.startsWith('blob:') ? (
+          <img 
+            src={studyImageUrl} 
+            alt="스터디 이미지 미리보기"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover' 
+            }}
+            onError={(e) => {
+              console.error('미리보기 이미지 로드 실패:', e.target.src);
+            }} 
+          />
+        ) : (
+          <div 
+            style={{
+              ...getBackgroundImageStyle(studyImageUrl),
+              width: '100%',
+              height: '100%'
+            }}
+            aria-label="스터디 이미지 미리보기"
+          />
+        )}
       </div>
     );
   };
