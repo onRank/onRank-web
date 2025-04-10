@@ -195,7 +195,7 @@ function ManagementTab() {
       setLoading(true);
       setError(null);
       try {
-        const response = await axios.get(`/api/studies/${studyId}/management`);
+        const response = await axios.get(`https://onrank.kr/studies/${studyId}/management`);
         const { data } = response.data;
         
         setStudyName(data.studyName);
@@ -238,7 +238,7 @@ function ManagementTab() {
     setError(null);
     try {
       // studyService를 사용하여 멤버 목록 조회
-      const response = await axios.get(`/api/studies/${studyId}/members`);
+      const response = await axios.get(`https://onrank.kr/studies/${studyId}/members`);
       console.log('회원 목록 조회 결과:', response);
       
       // 응답이 배열이 아닌 경우 members 필드로 접근 (API 명세 변경 가능성에 대비)
@@ -278,7 +278,7 @@ function ManagementTab() {
 
   const handleSave = async () => {
     try {
-      await axios.put(`/api/studies/${studyId}/management`, {
+      await axios.put(`https://onrank.kr/studies/${studyId}/management`, {
         studyName,
         studyContent,
         presentPoint,
