@@ -1949,7 +1949,8 @@ export const noticeService = {
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        fileNames: files.map((file) => file.originalName) || [],
+        fileNames: files.fileName || [],
+        presignedUrls: files.fileUrl || [],
       };
 
       console.log("[noticeService] 변환된 요청 데이터:", requestData);
