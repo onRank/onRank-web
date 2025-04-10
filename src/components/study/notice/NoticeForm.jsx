@@ -77,31 +77,54 @@ const NoticeForm = ({ studyId, notice = null, onFinish }) => {
       };
 
       const result = await createNotice(studyId, newNotice, selectedFiles);
+
+      // 성공 여부 확인 (성공이지만 파일 업로드 실패 경고가 있는 경우 포함)
       if (!result.success) {
         setError(result.message || "공지사항 저장 중 오류가 발생했습니다.");
+        setIsSubmitting(false);
         return;
       }
+
+      // 경고 메시지 표시 (파일 업로드 실패)
       if (result.warning) {
+        console.warn("[NoticeForm] 공지사항 생성 경고:", result.warning);
         setError(result.warning);
+      } else {
+        // 순수한 성공 메시지
+        console.log("[NoticeForm] 공지사항 생성 성공:", result.message);
       }
 
       // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
       if (result.data && result.data.noticeId) {
         console.log("[NoticeForm] 생성된 공지사항 ID:", result.data.noticeId);
-        onFinish?.(result.data.noticeId);
+        // 약간 지연 후 콜백 호출 (사용자가 성공/경고 메시지를 볼 수 있도록)
+        setTimeout(
+          () => {
+            onFinish?.(result.data.noticeId);
+          },
+          result.warning ? 1500 : 500
+        ); // 경고가 있으면 더 오래 표시
       } else {
         console.warn(
           "[NoticeForm] 생성된 공지사항에 ID가 없습니다:",
           result.data
         );
-        onFinish?.();
+        setTimeout(
+          () => {
+            onFinish?.();
+          },
+          result.warning ? 1500 : 500
+        );
       }
     } catch (error) {
+      console.error("[NoticeForm] 공지사항 처리 중 오류:", error);
       setError(
         "공지사항 처리 중 오류 발생: " + (error.message || "알 수 없는 오류")
       );
-    } finally {
       setIsSubmitting(false);
+    } finally {
+      // 오류가 있거나 경고가 있는 경우에는 isSubmitting 상태를 변경하지 않음
+      // 성공 콜백에서 페이지 이동 처리
     }
   };
 
