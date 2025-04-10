@@ -91,8 +91,16 @@ function StudyManagement() {
     const fetchStudyData = async () => {
       try {
         const response = await managementService.getManagementData(studyId);
-        const data = response.data || {};
-        setStudyImageUrl(data.studyImageUrl || '');
+        console.log('취소 후 데이터 조회:', response);
+        
+        // 올바른 경로에서 이미지 URL 가져오기
+        if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
+          setStudyImageUrl(response.memberContext.file.fileUrl);
+          console.log('취소 후 이미지 URL 복원:', response.memberContext.file.fileUrl);
+        } else {
+          setStudyImageUrl('');
+          console.log('취소 후 이미지 URL 없음');
+        }
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);
       }

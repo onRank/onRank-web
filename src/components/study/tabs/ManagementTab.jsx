@@ -202,36 +202,21 @@ function ManagementTab() {
           withCredentials: true
         });
         
-        console.log('전체 서버 응답:', response);
-        console.log('서버 응답 데이터 구조:', JSON.stringify(response.data, null, 2));
+        console.log('전체 서버 응답 (ManagementTab):', response);
         
         const { data } = response.data;
         
         setStudyName(data.studyName);
         setStudyContent(data.studyContent);
         
-        // 이미지 URL 추출 로직 확인 및 수정
-        console.log('memberContext 확인:', response.data.memberContext);
-        
-        // 정확한 경로 확인
+        // 이미지 URL 추출 로직 수정
+        // 올바른 경로에서 이미지 URL 가져오기
         if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
           const imageUrl = response.data.memberContext.file.fileUrl;
-          console.log('이미지 URL 직접 추출:', imageUrl);
-          setStudyImageUrl(imageUrl);
-          
-          // 이미지 URL이 유효한지 검사
-          const img = new Image();
-          img.onload = () => console.log('이미지 URL 유효성 테스트 성공:', imageUrl);
-          img.onerror = () => console.error('이미지 URL 유효성 테스트 실패:', imageUrl);
-          img.src = imageUrl;
-        } else if (data.memberContext && data.memberContext.file && data.memberContext.file.fileUrl) {
-          const imageUrl = data.memberContext.file.fileUrl;
-          console.log('data.memberContext에서 이미지 URL 추출:', imageUrl);
+          console.log('ManagementTab: 이미지 URL 직접 추출:', imageUrl);
           setStudyImageUrl(imageUrl);
         } else {
-          console.log('이미지 URL이 없습니다. 가능한 경로 확인:',
-            'response.data.memberContext:', response.data.memberContext,
-            'data.memberContext:', data.memberContext);
+          console.log('ManagementTab: 이미지 URL이 없습니다');
           setStudyImageUrl('');
         }
         
@@ -322,15 +307,21 @@ function ManagementTab() {
         const response = await api.get(`/studies/${studyId}/management`, {
           withCredentials: true
         });
+        
+        console.log('취소 후 데이터 조회 (ManagementTab):', response);
+        
         const { data } = response.data;
         
         setStudyName(data.studyName);
         setStudyContent(data.studyContent);
         
-        // 이미지 URL 복원
-        if (data.memberContext && data.memberContext.file && data.memberContext.file.fileUrl) {
-          setStudyImageUrl(data.memberContext.file.fileUrl);
+        // 이미지 URL 복원 - 올바른 경로 사용
+        if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
+          const imageUrl = response.data.memberContext.file.fileUrl;
+          console.log('ManagementTab: 취소 후 이미지 URL 복원:', imageUrl);
+          setStudyImageUrl(imageUrl);
         } else {
+          console.log('ManagementTab: 취소 후 이미지 URL 없음');
           setStudyImageUrl('');
         }
         
@@ -339,7 +330,7 @@ function ManagementTab() {
         setAbsentPoint(data.absentPoint);
         setLatePoint(data.latePoint);
       } catch (err) {
-        console.error('스터디 정보 조회 실패:', err);
+        console.error('취소 후 스터디 정보 조회 실패:', err);
       }
     };
     
