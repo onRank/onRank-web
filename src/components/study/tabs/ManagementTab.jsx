@@ -12,7 +12,7 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
-import { uploadImageToS3 } from '../../../utils/imageUtils';
+import { handleStudyImageUpload } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -208,8 +208,13 @@ function ManagementTab() {
         withCredentials: true
       });
       
+      // 응답 구조 확인 (디버깅)
+      console.log('관리 데이터 응답:', response.data);
+      
+      // data 필드 접근
       const { data } = response.data;
       
+      // 데이터 설정
       setStudyName(data.studyName);
       setStudyContent(data.studyContent);
       
@@ -230,8 +235,8 @@ function ManagementTab() {
       setStudyStatus(data.studyStatus);
       
       // 회원 정보 설정 (memberContext가 있는 경우)
-      if (data && data.memberContext) {
-        setCurrentUserRole(data.memberContext.role);
+      if (response.data.memberContext) {
+        setCurrentUserRole(response.data.memberContext.memberRole);
       }
     } catch (err) {
       console.error('관리 데이터 조회 오류:', err);
@@ -351,14 +356,23 @@ function ManagementTab() {
 
       console.log("스터디 정보 수정 응답:", response.data);
       
-      // 이미지 파일이 있고 업로드 URL이 있는 경우 S3에 직접 업로드
-      if (studyImageFile && response.data.data && response.data.data.uploadUrl) {
+      // 이미지 파일이 있는 경우 S3에 직접 업로드
+      if (studyImageFile) {
         try {
-          // S3에 이미지 업로드
-          await uploadImageToS3(response.data.data.uploadUrl, studyImageFile);
-          console.log("S3에 이미지 업로드 성공");
+          // 통합 이미지 업로드 함수 사용
+          const uploadResult = await handleStudyImageUpload(response.data, studyImageFile);
+          
+          if (uploadResult.success) {
+            console.log("S3 이미지 업로드 성공:", uploadResult.fileUrl);
+          } else {
+            console.error("S3 이미지 업로드 실패:", uploadResult.message);
+            setError("스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다: " + uploadResult.message);
+            setIsEditing(false);
+            setLoading(false);
+            return;
+          }
         } catch (uploadError) {
-          console.error("S3에 이미지 업로드 실패:", uploadError);
+          console.error("S3 이미지 업로드 중 예외 발생:", uploadError);
           setError("스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.");
           setIsEditing(false);
           setLoading(false);

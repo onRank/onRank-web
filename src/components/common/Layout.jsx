@@ -2,8 +2,6 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useTheme } from "../../contexts/ThemeContext";
-import Header from "./Header";
-import MobileHeader from "./MobileHeader";
 import DeviceInfoBar from "./DeviceInfoBar";
 
 function Layout() {
@@ -34,8 +32,7 @@ function Layout() {
       {shouldShowHeader && (
         <>
           <DeviceInfoBar />
-          <Header />
-          <MobileHeader />
+          {/* Header와 MobileHeader 제거 - App.jsx에서 이미 사용 중 */}
         </>
       )}
       <main

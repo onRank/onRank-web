@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
 import { authService } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
@@ -9,17 +9,24 @@ function MobileHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const { setUser } = useAuth();
+  const location = useLocation();
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  const handleNotificationToggle = () => {
+    setIsNotificationOpen(!isNotificationOpen);
+  };
 
   const styles = {
     header: {
       display: "none",
-      backgroundColor: colors.headerBackground,
-      borderBottom: `1px solid ${colors.border}`,
+      backgroundColor: 'white',
+      borderBottom: `1px solid #eaeaea`,
       padding: "12px 16px",
       justifyContent: "space-between",
       alignItems: "center",
       position: "relative",
       zIndex: 1000,
+      height: '60px',
       "@media (max-width: 768px)": {
         display: "flex",
       },
@@ -29,18 +36,18 @@ function MobileHeader() {
       border: "none",
       fontSize: "24px",
       cursor: "pointer",
-      color: colors.text,
+      color: '#333',
     },
     logo: {
-      height: "24px",
+      height: "32px",
     },
     menu: {
       position: "absolute",
       top: "100%",
       left: 0,
       right: 0,
-      backgroundColor: colors.headerBackground,
-      borderBottom: `1px solid ${colors.border}`,
+      backgroundColor: 'white',
+      borderBottom: `1px solid #eaeaea`,
       padding: "16px",
       display: isMenuOpen ? "flex" : "none",
       flexDirection: "column",
@@ -48,13 +55,22 @@ function MobileHeader() {
     },
     menuItem: {
       textDecoration: "none",
-      color: colors.text,
-      fontSize: "16px",
+      color: '#333',
+      fontSize: "15px",
       background: "none",
       border: "none",
       padding: "8px 0",
       textAlign: "left",
       cursor: "pointer",
+    },
+    logoutButton: {
+      backgroundColor: 'white',
+      color: '#333',
+      border: '1px solid #ddd',
+      borderRadius: '20px',
+      padding: '5px 15px',
+      fontSize: '14px',
+      cursor: 'pointer',
     },
     themeToggleBtn: {
       display: "flex",
@@ -182,17 +198,44 @@ function MobileHeader() {
           style={styles.logo}
           onClick={() => navigate("/studies")}
         />
-        <div style={{ width: "24px" }}></div>
+        
+        {/* 알림 아이콘 */}
+        <div onClick={handleNotificationToggle} style={{ cursor: 'pointer' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" fill="black"/>
+          </svg>
+        </div>
 
         {isMenuOpen && (
           <div style={styles.menu}>
-            <button style={styles.menuItem} onClick={handleStudylistClick}>
+            <button 
+              style={{
+                ...styles.menuItem,
+                fontWeight: location.pathname.includes('/studies') ? 'bold' : 'normal',
+                color: location.pathname.includes('/studies') ? '#000' : '#555',
+              }} 
+              onClick={handleStudylistClick}
+            >
               스터디 목록
             </button>
-            <button style={styles.menuItem} onClick={handleCalendarClick}>
+            <button 
+              style={{
+                ...styles.menuItem,
+                fontWeight: location.pathname.includes('/calendar') ? 'bold' : 'normal',
+                color: location.pathname.includes('/calendar') ? '#000' : '#555',
+              }} 
+              onClick={handleCalendarClick}
+            >
               캘린더
             </button>
-            <button style={styles.menuItem} onClick={handleProfileClick}>
+            <button 
+              style={{
+                ...styles.menuItem,
+                fontWeight: location.pathname.includes('/mypage') ? 'bold' : 'normal',
+                color: location.pathname.includes('/mypage') ? '#000' : '#555',
+              }} 
+              onClick={handleProfileClick}
+            >
               마이페이지
             </button>
             <button 
@@ -202,8 +245,8 @@ function MobileHeader() {
               <ThemeIcon />
               {isDarkMode ? "라이트모드" : "다크모드"}
             </button>
-            <button style={styles.menuItem} onClick={handleLogout}>
-              로그아웃
+            <button style={styles.logoutButton} onClick={handleLogout}>
+              logout
             </button>
           </div>
         )}

@@ -70,3 +70,56 @@ export const uploadImageToS3 = async (uploadUrl, imageFile) => {
     );
   }
 }; 
+
+/**
+ * 백엔드 응답으로부터 이미지 업로드 처리를 위한 통합 함수
+ * 
+ * @param {Object} responseData - 백엔드 API 응답 데이터
+ * @param {File} imageFile - 업로드할 이미지 파일
+ * @returns {Promise<Object>} 업로드 결과 객체 {success, message, fileUrl}
+ */
+export const handleStudyImageUpload = async (responseData, imageFile) => {
+  try {
+    // 응답에서 uploadUrl 추출
+    if (!responseData || !responseData.data || !responseData.data.uploadUrl) {
+      console.error("[imageUtils] 업로드 URL이 응답에 없습니다:", responseData);
+      return {
+        success: false,
+        message: "업로드 URL을 찾을 수 없습니다",
+        fileUrl: null
+      };
+    }
+
+    const uploadUrl = responseData.data.uploadUrl;
+    
+    // 이미지 파일이 없는 경우
+    if (!imageFile) {
+      console.error("[imageUtils] 업로드할 이미지 파일이 없습니다");
+      return {
+        success: false,
+        message: "업로드할 이미지 파일이 없습니다",
+        fileUrl: null
+      };
+    }
+
+    // S3에 이미지 업로드
+    await uploadImageToS3(uploadUrl, imageFile);
+    
+    // 업로드 성공 후 파일 URL 반환
+    // memberContext에서 fileUrl 추출 (업로드 후 표시용)
+    const fileUrl = responseData.memberContext?.file?.fileUrl || null;
+    
+    return {
+      success: true,
+      message: "이미지 업로드 성공",
+      fileUrl
+    };
+  } catch (error) {
+    console.error("[imageUtils] 이미지 업로드 처리 중 오류:", error);
+    return {
+      success: false,
+      message: error.message || "이미지 업로드 처리 중 오류가 발생했습니다",
+      fileUrl: null
+    };
+  }
+}; 
