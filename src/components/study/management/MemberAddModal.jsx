@@ -5,7 +5,6 @@ import './MemberAddModal.css';
 
 function MemberAddModal({ studyId, onClose, onMemberAdded }) {
   const [email, setEmail] = useState('');
-  const [memberRole, setMemberRole] = useState('PARTICIPANT');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,18 +22,27 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
     setSuccess('');
     
     try {
-      const response = await managementService.addMember(studyId, { studentEmail: email, memberRole });
+      // studentEmail만 전송 (역할은 백엔드에서 자동으로 할당됨)
+      const response = await managementService.addMember(studyId, { studentEmail: email });
       
-      if (response && response.data) {
-        setSuccess('회원이 추가되었습니다.');
+      console.log('[MemberAddModal] 회원 추가 응답:', response);
+      
+      // 응답에 studyName과 memberRole이 포함된 경우 성공
+      if (response && (response.studyName !== undefined || response.memberRole !== undefined)) {
+        setSuccess(`'${response.studyName || '스터디'}'에 '${response.memberRole || 'PARTICIPANT'}' 역할로 회원이 추가되었습니다.`);
         setEmail('');
         
         // 부모 컴포넌트에 추가된 회원 정보 전달
         if (onMemberAdded) {
-          onMemberAdded(response.data);
+          onMemberAdded(response);
         }
+        
+        // 2초 후 모달 닫기
+        setTimeout(() => {
+          onClose();
+        }, 2000);
       } else {
-        setError('회원 추가에 실패했습니다.');
+        setError('회원 추가에 실패했습니다. 응답 형식이 올바르지 않습니다.');
       }
     } catch (err) {
       console.error('[MemberAddModal] 회원 추가 실패:', err);
@@ -69,29 +77,17 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
               placeholder="초대할 사용자의 이메일"
               disabled={loading}
             />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="role">역할:</label>
-            <select
-              id="role"
-              value={memberRole}
-              onChange={(e) => setMemberRole(e.target.value)}
-              disabled={loading}
-            >
-              <option value="PARTICIPANT">일반 회원</option>
-              <option value="HOST">관리자</option>
-            </select>
+            <p className="form-hint">이메일로 초대된 회원은 기본적으로 일반 회원으로 추가됩니다.</p>
           </div>
           
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
           
           <div className="modal-actions">
-            <button type="button" onClick={onClose} disabled={loading}>
+            <button type="button" onClick={onClose} disabled={loading} className="cancel-button">
               취소
             </button>
-            <button type="submit" disabled={loading}>
+            <button type="submit" disabled={loading} className="submit-button">
               {loading ? '처리 중...' : '추가'}
             </button>
           </div>
