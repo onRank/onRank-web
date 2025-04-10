@@ -84,11 +84,20 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
           {success && <div className="success-message">{success}</div>}
           
           <div className="modal-actions">
-            <button type="button" onClick={onClose} disabled={loading} className="cancel-button">
-              취소
+            <button 
+              type="button" 
+              onClick={onClose} 
+              disabled={loading} 
+              className="cancel-button"
+            >
+              취소하기
             </button>
-            <button type="submit" disabled={loading} className="submit-button">
-              {loading ? '처리 중...' : '추가'}
+            <button 
+              type="submit" 
+              disabled={loading} 
+              className="submit-button"
+            >
+              {loading ? '처리 중...' : '추가하기'}
             </button>
           </div>
         </form>
