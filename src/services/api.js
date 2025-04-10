@@ -1987,89 +1987,193 @@ export const noticeService = {
     }
   },
 
-  // createNotice 함수
-  createNotice: async (studyId, newNotice, files = []) => {
+  createStudy: async (newNotice) => {
     try {
-      console.log("[noticeService] 공지사항 생성 요청:", newNotice);
+      console.log("[NoticeService] 스터디 생성 요청:", newNotice);
 
+      // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        fileNames: files.map((file) => file.fileName) || [],
+        noticeImageUrl: newNotice.noticeImageUrl || null,
       };
 
+      console.log("[NoticeService] 변환된 요청 데이터:", requestData);
+
+      // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
-        console.error("[noticeService] 토큰 없음, 공지사항 생성 불가");
+        console.error("[NoticeService] 토큰 없음, 스터디 생성 불가");
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
+      // 토큰 형식 확인
       const tokenWithBearer = token.startsWith("Bearer ")
         ? token
         : `Bearer ${token}`;
 
-      const response = await api.post(
-        `/studies/${studyId}/notices/add`,
-        requestData,
-        {
-          headers: {
-            Authorization: tokenWithBearer,
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-            Accept: "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      // API 요청 - 백엔드와 일치시키기 위해 경로 다시 변경: /studies -> /studies/add (Swagger UI 기준)
+      const response = await api.post(`/studies/${studyId}/add`, requestData, {
+        headers: {
+          Authorization: tokenWithBearer,
+          "Content-Type": "application/json",
+          "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
+          Accept: "application/json", // JSON 응답 요청
+        },
+        withCredentials: true,
+      });
 
-      if (response.data && response.data.presignedUrls && files.length > 0) {
+      console.log("[NoticeService] 스터디 생성 응답:", response.data);
+
+      // 기존 코드 제거 및 새로운 파일 업로드 로직 추가
+      // 여러 파일 업로드 처리: 이미지 파일 및 일반 파일 모두 지원
+      if (response.data) {
         try {
-          for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const presignedUrl = response.data.presignedUrls[i];
+          // 단일 이미지 파일이 있는 경우 (기존 호환성 유지)
+          if (response.data.uploadUrl && newNotice.imageFile) {
+            console.log(
+              "[NoticeService] 이미지 파일 업로드 시작:",
+              newNotice.imageFile.name
+            );
 
-            if (!presignedUrl) {
-              console.error(
-                "[noticeService] presignedUrl이 없습니다:",
-                file.fileName
+            if (newNotice.imageFile.type.startsWith("image/")) {
+              await noticeService.ImageUploadToS3(
+                response.data.uploadUrl,
+                newNotice.imageFile
               );
-              continue;
+              console.log("[NoticeService] 이미지 업로드 성공");
+            } else {
+              await noticeService.FileUploadToS3(
+                response.data.uploadUrl,
+                newNotice.imageFile
+              );
+              console.log("[NoticeService] 파일 업로드 성공");
+            }
+          }
+
+          // 여러 파일이 있는 경우 (presignedUrls 또는 uploadUrls 배열)
+          if (newNotice.files && newNotice.files.length > 0) {
+            let uploadUrls = [];
+
+            // 다양한 응답 구조 지원
+            if (
+              response.data.presignedUrls &&
+              response.data.presignedUrls.length > 0
+            ) {
+              uploadUrls = response.data.presignedUrls;
+              console.log(
+                "[NoticeService] presignedUrls 사용:",
+                uploadUrls.length
+              );
+            } else if (
+              response.data.uploadUrls &&
+              response.data.uploadUrls.length > 0
+            ) {
+              uploadUrls = response.data.uploadUrls;
+              console.log(
+                "[NoticeService] uploadUrls 사용:",
+                uploadUrls.length
+              );
             }
 
-            if (file.type.startsWith("image/")) {
-              await noticeService.ImageUploadToS3(presignedUrl, file);
+            if (uploadUrls.length > 0) {
+              console.log("[NoticeService] 다중 파일 업로드 시작");
+
+              // 각 파일에 대해 업로드 처리
+              for (
+                let i = 0;
+                i < Math.min(newNotice.files.length, uploadUrls.length);
+                i++
+              ) {
+                const file = newNotice.files[i];
+                const uploadUrl = uploadUrls[i];
+
+                if (!uploadUrl) {
+                  console.warn(
+                    `[NoticeService] ${i + 1}번째 파일의 업로드 URL이 없습니다`
+                  );
+                  continue;
+                }
+
+                try {
+                  console.log(
+                    `[NoticeService] 파일 '${file.name}' 업로드 시작`
+                  );
+
+                  // 파일 유형에 따라 적절한 업로드 함수 선택
+                  if (file.type.startsWith("image/")) {
+                    await noticeService.ImageUploadToS3(uploadUrl, file);
+                    console.log(
+                      `[NoticeService] 이미지 '${file.name}' 업로드 성공`
+                    );
+                  } else {
+                    await noticeService.FileUploadToS3(uploadUrl, file);
+                    console.log(
+                      `[NoticeService] 파일 '${file.name}' 업로드 성공`
+                    );
+                  }
+                } catch (individualError) {
+                  console.error(
+                    `[NoticeService] '${file.name}' 파일 업로드 실패:`,
+                    individualError
+                  );
+                  // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
+                }
+              }
+
+              console.log("[NoticeService] 모든 파일 업로드 완료");
             } else {
-              await noticeService.FileUploadToS3(presignedUrl, file);
+              console.log(
+                "[NoticeService] 업로드할 URL이 없어 파일 업로드를 건너뜁니다"
+              );
             }
           }
         } catch (uploadError) {
-          console.error("[noticeService] 파일 업로드 중 오류:", uploadError);
+          console.error("[NoticeService] 파일 업로드 중 오류:", uploadError);
           return {
-            success: true,
-            data: response.data,
-            warning:
-              "공지사항은 생성되었으나 파일 업로드 중 오류가 발생했습니다.",
+            ...response.data,
+            warning: "스터디는 생성되었으나 일부 파일 업로드에 실패했습니다.",
           };
         }
       }
 
-      return { success: true, data: response.data };
+      // 3. 최종 응답 반환
+      return response.data;
     } catch (error) {
-      console.error("[noticeService] 공지사항 생성 오류:", error);
+      console.error("[NoticeService] 스터디 생성 오류:", error);
 
+      // 인증 오류인 경우 (401, 403)
       if (error.response && error.response.status === 403) {
-        tokenUtils.removeToken(true);
-        return {
-          success: false,
-          message: "인증에 실패했습니다. 다시 로그인해주세요.",
-          requireRelogin: true,
-        };
+        console.error("[NoticeService] 인증 오류 발생:", error.response.status);
+
+        // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
+        const authError = new Error("해당 스터디에 대한 권한이 없습니다.");
+        authError.type = "AUTH_ERROR";
+        authError.requireRelogin = true;
+
+        // 로그인 페이지가 아닐 경우에만 리다이렉트
+        if (!window.location.pathname.includes("/login")) {
+          console.log("[NoticeService] 인증 실패로 로그인 페이지로 리다이렉트");
+          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
+          setTimeout(() => {
+            window.location.href = loginUrl;
+          }, 500);
+        }
+
+        throw authError;
       }
 
-      return {
-        success: false,
-        message: error.message || "공지사항 생성 중 오류가 발생했습니다.",
-      };
+      // 네트워크 에러 처리
+      if (error.message && error.message.includes("Network Error")) {
+        const networkError = new Error(
+          "네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요."
+        );
+        networkError.type = "NETWORK_ERROR";
+        throw networkError;
+      }
+
+      // 기타 에러
+      throw error;
     }
   },
 
