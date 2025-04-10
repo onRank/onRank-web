@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { convertToCloudFrontUrl } from '../../../utils/imageUtils';
+import { getBackgroundImageStyle } from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -72,11 +72,8 @@ function StudyManagement() {
         const imageUrl = response.memberContext.file.fileUrl;
         console.log('원본 이미지 URL:', imageUrl);
         
-        // S3 URL을 CloudFront URL로 변환 (필요한 경우)
-        const cloudFrontUrl = convertToCloudFrontUrl(imageUrl);
-        console.log('최종 사용할 이미지 URL:', cloudFrontUrl);
-        
-        setStudyImageUrl(cloudFrontUrl);
+        // 원본 S3 URL을 직접 사용 (CloudFront URL로 변환하지 않음)
+        setStudyImageUrl(imageUrl);
       } else {
         console.log('이미지 URL이 없음:', response);
         setStudyImageUrl('');
@@ -178,23 +175,39 @@ function StudyManagement() {
         minHeight: '150px',
         minWidth: '200px'
       }}>
-        <img 
-          ref={imageRef}
-          src={studyImageUrl} 
-          alt="스터디 이미지" 
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-          style={{ 
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '100%',
-            maxHeight: '300px',
-            borderRadius: '4px', 
-            border: '1px solid #000',
-            backgroundColor: '#FFF',
-            display: 'inline-block'
-          }} 
-        />
+        {/* 이미지가 blob URL(로컬 파일 선택)인지 확인 */}
+        {studyImageUrl.startsWith('blob:') ? (
+          <img 
+            ref={imageRef}
+            src={studyImageUrl} 
+            alt="스터디 이미지 (미리보기)" 
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            style={{ 
+              width: 'auto',
+              height: 'auto',
+              maxWidth: '100%',
+              maxHeight: '300px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }} 
+          />
+        ) : (
+          <div 
+            style={{
+              ...getBackgroundImageStyle(studyImageUrl),
+              width: '300px',
+              height: '200px',
+              borderRadius: '4px', 
+              border: '1px solid #000',
+              backgroundColor: '#FFF',
+              display: 'inline-block'
+            }}
+            aria-label="스터디 이미지"
+          />
+        )}
       </div>
     );
   };
@@ -205,19 +218,29 @@ function StudyManagement() {
     
     return (
       <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-        <img 
-          src={studyImageUrl} 
-          alt="스터디 이미지 미리보기"
-          style={{ 
-            width: '100%', 
-            height: '100%', 
-            objectFit: 'cover' 
-          }}
-          onError={(e) => {
-            console.error('미리보기 이미지 로드 실패:', e.target.src);
-            // 오류 처리 로직 유지
-          }} 
-        />
+        {studyImageUrl.startsWith('blob:') ? (
+          <img 
+            src={studyImageUrl} 
+            alt="스터디 이미지 미리보기"
+            style={{ 
+              width: '100%', 
+              height: '100%', 
+              objectFit: 'cover' 
+            }}
+            onError={(e) => {
+              console.error('미리보기 이미지 로드 실패:', e.target.src);
+            }} 
+          />
+        ) : (
+          <div 
+            style={{
+              ...getBackgroundImageStyle(studyImageUrl),
+              width: '100%',
+              height: '100%'
+            }}
+            aria-label="스터디 이미지 미리보기"
+          />
+        )}
       </div>
     );
   };
