@@ -12,6 +12,7 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
+import { uploadImageToS3 } from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -323,29 +324,49 @@ function ManagementTab() {
         return;
       }
 
-      // FormData 객체 생성하여 모든 데이터를 한 번에 보냄
-      const formData = new FormData();
-      formData.append('studyName', studyName);
-      formData.append('studyContent', studyContent);
-      formData.append('studyGoogleFormUrl', studyGoogleFormUrl || '');
-      formData.append('presentPoint', presentPoint);
-      formData.append('absentPoint', absentPoint);
-      formData.append('latePoint', latePoint);
-      
-      // 이미지 파일이 있는 경우 추가
-      if (studyImageFile) {
-        formData.append('file', studyImageFile);
-      }
+      setLoading(true);
+      setError(null);
 
-      // 통합 API 요청 - 한 번에 모든 정보 업데이트
-      const response = await api.put(`/studies/${studyId}/management`, formData, {
+      // 요청 데이터 생성 (JSON 형식)
+      const requestData = {
+        studyName: studyName,
+        studyContent: studyContent,
+        studyGoogleFormUrl: studyGoogleFormUrl || '',
+        presentPoint: presentPoint,
+        absentPoint: absentPoint,
+        latePoint: latePoint,
+        fileName: studyImageFile ? studyImageFile.name : null
+      };
+
+      console.log("스터디 정보 수정 요청 데이터:", requestData);
+
+      // 백엔드 API 호출 (JSON 형식으로 전송)
+      const response = await api.put(`/studies/${studyId}/management`, requestData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'application/json',
+          'Authorization': token.startsWith('Bearer ') ? token : `Bearer ${token}`
         },
         withCredentials: true
       });
 
-      console.log("스터디 정보 수정 성공:", response.data);
+      console.log("스터디 정보 수정 응답:", response.data);
+      
+      // 이미지 파일이 있고 업로드 URL이 있는 경우 S3에 직접 업로드
+      if (studyImageFile && response.data.data && response.data.data.uploadUrl) {
+        try {
+          // S3에 이미지 업로드
+          await uploadImageToS3(response.data.data.uploadUrl, studyImageFile);
+          console.log("S3에 이미지 업로드 성공");
+        } catch (uploadError) {
+          console.error("S3에 이미지 업로드 실패:", uploadError);
+          setError("스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다.");
+          setIsEditing(false);
+          setLoading(false);
+          return;
+        }
+      }
+
+      console.log("스터디 정보 수정 성공");
       setIsEditing(false);
       
       // 업데이트 후 서버에서 최신 데이터 다시 가져오기
@@ -355,6 +376,8 @@ function ManagementTab() {
     } catch (err) {
       console.error("스터디 정보 수정에 실패했습니다.", err);
       setError("스터디 정보 수정에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setLoading(false);
     }
   };
 

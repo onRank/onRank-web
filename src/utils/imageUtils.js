@@ -1,6 +1,7 @@
 /**
  * 이미지 URL 관련 유틸리티 함수
  */
+import axios from 'axios';
 
 /**
  * 이미지 URL을 직접 사용하는 대신 이미지를 div 배경으로 표시하는 스타일을 생성
@@ -33,4 +34,39 @@ export const DEFAULT_IMAGE_SVG = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20widt
 export const handleImageError = (e, imageInfo = '') => {
   e.target.src = DEFAULT_IMAGE_SVG;
   console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
+}; 
+
+/**
+ * S3에 이미지를 직접 업로드하는 함수
+ * 
+ * @param {string} uploadUrl - 백엔드에서 받은 pre-signed URL
+ * @param {File} imageFile - 업로드할 이미지 파일 객체
+ * @returns {Promise<boolean>} 업로드 성공 여부
+ */
+export const uploadImageToS3 = async (uploadUrl, imageFile) => {
+  try {
+    console.log("[imageUtils] S3 이미지 업로드 시작:", {
+      uploadUrl: uploadUrl.substring(0, 100) + "...",
+      fileName: imageFile.name,
+      fileSize: imageFile.size,
+      fileType: imageFile.type
+    });
+
+    // PUT 요청으로 S3에 직접 업로드
+    await axios.put(uploadUrl, imageFile, {
+      headers: {
+        "Content-Type": imageFile.type,
+      },
+      maxContentLength: Infinity,
+      maxBodyLength: Infinity,
+    });
+
+    console.log("[imageUtils] S3 이미지 업로드 완료");
+    return true;
+  } catch (error) {
+    console.error("[imageUtils] S3 이미지 업로드 실패:", error);
+    throw new Error(
+      "이미지 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류")
+    );
+  }
 }; 
