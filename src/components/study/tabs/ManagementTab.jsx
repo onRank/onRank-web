@@ -385,19 +385,23 @@ function ManagementTab() {
       if (studyImageFile) {
         console.log("이미지 업로드 프로세스 시작 - 파일 존재");
         try {
-          // 통합 이미지 업로드 함수 호출
-          const uploadResult = await handleStudyImageUpload(response.data, studyImageFile);
+          // 응답에서 uploadUrl 추출
+          const uploadUrl = response.data.data?.uploadUrl;
           
-          console.log("이미지 업로드 결과:", uploadResult);
+          if (!uploadUrl) {
+            console.error("응답에서 uploadUrl을 찾을 수 없음:", response.data);
+            throw new Error("업로드 URL을 받지 못했습니다.");
+          }
           
-          if (uploadResult.success) {
-            console.log("S3 이미지 업로드 성공:", uploadResult.fileUrl);
-          } else {
-            console.error("S3 이미지 업로드 실패:", uploadResult.message);
-            setError("스터디 정보는 업데이트되었으나 이미지 업로드에 실패했습니다: " + uploadResult.message);
-            setIsEditing(false);
-            setLoading(false);
-            return;
+          console.log("uploadUrl 확인:", uploadUrl.substring(0, 80) + "...");
+          
+          // S3에 직접 업로드
+          await uploadImageToS3(uploadUrl, studyImageFile);
+          console.log("S3 이미지 업로드 완료");
+          
+          // 업로드 성공 후 이미지 URL 업데이트
+          if (response.data.memberContext?.file?.fileUrl) {
+            setStudyImageUrl(response.data.memberContext.file.fileUrl);
           }
         } catch (uploadError) {
           console.error("S3 이미지 업로드 중 예외 발생:", uploadError);

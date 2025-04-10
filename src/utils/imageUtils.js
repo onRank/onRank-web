@@ -114,67 +114,71 @@ export const uploadImageToS3 = async (uploadUrl, imageFile) => {
 export const handleStudyImageUpload = async (response, imageFile) => {
   try {
     console.log("[handleStudyImageUpload] 함수 시작");
-    console.log("[handleStudyImageUpload] 응답 데이터 확인:", response);
+    
+    // response가 axios 응답인지 또는 이미 data 객체인지 확인
+    const responseData = response.data ? response.data : response;
+    
+    console.log("[handleStudyImageUpload] 응답 데이터 확인:", responseData);
     
     // 응답 데이터 검증
-    if (!response || !response.data) {
-      console.error("[handleStudyImageUpload] 응답 데이터가 없음:", response);
+    if (!responseData) {
+      console.error("[handleStudyImageUpload] 응답 데이터가 없음");
       return { success: false, message: "응답 데이터가 없습니다" };
     }
     
     // 받은 응답 구조 분석
     console.log("[handleStudyImageUpload] 응답 데이터 구조:", {
-      hasData: !!response.data,
-      dataKeys: response.data ? Object.keys(response.data) : [],
-      hasMemberContext: !!(response.data && response.data.memberContext),
-      hasDataObject: !!(response.data && response.data.data),
-      responseStructure: JSON.stringify(response.data).substring(0, 500) + "..."
+      responseType: typeof responseData,
+      isObject: responseData !== null && typeof responseData === 'object',
+      topLevelKeys: responseData !== null && typeof responseData === 'object' ? Object.keys(responseData) : [],
+      hasMemberContext: !!(responseData && responseData.memberContext),
+      hasDataObject: !!(responseData && responseData.data),
+      responsePartial: JSON.stringify(responseData).substring(0, 500) + "..."
     });
     
     // 가능한 모든 경로에서 uploadUrl 찾기
     let uploadUrl = null;
     
-    // 구조 1: response.data.data.uploadUrl
-    if (response.data.data && response.data.data.uploadUrl) {
-      console.log("[handleStudyImageUpload] 구조 1에서 uploadUrl 발견");
-      uploadUrl = response.data.data.uploadUrl;
-    } 
-    // 구조 2: response.data.uploadUrl
-    else if (response.data.uploadUrl) {
-      console.log("[handleStudyImageUpload] 구조 2에서 uploadUrl 발견");
-      uploadUrl = response.data.uploadUrl;
-    }
-    // 다른 가능한 구조들 확인
-    else {
-      console.warn("[handleStudyImageUpload] 일반적인 구조에서 uploadUrl을 찾을 수 없음");
+    // 재귀적으로 객체를 탐색하여 uploadUrl 키를 찾는 함수
+    const findUploadUrl = (obj, depth = 0, maxDepth = 5) => {
+      if (!obj || typeof obj !== 'object' || depth > maxDepth) return null;
       
-      // 응답 데이터 전체를 순회하며 uploadUrl 키를 찾음
-      const findUploadUrl = (obj) => {
-        if (!obj || typeof obj !== 'object') return null;
-        
-        if (obj.uploadUrl) return obj.uploadUrl;
-        
-        for (const key in obj) {
-          if (typeof obj[key] === 'object') {
-            const found = findUploadUrl(obj[key]);
-            if (found) return found;
-          }
-        }
-        
-        return null;
-      };
-      
-      uploadUrl = findUploadUrl(response.data);
-      
-      if (uploadUrl) {
-        console.log("[handleStudyImageUpload] 재귀 탐색에서 uploadUrl 발견");
+      // 직접 uploadUrl 키를 가진 경우
+      if (obj.uploadUrl) {
+        console.log(`[handleStudyImageUpload] depth ${depth}에서 uploadUrl 발견`);
+        return obj.uploadUrl;
       }
+      
+      // 중첩된 객체에서 찾기
+      for (const key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          const found = findUploadUrl(obj[key], depth + 1, maxDepth);
+          if (found) return found;
+        }
+      }
+      
+      return null;
+    };
+    
+    // 일반적인 위치에서 먼저 확인
+    if (responseData.data && responseData.data.uploadUrl) {
+      console.log("[handleStudyImageUpload] responseData.data.uploadUrl에서 발견");
+      uploadUrl = responseData.data.uploadUrl;
+    } else if (responseData.uploadUrl) {
+      console.log("[handleStudyImageUpload] responseData.uploadUrl에서 발견");
+      uploadUrl = responseData.uploadUrl;
+    } else if (responseData.memberContext && responseData.memberContext.uploadUrl) {
+      console.log("[handleStudyImageUpload] responseData.memberContext.uploadUrl에서 발견");
+      uploadUrl = responseData.memberContext.uploadUrl;
+    } else {
+      // 재귀 탐색으로 찾기
+      uploadUrl = findUploadUrl(responseData);
     }
     
     // uploadUrl 존재 여부 검증
     if (!uploadUrl) {
       console.error("[handleStudyImageUpload] uploadUrl을 찾을 수 없음");
-      console.log("[handleStudyImageUpload] 전체 응답 구조:", JSON.stringify(response.data).substring(0, 1000));
+      console.log("[handleStudyImageUpload] 전체 응답 구조:", JSON.stringify(responseData).substring(0, 1000));
       return { 
         success: false, 
         message: "업로드 URL을 찾을 수 없습니다" 
@@ -186,15 +190,8 @@ export const handleStudyImageUpload = async (response, imageFile) => {
     // 이미지 파일 확인
     if (!imageFile) {
       console.error("[handleStudyImageUpload] 이미지 파일이 없음");
-      return { success: false, message: "업로드할's3-access 이미지 파일이 없습니다" };
+      return { success: false, message: "업로드할 이미지 파일이 없습니다" };
     }
-    
-    console.log("[handleStudyImageUpload] 업로드할 이미지 파일:", {
-      name: imageFile.name,
-      size: imageFile.size,
-      type: imageFile.type,
-      lastModified: new Date(imageFile.lastModified).toISOString()
-    });
     
     // S3 업로드 실행
     console.log("[handleStudyImageUpload] S3 업로드 시작");
@@ -204,35 +201,44 @@ export const handleStudyImageUpload = async (response, imageFile) => {
     // 파일 URL 추출 (구조에 따라 다를 수 있음)
     let fileUrl = null;
     
-    // 구조 1: response.data.memberContext.file.fileUrl
-    if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-      fileUrl = response.data.memberContext.file.fileUrl;
-    } 
-    // 구조 2: response.data.data.fileUrl
-    else if (response.data.data && response.data.data.fileUrl) {
-      fileUrl = response.data.data.fileUrl;
-    }
-    // 다른 가능한 구조들 확인
-    else {
-      // 응답 데이터 전체를 순회하며 fileUrl 키를 찾음
-      const findFileUrl = (obj) => {
-        if (!obj || typeof obj !== 'object') return null;
-        
-        if (obj.fileUrl) return obj.fileUrl;
-        
-        for (const key in obj) {
-          if (typeof obj[key] === 'object') {
-            const found = findFileUrl(obj[key]);
-            if (found) return found;
-          }
-        }
-        
-        return null;
-      };
+    // 재귀적으로 객체를 탐색하여 fileUrl 키를 찾는 함수
+    const findFileUrl = (obj, depth = 0, maxDepth = 5) => {
+      if (!obj || typeof obj !== 'object' || depth > maxDepth) return null;
       
-      fileUrl = findFileUrl(response.data);
+      // 직접 fileUrl 키를 가진 경우
+      if (obj.fileUrl) {
+        console.log(`[handleStudyImageUpload] depth ${depth}에서 fileUrl 발견`);
+        return obj.fileUrl;
+      }
+      
+      // 일반적인 API 응답 구조의 file 객체 확인
+      if (obj.file && obj.file.fileUrl) {
+        console.log(`[handleStudyImageUpload] depth ${depth}의 file 객체에서 fileUrl 발견`);
+        return obj.file.fileUrl;
+      }
+      
+      // 중첩된 객체에서 찾기
+      for (const key in obj) {
+        if (typeof obj[key] === 'object' && obj[key] !== null) {
+          const found = findFileUrl(obj[key], depth + 1, maxDepth);
+          if (found) return found;
+        }
+      }
+      
+      return null;
+    };
+    
+    // 일반적인 위치에서 먼저 확인
+    if (responseData.memberContext && responseData.memberContext.file && responseData.memberContext.file.fileUrl) {
+      fileUrl = responseData.memberContext.file.fileUrl;
+    } else if (responseData.data && responseData.data.fileUrl) {
+      fileUrl = responseData.data.fileUrl;
+    } else {
+      // 재귀 탐색으로 찾기
+      fileUrl = findFileUrl(responseData);
     }
     
+    // 이미지 URL이 S3 URL인 경우 그대로 반환
     return {
       success: true,
       message: "이미지가 성공적으로 업로드되었습니다",
