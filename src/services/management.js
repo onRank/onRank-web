@@ -36,6 +36,24 @@ export const managementService = {
         throw new Error('출석, 결석, 지각 점수는 필수 항목입니다.');
       }
       
+      // FormData가 올바르게 전송되도록 확인
+      if (!formData.has('fileName')) {
+        console.warn('[ManagementService] fileName 필드가 누락되었습니다. null로 설정합니다.');
+        formData.append('fileName', 'null');
+      }
+      
+      // studyStatus 필드 확인
+      if (!formData.has('studyStatus')) {
+        console.warn('[ManagementService] studyStatus 필드가 누락되었습니다. PROGRESS로 설정합니다.');
+        formData.append('studyStatus', 'PROGRESS');
+      }
+      
+      // 로깅: 전송되는 FormData 내용
+      console.log('[ManagementService] FormData 전송 내용:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${key === 'file' ? '파일 객체' : value}`);
+      }
+
       const response = await api.put(`/studies/${studyId}/management`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'

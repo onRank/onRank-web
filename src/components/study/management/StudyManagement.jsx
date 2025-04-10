@@ -134,14 +134,24 @@ function StudyManagement() {
       formData.append('studyContent', studyDescription);
       formData.append('studyStatus', studyStatus);
       
+      // 파일 관련 필드 처리
       if (studyImageFile) {
         formData.append('file', studyImageFile);
         formData.append('fileName', studyImageFile.name);
+      } else {
+        // 파일이 없을 경우 fileName을 명시적으로 null로 전송
+        formData.append('fileName', 'null');
       }
       
       formData.append('presentPoint', presentPoint);
       formData.append('absentPoint', absentPoint);
       formData.append('latePoint', latePoint);
+      
+      // 디버깅: FormData 내용 확인
+      console.log('[StudyManagement] FormData 내용:');
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${key === 'file' ? '파일 객체' : value}`);
+      }
       
       // 스터디 정보 업데이트
       const response = await managementService.updateStudyInfo(studyId, formData);
