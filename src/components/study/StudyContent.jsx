@@ -4,11 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
 import AssignmentTab from "./tabs/AssignmentTab";
 import DefaultContent from "./tabs/DefaultContent";
-import ManagementTab from "./tabs/ManagementTab";
+import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeTab from "./tabs/NoticeTab";
 import BoardTab from "./tabs/BoardTab";
 import RankingTab from "./tabs/RankingTab";
 import AttendanceContainer from "../../pages/study/attendance/AttendanceContainer";
+
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
   const { studyId } = useParams();
@@ -55,7 +56,7 @@ function StudyContent({ activeTab, studyData }) {
         return <AttendanceContainer />;
       case "관리":
         console.log("[StudyContent] 관리 탭 렌더링");
-        return <ManagementTab studyData={studyData} />;
+        return <ManagementContainer />;
       case "랭킹":
         console.log("[StudyContent] 랭킹 탭 렌더링");
         return <RankingTab />;

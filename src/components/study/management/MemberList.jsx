@@ -1,25 +1,20 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useParams } from 'react-router-dom';
-import AddMemberModal from '../../modals/AddMemberModal';
-import { studyService, getMemberRoleDisplayName } from '../../../../services/api';
+import { getMemberRoleDisplayName } from '../../../services/api';
 
-function MemberManagement({ members, loading, error, fetchMembers }) {
-  const { studyId } = useParams();
-  const [showAddMemberPopup, setShowAddMemberPopup] = useState(false);
+function MemberList({ 
+  members, 
+  loading, 
+  error, 
+  onChangeRole, 
+  onDeleteMember, 
+  onAddMember 
+}) {
   const [processingMemberId, setProcessingMemberId] = useState(null);
-  const [confirmModal, setConfirmModal] = useState({ show: false, type: null, memberId: null });
+  const [confirmModal, setConfirmModal] = useState({ show: false, memberId: null });
   const [statusMessage, setStatusMessage] = useState({ text: '', type: '' });
 
-  // 현재 사용자가 CREATOR인지 확인 (첫 번째 멤버가 로그인한 사용자라고 가정)
-  const isCurrentUserCreator = members.length > 0 && members[0]?.memberRole === 'CREATOR';
-
-  // 팝업 닫기 함수
-  const handleClosePopup = () => {
-    setShowAddMemberPopup(false);
-  };
-
-  // 역할 변경 처리 함수
+  // 역할 변경 핸들러
   const handleChangeRole = async (memberId, newRole) => {
     if (!memberId || !newRole) return;
     
@@ -35,18 +30,15 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
       setProcessingMemberId(memberId);
       setStatusMessage({ text: '처리 중...', type: 'info' });
       
-      // 스터디 이름을 첫 번째 멤버에서 가져옴 (있다면)
-      const studyName = members.length > 0 ? members[0].studyName || "" : "";
+      const result = await onChangeRole(memberId, newRole);
       
-      await studyService.changeMemberRole(studyId, memberId, { 
-        studyName: studyName,
-        memberRole: newRole 
-      });
-      
-      setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
-      fetchMembers(); // 멤버 목록 갱신
+      if (result.success) {
+        setStatusMessage({ text: '역할이 변경되었습니다.', type: 'success' });
+      } else {
+        setStatusMessage({ text: result.message || '역할 변경에 실패했습니다.', type: 'error' });
+      }
     } catch (error) {
-      console.error('[MemberManagement] 역할 변경 실패:', error);
+      console.error('[MemberList] 역할 변경 실패:', error);
       setStatusMessage({ 
         text: error.message || '역할 변경에 실패했습니다.', 
         type: 'error' 
@@ -75,7 +67,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
       return;
     }
     
-    setConfirmModal({ show: true, type: 'delete', memberId });
+    setConfirmModal({ show: true, memberId });
   };
 
   // 멤버 삭제 처리 함수
@@ -87,19 +79,22 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
       setProcessingMemberId(memberId);
       setStatusMessage({ text: '처리 중...', type: 'info' });
       
-      await studyService.removeMember(studyId, memberId);
+      const result = await onDeleteMember(memberId);
       
-      setStatusMessage({ text: '멤버가 삭제되었습니다.', type: 'success' });
-      fetchMembers(); // 멤버 목록 갱신
+      if (result.success) {
+        setStatusMessage({ text: '멤버가 삭제되었습니다.', type: 'success' });
+      } else {
+        setStatusMessage({ text: result.message || '멤버 삭제에 실패했습니다.', type: 'error' });
+      }
     } catch (error) {
-      console.error('[MemberManagement] 멤버 삭제 실패:', error);
+      console.error('[MemberList] 멤버 삭제 실패:', error);
       setStatusMessage({ 
         text: error.message || '멤버 삭제에 실패했습니다.', 
         type: 'error' 
       });
     } finally {
       setProcessingMemberId(null);
-      setConfirmModal({ show: false, type: null, memberId: null });
+      setConfirmModal({ show: false, memberId: null });
       // 3초 후 상태 메시지 초기화
       setTimeout(() => setStatusMessage({ text: '', type: '' }), 3000);
     }
@@ -107,7 +102,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
 
   // 확인 모달 닫기
   const handleCloseConfirmModal = () => {
-    setConfirmModal({ show: false, type: null, memberId: null });
+    setConfirmModal({ show: false, memberId: null });
   };
 
   // 역할 표시명 가져오기
@@ -129,7 +124,7 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
         <>
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
             <button 
-              onClick={() => setShowAddMemberPopup(true)}
+              onClick={onAddMember}
               style={{
                 backgroundColor: '#000000',
                 color: 'white',
@@ -168,94 +163,92 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
             </div>
           )}
           
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '2px solid #E5E5E5' }}>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>이름</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>이메일</th>
-                <th style={{ padding: '0.75rem', textAlign: 'left' }}>역할</th>
-                <th style={{ padding: '0.75rem', textAlign: 'center' }}>관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((member) => (
-                <tr key={member.memberId} style={{ 
-                  borderBottom: '1px solid #E5E5E5',
-                  backgroundColor: processingMemberId === member.memberId ? '#fafafa' : 'transparent'
-                }}>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {member.studentName}
-                  </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {member.studentEmail}
-                  </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
-                    {canChangeRole(member.memberRole) ? (
-                      <select 
-                        value={member.memberRole || '로딩 안됨'} 
-                        onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
-                        disabled={processingMemberId === member.memberId}
-                        style={{ 
-                          padding: '0.25rem 0.5rem', 
-                          borderRadius: '4px',
-                          border: '1px solid #ddd',
-                          backgroundColor: member.memberRole === 'CREATOR' ? '#ffebee' :
-                                           member.memberRole === 'HOST' ? '#e3f2fd' : 'white'
-                        }}
-                      >
-                        {!member.memberRole && <option value="로딩 안됨">로딩 안됨</option>}
-                        <option value="HOST">관리자</option>
-                        <option value="PARTICIPANT">참여자</option>
-                      </select>
-                    ) : (
-                      <span style={{ 
-                        display: 'inline-block',
-                        padding: '0.25rem 0.5rem',
-                        backgroundColor: '#ffebee',
-                        borderRadius: '4px',
-                        color: '#c62828',
-                        fontWeight: 'bold'
-                      }}>
-                        {getRoleDisplayName(member.memberRole)}
-                      </span>
-                    )}
-                  </td>
-                  <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
-                    {/* 스터디 생성자와 관리자는 삭제 버튼 표시하지 않음 */}
-                    {canDeleteMember(member.memberRole) ? (
-                      <button 
-                        onClick={() => handleShowDeleteConfirm(member.memberId)}
-                        disabled={processingMemberId === member.memberId}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          cursor: 'pointer'
-                        }}
-                        title="멤버 삭제"
-                      >
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
-                        </svg>
-                      </button>
-                    ) : (
-                      <span>-</span>
-                    )}
-                  </td>
+          {members.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '2rem', color: '#666' }}>
+              회원이 없습니다. 회원을 추가해 주세요.
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #E5E5E5' }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>이름</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>이메일</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>역할</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center' }}>관리</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {/* 회원 추가 팝업 */}
-          {showAddMemberPopup && (
-            <AddMemberModal
-              onClose={handleClosePopup}
-              onSuccess={fetchMembers}
-            />
+              </thead>
+              <tbody>
+                {members.map((member) => (
+                  <tr key={member.memberId} style={{ 
+                    borderBottom: '1px solid #E5E5E5',
+                    backgroundColor: processingMemberId === member.memberId ? '#fafafa' : 'transparent'
+                  }}>
+                    <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                      {member.studentName}
+                    </td>
+                    <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                      {member.studentEmail}
+                    </td>
+                    <td style={{ padding: '0.75rem', verticalAlign: 'middle' }}>
+                      {canChangeRole(member.memberRole) ? (
+                        <select 
+                          value={member.memberRole || '로딩 안됨'} 
+                          onChange={(e) => handleChangeRole(member.memberId, e.target.value)}
+                          disabled={processingMemberId === member.memberId}
+                          style={{ 
+                            padding: '0.25rem 0.5rem', 
+                            borderRadius: '4px',
+                            border: '1px solid #ddd',
+                            backgroundColor: member.memberRole === 'CREATOR' ? '#ffebee' :
+                                            member.memberRole === 'HOST' ? '#e3f2fd' : 'white'
+                          }}
+                        >
+                          {!member.memberRole && <option value="로딩 안됨">로딩 안됨</option>}
+                          <option value="HOST">관리자</option>
+                          <option value="PARTICIPANT">참여자</option>
+                        </select>
+                      ) : (
+                        <span style={{ 
+                          display: 'inline-block',
+                          padding: '0.25rem 0.5rem',
+                          backgroundColor: '#ffebee',
+                          borderRadius: '4px',
+                          color: '#c62828',
+                          fontWeight: 'bold'
+                        }}>
+                          {getRoleDisplayName(member.memberRole)}
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ padding: '0.75rem', verticalAlign: 'middle', textAlign: 'center' }}>
+                      {/* 스터디 생성자와 관리자는 삭제 버튼 표시하지 않음 */}
+                      {canDeleteMember(member.memberRole) ? (
+                        <button 
+                          onClick={() => handleShowDeleteConfirm(member.memberId)}
+                          disabled={processingMemberId === member.memberId}
+                          style={{ 
+                            background: 'none', 
+                            border: 'none', 
+                            cursor: 'pointer'
+                          }}
+                          title="멤버 삭제"
+                        >
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" fill="#E53935"/>
+                          </svg>
+                        </button>
+                      ) : (
+                        <span>-</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
           
           {/* 멤버 삭제 확인 모달 */}
-          {confirmModal.show && confirmModal.type === 'delete' && (
+          {confirmModal.show && (
             <div style={{
               position: 'fixed',
               top: 0,
@@ -314,11 +307,13 @@ function MemberManagement({ members, loading, error, fetchMembers }) {
   );
 }
 
-MemberManagement.propTypes = {
+MemberList.propTypes = {
   members: PropTypes.array.isRequired,
   loading: PropTypes.bool.isRequired,
   error: PropTypes.string,
-  fetchMembers: PropTypes.func.isRequired
+  onChangeRole: PropTypes.func.isRequired,
+  onDeleteMember: PropTypes.func.isRequired,
+  onAddMember: PropTypes.func.isRequired
 };
 
-export default MemberManagement; 
+export default MemberList; 
