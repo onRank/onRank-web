@@ -28,7 +28,9 @@ function StudyManagement() {
 
   // 이미지 로드 완료 핸들러
   const handleImageLoad = () => {
+    console.log('이미지 로드 성공:', imageRef.current?.src);
     setImageLoaded(true);
+    setError(null); // 이미지가 로드되면 이전 오류 메시지 제거
   };
 
   // 이미지 로드 실패 핸들러
@@ -36,16 +38,8 @@ function StudyManagement() {
     console.error('이미지 로드 실패:', studyImageUrl);
     setImageLoaded(false);
     
-    // 직접 이미지 URL을 설정해보기
-    if (studyImageUrl && studyImageUrl.includes('cloudfront.net')) {
-      const originalUrl = studyImageUrl.split('?')[0]; // 타임스탬프 제거
-      
-      // 원본 이미지 URL 직접 사용 시도
-      console.log('원본 URL로 다시 시도:', originalUrl);
-      setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
-    } else {
-      setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
-    }
+    // 에러 메시지 표시
+    setError(`이미지 로드에 실패했습니다. URL: ${studyImageUrl}`);
   };
 
   // 컴포넌트 마운트 시 데이터 로드
@@ -70,19 +64,22 @@ function StudyManagement() {
       setAbsentPoint(data.absentPoint || 0);
       setLatePoint(data.latePoint || 0);
       
-      // memberContext 확인하고 이미지 URL 설정
+      // 디버깅용 로그
       console.log('서버 응답 데이터:', response);
       
+      // 이미지 URL 처리
       if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-        // S3 URL을 CloudFront URL로 변환
-        const s3Url = response.memberContext.file.fileUrl;
-        const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+        const imageUrl = response.memberContext.file.fileUrl;
+        console.log('원본 이미지 URL:', imageUrl);
         
-        // 캐시 방지를 위해 타임스탬프 추가
+        // S3 URL을 CloudFront URL로 변환 (필요한 경우)
+        const cloudFrontUrl = convertToCloudFrontUrl(imageUrl);
+        
+        // 캐시 방지를 위한 타임스탬프 추가
         const timestamp = new Date().getTime();
         const uncachedUrl = `${cloudFrontUrl}?t=${timestamp}`;
         
-        console.log('사용할 이미지 URL:', uncachedUrl);
+        console.log('최종 사용할 이미지 URL:', uncachedUrl);
         setStudyImageUrl(uncachedUrl);
       } else {
         console.log('이미지 URL이 없음:', response);
@@ -175,9 +172,6 @@ function StudyManagement() {
       );
     }
     
-    // 이미지 URL에서 타임스탬프 제거 - 캐시 이점 활용
-    const displayUrl = studyImageUrl.split('?')[0];
-    
     return (
       <div style={{ 
         border: '3px solid #FF0000', 
@@ -190,7 +184,7 @@ function StudyManagement() {
       }}>
         <img 
           ref={imageRef}
-          src={displayUrl} 
+          src={studyImageUrl} 
           alt="스터디 이미지" 
           crossOrigin="anonymous"
           onLoad={handleImageLoad}
@@ -224,6 +218,17 @@ function StudyManagement() {
             width: '100%', 
             height: '100%', 
             objectFit: 'cover' 
+          }}
+          onError={(e) => {
+            console.error('미리보기 이미지 로드 실패:', e.target.src);
+            // 로컬 파일인 경우(blob:)는 그대로 두고, 원격 URL인 경우만 수정 시도
+            if (!e.target.src.startsWith('blob:') && e.target.src.includes('cloudfront.net')) {
+              // 수정된 URL 시도
+              const parts = e.target.src.split('/');
+              const filename = parts[parts.length - 1].split('?')[0]; // 타임스탬프 제거
+              const urlStudyId = studyId || '1';
+              e.target.src = `https://d37q7cndbbsph5.cloudfront.net/study/${urlStudyId}/${filename}`;
+            }
           }} 
         />
       </div>

@@ -5,34 +5,29 @@
  * @returns {string} CloudFront를 통한 이미지 URL
  */
 export const convertToCloudFrontUrl = (s3Url) => {
-  console.log('원본 S3 URL:', s3Url);
+  console.log('백엔드에서 제공한 URL:', s3Url);
   
+  // 백엔드에서 제공하는 URL을 그대로 사용
+  if (!s3Url) return '';
+  
+  // CloudFront 도메인 확인용
+  const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
+  
+  // 이미 CloudFront URL인 경우 그대로 반환
+  if (s3Url.includes(cloudFrontDomain)) {
+    return s3Url;
+  }
+  
+  // S3 URL인 경우에만 기본 변환 처리
+  // 이 부분은 백엔드와 협의하여 필요한 경우에만 사용
   try {
-    if (!s3Url) return '';
-    
-    // URL에서 경로 부분 추출
     const urlObj = new URL(s3Url);
-    const pathParts = urlObj.pathname.split('/');
-    
-    // 가능한 경우 study/{studyId}/{filename} 형태에서 필요한 부분 추출
-    // S3 버킷 이름과 'study' 부분은 제외하고 나머지 경로만 사용
-    let relevantPath = '';
-    
-    // 일반적으로 S3 URL은 /bucket-name/path 형태
-    if (pathParts.length >= 3) {
-      // 첫 번째 빈 문자열('/')과 버킷 이름을 제외한 나머지 경로
-      relevantPath = pathParts.slice(2).join('/');
-    }
-    
-    // CloudFront 도메인으로 URL 구성
-    const cloudFrontDomain = 'https://d37q7cndbbsph5.cloudfront.net';
-    const cloudFrontUrl = `${cloudFrontDomain}/${relevantPath}`;
-    
-    console.log('변환된 CloudFront URL:', cloudFrontUrl);
+    const pathname = urlObj.pathname;
+    const cloudFrontUrl = `${cloudFrontDomain}${pathname}`;
+    console.log('S3 URL을 CloudFront URL로 변환:', cloudFrontUrl);
     return cloudFrontUrl;
   } catch (error) {
     console.error('URL 변환 중 오류 발생:', error);
-    // 오류 발생 시 원본 URL 반환
     return s3Url;
   }
 };
