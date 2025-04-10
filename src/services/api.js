@@ -1987,9 +1987,9 @@ export const noticeService = {
     }
   },
 
-  createStudy: async (newNotice) => {
+  createNotice: async (newNotice) => {
     try {
-      console.log("[NoticeService] 스터디 생성 요청:", newNotice);
+      console.log("[NoticeService] 공지사항 생성 요청:", newNotice);
 
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
@@ -2003,7 +2003,7 @@ export const noticeService = {
       // 토큰 확인
       const token = tokenUtils.getToken();
       if (!token) {
-        console.error("[NoticeService] 토큰 없음, 스터디 생성 불가");
+        console.error("[NoticeService] 토큰 없음, 공지사항 생성 불가");
         throw new Error("인증 토큰이 없습니다. 로그인이 필요합니다.");
       }
 
@@ -2012,18 +2012,22 @@ export const noticeService = {
         ? token
         : `Bearer ${token}`;
 
-      // API 요청 - 백엔드와 일치시키기 위해 경로 다시 변경: /studies -> /studies/add (Swagger UI 기준)
-      const response = await api.post(`/studies/${studyId}/add`, requestData, {
-        headers: {
-          Authorization: tokenWithBearer,
-          "Content-Type": "application/json",
-          "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
-          Accept: "application/json", // JSON 응답 요청
-        },
-        withCredentials: true,
-      });
+      // API 요청
+      const response = await api.post(
+        `/studies/${studyId}/notices/add`,
+        requestData,
+        {
+          headers: {
+            Authorization: tokenWithBearer,
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
+            Accept: "application/json", // JSON 응답 요청
+          },
+          withCredentials: true,
+        }
+      );
 
-      console.log("[NoticeService] 스터디 생성 응답:", response.data);
+      console.log("[NoticeService] 공지사항 생성 응답:", response.data);
 
       // 기존 코드 제거 및 새로운 파일 업로드 로직 추가
       // 여러 파일 업로드 처리: 이미지 파일 및 일반 파일 모두 지원
@@ -2132,7 +2136,7 @@ export const noticeService = {
           console.error("[NoticeService] 파일 업로드 중 오류:", uploadError);
           return {
             ...response.data,
-            warning: "스터디는 생성되었으나 일부 파일 업로드에 실패했습니다.",
+            warning: "공지사항는 생성되었으나 일부 파일 업로드에 실패했습니다.",
           };
         }
       }
@@ -2140,14 +2144,14 @@ export const noticeService = {
       // 3. 최종 응답 반환
       return response.data;
     } catch (error) {
-      console.error("[NoticeService] 스터디 생성 오류:", error);
+      console.error("[NoticeService] 공지사항 생성 오류:", error);
 
       // 인증 오류인 경우 (401, 403)
       if (error.response && error.response.status === 403) {
         console.error("[NoticeService] 인증 오류 발생:", error.response.status);
 
         // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
-        const authError = new Error("해당 스터디에 대한 권한이 없습니다.");
+        const authError = new Error("해당 공지사항에 대한 권한이 없습니다.");
         authError.type = "AUTH_ERROR";
         authError.requireRelogin = true;
 
