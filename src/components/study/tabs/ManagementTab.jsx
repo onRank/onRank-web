@@ -14,10 +14,12 @@ import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
 import { 
   uploadImageToS3, 
-  handleImageFileChange, 
+  handleImageFileChange
+} from '../../../utils/imageUtils';
+import {
   useImageLoading,
   StudyImage
-} from '../../../utils/imageUtils';
+} from '../StudyImageComponents';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
