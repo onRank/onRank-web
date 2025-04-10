@@ -1944,12 +1944,12 @@ export const noticeService = {
   // 공지사항 생성
   createNotice: async (studyId, newNotice, files = []) => {
     try {
-      console.log("[noticeService] 공지사항항 생성 요청:", newNotice);
+      console.log("[noticeService] 공지사항 생성 요청:", newNotice);
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
         noticeTitle: newNotice.noticeTitle || "",
         noticeContent: newNotice.noticeContent || "",
-        fileNames: newNotice.fileNames || [],
+        fileNames: files.map((file) => file.originalName) || [],
       };
 
       console.log("[noticeService] 변환된 요청 데이터:", requestData);
@@ -2058,18 +2058,26 @@ export const noticeService = {
       console.log("[noticeService] 공지사항 생성 성공:", response.data);
 
       // 파일 업로드 처리
-      if (files && files.length > 0 && response.data.uploadUrls) {
+      if (response.data && response.data.presignedUrls && files.length > 0) {
         try {
-          for (const file of files) {
-            const uploadResponse = await axios.put(
-              file.presignedUrl,
-              file.file,
-              {
-                headers: {
-                  "Content-Type": file.file.type,
-                },
-              }
-            );
+          // presignedUrls와 files 배열을 매칭하여 업로드
+          for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const presignedUrl = response.data.presignedUrls[i];
+
+            if (!presignedUrl) {
+              console.error(
+                "[noticeService] presignedUrl이 없습니다:",
+                file.originalName
+              );
+              continue;
+            }
+
+            const uploadResponse = await axios.put(presignedUrl, file.file, {
+              headers: {
+                "Content-Type": file.file.type,
+              },
+            });
 
             if (
               uploadResponse.status === 200 ||
@@ -2349,6 +2357,32 @@ export const noticeService = {
         success: false,
         message: error.message || "공지사항 수정 중 오류가 발생했습니다.",
       };
+    }
+  },
+
+  uploadFilesToS3: async (uploadUrl, imageFile) => {
+    try {
+      console.log("[StudyService] S3 이미지 업로드 시작:", {
+        uploadUrl: uploadUrl.substring(0, 100) + "...",
+        fileName: imageFile.name,
+        fileSize: imageFile.size,
+      });
+
+      await axios.put(uploadUrl, imageFile, {
+        headers: {
+          "Content-Type": imageFile.type,
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+      });
+
+      console.log("[NoticeService] S3 파일 업로드 완료");
+      return true;
+    } catch (error) {
+      console.error("[NoticeService] S3 파일 업로드 실패:", error);
+      throw new Error(
+        "파일 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류")
+      );
     }
   },
 };
