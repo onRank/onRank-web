@@ -12,7 +12,12 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
-import { handleStudyImageUpload } from '../../../utils/imageUtils';
+import { 
+  uploadImageToS3, 
+  handleImageFileChange, 
+  useImageLoading,
+  StudyImage
+} from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -192,25 +197,14 @@ function ManagementTab() {
   const [latePoint, setLatePoint] = useState(0);
   const [studyStatus, setStudyStatus] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [imageLoading, setImageLoading] = useState(false); // 이미지 로딩 상태 추가
+  // 이미지 로딩 관련 훅 사용
+  const { loading: imageLoading, setLoading: setImageLoading, handleLoad, handleError } = useImageLoading(studyImageUrl);
   const imageRef = useRef(null);
 
   // 관리 탭 데이터 가져오기
   useEffect(() => {
     fetchManagementData();
   }, [studyId]);
-
-  // 이미지 로드 완료 핸들러
-  const handleImageLoad = () => {
-    console.log("이미지 로드 완료");
-    setImageLoading(false);
-  };
-
-  // 이미지 로드 오류 핸들러
-  const handleImageError = () => {
-    console.error("이미지 로드 실패");
-    setImageLoading(false);
-  };
 
   // 데이터 가져오는 함수
   const fetchManagementData = async () => {
@@ -233,9 +227,6 @@ function ManagementTab() {
       
       // 이미지 URL 추출 및 처리
       if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-        // 이미지 로딩 상태 설정
-        setImageLoading(true);
-        
         // 원본 S3 URL 그대로 사용
         const imageUrl = response.data.memberContext.file.fileUrl;
         console.log('원본 이미지 URL:', imageUrl);
@@ -326,23 +317,11 @@ function ManagementTab() {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      console.log("이미지 파일 선택됨:", {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
-      
-      setStudyImageFile(file);
-      // 이미지 미리보기 URL 생성
-      const previewUrl = URL.createObjectURL(file);
-      setStudyImageUrl(previewUrl);
-      
-      console.log("이미지 상태 업데이트 완료:", {
-        file: file.name,
-        previewUrl: previewUrl.substring(0, 30) + "..."
-      });
+    const result = handleImageFileChange(e);
+    if (result.file && result.previewUrl) {
+      setStudyImageFile(result.file);
+      setStudyImageUrl(result.previewUrl);
+      console.log("이미지 상태 업데이트 완료");
     }
   };
 
@@ -356,14 +335,7 @@ function ManagementTab() {
         return;
       }
 
-      console.log("저장 시작 - 이미지 파일 상태:", {
-        exists: !!studyImageFile,
-        name: studyImageFile?.name,
-        size: studyImageFile?.size,
-        type: studyImageFile?.type,
-        previewUrl: studyImageUrl?.substring(0, 30) + "..."
-      });
-
+      console.log("저장 시작");
       setLoading(true);
       setError(null);
 
@@ -378,8 +350,6 @@ function ManagementTab() {
         fileName: studyImageFile ? studyImageFile.name : null
       };
 
-      console.log("스터디 정보 수정 요청 데이터:", requestData);
-
       // 백엔드 API 호출 (JSON 형식으로 전송)
       const response = await api.put(`/studies/${studyId}/management`, requestData, {
         headers: {
@@ -390,16 +360,10 @@ function ManagementTab() {
       });
 
       console.log("스터디 정보 수정 응답:", response.data);
-      console.log("응답 구조 확인:", {
-        hasData: !!response.data.data,
-        dataProps: response.data.data ? Object.keys(response.data.data) : [],
-        hasUploadUrl: !!response.data.data?.uploadUrl,
-        uploadUrl: response.data.data?.uploadUrl ? (response.data.data.uploadUrl.substring(0, 50) + "...") : "없음"
-      });
       
       // 이미지 파일이 있는 경우 S3에 직접 업로드
       if (studyImageFile) {
-        console.log("이미지 업로드 프로세스 시작 - 파일 존재");
+        console.log("이미지 업로드 프로세스 시작");
         try {
           // 이미지 로딩 상태 설정
           setImageLoading(true);
@@ -408,11 +372,9 @@ function ManagementTab() {
           const uploadUrl = response.data.data?.uploadUrl;
           
           if (!uploadUrl) {
-            console.error("응답에서 uploadUrl을 찾을 수 없음:", response.data);
+            console.error("응답에서 uploadUrl을 찾을 수 없음");
             throw new Error("업로드 URL을 받지 못했습니다.");
           }
-          
-          console.log("uploadUrl 확인:", uploadUrl.substring(0, 80) + "...");
           
           // S3에 직접 업로드
           await uploadImageToS3(uploadUrl, studyImageFile);
@@ -430,8 +392,6 @@ function ManagementTab() {
           setLoading(false);
           return;
         }
-      } else {
-        console.log("이미지 파일이 없어 업로드 건너뜀");
       }
 
       console.log("스터디 정보 수정 성공");
@@ -488,94 +448,15 @@ function ManagementTab() {
 
   // 이미지 부분을 렌더링하는 코드
   const renderStudyImage = () => {
-    if (!studyImageUrl) {
-      return (
-        <div style={{ 
-          border: '1px dashed #ccc', 
-          borderRadius: '8px', 
-          padding: '50px', 
-          textAlign: 'center',
-          backgroundColor: '#f9f9f9',
-          color: '#999',
-          width: '400px',
-          margin: '0 auto 20px auto'
-        }}>
-          등록된 이미지가 없습니다
-        </div>
-      );
-    }
-    
-    // 이미지 로딩 중일 때 로딩 인디케이터 표시
-    if (imageLoading) {
-      return (
-        <div style={{ 
-          border: '3px solid #0066ff', 
-          borderRadius: '8px', 
-          padding: '15px', 
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          backgroundColor: '#f0f0f0',
-          margin: '0 auto 20px auto',
-          maxWidth: '600px',
-          minHeight: '300px'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <LoadingIcon style={{ fontSize: '40px', color: '#0066ff' }} />
-            <p style={{ marginTop: '10px', color: '#666' }}>이미지 로딩 중...</p>
-          </div>
-        </div>
-      );
-    }
-    
     return (
-      <div style={{ 
-        border: '3px solid #FF0000', 
-        borderRadius: '8px', 
-        padding: '15px', 
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#f0f0f0',
-        margin: '0 auto 20px auto',
-        maxWidth: '600px',
-        minHeight: '200px'
-      }}>
-        {/* 모든 이미지 타입에 대해 img 태그 사용 */}
-        <img 
-          ref={imageRef}
-          src={studyImageUrl} 
-          alt="스터디 이미지" 
-          style={{ 
-            width: 'auto',
-            height: 'auto',
-            maxWidth: '100%',
-            maxHeight: '400px',
-            borderRadius: '4px', 
-            border: '1px solid #000',
-            backgroundColor: '#FFF',
-            display: 'block',
-            objectFit: 'contain'
-          }} 
-          onLoad={handleImageLoad}
-          onError={handleImageError}
-        />
-      </div>
+      <StudyImage 
+        imageUrl={studyImageUrl}
+        loading={imageLoading}
+        onLoad={handleLoad}
+        onError={handleError}
+      />
     );
   };
-
-  // 컴포넌트 마운트 시 및 이미지 URL 변경 시 이미지 로딩 상태 설정
-  useEffect(() => {
-    if (studyImageUrl && !studyImageUrl.startsWith('blob:')) {
-      setImageLoading(true);
-      
-      // 이미지 프리로드
-      const img = new Image();
-      img.onload = handleImageLoad;
-      img.onerror = handleImageError;
-      img.src = studyImageUrl;
-    }
-  }, [studyImageUrl]);
 
   if (loading) {
     return (
@@ -694,40 +575,6 @@ function ManagementTab() {
           <div style={{ marginBottom: '20px' }}>
             <h3>스터디 이미지</h3>
             {renderStudyImage()}
-            
-            {studyImageUrl && (
-              <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
-                <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
-                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <a 
-                    href={studyImageUrl}
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    style={{ 
-                      display: 'inline-block',
-                      color: '#0066cc',
-                      textDecoration: 'underline'
-                    }}
-                  >
-                    새 탭에서 이미지 열기
-                  </a>
-                  <button
-                    onClick={fetchManagementData}
-                    style={{
-                      padding: '2px 8px',
-                      fontSize: '0.8rem',
-                      backgroundColor: '#f0f0f0',
-                      border: '1px solid #ddd',
-                      borderRadius: '4px',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    이미지 새로고침
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
           
           <TabTitle>출석 점수 설정</TabTitle>
