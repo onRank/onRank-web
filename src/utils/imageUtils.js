@@ -109,4 +109,87 @@ export const getImageUrlFromCache = (studyId) => {
     console.error('캐시된 이미지 URL 조회 실패:', error);
     return null;
   }
+};
+
+/**
+ * 이미지를 미리 로드하는 함수
+ * 
+ * @param {string} imageUrl - 미리 로드할 이미지 URL
+ * @returns {Promise<boolean>} 로드 성공 여부
+ */
+export const preloadImage = (imageUrl) => {
+  return new Promise((resolve) => {
+    if (!imageUrl) {
+      resolve(false);
+      return;
+    }
+    
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = imageUrl;
+    
+    // 이미 캐시된 경우 onload가 발생하지 않을 수 있으므로 timeout 설정
+    setTimeout(() => resolve(true), 500);
+  });
+};
+
+/**
+ * 이미지 URL에 타임스탬프를 추가하여 캐시를 방지하는 함수
+ * 
+ * @param {string} imageUrl - 원본 이미지 URL
+ * @returns {string} 타임스탬프가 추가된 이미지 URL
+ */
+export const getUncachedImageUrl = (imageUrl) => {
+  if (!imageUrl) return '';
+  
+  const timestamp = new Date().getTime();
+  const separator = imageUrl.includes('?') ? '&' : '?';
+  return `${imageUrl}${separator}t=${timestamp}`;
+};
+
+/**
+ * 이미지 요소의 src를 새로고침하는 함수
+ * 
+ * @param {React.RefObject<HTMLImageElement>} imgRef - 이미지 요소에 대한 React ref
+ * @param {string} imageUrl - 이미지 URL
+ */
+export const refreshImageSrc = (imgRef, imageUrl) => {
+  if (!imgRef?.current || !imageUrl) return;
+  
+  imgRef.current.src = getUncachedImageUrl(imageUrl);
+};
+
+/**
+ * CloudFront 이미지 URL 로딩을 처리하는 통합 함수
+ * 
+ * @param {string} s3Url - S3 URL
+ * @param {function} setImageUrl - 이미지 URL 상태 설정 함수
+ * @param {string} studyId - 스터디 ID (캐싱용)
+ * @returns {Promise<string|null>} 로드된 이미지 URL 또는 null
+ */
+export const handleImageLoading = async (s3Url, setImageUrl, studyId) => {
+  if (!s3Url) return null;
+  
+  try {
+    // S3 URL을 CloudFront URL로 변환
+    const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
+    
+    // 이미지 미리 로드
+    const success = await preloadImage(cloudFrontUrl);
+    
+    if (success) {
+      // URL 상태 업데이트 및 캐싱
+      setImageUrl(cloudFrontUrl);
+      if (studyId) {
+        saveImageUrlToCache(studyId, cloudFrontUrl);
+      }
+      return cloudFrontUrl;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('이미지 로딩 처리 실패:', error);
+    return null;
+  }
 }; 

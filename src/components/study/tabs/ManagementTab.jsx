@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import { MdAttachMoney } from "react-icons/md";
@@ -12,7 +12,15 @@ import { api, tokenUtils } from "../../../services/api";
 import MemberManagement from './management/MemberManagement';
 import StudyManagement from './management/StudyManagement';
 import PointManagement from './management/PointManagement';
-import { convertToCloudFrontUrl, saveImageUrlToCache, getImageUrlFromCache } from '../../../utils/imageUtils';
+import { 
+  convertToCloudFrontUrl, 
+  saveImageUrlToCache, 
+  getImageUrlFromCache,
+  preloadImage,
+  refreshImageSrc,
+  getUncachedImageUrl,
+  handleImageLoading
+} from '../../../utils/imageUtils';
 
 // 스타일 컴포넌트 정의
 const ManagementTabContainer = styled.div`
@@ -192,12 +200,32 @@ function ManagementTab() {
   const [latePoint, setLatePoint] = useState(0);
   const [studyStatus, setStudyStatus] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageRef = useRef(null);
+
+  // 이미지 로드 완료 핸들러
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  // 이미지 로드 실패 핸들러
+  const handleImageError = () => {
+    console.error('이미지 로드 실패:', studyImageUrl);
+    setImageLoaded(false);
+    
+    // 이미지 로드 실패 시 캐시 무시하고 다시 로드 시도
+    if (imageRef.current && studyImageUrl) {
+      refreshImageSrc(imageRef, studyImageUrl);
+    }
+  };
 
   // localStorage에서 캐시된 이미지 URL 가져오기
   useEffect(() => {
     const cachedImageUrl = getImageUrlFromCache(studyId);
     if (cachedImageUrl) {
       setStudyImageUrl(cachedImageUrl);
+      // 이미지 미리 로드
+      preloadImage(cachedImageUrl);
     }
   }, [studyId]);
 
@@ -223,16 +251,14 @@ function ManagementTab() {
         setStudyName(data.studyName);
         setStudyContent(data.studyContent);
         
-        // 이미지 URL 추출 로직 수정
-        // 올바른 경로에서 이미지 URL 가져오기
+        // 이미지 URL 추출 및 처리
         if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-          // S3 URL을 CloudFront URL로 변환
-          const s3Url = response.data.memberContext.file.fileUrl;
-          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          setStudyImageUrl(cloudFrontUrl);
-          
-          // localStorage에 이미지 URL 저장
-          saveImageUrlToCache(studyId, cloudFrontUrl);
+          // 통합 이미지 로딩 처리 유틸 함수 사용
+          await handleImageLoading(
+            response.data.memberContext.file.fileUrl,
+            setStudyImageUrl,
+            studyId
+          );
         }
         
         setStudyGoogleFormUrl(data.studyGoogleFormUrl || "");
@@ -329,10 +355,12 @@ function ManagementTab() {
         
         // 이미지 URL 복원 - 올바른 경로 사용
         if (response.data.memberContext && response.data.memberContext.file && response.data.memberContext.file.fileUrl) {
-          // S3 URL을 CloudFront URL로 변환
-          const s3Url = response.data.memberContext.file.fileUrl;
-          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          setStudyImageUrl(cloudFrontUrl);
+          // 통합 이미지 로딩 처리 유틸 함수 사용 
+          await handleImageLoading(
+            response.data.memberContext.file.fileUrl,
+            setStudyImageUrl,
+            studyId
+          );
         } else {
           setStudyImageUrl('');
         }
@@ -435,6 +463,56 @@ function ManagementTab() {
     }
   };
 
+  // 이미지 부분을 렌더링하는 코드
+  const renderStudyImage = () => {
+    if (!studyImageUrl) {
+      return (
+        <div style={{ 
+          border: '1px dashed #ccc', 
+          borderRadius: '8px', 
+          padding: '30px', 
+          textAlign: 'center',
+          backgroundColor: '#f9f9f9',
+          color: '#999',
+          maxWidth: '300px'
+        }}>
+          등록된 이미지가 없습니다
+        </div>
+      );
+    }
+    
+    return (
+      <div style={{ 
+        border: '3px solid #FF0000', 
+        borderRadius: '8px', 
+        padding: '15px', 
+        display: 'inline-block',
+        backgroundColor: '#f0f0f0',
+        minHeight: '150px',
+        minWidth: '200px'
+      }}>
+        <img 
+          ref={imageRef}
+          src={getUncachedImageUrl(studyImageUrl)} 
+          alt="스터디 이미지" 
+          crossOrigin="anonymous"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
+          style={{ 
+            width: 'auto',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '300px',
+            borderRadius: '4px', 
+            border: '1px solid #000',
+            backgroundColor: '#FFF',
+            display: 'inline-block'
+          }} 
+        />
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <LoadingWrapper>
@@ -522,224 +600,203 @@ function ManagementTab() {
       )}
       
       {/* 스터디 관리 컴포넌트 */}
-      {managementTab === '스터디' && (
+      {managementTab === '스터디' && !isEditing && (
         <>
-          {isEditing ? (
-            <>
-              <div style={{ marginBottom: '24px' }}>
-                <TabTitle>스터디 정보 수정</TabTitle>
+          <StatusContainer>
+            <StatusItem>
+              <StatusLabel>스터디 이름:</StatusLabel>
+              <StatusValue>{studyName}</StatusValue>
+            </StatusItem>
+            
+            <StatusItem>
+              <StatusLabel>스터디 설명:</StatusLabel>
+              <StatusValue>{studyContent}</StatusValue>
+            </StatusItem>
+            
+            {studyGoogleFormUrl && (
+              <StatusItem>
+                <StatusLabel>구글 폼:</StatusLabel>
+                <StatusValue>
+                  <a href={studyGoogleFormUrl} target="_blank" rel="noopener noreferrer">
+                    {studyGoogleFormUrl}
+                  </a>
+                </StatusValue>
+              </StatusItem>
+            )}
+            
+            {renderStudyStatus()}
+          </StatusContainer>
+          
+          <div style={{ marginBottom: '20px' }}>
+            <h3>스터디 이미지</h3>
+            {renderStudyImage()}
+            
+            {studyImageUrl && (
+              <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
+                <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
+                <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <a 
+                    href={studyImageUrl}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-block',
+                      color: '#0066cc',
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    새 탭에서 이미지 열기
+                  </a>
+                  <button
+                    onClick={() => refreshImageSrc(imageRef, studyImageUrl)}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '0.8rem',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    이미지 새로고침
+                  </button>
+                </div>
               </div>
-              
-              <InputContainer>
-                <InputLabel>스터디 이름</InputLabel>
-                <Input
-                  type="text"
-                  value={studyName}
-                  onChange={(e) => setStudyName(e.target.value)}
-                  placeholder="스터디 이름"
-                />
-              </InputContainer>
-              
-              <InputContainer>
-                <InputLabel>소개</InputLabel>
-                <TextArea
-                  value={studyContent}
-                  onChange={(e) => setStudyContent(e.target.value)}
-                  placeholder="스터디 설명"
-                  rows={4}
-                />
-              </InputContainer>
-              
-              <InputContainer>
-                <InputLabel>이미지</InputLabel>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageChange}
-                    style={{ flex: 1 }}
+            )}
+          </div>
+          
+          <TabTitle>출석 점수 설정</TabTitle>
+          <PointContainer>
+            <PointItem>
+              <PointLabel>
+                <BsPatchCheckFill color="green" /> 출석:
+              </PointLabel>
+              <PointValue>{presentPoint > 0 ? `+${presentPoint}` : presentPoint} 점</PointValue>
+            </PointItem>
+            
+            <PointItem>
+              <PointLabel>
+                <GrFormClose color="red" /> 결석:
+              </PointLabel>
+              <PointValue>{absentPoint > 0 ? `+${absentPoint}` : absentPoint} 점</PointValue>
+            </PointItem>
+            
+            <PointItem>
+              <PointLabel>
+                <MdOutlineAccessTimeFilled color="orange" /> 지각:
+              </PointLabel>
+              <PointValue>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</PointValue>
+            </PointItem>
+          </PointContainer>
+          
+          <ButtonContainer>
+            <SaveButton onClick={handleEdit}>수정</SaveButton>
+          </ButtonContainer>
+        </>
+      )}
+      
+      {/* 스터디 관리 컴포넌트 - 편집 모드 */}
+      {managementTab === '스터디' && isEditing && (
+        <>
+          <div style={{ marginBottom: '24px' }}>
+            <TabTitle>스터디 정보 수정</TabTitle>
+          </div>
+          
+          <InputContainer>
+            <InputLabel>스터디 이름</InputLabel>
+            <Input
+              type="text"
+              value={studyName}
+              onChange={(e) => setStudyName(e.target.value)}
+              placeholder="스터디 이름"
+            />
+          </InputContainer>
+          
+          <InputContainer>
+            <InputLabel>소개</InputLabel>
+            <TextArea
+              value={studyContent}
+              onChange={(e) => setStudyContent(e.target.value)}
+              placeholder="스터디 설명"
+              rows={4}
+            />
+          </InputContainer>
+          
+          <InputContainer>
+            <InputLabel>이미지</InputLabel>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                style={{ flex: 1 }}
+              />
+              {studyImageUrl && (
+                <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
+                  <img 
+                    ref={imageRef}
+                    src={studyImageUrl} 
+                    alt="스터디 이미지"
+                    crossOrigin="anonymous"
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />
-                  {studyImageUrl && (
-                    <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
-                      <img 
-                        src={studyImageUrl} 
-                        alt="스터디 이미지" 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
-                      />
-                    </div>
-                  )}
-                </div>
-                {studyImageUrl && (
-                  <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
-                    현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
-                  </div>
-                )}
-              </InputContainer>
-              
-              <InputContainer>
-                <InputLabel>구글폼링크(선택)</InputLabel>
-                <Input
-                  type="text"
-                  value={studyGoogleFormUrl}
-                  onChange={(e) => setStudyGoogleFormUrl(e.target.value)}
-                  placeholder="구글 폼 URL"
-                />
-              </InputContainer>
-              
-              <TabTitle>출석 점수 설정</TabTitle>
-              <PointContainer>
-                <InputContainer>
-                  <InputLabel>출석 점수</InputLabel>
-                  <Input
-                    type="number"
-                    value={presentPoint}
-                    onChange={(e) => setPresentPoint(parseInt(e.target.value))}
-                  />
-                </InputContainer>
-                
-                <InputContainer>
-                  <InputLabel>결석 점수</InputLabel>
-                  <Input
-                    type="number"
-                    value={absentPoint}
-                    onChange={(e) => setAbsentPoint(parseInt(e.target.value))}
-                  />
-                </InputContainer>
-                
-                <InputContainer>
-                  <InputLabel>지각 점수</InputLabel>
-                  <Input
-                    type="number"
-                    value={latePoint}
-                    onChange={(e) => setLatePoint(parseInt(e.target.value))}
-                  />
-                </InputContainer>
-              </PointContainer>
-              
-              <ButtonContainer>
-                <SaveButton onClick={handleSave}>저장</SaveButton>
-                <CancelButton onClick={handleCancel}>취소</CancelButton>
-              </ButtonContainer>
-            </>
-          ) : (
-            <>
-              <StatusContainer>
-                <StatusItem>
-                  <StatusLabel>스터디 이름:</StatusLabel>
-                  <StatusValue>{studyName}</StatusValue>
-                </StatusItem>
-                
-                <StatusItem>
-                  <StatusLabel>스터디 설명:</StatusLabel>
-                  <StatusValue>{studyContent}</StatusValue>
-                </StatusItem>
-                
-                {studyGoogleFormUrl && (
-                  <StatusItem>
-                    <StatusLabel>구글 폼:</StatusLabel>
-                    <StatusValue>
-                      <a href={studyGoogleFormUrl} target="_blank" rel="noopener noreferrer">
-                        {studyGoogleFormUrl}
-                      </a>
-                    </StatusValue>
-                  </StatusItem>
-                )}
-                
-                {renderStudyStatus()}
-              </StatusContainer>
-              
-              {studyImageUrl ? (
-                <div style={{ marginBottom: '20px' }}>
-                  <h3>스터디 이미지</h3>
-                  <div style={{ 
-                    border: '3px solid #FF0000', 
-                    borderRadius: '8px', 
-                    padding: '15px', 
-                    display: 'inline-block',
-                    backgroundColor: '#f0f0f0',
-                    minHeight: '150px',
-                    minWidth: '200px'
-                  }}>
-                    <img 
-                      src={studyImageUrl} 
-                      alt="스터디 이미지" 
-                      style={{ 
-                        width: 'auto',
-                        height: 'auto',
-                        maxWidth: '100%',
-                        maxHeight: '300px',
-                        borderRadius: '4px', 
-                        border: '1px solid #000',
-                        backgroundColor: '#FFF',
-                        display: 'inline-block'
-                      }} 
-                    />
-                  </div>
-                  
-                  <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
-                    <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
-                    <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
-                    <a 
-                      href={studyImageUrl}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      style={{ 
-                        display: 'inline-block',
-                        marginTop: '8px',
-                        color: '#0066cc',
-                        textDecoration: 'underline'
-                      }}
-                    >
-                      새 탭에서 이미지 열기
-                    </a>
-                  </div>
-                </div>
-              ) : (
-                <div style={{ marginBottom: '20px' }}>
-                  <h3>스터디 이미지</h3>
-                  <div style={{ 
-                    border: '1px dashed #ccc', 
-                    borderRadius: '8px', 
-                    padding: '30px', 
-                    textAlign: 'center',
-                    backgroundColor: '#f9f9f9',
-                    color: '#999',
-                    maxWidth: '300px'
-                  }}>
-                    등록된 이미지가 없습니다
-                  </div>
                 </div>
               )}
-              
-              <TabTitle>출석 점수 설정</TabTitle>
-              <PointContainer>
-                <PointItem>
-                  <PointLabel>
-                    <BsPatchCheckFill color="green" /> 출석:
-                  </PointLabel>
-                  <PointValue>{presentPoint > 0 ? `+${presentPoint}` : presentPoint} 점</PointValue>
-                </PointItem>
-                
-                <PointItem>
-                  <PointLabel>
-                    <GrFormClose color="red" /> 결석:
-                  </PointLabel>
-                  <PointValue>{absentPoint > 0 ? `+${absentPoint}` : absentPoint} 점</PointValue>
-                </PointItem>
-                
-                <PointItem>
-                  <PointLabel>
-                    <MdOutlineAccessTimeFilled color="orange" /> 지각:
-                  </PointLabel>
-                  <PointValue>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</PointValue>
-                </PointItem>
-              </PointContainer>
-              
-              <ButtonContainer>
-                <SaveButton onClick={handleEdit}>수정</SaveButton>
-              </ButtonContainer>
-            </>
-          )}
+            </div>
+            {studyImageUrl && (
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#666' }}>
+                현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
+              </div>
+            )}
+          </InputContainer>
+          
+          <InputContainer>
+            <InputLabel>구글폼링크(선택)</InputLabel>
+            <Input
+              type="text"
+              value={studyGoogleFormUrl}
+              onChange={(e) => setStudyGoogleFormUrl(e.target.value)}
+              placeholder="구글 폼 URL"
+            />
+          </InputContainer>
+          
+          <TabTitle>출석 점수 설정</TabTitle>
+          <PointContainer>
+            <InputContainer>
+              <InputLabel>출석 점수</InputLabel>
+              <Input
+                type="number"
+                value={presentPoint}
+                onChange={(e) => setPresentPoint(parseInt(e.target.value))}
+              />
+            </InputContainer>
+            
+            <InputContainer>
+              <InputLabel>결석 점수</InputLabel>
+              <Input
+                type="number"
+                value={absentPoint}
+                onChange={(e) => setAbsentPoint(parseInt(e.target.value))}
+              />
+            </InputContainer>
+            
+            <InputContainer>
+              <InputLabel>지각 점수</InputLabel>
+              <Input
+                type="number"
+                value={latePoint}
+                onChange={(e) => setLatePoint(parseInt(e.target.value))}
+              />
+            </InputContainer>
+          </PointContainer>
+          
+          <ButtonContainer>
+            <SaveButton onClick={handleSave}>저장</SaveButton>
+            <CancelButton onClick={handleCancel}>취소</CancelButton>
+          </ButtonContainer>
         </>
       )}
       

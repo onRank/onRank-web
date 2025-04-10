@@ -1,9 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useParams } from 'react-router-dom';
 import { managementService } from '../../../services/management';
 import { studyService } from '../../../services/api';
-import { convertToCloudFrontUrl, saveImageUrlToCache, getImageUrlFromCache } from '../../../utils/imageUtils';
+import { 
+  convertToCloudFrontUrl, 
+  saveImageUrlToCache, 
+  getImageUrlFromCache,
+  preloadImage,
+  refreshImageSrc,
+  getUncachedImageUrl,
+  handleImageLoading
+} from '../../../utils/imageUtils';
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -11,6 +19,8 @@ function StudyManagement() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imageRef = useRef(null);
   
   // 스터디 정보 상태
   const [studyName, setStudyName] = useState('');
@@ -24,17 +34,37 @@ function StudyManagement() {
   const [absentPoint, setAbsentPoint] = useState(0);
   const [latePoint, setLatePoint] = useState(0);
 
-  // localStorage에서 캐시된 이미지 URL 가져오기
+  // 이미지 로드 완료 핸들러
+  const handleImageLoad = () => {
+    setImageLoaded(true);
+  };
+
+  // 이미지 로드 실패 핸들러
+  const handleImageError = () => {
+    console.error('이미지 로드 실패:', studyImageUrl);
+    setImageLoaded(false);
+    
+    // 이미지 로드 실패 시 캐시 무시하고 다시 로드 시도
+    if (imageRef.current && studyImageUrl) {
+      refreshImageSrc(imageRef, studyImageUrl);
+    }
+  };
+
+  // localStorage에서 캐시된 이미지 URL 가져오기 (컴포넌트 마운트 시 즉시 실행)
   useEffect(() => {
     const cachedImageUrl = getImageUrlFromCache(studyId);
     if (cachedImageUrl) {
       setStudyImageUrl(cachedImageUrl);
+      // 이미지 미리 로드
+      preloadImage(cachedImageUrl);
+    } else {
+      fetchStudyData();
     }
   }, [studyId]);
 
   // 이미지 URL이 변경될 때마다 localStorage에 저장
   useEffect(() => {
-    if (studyImageUrl) {
+    if (studyImageUrl && !studyImageUrl.startsWith('blob:')) {
       saveImageUrlToCache(studyId, studyImageUrl);
     }
   }, [studyImageUrl, studyId]);
@@ -58,13 +88,12 @@ function StudyManagement() {
         setLatePoint(data.latePoint || 0);
         
         if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-          // S3 URL을 CloudFront URL로 변환
-          const s3Url = response.memberContext.file.fileUrl;
-          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          setStudyImageUrl(cloudFrontUrl);
-          
-          // localStorage에 이미지 URL 저장
-          saveImageUrlToCache(studyId, cloudFrontUrl);
+          // 통합 이미지 로딩 처리 유틸 함수 사용
+          await handleImageLoading(
+            response.memberContext.file.fileUrl,
+            setStudyImageUrl,
+            studyId
+          );
         }
       } catch (err) {
         console.error('스터디 정보 조회 실패:', err);
@@ -104,24 +133,6 @@ function StudyManagement() {
     setStudyImageFile(null);
     
     // 취소 시 원본 이미지 URL 복원
-    const fetchStudyData = async () => {
-      try {
-        const response = await managementService.getManagementData(studyId);
-        
-        // 올바른 경로에서 이미지 URL 가져오기
-        if (response.memberContext && response.memberContext.file && response.memberContext.file.fileUrl) {
-          // S3 URL을 CloudFront URL로 변환
-          const s3Url = response.memberContext.file.fileUrl;
-          const cloudFrontUrl = convertToCloudFrontUrl(s3Url);
-          setStudyImageUrl(cloudFrontUrl);
-        } else {
-          setStudyImageUrl('');
-        }
-      } catch (err) {
-        console.error('스터디 정보 조회 실패:', err);
-      }
-    };
-    
     fetchStudyData();
   };
 
@@ -317,8 +328,12 @@ function StudyManagement() {
               {studyImageUrl && (
                 <div style={{ width: '100px', height: '100px', overflow: 'hidden', borderRadius: '4px', border: '1px solid #ddd' }}>
                   <img 
+                    ref={imageRef}
                     src={studyImageUrl} 
                     alt="스터디 이미지" 
+                    crossOrigin="anonymous"
+                    onLoad={handleImageLoad}
+                    onError={handleImageError}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />
                 </div>
@@ -453,8 +468,12 @@ function StudyManagement() {
                 minWidth: '200px'
               }}>
                 <img 
-                  src={studyImageUrl} 
+                  ref={imageRef}
+                  src={getUncachedImageUrl(studyImageUrl)} 
                   alt="스터디 이미지" 
+                  crossOrigin="anonymous"
+                  onLoad={handleImageLoad}
+                  onError={handleImageError}
                   style={{ 
                     width: 'auto',
                     height: 'auto',
@@ -471,19 +490,33 @@ function StudyManagement() {
               <div style={{ marginTop: '1rem', padding: '10px', backgroundColor: '#f5f5f5', borderRadius: '4px' }}>
                 <p style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>이미지 URL:</p>
                 <p style={{ wordBreak: 'break-all', fontSize: '0.8rem' }}>{studyImageUrl}</p>
-                <a 
-                  href={studyImageUrl}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  style={{ 
-                    display: 'inline-block',
-                    marginTop: '8px',
-                    color: '#0066cc',
-                    textDecoration: 'underline'
-                  }}
-                >
-                  새 탭에서 이미지 열기
-                </a>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <a 
+                    href={studyImageUrl}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    style={{ 
+                      display: 'inline-block',
+                      color: '#0066cc',
+                      textDecoration: 'underline'
+                    }}
+                  >
+                    새 탭에서 이미지 열기
+                  </a>
+                  <button
+                    onClick={() => refreshImageSrc(imageRef, studyImageUrl)}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '0.8rem',
+                      backgroundColor: '#f0f0f0',
+                      border: '1px solid #ddd',
+                      borderRadius: '4px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    이미지 새로고침
+                  </button>
+                </div>
               </div>
             </div>
           ) : (
