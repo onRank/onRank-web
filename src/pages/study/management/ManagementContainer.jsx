@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import StudyEditPage from './StudyEditPage';
+import StudyManagement from '../../../components/study/management/StudyManagement';
 import MemberManagement from '../../../components/study/management/MemberManagement';
 import PointManagement from '../../../components/study/management/PointManagement';
 
@@ -75,7 +75,7 @@ function ManagementContainer() {
       
       {/* 현재 선택된 탭에 따라 컴포넌트 렌더링 */}
       <div>
-        {activeTab === 'study' && <StudyEditPage />}
+        {activeTab === 'study' && <StudyManagement />}
         {activeTab === 'member' && <MemberManagement />}
         {activeTab === 'point' && <PointManagement />}
       </div>
