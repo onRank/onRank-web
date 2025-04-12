@@ -13,16 +13,18 @@ function TimeSelector({ value, onChange, disabled = false }) {
   // 12시간제로 표시할 시간
   const displayHours = selectedHours > 12 ? selectedHours - 12 : (selectedHours === 0 ? 12 : selectedHours);
   
-  // 0-23 시간 배열 생성 (24시간제)
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // 12시간제 시간 배열 생성 (1-12)
+  const hours = Array.from({ length: 12 }, (_, i) => i + 1);
   
   // 0-55 분 배열 생성 (5분 단위)
   const minutes = Array.from({ length: 12 }, (_, i) => i * 5);
   
   // 시간 선택 핸들러
   const handleHourSelect = (hour) => {
-    // 현재 AM/PM 상태 유지
-    const newHour = isPM ? (hour === 12 ? 12 : hour + 12) : (hour === 12 ? 0 : hour);
+    // 12시를 0시로 변환
+    let newHour = hour === 12 ? 0 : hour;
+    // PM인 경우 12시간 추가
+    if (isPM) newHour += 12;
     const newValue = `${String(newHour).padStart(2, '0')}:${String(selectedMinutes).padStart(2, '0')}`;
     onChange(newValue);
   };
@@ -34,14 +36,14 @@ function TimeSelector({ value, onChange, disabled = false }) {
   };
   
   // AM/PM 토글
-  const handleAmPmToggle = () => {
+  const handleAmPmToggle = (newIsPM) => {
     let newHour;
-    if (isPM) {
-      // PM → AM
-      newHour = selectedHours - 12;
-    } else {
+    if (newIsPM) {
       // AM → PM
       newHour = selectedHours + 12;
+    } else {
+      // PM → AM
+      newHour = selectedHours - 12;
     }
     // 예외 처리 (12시간제 변환)
     if (newHour === 24) newHour = 12;
@@ -115,28 +117,22 @@ function TimeSelector({ value, onChange, disabled = false }) {
             overflowY: 'auto',
             borderRight: `1px solid ${colors.border}`
           }}>
-            {hours.map(hour => {
-              // 12시간제 표시
-              const display = hour === 0 ? 12 : (hour > 12 ? hour - 12 : hour);
-              return (
-                <div
-                  key={hour}
-                  onClick={() => handleHourSelect(hour)}
-                  style={{
-                    padding: '8px 12px',
-                    cursor: 'pointer',
-                    backgroundColor: hour === (isPM ? (selectedHours - 12) : selectedHours) || 
-                                    (hour === 12 && selectedHours === 0 && !isPM) ||
-                                    (hour === 0 && selectedHours === 12 && isPM)
-                                      ? colors.hoverBackground 
-                                      : 'transparent',
-                    textAlign: 'center'
-                  }}
-                >
-                  {String(display).padStart(2, '0')}
-                </div>
-              );
-            })}
+            {hours.map(hour => (
+              <div
+                key={hour}
+                onClick={() => handleHourSelect(hour)}
+                style={{
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  backgroundColor: hour === displayHours
+                    ? colors.hoverBackground 
+                    : 'transparent',
+                  textAlign: 'center'
+                }}
+              >
+                {String(hour).padStart(2, '0')}
+              </div>
+            ))}
           </div>
           
           {/* 분 선택 */}
@@ -167,7 +163,7 @@ function TimeSelector({ value, onChange, disabled = false }) {
           {/* AM/PM 선택 */}
           <div style={{ flex: 1 }}>
             <div
-              onClick={() => !isPM && handleAmPmToggle()}
+              onClick={() => handleAmPmToggle(false)}
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
@@ -178,7 +174,7 @@ function TimeSelector({ value, onChange, disabled = false }) {
               AM
             </div>
             <div
-              onClick={() => isPM && handleAmPmToggle()}
+              onClick={() => handleAmPmToggle(true)}
               style={{
                 padding: '8px 12px',
                 cursor: 'pointer',
