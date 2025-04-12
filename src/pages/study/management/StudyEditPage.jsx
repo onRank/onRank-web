@@ -8,18 +8,18 @@ import { BsPatchCheckFill } from "react-icons/bs";
 import { ImCheckboxUnchecked } from "react-icons/im";
 import { MdOutlineAccessTimeFilled } from "react-icons/md";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import { api, tokenUtils } from "../../../../services/api";
-import MemberManagement from '../../../../components/study/management/MemberManagement';
-import StudyManagement from '../../../../components/study/management/StudyManagement';
-import PointManagement from '../../../../components/study/management/PointManagement';
+import { api, tokenUtils } from "../../../services/api";
+import MemberManagement from '../../../components/study/management/MemberManagement';
+import StudyManagement from '../../../components/study/management/StudyManagement';
+import PointManagement from '../../../components/study/management/PointManagement';
 import { 
   uploadImageToS3, 
   handleImageFileChange
-} from '../../../../utils/imageUtils';
+} from '../../../utils/imageUtils';
 import {
   useImageLoading,
   StudyImage
-} from '../../../../components/study/StudyImageComponents';
+} from '../../../components/study/StudyImageComponents';
 
 // 스타일 컴포넌트 정의
 const EditPageContainer = styled.div`
