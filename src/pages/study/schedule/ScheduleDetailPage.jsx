@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import { IoChevronBackOutline } from 'react-icons/io5';
+import TimeSelector from '../../../components/common/TimeSelector';
 
 function ScheduleDetailPage() {
   const { studyId, scheduleId } = useParams();
@@ -10,6 +11,7 @@ function ScheduleDetailPage() {
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
+  const [scheduleTime, setScheduleTime] = useState('00:00');
   const [scheduleRound, setScheduleRound] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,15 +27,15 @@ function ScheduleDetailPage() {
         const schedule = await studyService.getScheduleById(studyId, scheduleId);
         console.log("[ScheduleDetailPage] 일정 조회 성공:", schedule);
         
-        // 날짜 형식 변환 (ISO 날짜에서 yyyy-MM-dd 형식으로)
-        let dateString = '';
+        // 날짜와 시간 분리
         if (schedule.scheduleStartingAt) {
-          dateString = schedule.scheduleStartingAt.split('T')[0];
+          const [dateString, timeString] = schedule.scheduleStartingAt.split('T');
+          setScheduleDate(dateString);
+          setScheduleTime(timeString.substring(0, 5)); // HH:mm 형식으로 자르기
         }
         
         setScheduleTitle(schedule.scheduleTitle || '');
         setScheduleContent(schedule.scheduleContent || '');
-        setScheduleDate(dateString);
         setScheduleRound(schedule.round || 1);
         
       } catch (error) {
@@ -48,14 +50,14 @@ function ScheduleDetailPage() {
   }, [studyId, scheduleId]);
   
   // 폼 유효성 검증
-  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '';
+  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '' && scheduleTime !== '';
 
   // 일정 수정 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      setError('제목과 날짜는 필수입니다.');
+      setError('제목, 날짜, 시간은 필수입니다.');
       return;
     }
     
@@ -67,7 +69,8 @@ function ScheduleDetailPage() {
       const scheduleData = {
         title: scheduleTitle.trim(),
         content: scheduleContent.trim(),
-        date: scheduleDate
+        date: scheduleDate,
+        time: scheduleTime
       };
       
       // API 호출
@@ -264,6 +267,22 @@ function ScheduleDetailPage() {
                 fontSize: '14px',
                 backgroundColor: isSubmitting ? '#f5f5f5' : 'white'
               }}
+            />
+          </div>
+          
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{ 
+              display: 'block', 
+              marginBottom: '0.5rem',
+              fontWeight: 'bold',
+              color: colors.textPrimary
+            }}>
+              시간 <span style={{ color: colors.primary }}>*</span>
+            </label>
+            <TimeSelector
+              value={scheduleTime}
+              onChange={setScheduleTime}
+              disabled={isSubmitting}
             />
           </div>
           
