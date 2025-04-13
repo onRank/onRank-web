@@ -40,9 +40,11 @@ function StudyDetailPage() {
           
           // 스터디 컨텍스트 정보 업데이트 (없는 경우)
           if (data.memberContext) {
+            console.log('[디버깅] StudyDetailPage에서 memberContext 확인:', data.memberContext);
             studyContextService.setStudyContext(studyId, data.memberContext);
           } else if (data.title) {
             // memberContext가 없는 경우 최소한의 정보 저장
+            console.log('[디버깅] memberContext 없음, 기본 정보만 저장');
             studyContextService.setStudyContext(studyId, {
               studyName: data.title,
               file: null

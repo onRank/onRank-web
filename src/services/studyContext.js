@@ -9,8 +9,12 @@ export const studyContextService = {
   setStudyContext: (studyId, contextData) => {
     if (!studyId || !contextData) return;
     
+    console.log('[디버깅] studyContextService.setStudyContext 호출:', studyId, contextData);
+    
     // memberContext 데이터 구조 확인
     const { studyName, memberRole, file } = contextData;
+    console.log('[디버깅] memberRole:', memberRole);
+    
     const studyImageUrl = file?.fileUrl || null;
     
     // 캐시 업데이트 (기존 데이터와 병합)

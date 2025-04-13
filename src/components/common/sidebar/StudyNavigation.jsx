@@ -9,8 +9,11 @@ const StudyNavigation = memo(({ activeTab, memberRole }) => {
   const { studyId } = useParams();
   const { colors } = useTheme();
 
+  console.log('[디버깅] StudyNavigation 렌더링, props:', { activeTab, memberRole });
+
   // 관리자 권한 확인
   const isManager = memberRole === 'HOST' || memberRole === 'CREATOR';
+  console.log('[디버깅] 관리자 권한 여부:', isManager, 'memberRole:', memberRole);
 
   // 메뉴 항목 정의
   const menuItems = [

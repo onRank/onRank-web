@@ -30,14 +30,20 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       
       // 멤버 역할 정보 설정
       if (cachedContext.memberContext && cachedContext.memberContext.memberRole) {
+        console.log('[디버깅] memberContext에서 역할 정보 가져옴:', cachedContext.memberContext.memberRole);
         setMemberRole(cachedContext.memberContext.memberRole);
+      } else if (cachedContext.memberRole) {
+        console.log('[디버깅] 컨텍스트에서 역할 정보 가져옴:', cachedContext.memberRole);
+        setMemberRole(cachedContext.memberRole);
+      } else {
+        console.log('[디버깅] 역할 정보 없음, 현재 memberRole:', memberRole);
       }
       
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 사용: ${cachedContext.studyName}`);
     } else {
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 없음: ${studyId}`);
     }
-  }, [studyId]);
+  }, [studyId, memberRole]);
 
   // 새 스터디 정보가 업데이트될 때마다 실행
   useEffect(() => {
@@ -139,6 +145,9 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       flexDirection: 'column',
       margin: '0.5rem 0'
     }}>
+      {/* 디버깅 정보 */}
+      {console.log('[디버깅] 렌더링 시 memberRole:', memberRole)}
+      
       {/* 스터디 정보 헤더 (이미지와 이름) */}
       <StudyInfoHeader 
         studyName={studyInfo.studyName} 
