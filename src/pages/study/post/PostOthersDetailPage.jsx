@@ -6,7 +6,7 @@ import {
   usePost,
 } from "../../../components/study/post/PostProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebarContainer from "../../../components/study/StudySidebarContainer";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 
