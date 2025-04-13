@@ -78,7 +78,6 @@ const Header = () => {
         padding: '0.5rem 1rem',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
         display: 'flex',
-        justifyContent: 'space-between',
         alignItems: 'center',
         position: 'sticky',
         top: 0,
@@ -94,6 +93,7 @@ const Header = () => {
           display: 'flex',
           alignItems: 'center',
           cursor: 'pointer',
+          marginRight: '3rem'
         }}
       >
         <img
@@ -108,6 +108,7 @@ const Header = () => {
         style={{
           display: 'flex',
           gap: '2rem',
+          flex: 1
         }}
       >
         <div
