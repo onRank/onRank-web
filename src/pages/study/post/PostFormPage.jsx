@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { PostProvider } from "../../../components/study/post/PostProvider";
 import PostForm from "../../../components/study/post/PostForm";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import { IoHomeOutline } from "react-icons/io5";
 import { useEffect, useState } from "react";
 
@@ -137,7 +137,7 @@ function PostFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="게시판" />
+            <StudySidebarContainer activeTab="게시판" />
           </aside>
 
           <main style={styles.content}>

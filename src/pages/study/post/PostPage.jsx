@@ -4,7 +4,7 @@ import { IoHomeOutline } from "react-icons/io5";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "../../../components/study/post/PostDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import {
   PostProvider,
@@ -215,7 +215,7 @@ function PostPage() {
         <span style={styles.activeTab}>게시판</span>
       </div>
       <div style={styles.container}>
-        <StudySidebar activeTab="게시판" />
+        <StudySidebarContainer activeTab="게시판" />
         <PostContent />
       </div>
     </PostProvider>

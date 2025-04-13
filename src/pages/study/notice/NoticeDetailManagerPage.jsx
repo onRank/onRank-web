@@ -7,7 +7,7 @@ import {
   useNotice,
 } from "../../../components/study/notice/NoticeProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
 
@@ -298,7 +298,7 @@ function NoticeDetailManagerPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebarContainer activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>

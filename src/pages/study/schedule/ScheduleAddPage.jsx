@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import { tokenUtils } from '../../../utils/tokenUtils';
-import StudySidebar from '../../../components/study/StudySidebar';
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import { IoHomeOutline } from 'react-icons/io5';
 import { useTheme } from '../../../contexts/ThemeContext';
 import TimeSelector from '../../../components/common/TimeSelector';
+import ScheduleForm from '../../../components/common/ScheduleForm';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
@@ -180,7 +181,7 @@ function ScheduleAddPage() {
         position: 'relative',
         padding: '0 1rem'
       }}>
-        <StudySidebar activeTab="일정" />
+        <StudySidebarContainer activeTab="일정" />
         <div style={{ flex: 1 }}>
           <h2 style={{ color: colors.textPrimary }}>일정</h2>
           <div style={{

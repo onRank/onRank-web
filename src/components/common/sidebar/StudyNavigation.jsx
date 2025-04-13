@@ -1,0 +1,85 @@
+import React, { memo } from 'react';
+import PropTypes from 'prop-types';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useTheme } from '../../../contexts/ThemeContext';
+
+// 스터디 네비게이션 메뉴 컴포넌트
+const StudyNavigation = memo(({ activeTab }) => {
+  const navigate = useNavigate();
+  const { studyId } = useParams();
+  const { colors } = useTheme();
+
+  // 메뉴 항목 정의
+  const menuItems = [
+    { id: "공지사항", label: "공지사항", path: "notices" },
+    { id: "일정", label: "일정", path: "schedules" },
+    { id: "과제", label: "과제", path: "assignment" },
+    { id: "게시판", label: "게시판", path: "posts" },
+    { id: "출석", label: "출석", path: "attendances" },
+    { id: "관리", label: "관리", path: "management" },
+    { id: "랭킹", label: "랭킹", path: "ranking" },
+  ];
+
+  // 탭 클릭 핸들러
+  const handleTabClick = (path) => {
+    navigate(`/studies/${studyId}/${path}`);
+  };
+  
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      borderRadius: '0 0 4px 4px',
+      overflow: 'hidden',
+      borderTop: '1px solid #eaeaea'
+    }}>
+      {menuItems.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => handleTabClick(item.path)}
+          style={{
+            padding: '1rem',
+            textAlign: 'left',
+            border: 'none',
+            borderBottom: '1px solid #eaeaea',
+            background: activeTab === item.id ? '#f7f7f7' : 'white',
+            cursor: 'pointer',
+            fontSize: '1rem',
+            transition: 'all 0.2s ease',
+            color: activeTab === item.id ? '#FF0000' : '#333',
+            fontWeight: activeTab === item.id ? 'bold' : 'normal',
+            position: 'relative',
+            paddingLeft: '2rem'
+          }}
+        >
+          {/* 활성화 표시 */}
+          {activeTab === item.id && (
+            <span style={{
+              position: 'absolute',
+              left: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              backgroundColor: '#FF0000'
+            }} />
+          )}
+          {item.label}
+        </button>
+      ))}
+    </div>
+  );
+});
+
+StudyNavigation.displayName = 'StudyNavigation';
+
+StudyNavigation.propTypes = {
+  activeTab: PropTypes.string
+};
+
+StudyNavigation.defaultProps = {
+  activeTab: ''
+};
+
+export default StudyNavigation; 

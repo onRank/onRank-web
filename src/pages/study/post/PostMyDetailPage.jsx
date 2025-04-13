@@ -7,7 +7,7 @@ import {
   usePost,
 } from "../../../components/study/post/PostProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 
@@ -297,7 +297,7 @@ function PostMyDetailPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="게시판" />
+            <StudySidebarContainer activeTab="게시판" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>

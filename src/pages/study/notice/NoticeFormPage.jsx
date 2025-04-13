@@ -1,7 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { NoticeProvider } from "../../../components/study/notice/NoticeProvider";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import { IoHomeOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
 
@@ -138,7 +138,7 @@ function NoticeFormPage() {
       <div style={styles.wrapper}>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebarContainer activeTab="공지사항" />
           </aside>
 
           <main style={styles.content}>

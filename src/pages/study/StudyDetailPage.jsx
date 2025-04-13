@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
-import StudySidebar from "../../components/study/StudySidebar";
+import StudySidebarContainer from "../../components/common/sidebar/StudySidebarContainer";
 import StudyContent from "../../components/study/StudyContent";
 import { studyService } from "../../services/api";
+import studyContextService from "../../services/studyContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 
@@ -33,8 +34,20 @@ function StudyDetailPage() {
       try {
         const data = await studyService.getStudyById(studyId);
         console.log("Fetched study data:", data);
+        
         if (data) {
           setStudyData(data);
+          
+          // 스터디 컨텍스트 정보 업데이트 (없는 경우)
+          if (data.memberContext) {
+            studyContextService.setStudyContext(studyId, data.memberContext);
+          } else if (data.title) {
+            // memberContext가 없는 경우 최소한의 정보 저장
+            studyContextService.setStudyContext(studyId, {
+              studyName: data.title,
+              file: null
+            });
+          }
         }
       } catch (err) {
         console.error("Error fetching study data:", err);
@@ -188,7 +201,7 @@ function StudyDetailPage() {
           padding: "0 1rem",
         }}
       >
-        <StudySidebar activeTab={activeTab} />
+        <StudySidebarContainer activeTab={activeTab} />
         <StudyContent activeTab={activeTab} studyData={studyData} />
       </div>
     </div>

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { studyContextService } from './studyContext';
 
 if (!import.meta.env.VITE_API_URL) {
   console.error("API URL이 설정되지 않았습니다");
@@ -40,6 +41,17 @@ api.interceptors.request.use(
 // 응답 인터셉터 설정
 api.interceptors.response.use(
   (response) => {
+    try {
+      // 스터디 API 응답에서 memberContext 정보 추출
+      const studyIdMatch = response.config.url.match(/\/studies\/(\d+)/);
+      if (studyIdMatch && studyIdMatch[1] && response.data && response.data.memberContext) {
+        const studyId = studyIdMatch[1];
+        studyContextService.updateFromApiResponse(studyId, response.data);
+      }
+    } catch (error) {
+      console.error('[API Interceptor] 스터디 컨텍스트 추출 오류:', error);
+    }
+    
     return response;
   },
   async (error) => {

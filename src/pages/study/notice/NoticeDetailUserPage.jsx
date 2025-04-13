@@ -7,7 +7,7 @@ import {
   useNotice,
 } from "../../../components/study/notice/NoticeProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 
 function NoticeDetailContent({ onTitleLoaded }) {
@@ -215,6 +215,9 @@ function NoticeUserManagerPage() {
       fontWeight: "bold",
       padding: "2px 4px",
     },
+    mainContainer: {
+      display: "flex",
+    },
   };
 
   return (
@@ -265,7 +268,7 @@ function NoticeUserManagerPage() {
         </div>
         <div style={styles.main}>
           <aside>
-            <StudySidebar activeTab="공지사항" />
+            <StudySidebarContainer activeTab="공지사항" />
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>

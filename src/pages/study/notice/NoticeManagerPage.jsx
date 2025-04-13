@@ -4,7 +4,7 @@ import { IoHomeOutline } from "react-icons/io5";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";
-import StudySidebar from "../../../components/study/StudySidebar";
+import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import {
   NoticeProvider,
@@ -219,7 +219,7 @@ function NoticeManagerPage() {
         <span style={styles.activeTab}>공지사항</span>
       </div>
       <div style={styles.container}>
-        <StudySidebar activeTab="공지사항" />
+        <StudySidebarContainer activeTab="공지사항" />
         <NoticeContent />
       </div>
     </NoticeProvider>
