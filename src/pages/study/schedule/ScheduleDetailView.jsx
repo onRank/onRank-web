@@ -4,8 +4,6 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import { useTheme } from '../../../contexts/ThemeContext';
 import TimeSelector from '../../../components/common/TimeSelector';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
-import StudySidebarContainer from '../../../components/common/sidebar/StudySidebarContainer';
-import { useParams } from 'react-router-dom';
 
 const ScheduleDetailView = ({ 
   schedule, 
@@ -15,7 +13,6 @@ const ScheduleDetailView = ({
   isLoading 
 }) => {
   const { colors } = useTheme();
-  const { studyId } = useParams();
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
@@ -108,226 +105,198 @@ const ScheduleDetailView = ({
     return <div>로딩 중...</div>;
   }
 
-  const renderContent = () => {
-    return (
-      <div style={{ width: '100%' }}>
-        {/* 헤더 */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          marginBottom: '2rem'
-        }}>
-          <button
-            onClick={onBack}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '0.5rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              color: colors.text
-            }}
-          >
-            <IoChevronBackOutline size={24} />
-          </button>
-          <h2 style={{
-            margin: 0,
-            marginLeft: '0.5rem',
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: colors.text
-          }}>
-            일정 상세
-          </h2>
-        </div>
-
-        {/* 에러 메시지 */}
-        {error && (
-          <div style={{
-            padding: '1rem',
-            backgroundColor: `${colors.error}20`,
-            color: colors.error,
-            borderRadius: '4px',
-            marginBottom: '1rem'
-          }}>
-            {error}
-          </div>
-        )}
-
-        {/* 일정 수정 폼 */}
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}>
-              제목 <span style={{ color: '#FF0000' }}>*</span>
-            </label>
-            <input
-              type="text"
-              value={scheduleTitle}
-              onChange={(e) => setScheduleTitle(e.target.value)}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: colors.background,
-                color: colors.text
-              }}
-              placeholder="일정 제목을 입력하세요"
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}>
-              날짜 <span style={{ color: '#FF0000' }}>*</span>
-            </label>
-            <input
-              type="date"
-              value={scheduleDate}
-              onChange={(e) => setScheduleDate(e.target.value)}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '4px',
-                fontSize: '14px',
-                backgroundColor: colors.background,
-                color: colors.text
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}>
-              시간 <span style={{ color: '#FF0000' }}>*</span>
-            </label>
-            <TimeSelector
-              value={scheduleTime}
-              onChange={setScheduleTime}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              color: colors.text,
-              fontSize: '14px',
-              fontWeight: 'bold'
-            }}>
-              내용
-            </label>
-            <textarea
-              value={scheduleContent}
-              onChange={(e) => setScheduleContent(e.target.value)}
-              disabled={isSubmitting}
-              style={{
-                width: '100%',
-                padding: '0.75rem',
-                border: `1px solid ${colors.border}`,
-                borderRadius: '4px',
-                fontSize: '14px',
-                minHeight: '150px',
-                resize: 'vertical',
-                backgroundColor: colors.background,
-                color: colors.text
-              }}
-              placeholder="일정 내용을 입력하세요"
-            />
-          </div>
-
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            justifyContent: 'flex-end',
-            marginTop: '2rem'
-          }}>
-            <button
-              type="button"
-              onClick={handleDelete}
-              disabled={isSubmitting}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: colors.error,
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                opacity: isSubmitting ? 0.7 : 1
-              }}
-            >
-              삭제
-            </button>
-            <button
-              type="submit"
-              disabled={!isFormValid || isSubmitting}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: colors.primary,
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                opacity: (!isFormValid || isSubmitting) ? 0.7 : 1
-              }}
-            >
-              수정
-            </button>
-          </div>
-        </form>
-      </div>
-    );
-  };
-
   return (
-    <div style={{
-      width: '100%',
-      maxWidth: '100%',
-      overflowX: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
-    }}>
+    <div style={{ width: '100%' }}>
+      {/* 헤더 */}
       <div style={{
         display: 'flex',
-        gap: '2rem',
-        width: '100%',
-        maxWidth: '1200px',
-        position: 'relative',
-        padding: '0 1rem',
-        marginTop: '1rem'
+        alignItems: 'center',
+        marginBottom: '2rem'
       }}>
-        <StudySidebarContainer activeTab="일정" subPage="일정 상세" />
-        <div style={{ flex: 1 }}>
-          {renderContent()}
-        </div>
+        <button
+          onClick={onBack}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '0.5rem',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            color: colors.text
+          }}
+        >
+          <IoChevronBackOutline size={24} />
+        </button>
+        <h2 style={{
+          margin: 0,
+          marginLeft: '0.5rem',
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: colors.text
+        }}>
+          일정 상세
+        </h2>
       </div>
+
+      {/* 에러 메시지 */}
+      {error && (
+        <div style={{
+          padding: '1rem',
+          backgroundColor: `${colors.error}20`,
+          color: colors.error,
+          borderRadius: '4px',
+          marginBottom: '1rem'
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* 일정 수정 폼 */}
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            color: colors.text,
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            제목 <span style={{ color: '#FF0000' }}>*</span>
+          </label>
+          <input
+            type="text"
+            value={scheduleTitle}
+            onChange={(e) => setScheduleTitle(e.target.value)}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: colors.background,
+              color: colors.text
+            }}
+            placeholder="일정 제목을 입력하세요"
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            color: colors.text,
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            날짜 <span style={{ color: '#FF0000' }}>*</span>
+          </label>
+          <input
+            type="date"
+            value={scheduleDate}
+            onChange={(e) => setScheduleDate(e.target.value)}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '4px',
+              fontSize: '14px',
+              backgroundColor: colors.background,
+              color: colors.text
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            color: colors.text,
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            시간 <span style={{ color: '#FF0000' }}>*</span>
+          </label>
+          <TimeSelector
+            value={scheduleTime}
+            onChange={setScheduleTime}
+            disabled={isSubmitting}
+          />
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{
+            display: 'block',
+            marginBottom: '0.5rem',
+            color: colors.text,
+            fontSize: '14px',
+            fontWeight: 'bold'
+          }}>
+            내용
+          </label>
+          <textarea
+            value={scheduleContent}
+            onChange={(e) => setScheduleContent(e.target.value)}
+            disabled={isSubmitting}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              border: `1px solid ${colors.border}`,
+              borderRadius: '4px',
+              fontSize: '14px',
+              minHeight: '150px',
+              resize: 'vertical',
+              backgroundColor: colors.background,
+              color: colors.text
+            }}
+            placeholder="일정 내용을 입력하세요"
+          />
+        </div>
+
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          justifyContent: 'flex-end',
+          marginTop: '2rem'
+        }}>
+          <button
+            type="button"
+            onClick={handleDelete}
+            disabled={isSubmitting}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: colors.error,
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              opacity: isSubmitting ? 0.7 : 1
+            }}
+          >
+            삭제
+          </button>
+          <button
+            type="submit"
+            disabled={!isFormValid || isSubmitting}
+            style={{
+              padding: '0.75rem 1.5rem',
+              backgroundColor: colors.primary,
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold',
+              opacity: (!isFormValid || isSubmitting) ? 0.7 : 1
+            }}
+          >
+            수정
+          </button>
+        </div>
+      </form>
     </div>
   );
 };

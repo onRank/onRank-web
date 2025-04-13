@@ -4,7 +4,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AddScheduleModal from '../../../components/study/modals/AddScheduleModal';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
-function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
+
+function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
   const { colors } = useTheme();
   const { studyId } = useParams();
   const navigate = useNavigate();
@@ -14,7 +15,9 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   
   // 일정 추가 페이지로 이동
   const handleNavigateToAddSchedule = () => {
-    navigate(`/studies/${studyId}/schedules/add`);
+    if (onAddSchedule) {
+      onAddSchedule();
+    }
   };
 
   // 일정 수정 팝업 열기
@@ -73,7 +76,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
         handleCloseUpdateSchedulePopup();
       }
     } catch (error) {
-      console.error('[ScheduleTab] 일정 수정 실패:', error);
+      console.error('[ScheduleListPage] 일정 수정 실패:', error);
     } finally {
       setIsUpdating(false);
     }
@@ -88,7 +91,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
       try {
         await onDeleteSchedule(scheduleId);
       } catch (error) {
-        console.error('[ScheduleTab] 일정 삭제 실패:', error);
+        console.error('[ScheduleListPage] 일정 삭제 실패:', error);
       }
     }
   };
@@ -333,7 +336,7 @@ function ScheduleTab({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSched
   );
 }
 
-ScheduleTab.propTypes = {
+ScheduleListPage.propTypes = {
   schedules: PropTypes.array.isRequired,
   onAddSchedule: PropTypes.func.isRequired,
   onDeleteSchedule: PropTypes.func.isRequired,
@@ -343,10 +346,10 @@ ScheduleTab.propTypes = {
   error: PropTypes.string
 };
 
-ScheduleTab.defaultProps = {
+ScheduleListPage.defaultProps = {
   schedules: [],
   isLoading: false,
   error: null
 };
 
-export default ScheduleTab; 
+export default ScheduleListPage; 

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { studyService } from "../../../services/api";
-import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';import ScheduleTab from "./ScheduleTab";
+import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
+import ScheduleListPage from "./ScheduleListPage";
 import ScheduleDetailView from "./ScheduleDetailView";
+import ScheduleAddPage from "./ScheduleAddPage";
 import StudySidebarContainer from '../../../components/common/sidebar/StudySidebarContainer';
 
 function ScheduleContainer() {
@@ -13,7 +15,11 @@ function ScheduleContainer() {
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const { studyId } = useParams();
   const navigate = useNavigate();
-
+  const location = useLocation();
+  
+  // 현재 경로를 확인하여 어떤 컴포넌트를 표시할지 결정
+  const isAddPage = location.pathname.endsWith('/add');
+  
   // 일정 목록 조회
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -48,8 +54,10 @@ function ScheduleContainer() {
       }
     };
 
-    fetchSchedules();
-  }, [studyId]);
+    if (!isAddPage) {
+      fetchSchedules();
+    }
+  }, [studyId, isAddPage]);
 
   // 일정 추가 핸들러
   const handleAddSchedule = async (newSchedule) => {
@@ -177,16 +185,30 @@ function ScheduleContainer() {
     setShowScheduleDetail(false);
     setSelectedSchedule(null);
   };
+  
+  // 일정 추가 페이지로 이동
+  const handleNavigateToAddPage = () => {
+    navigate(`/studies/${studyId}/schedules/add`);
+  };
+  
+  // 일정 목록 페이지로 이동
+  const handleNavigateToListPage = () => {
+    navigate(`/studies/${studyId}/schedules`);
+  };
 
-  if (isLoading) {
-    return <div>로딩 중...</div>;
-  }
+  // 현재 화면에 따라 사이드바의 subPage 결정
+  const getSubPage = () => {
+    if (isAddPage) return "일정 추가";
+    if (showScheduleDetail) return "일정 상세";
+    return undefined;
+  };
 
-  if (error) {
-    return <div style={{ color: '#F44336' }}>{error}</div>;
-  }
-
+  // 컨텐츠 렌더링
   const renderContent = () => {
+    if (isAddPage) {
+      return <ScheduleAddPage onCancel={handleNavigateToListPage} />;
+    }
+    
     if (showScheduleDetail) {
       return (
         <ScheduleDetailView
@@ -200,9 +222,9 @@ function ScheduleContainer() {
     }
 
     return (
-      <ScheduleTab
+      <ScheduleListPage
         schedules={schedules}
-        onAddSchedule={() => navigate(`/studies/${studyId}/schedules/add`)}
+        onAddSchedule={handleNavigateToAddPage}
         onDeleteSchedule={handleDeleteSchedule}
         onUpdateSchedule={handleUpdateSchedule}
         onViewScheduleDetail={handleViewScheduleDetail}
@@ -230,7 +252,10 @@ function ScheduleContainer() {
         padding: '0 1rem',
         marginTop: '1rem'
       }}>
-        <StudySidebarContainer activeTab="일정" />
+        <StudySidebarContainer 
+          activeTab="일정" 
+          subPage={getSubPage()} 
+        />
         <div style={{ flex: 1 }}>
           {renderContent()}
         </div>

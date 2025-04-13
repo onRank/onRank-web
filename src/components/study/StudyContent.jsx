@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
 import AssignmentTab from "./tabs/AssignmentTab";
 import DefaultContent from "./tabs/DefaultContent";
@@ -13,6 +13,7 @@ import AttendanceContainer from "../../pages/study/attendance/AttendanceContaine
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
   const { studyId } = useParams();
+  const location = useLocation();
 
   useEffect(() => {
     if (activeTab === "과제") {
@@ -41,6 +42,7 @@ function StudyContent({ activeTab, studyData }) {
     switch (activeTab) {
       case "일정":
         console.log("[StudyContent] 일정 탭 렌더링");
+        // ScheduleContainer가 내부적으로 라우팅 처리
         return <ScheduleContainer />;
       case "과제":
         console.log("[StudyContent] 과제 탭 렌더링");
