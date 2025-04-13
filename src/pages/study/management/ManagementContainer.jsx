@@ -20,7 +20,7 @@ function ManagementContainer() {
           fontWeight: 'bold',
           color: '#333'
         }}>
-          스터디 관리
+          관리
         </h2>
       </div>
       
