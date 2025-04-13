@@ -1,3 +1,5 @@
+// src/pages/study/post/PostWrittenBy.jsx
+
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { usePost } from "../../../components/study/post/PostProvider";
@@ -32,27 +34,43 @@ function PostWrittenBy() {
     }
   }, [studyId, postId, getPostById]);
 
-  // 작성자와 현재 사용자 비교
+  // 작성자와 현재 사용자 비교 (selectedPost가 있을 때만 실행)
   useEffect(() => {
     if (selectedPost && currentUser) {
       setIsAuthor(selectedPost.postWritenBy === currentUser.userId);
     }
   }, [selectedPost, currentUser]);
 
+  // 로딩 중이면 로딩 스피너 표시
   if (isLoading) {
     return <LoadingSpinner />;
   }
 
+  // 오류가 있으면 오류 메시지 표시
   if (error) {
     return <ErrorMessage message={error} />;
   }
 
+  // 중요: selectedPost가 없으면 렌더링하지 않음
   if (!selectedPost) {
     return <div>게시물을 찾을 수 없습니다.</div>;
   }
 
-  // 작성자에 따라 적절한 컴포넌트 렌더링
-  return isAuthor ? <PostMyDetailPage /> : <PostOthersDetailPage />;
+  // selectedPost와 isAuthor가 모두 설정된 후에만 컴포넌트 렌더링
+  // props로 필요한 데이터를 전달하여 하위 컴포넌트에서 다시 데이터를 불러오지 않도록 함
+  return isAuthor ? (
+    <PostMyDetailPage
+      studyId={studyId}
+      postId={postId}
+      selectedPost={selectedPost}
+    />
+  ) : (
+    <PostOthersDetailPage
+      studyId={studyId}
+      postId={postId}
+      selectedPost={selectedPost}
+    />
+  );
 }
 
 export default PostWrittenBy;

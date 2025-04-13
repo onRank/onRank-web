@@ -176,10 +176,11 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostMyDetailPage() {
-  const { studyId, postId } = useParams();
+function PostMyDetailPage(studyId, postId, selectedPost) {
   const [studyData, setStudyData] = useState({ title: "스터디" });
-  const [pageTitle, setPageTitle] = useState("게시판 상세");
+  const [pageTitle, setPageTitle] = useState(
+    selectedPost?.postTitle || "게시판 상세"
+  );
 
   // 스터디 정보 가져오기
   useEffect(() => {
