@@ -39,10 +39,19 @@ export const studyContextService = {
   updateFromApiResponse: (studyId, response) => {
     if (!studyId || !response) return;
     
-    // API 응답에서 memberContext 추출
+    console.log('[디버깅] updateFromApiResponse:', studyId, response);
+    
+    // API 응답에서 memberContext 추출 (구조가 다를 수 있음)
     const { memberContext } = response;
+    
     if (memberContext) {
+      // memberContext 객체가 있는 경우 (일반적인 API 응답)
+      console.log('[디버깅] API 응답에서 memberContext 발견:', memberContext);
       studyContextService.setStudyContext(studyId, memberContext);
+    } else if (response.memberRole) {
+      // memberRole이 최상위에 있는 경우 (일부 API 응답)
+      console.log('[디버깅] API 응답에서 최상위 memberRole 발견:', response.memberRole);
+      studyContextService.setStudyContext(studyId, response);
     }
   },
   

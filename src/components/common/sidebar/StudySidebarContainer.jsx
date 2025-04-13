@@ -28,12 +28,14 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         studyImageUrl: cachedContext.studyImageUrl || null
       });
       
-      // 멤버 역할 정보 설정
+      // 멤버 역할 정보 설정 - 두 가지 위치 모두 확인
       if (cachedContext.memberContext && cachedContext.memberContext.memberRole) {
+        // memberContext 내부에 있는 경우 (API 응답 구조)
         console.log('[디버깅] memberContext에서 역할 정보 가져옴:', cachedContext.memberContext.memberRole);
         setMemberRole(cachedContext.memberContext.memberRole);
       } else if (cachedContext.memberRole) {
-        console.log('[디버깅] 컨텍스트에서 역할 정보 가져옴:', cachedContext.memberRole);
+        // 최상위 레벨에 있는 경우 (캐시된 구조)
+        console.log('[디버깅] 최상위 레벨에서 역할 정보 가져옴:', cachedContext.memberRole);
         setMemberRole(cachedContext.memberRole);
       } else {
         console.log('[디버깅] 역할 정보 없음, 현재 memberRole:', memberRole);
@@ -50,26 +52,33 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     // 이벤트 리스너 등록 (커스텀 이벤트 방식)
     const checkForUpdates = setInterval(() => {
       const latestContext = studyContextService.getStudyContext(studyId);
-      if (latestContext && 
-          (latestContext.studyName !== studyInfo.studyName || 
-           latestContext.studyImageUrl !== studyInfo.studyImageUrl ||
-           (latestContext.memberContext && latestContext.memberContext.memberRole !== memberRole))) {
-        // 스터디 컨텍스트 정보 변경을 감지하는 함수
-        const handleStudyContextChange = () => {
-          if (latestContext) {
-            setStudyInfo({
-              studyName: latestContext.studyName || studyInfo.studyName,
-              studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
-            });
-            
-            // 멤버 역할 정보 업데이트
-            if (latestContext.memberContext && latestContext.memberContext.memberRole) {
-              setMemberRole(latestContext.memberContext.memberRole);
-            }
-          }
-        };
+      if (latestContext) {
+        // 현재 memberRole 값 (API 응답 또는 캐시된 값)
+        const currentContextRole = latestContext.memberContext?.memberRole || latestContext.memberRole;
         
-        handleStudyContextChange();
+        if (latestContext.studyName !== studyInfo.studyName || 
+            latestContext.studyImageUrl !== studyInfo.studyImageUrl ||
+            currentContextRole !== memberRole) {
+          
+          // 스터디 컨텍스트 정보 변경을 감지하는 함수
+          const handleStudyContextChange = () => {
+            if (latestContext) {
+              setStudyInfo({
+                studyName: latestContext.studyName || studyInfo.studyName,
+                studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
+              });
+              
+              // 멤버 역할 정보 업데이트 - 두 가지 위치 모두 확인
+              if (latestContext.memberContext && latestContext.memberContext.memberRole) {
+                setMemberRole(latestContext.memberContext.memberRole);
+              } else if (latestContext.memberRole) {
+                setMemberRole(latestContext.memberRole);
+              }
+            }
+          };
+          
+          handleStudyContextChange();
+        }
       }
     }, 1000); // 1초마다 체크
     
