@@ -6,7 +6,6 @@ import StudySidebarContainer from "../../../components/common/sidebar/StudySideb
 import { IoHomeOutline } from 'react-icons/io5';
 import { useTheme } from '../../../contexts/ThemeContext';
 import TimeSelector from '../../../components/common/TimeSelector';
-import ScheduleForm from '../../../components/common/ScheduleForm';
 
 function ScheduleAddPage() {
   const { studyId } = useParams();
