@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { IoHomeOutline } from "react-icons/io5";
 import {
   NoticeProvider,
   useNotice,
@@ -239,7 +238,7 @@ function NoticeDetailManagerPage() {
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <NoticeDetailContent onTitleLoaded={updatePageTitle} />
+            <NoticeDetailManagerContent onTitleLoaded={updatePageTitle} />
           </main>
         </div>
       </div>

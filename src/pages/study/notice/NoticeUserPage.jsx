@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { IoHomeOutline } from "react-icons/io5";
+import { useNavigate, useParams } from "react-router-dom";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";

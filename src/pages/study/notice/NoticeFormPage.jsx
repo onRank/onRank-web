@@ -1,8 +1,7 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { NoticeProvider } from "../../../components/study/notice/NoticeProvider";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
-import { IoHomeOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
 
 function NoticeFormPage() {
