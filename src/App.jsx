@@ -24,7 +24,7 @@ import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPag
 import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
 import { NoticeProvider } from "./components/study/notice/NoticeProvider";
 import PostFormPage from "./pages/study/post/PostFormPage";
-import PostMyDetailPage from "./pages/study/post/PostMyDetailPage";
+import PostWrittenBy from "./components/study/post/PostWrittenBy";
 import PostPage from "./pages/study/post/PostPage";
 import Header from "./components/common/Header";
 import UserInfoForm from "./components/auth/UserInfoForm";
@@ -32,9 +32,7 @@ import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
 import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
-import {
-  AttendanceDetailPage
-} from "./pages/study/attendance";
+import { AttendanceDetailPage } from "./pages/study/attendance";
 import ManagementContainer from "./pages/study/management/ManagementContainer";
 import "./App.css";
 
@@ -528,10 +526,7 @@ function AppContent() {
                     />
                     <Route path="posts" element={<PostPage />} />
                     <Route path="posts/add" element={<PostFormPage />} />
-                    <Route
-                      path="posts/:postId"
-                      element={<PostMyDetailPage />}
-                    />
+                    <Route path="posts/:postId" element={<PostWrittenBy />} />
                     <Route path="attendances" element={<StudyDetailPage />} />
                     <Route
                       path="attendances/:scheduleId"

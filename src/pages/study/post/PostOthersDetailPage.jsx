@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import { IoHomeOutline } from "react-icons/io5";
 import {
   PostProvider,
   usePost,

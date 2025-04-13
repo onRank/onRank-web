@@ -1,8 +1,7 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { PostProvider } from "../../../components/study/post/PostProvider";
 import PostForm from "../../../components/study/post/PostForm";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
-import { IoHomeOutline } from "react-icons/io5";
 import { useEffect, useState } from "react";
 
 function PostFormPage() {

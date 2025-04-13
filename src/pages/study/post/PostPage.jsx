@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { IoHomeOutline } from "react-icons/io5";
+import { useNavigate, useParams } from "react-router-dom";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "../../../components/study/post/PostDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";
