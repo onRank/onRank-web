@@ -2,11 +2,10 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import StudyManagement from '../../../components/study/management/StudyManagement';
 import MemberManagement from '../../../components/study/management/MemberManagement';
-import PointManagement from '../../../components/study/management/PointManagement';
 
 function ManagementContainer() {
   const { studyId } = useParams();
-  const [activeTab, setActiveTab] = useState('study'); // 'study', 'member', 'point'
+  const [activeTab, setActiveTab] = useState('study'); // 'study', 'member'
 
   return (
     <div style={{ padding: '1.5rem' }}>
@@ -56,20 +55,6 @@ function ManagementContainer() {
           >
             회원
           </button>
-          <button 
-            onClick={() => setActiveTab('point')}
-            style={{
-              backgroundColor: activeTab === 'point' ? '#000000' : '#FFFFFF',
-              color: activeTab === 'point' ? 'white' : '#000',
-              border: activeTab === 'point' ? 'none' : '1px solid #ddd',
-              borderRadius: '4px',
-              padding: '0.5rem 1rem',
-              fontSize: '0.9rem',
-              cursor: 'pointer'
-            }}
-          >
-            포인트
-          </button>
         </div>
       </div>
       
@@ -77,7 +62,6 @@ function ManagementContainer() {
       <div>
         {activeTab === 'study' && <StudyManagement />}
         {activeTab === 'member' && <MemberManagement />}
-        {activeTab === 'point' && <PointManagement />}
       </div>
     </div>
   );
