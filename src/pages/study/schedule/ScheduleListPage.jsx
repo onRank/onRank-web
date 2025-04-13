@@ -13,7 +13,7 @@ function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdate
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   
-  // 관리자 권한 확인 (HOST, ADMIN, OWNER인 경우)
+  // 관리자 권한 확인 
   const isManager = memberRole === 'HOST' || memberRole === 'CREATOR';
   
   // 일정 추가 페이지로 이동
@@ -226,25 +226,29 @@ function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdate
             {schedulesWithRounds.map((schedule) => (
               <div 
                 key={schedule.scheduleId} 
-                onClick={() => onViewScheduleDetail(schedule)}
+                onClick={isManager ? () => onViewScheduleDetail(schedule) : undefined}
                 style={{
                   position: 'relative',
                   border: `1px solid ${colors.border}`,
                   borderRadius: '8px',
                   padding: '1rem',
-                  cursor: 'pointer',
+                  cursor: isManager ? 'pointer' : 'default',
                   backgroundColor: colors.cardBackground,
                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: isManager ? 'transform 0.2s, box-shadow 0.2s' : 'none',
                   width: '100%'
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                  if (isManager) {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                  if (isManager) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                  }
                 }}
               >
                 {/* 타임라인 원 */}
@@ -278,26 +282,28 @@ function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdate
                     </div>
                   </div>
                   
-                  {/* 삭제 버튼 */}
-                  <button
-                    onClick={(e) => handleDeleteSchedule(schedule.scheduleId, e)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: colors.error,
-                      cursor: 'pointer',
-                      padding: '4px 8px',
-                      borderRadius: '4px'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = `${colors.error}10`; // 10% 투명도
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = 'transparent';
-                    }}
-                  >
-                    삭제
-                  </button>
+                  {/* 삭제 버튼 - 관리자만 표시 */}
+                  {isManager && (
+                    <button
+                      onClick={(e) => handleDeleteSchedule(schedule.scheduleId, e)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: colors.error,
+                        cursor: 'pointer',
+                        padding: '4px 8px',
+                        borderRadius: '4px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = `${colors.error}10`; // 10% 투명도
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      삭제
+                    </button>
+                  )}
                 </div>
                 
                 {/* 일정 내용 */}

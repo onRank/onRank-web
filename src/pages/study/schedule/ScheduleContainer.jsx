@@ -228,6 +228,7 @@ function ScheduleContainer({ onSubPageChange }) {
           onUpdate={handleUpdateSchedule}
           onDelete={handleDeleteSchedule}
           isLoading={isLoading}
+          memberRole={memberRole}
         />
       );
     }
