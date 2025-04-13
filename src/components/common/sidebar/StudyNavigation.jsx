@@ -37,7 +37,8 @@ const StudyNavigation = memo(({ activeTab, memberRole }) => {
       flexDirection: 'column',
       borderRadius: '0 0 4px 4px',
       overflow: 'hidden',
-      borderTop: `1px solid ${colors.border}`
+      borderTop: `1px solid ${colors.border}`,
+      flex: '0 0 auto' // 크기 유지
     }}>
       {menuItems.map((item) => (
         // requiredRole이 true인 메뉴는 관리자만 볼 수 있음
@@ -57,7 +58,8 @@ const StudyNavigation = memo(({ activeTab, memberRole }) => {
               color: activeTab === item.id ? colors.primary : colors.textPrimary,
               fontWeight: activeTab === item.id ? 'bold' : 'normal',
               position: 'relative',
-              paddingLeft: '2rem'
+              paddingLeft: '2rem',
+              height: '48px' // 모든 버튼에 동일한 높이 적용
             }}
           >
             {/* 활성화 표시 */}

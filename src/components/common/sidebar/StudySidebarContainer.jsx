@@ -152,7 +152,11 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       border: `1px solid ${colors.border}`,
       display: 'flex',
       flexDirection: 'column',
-      margin: '0.5rem 0'
+      margin: '0.5rem 0',
+      alignSelf: 'flex-start',
+      position: 'sticky',
+      top: '1rem',
+      maxHeight: 'calc(100vh - 2rem)'
     }}>
       {/* 디버깅 정보 */}
       {console.log('[디버깅] 렌더링 시 memberRole:', memberRole)}
@@ -168,7 +172,8 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       
       {/* 스터디 네비게이션 메뉴 - 스크롤 제거 */}
       <div style={{ 
-        flex: 1,
+        flex: '0 1 auto',
+        overflowY: 'auto'
       }}>
         <StudyNavigation activeTab={activeTab} memberRole={memberRole} />
       </div>

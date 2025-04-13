@@ -87,6 +87,8 @@ function StudyContent({ activeTab, studyData }) {
         maxWidth: "1200px",
         position: "relative",
         padding: "0 1rem",
+        minHeight: "calc(100vh - 120px)",
+        alignItems: "flex-start"
       }}
     >
       <StudySidebarContainer activeTab={activeTab} subPage={currentSubPage} />
@@ -94,7 +96,8 @@ function StudyContent({ activeTab, studyData }) {
         className="study-main-content"
         style={{
           flex: 1,
-          padding: '0'
+          padding: '0',
+          minHeight: "500px"
         }}
       >
         {renderContent()}
