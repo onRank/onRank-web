@@ -152,7 +152,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       <div style={{ 
         flex: 1,
       }}>
-        <StudyNavigation activeTab={activeTab} />
+        <StudyNavigation activeTab={activeTab} memberRole={memberRole} />
       </div>
     </div>
   );
