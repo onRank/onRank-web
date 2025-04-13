@@ -1,3 +1,11 @@
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { usePost } from "../../../components/study/post/PostProvider";
+import PostMyDetailPage from "./PostMyDetailPage";
+import PostOthersDetailPage from "./PostOthersDetailPage";
+import LoadingSpinner from "../../../components/common/LoadingSpinner";
+import ErrorMessage from "../../../components/common/ErrorMessage";
+
 function PostWrittenBy() {
   const { studyId, postId } = useParams();
   const { selectedPost, isLoading, error, getPostById } = usePost();
