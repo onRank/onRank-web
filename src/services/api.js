@@ -1763,7 +1763,6 @@ export const studyService = {
   },
 };
 
-// api.js 파일에 다음 함수를 추가해야 합니다
 const handleFileUpload = async (responseData, files) => {
   try {
     console.log("[FileUpload] 파일 업로드 시작");
@@ -1774,9 +1773,6 @@ const handleFileUpload = async (responseData, files) => {
     if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
       uploadUrls = responseData.presignedUrls;
       console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
-    } else if (responseData.uploadUrls && responseData.uploadUrls.length > 0) {
-      uploadUrls = responseData.uploadUrls;
-      console.log("[FileUpload] uploadUrls 사용:", uploadUrls.length);
     }
 
     if (uploadUrls.length > 0) {
@@ -2103,6 +2099,7 @@ export const noticeService = {
       );
 
       console.log("[NoticeService] 공지사항 생성 응답:", response.data);
+      const { presignedUrl, uploadUrls } = response.data;
 
       // 파일 업로드 처리
       if (newNotice.files && newNotice.files.length > 0) {
