@@ -2425,32 +2425,6 @@ export const noticeService = {
       };
     }
   },
-
-  uploadFilesToS3: async (uploadUrl, imageFile) => {
-    try {
-      console.log("[StudyService] S3 이미지 업로드 시작:", {
-        uploadUrl: uploadUrl.substring(0, 100) + "...",
-        fileName: imageFile.name,
-        fileSize: imageFile.size,
-      });
-
-      await axios.put(uploadUrl, imageFile, {
-        headers: {
-          "Content-Type": imageFile.type,
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-      });
-
-      console.log("[NoticeService] S3 파일 업로드 완료");
-      return true;
-    } catch (error) {
-      console.error("[NoticeService] S3 파일 업로드 실패:", error);
-      throw new Error(
-        "파일 업로드에 실패했습니다: " + (error.message || "알 수 없는 오류")
-      );
-    }
-  },
 };
 
 export const postService = {

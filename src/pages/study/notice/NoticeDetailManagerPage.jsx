@@ -57,9 +57,29 @@ function NoticeDetailManagerContent({ onTitleLoaded }) {
     }
   };
 
-  const handleEditComplete = () => {
-    // 수정 완료 후 GET API를 다시 호출하여 최신 데이터 가져오기
-    getNoticeById(studyId, parseInt(noticeId, 10));
+  const handleEditComplete = (updatedData) => {
+    // 수정된 데이터가 전달된 경우 이를 사용
+    if (updatedData) {
+      // 수정된 데이터를 즉시 selectedNotice 처럼 사용하기 위한 처리
+      console.log(
+        "[NoticeDetailManagerContent] 수정된 데이터 받음:",
+        updatedData
+      );
+
+      // 캐시된 데이터 대신 새로운 데이터를 즉시 가져오기 위해 API 호출
+      getNoticeById(studyId, parseInt(noticeId, 10));
+
+      // 화면 타이틀 업데이트
+      if (updatedData.noticeTitle && onTitleLoaded) {
+        onTitleLoaded(updatedData.noticeTitle);
+      }
+    } else {
+      // 전달된 데이터가 없는 경우 기존 처럼 API 재호출
+      console.log("[NoticeDetailManagerContent] 수정 완료, API 재호출");
+      getNoticeById(studyId, parseInt(noticeId, 10));
+    }
+
+    // 편집 모드 종료
     setIsEditMode(false);
   };
 
