@@ -116,43 +116,9 @@ function NoticeEditForm({
         return;
       }
 
-      if (result.warning) {
-        // 파일 업로드에 실패했지만 공지사항은 수정된 경우
-        console.warn("[NoticeEditForm] 공지사항 수정 경고:", result.warning);
-        setSubmitError(result.warning);
-        // 경고 메시지를 잠시 표시한 후 페이지 이동
-        setTimeout(() => {
-          onSaveComplete(result.data);
-        }, 1500);
-        return;
-      }
-
-      // 성공 시 상세 보기 모드로 전환 (수정된 데이터를 전달)
-      // 공지사항 상세 데이터가 응답에 포함되어 있으면 그것을 사용
-      if (result.data) {
-        console.log("[NoticeEditForm] 수정된 공지사항 데이터:", result.data);
-        onSaveComplete(result.data);
-      } else {
-        // 데이터가 없으면 현재 수정한 내용으로 객체 생성
-        const updatedData = {
-          ...initialData,
-          noticeTitle,
-          noticeContent,
-          noticeModifiedAt: new Date().toISOString(),
-          files: selectedFiles.map((file, index) => ({
-            fileId: index + 1000, // 임시 ID
-            fileName: file.name,
-            fileUrl: URL.createObjectURL(file), // 로컬 미리보기용 URL
-          })),
-        };
-        console.log(
-          "[NoticeEditForm] 로컬에서 생성한 수정 데이터:",
-          updatedData
-        );
-        onSaveComplete(updatedData);
-      }
+      // 성공 시 상세 보기 모드로 전환
+      onSaveComplete();
     } catch (error) {
-      console.error("[NoticeEditForm] 공지사항 수정 중 오류:", error);
       setSubmitError("공지사항 수정 중 오류가 발생했습니다.");
       setIsSubmitting(false);
     }

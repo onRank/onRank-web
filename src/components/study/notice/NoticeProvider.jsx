@@ -297,9 +297,7 @@ export function NoticeProvider({ children }) {
           noticeData,
           files
         );
-
-        // success 필드 확인 또는 응답 데이터 존재 여부로 성공 판단
-        if (response.success || (response.data && response.data.noticeId)) {
+        if (response.success) {
           // 수정된 공지사항으로 상태 업데이트 후 생성일자 기준으로 정렬
           setNotices((prev) => {
             // 먼저 해당 공지사항 업데이트
@@ -308,7 +306,6 @@ export function NoticeProvider({ children }) {
                 ? {
                     ...notice,
                     ...noticeData,
-                    noticeModifiedAt: new Date().toISOString(), // 수정일자 업데이트
                   }
                 : notice
             );
@@ -323,46 +320,12 @@ export function NoticeProvider({ children }) {
           // 캐시 무효화
           invalidateCache(studyId);
 
-          // warning이 있는 경우 (파일 업로드 실패)에도 success: true로 반환
-          if (response.warning) {
-            console.warn(
-              "[NoticeProvider] 공지사항 수정 경고:",
-              response.warning
-            );
-            return {
-              success: true,
-              message: "공지사항이 수정되었습니다.",
-              warning: response.warning || "파일 업로드에 실패했습니다.",
-              data: response.data,
-            };
-          }
-
-          return {
-            success: true,
-            message: "공지사항이 성공적으로 수정되었습니다.",
-            data: response.data,
-          };
+          return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
         } else {
           throw new Error(response.message || "공지사항 수정에 실패했습니다.");
         }
       } catch (err) {
-        console.error("[NoticeProvider] 공지사항 수정 실패:", err);
-
-        // AccessDenied 오류가 포함된 경우 (파일 업로드 실패)
-        if (err.message && err.message.includes("AccessDenied")) {
-          // 공지사항은 수정되었으나 파일 업로드만 실패한 경우를 처리
-          return {
-            success: true,
-            message: "공지사항이 수정되었으나 파일 업로드에 실패했습니다.",
-            warning: "파일 업로드 권한이 없습니다. 관리자에게 문의하세요.",
-            data: {
-              noticeId: noticeId,
-              ...noticeData,
-              noticeModifiedAt: new Date().toISOString(),
-            },
-          };
-        }
-
+        console.error("공지사항 수정 실패:", err);
         return {
           success: false,
           message: err.message || "공지사항 수정에 실패했습니다.",
