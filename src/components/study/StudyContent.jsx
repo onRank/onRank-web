@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
 import AssignmentTab from "./tabs/AssignmentTab";
 import DefaultContent from "./tabs/DefaultContent";
@@ -9,11 +9,13 @@ import NoticeTab from "./tabs/NoticeTab";
 import BoardTab from "./tabs/BoardTab";
 import RankingTab from "./tabs/RankingTab";
 import AttendanceContainer from "../../pages/study/attendance/AttendanceContainer";
+import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
 function StudyContent({ activeTab, studyData }) {
   const [assignments, setAssignments] = useState([]);
   const { studyId } = useParams();
   const location = useLocation();
+  const [currentSubPage, setCurrentSubPage] = useState(null);
 
   useEffect(() => {
     if (activeTab === "과제") {
@@ -36,14 +38,21 @@ function StudyContent({ activeTab, studyData }) {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    setCurrentSubPage(null);
+  }, [activeTab]);
+
+  const handleSubPageChange = (subPageName) => {
+    setCurrentSubPage(subPageName);
+  };
+
   const renderContent = () => {
     console.log("[StudyContent] renderContent 호출, activeTab:", activeTab);
     
     switch (activeTab) {
       case "일정":
         console.log("[StudyContent] 일정 탭 렌더링");
-        // ScheduleContainer가 내부적으로 라우팅 처리
-        return <ScheduleContainer />;
+        return <ScheduleContainer onSubPageChange={handleSubPageChange} />;
       case "과제":
         console.log("[StudyContent] 과제 탭 렌더링");
         return <AssignmentTab assignments={assignments} studyId={studyId} />;
@@ -69,16 +78,27 @@ function StudyContent({ activeTab, studyData }) {
   };
 
   return (
-    <div 
-      className="study-content" 
+    <div
+      className="study-content-wrapper"
       style={{
-        width: '100%',
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '0'
+        display: "flex",
+        gap: "2rem",
+        width: "100%",
+        maxWidth: "1200px",
+        position: "relative",
+        padding: "0 1rem",
       }}
     >
-      {renderContent()}
+      <StudySidebarContainer activeTab={activeTab} subPage={currentSubPage} />
+      <div
+        className="study-main-content"
+        style={{
+          flex: 1,
+          padding: '0'
+        }}
+      >
+        {renderContent()}
+      </div>
     </div>
   );
 }

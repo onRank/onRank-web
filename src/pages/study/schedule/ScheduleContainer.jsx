@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import PropTypes from 'prop-types';
 import { studyService } from "../../../services/api";
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 import ScheduleListPage from "./ScheduleListPage";
 import ScheduleDetailView from "./ScheduleDetailView";
 import ScheduleAddPage from "./ScheduleAddPage";
-import StudySidebarContainer from '../../../components/common/sidebar/StudySidebarContainer';
 
-function ScheduleContainer() {
+function ScheduleContainer({ onSubPageChange }) {
   const [schedules, setSchedules] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -58,6 +58,21 @@ function ScheduleContainer() {
       fetchSchedules();
     }
   }, [studyId, isAddPage]);
+
+  // subPage 상태 관리 및 콜백 호출
+  useEffect(() => {
+    if (isAddPage) {
+      onSubPageChange("일정 추가");
+    } else if (showScheduleDetail) {
+      onSubPageChange("일정 상세");
+    } else {
+      onSubPageChange(null); // 목록 페이지에서는 null 전달
+    }
+    // 컴포넌트 언마운트 시 subPage 초기화
+    return () => {
+      onSubPageChange(null);
+    };
+  }, [isAddPage, showScheduleDetail, onSubPageChange]);
 
   // 일정 추가 핸들러
   const handleAddSchedule = async (newSchedule) => {
@@ -196,13 +211,6 @@ function ScheduleContainer() {
     navigate(`/studies/${studyId}/schedules`);
   };
 
-  // 현재 화면에 따라 사이드바의 subPage 결정
-  const getSubPage = () => {
-    if (isAddPage) return "일정 추가";
-    if (showScheduleDetail) return "일정 상세";
-    return undefined;
-  };
-
   // 컨텐츠 렌더링
   const renderContent = () => {
     if (isAddPage) {
@@ -244,18 +252,11 @@ function ScheduleContainer() {
       alignItems: 'center'
     }}>
       <div style={{
-        display: 'flex',
-        gap: '2rem',
         width: '100%',
-        maxWidth: '1200px',
         position: 'relative',
         padding: '0 1rem',
         marginTop: '1rem'
       }}>
-        <StudySidebarContainer 
-          activeTab="일정" 
-          subPage={getSubPage()} 
-        />
         <div style={{ flex: 1 }}>
           {renderContent()}
         </div>
@@ -263,5 +264,9 @@ function ScheduleContainer() {
     </div>
   );
 }
+
+ScheduleContainer.propTypes = {
+  onSubPageChange: PropTypes.func.isRequired,
+};
 
 export default ScheduleContainer;

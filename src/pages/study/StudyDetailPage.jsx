@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
-import StudySidebarContainer from "../../components/common/sidebar/StudySidebarContainer";
+// import StudySidebarContainer from "../../components/common/sidebar/StudySidebarContainer";
 import StudyContent from "../../components/study/StudyContent";
 import { studyService } from "../../services/api";
 import studyContextService from "../../services/studyContext";
