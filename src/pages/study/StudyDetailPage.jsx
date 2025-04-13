@@ -201,7 +201,6 @@ function StudyDetailPage() {
           padding: "0 1rem",
         }}
       >
-        <StudySidebarContainer activeTab={activeTab} />
         <StudyContent activeTab={activeTab} studyData={studyData} />
       </div>
     </div>
