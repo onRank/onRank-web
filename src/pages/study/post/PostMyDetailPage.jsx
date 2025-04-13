@@ -10,18 +10,11 @@ import StudySidebarContainer from "../../../components/common/sidebar/StudySideb
 import Button from "../../../components/common/Button";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 
-function PostDetailManagerContent({ onTitleLoaded }) {
+function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
   const { studyId, postId } = useParams();
   const navigate = useNavigate();
-  const { selectedPost, isLoading, error, getPostById } = usePost();
+  const { isLoading, error, getPostById } = usePost(); // selectedPost 제거
   const [isEditMode, setIsEditMode] = useState(false);
-
-  // 컴포넌트 마운트 시 게시판 정보 가져오기
-  useEffect(() => {
-    if (studyId && postId) {
-      getPostById(studyId, parseInt(postId, 10));
-    }
-  }, [studyId, postId, getPostById]);
 
   // 게시판 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
@@ -158,7 +151,7 @@ function PostDetailManagerContent({ onTitleLoaded }) {
           )}
           <div style={styles.buttonContainer}>
             <Button variant="edit" onClick={handleEdit} />
-            <Button variant="back" onClick={handleClose} />
+            <Button variant="back" onClick={handleBack} />
           </div>
         </>
       )}
@@ -168,6 +161,8 @@ function PostDetailManagerContent({ onTitleLoaded }) {
 
 // PropTypes 추가
 PostDetailManagerContent.propTypes = {
+  selectedPost: PropTypes.object.isRequired,
+  handleBack: PropTypes.func.isRequired,
   onTitleLoaded: PropTypes.func,
 };
 
@@ -176,7 +171,7 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostMyDetailPage(studyId, postId, selectedPost) {
+function PostMyDetailPage({ studyId, postId, selectedPost }) {
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState(
     selectedPost?.postTitle || "게시판 상세"
@@ -184,6 +179,8 @@ function PostMyDetailPage(studyId, postId, selectedPost) {
 
   // 스터디 정보 가져오기
   useEffect(() => {
+    if (!studyId) return; // studyId가 없으면 실행하지 않음
+
     const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
     if (cachedStudyDataStr) {
       try {
@@ -238,12 +235,23 @@ function PostMyDetailPage(studyId, postId, selectedPost) {
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <PostDetailManagerContent onTitleLoaded={updatePageTitle} />
+            <PostDetailManagerContent
+              selectedPost={selectedPost}
+              handleBack={() => window.history.back()}
+              onTitleLoaded={updatePageTitle}
+            />
           </main>
         </div>
       </div>
     </PostProvider>
   );
 }
+
+// PostMyDetailPage Props 타입 정의
+PostMyDetailPage.propTypes = {
+  studyId: PropTypes.string.isRequired,
+  postId: PropTypes.string.isRequired,
+  selectedPost: PropTypes.object.isRequired,
+};
 
 export default PostMyDetailPage;

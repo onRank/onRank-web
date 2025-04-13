@@ -8,20 +8,11 @@ import {
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
-import PostEditForm from "../../../components/study/post/PostEditForm";
 
-function PostDetailManagerContent({ onTitleLoaded }) {
-  const { studyId, postId } = useParams();
+function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
+  const { studyId } = useParams();
   const navigate = useNavigate();
-  const { selectedPost, isLoading, error, getPostById } = usePost();
-  const [isEditMode, setIsEditMode] = useState(false);
-
-  // 컴포넌트 마운트 시 게시판 정보 가져오기
-  useEffect(() => {
-    if (studyId && postId) {
-      getPostById(studyId, parseInt(postId, 10));
-    }
-  }, [studyId, postId, getPostById]);
+  const { isLoading, error } = usePost(); // selectedPost, getPostById 제거
 
   // 게시판 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
@@ -120,7 +111,7 @@ function PostDetailManagerContent({ onTitleLoaded }) {
         </div>
       )}
       <div style={styles.buttonContainer}>
-        <Button variant="back" onClick={handleClose} />
+        <Button variant="back" onClick={handleBack} />
       </div>
     </div>
   );
@@ -128,6 +119,8 @@ function PostDetailManagerContent({ onTitleLoaded }) {
 
 // PropTypes 추가
 PostDetailManagerContent.propTypes = {
+  selectedPost: PropTypes.object.isRequired,
+  handleBack: PropTypes.func.isRequired,
   onTitleLoaded: PropTypes.func,
 };
 
@@ -136,7 +129,7 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostOtherDetailPage(studyId, postId, selectedPost) {
+function PostOtherDetailPage({ studyId, postId, selectedPost }) {
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState(
     selectedPost?.postTitle || "게시판 상세"
@@ -144,13 +137,15 @@ function PostOtherDetailPage(studyId, postId, selectedPost) {
 
   // 스터디 정보 가져오기
   useEffect(() => {
+    if (!studyId) return; // studyId가 없으면 실행하지 않음
+
     const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
     if (cachedStudyDataStr) {
       try {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[PostDetailManagerPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[PostDetailPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -198,12 +193,23 @@ function PostOtherDetailPage(studyId, postId, selectedPost) {
           </aside>
           <main style={styles.content}>
             <h1 style={styles.title}>{pageTitle}</h1>
-            <PostDetailManagerContent onTitleLoaded={updatePageTitle} />
+            <PostDetailManagerContent
+              selectedPost={selectedPost}
+              handleBack={() => window.history.back()}
+              onTitleLoaded={updatePageTitle}
+            />
           </main>
         </div>
       </div>
     </PostProvider>
   );
 }
+
+// PostOtherDetailPage Props 타입 정의
+PostOtherDetailPage.propTypes = {
+  studyId: PropTypes.string.isRequired,
+  postId: PropTypes.string.isRequired,
+  selectedPost: PropTypes.object.isRequired,
+};
 
 export default PostOtherDetailPage;
