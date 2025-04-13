@@ -38,13 +38,13 @@ const StudyNavigation = memo(({ activeTab }) => {
           key={item.id}
           onClick={() => handleTabClick(item.path)}
           style={{
-            padding: '1rem',
+            padding: '0.75rem 1rem',
             textAlign: 'left',
             border: 'none',
             borderBottom: `1px solid ${colors.border}`,
             background: activeTab === item.id ? colors.hoverBackground : colors.cardBackground,
             cursor: 'pointer',
-            fontSize: '1rem',
+            fontSize: '0.95rem',
             transition: 'all 0.2s ease',
             color: activeTab === item.id ? colors.primary : colors.textPrimary,
             fontWeight: activeTab === item.id ? 'bold' : 'normal',

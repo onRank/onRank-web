@@ -110,67 +110,6 @@ function ScheduleAddPage() {
       flexDirection: 'column',
       alignItems: 'center'
     }}>
-      {/* 경로 표시 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        marginBottom: '2rem',
-        fontSize: '14px',
-        color: '#666666',
-        width: '100%',
-        maxWidth: '1200px',
-        padding: '0 1rem'
-      }}>
-        <Link 
-          to="/studies"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            color: '#666666',
-            textDecoration: 'none',
-            transition: 'color 0.2s ease',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F8F9FA';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          <IoHomeOutline size={16} />
-        </Link>
-        <span>{'>'}</span>
-        <Link
-          to={`/studies/${studyId}`}
-          style={{
-            color: '#666666',
-            textDecoration: 'none',
-            transition: 'color 0.2s ease',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#F8F9FA';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }}
-        >
-          ○○
-        </Link>
-        <span>{'>'}</span>
-        <span style={{ 
-          color: '#FF0000',
-          fontWeight: 'bold',
-          padding: '2px 4px'
-        }}>
-          일정
-        </span>
-      </div>
-
       {/* 메인 컨텐츠 */}
       <div style={{
         display: 'flex',
@@ -178,11 +117,12 @@ function ScheduleAddPage() {
         width: '100%',
         maxWidth: '1200px',
         position: 'relative',
-        padding: '0 1rem'
+        padding: '0 1rem',
+        marginTop: '1rem'
       }}>
-        <StudySidebarContainer activeTab="일정" />
+        <StudySidebarContainer activeTab="일정" subPage="일정 추가" />
         <div style={{ flex: 1 }}>
-          <h2 style={{ color: colors.textPrimary }}>일정</h2>
+          <h2 style={{ color: colors.textPrimary }}>일정 추가</h2>
           <div style={{
             backgroundColor: colors.cardBackground,
             borderRadius: '8px',

@@ -13,7 +13,7 @@ const StudyInfoHeader = memo(({ studyName, studyImageUrl }) => {
     <div style={{
       backgroundColor: '#333',
       color: 'white',
-      height: '150px',
+      height: '120px',
       position: 'relative',
       borderRadius: '4px 4px 0 0',
       overflow: 'hidden',
@@ -42,14 +42,14 @@ const StudyInfoHeader = memo(({ studyName, studyImageUrl }) => {
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         zIndex: 1
       }} />
       
       {/* 스터디 이름 */}
       <h2 style={{
         margin: 0,
-        fontSize: '1.5rem',
+        fontSize: '1.3rem',
         fontWeight: 'bold',
         textAlign: 'center',
         wordBreak: 'break-word',

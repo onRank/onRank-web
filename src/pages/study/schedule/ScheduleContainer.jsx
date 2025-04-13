@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { studyService } from "../../../services/api";
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';import ScheduleTab from "./ScheduleTab";
 import ScheduleDetailView from "./ScheduleDetailView";
+import StudySidebarContainer from '../../../components/common/sidebar/StudySidebarContainer';
 
 function ScheduleContainer() {
   const [schedules, setSchedules] = useState([]);
@@ -185,28 +186,56 @@ function ScheduleContainer() {
     return <div style={{ color: '#F44336' }}>{error}</div>;
   }
 
-  if (showScheduleDetail) {
+  const renderContent = () => {
+    if (showScheduleDetail) {
+      return (
+        <ScheduleDetailView
+          schedule={selectedSchedule}
+          onBack={handleBackToScheduleList}
+          onUpdate={handleUpdateSchedule}
+          onDelete={handleDeleteSchedule}
+          isLoading={isLoading}
+        />
+      );
+    }
+
     return (
-      <ScheduleDetailView
-        schedule={selectedSchedule}
-        onBack={handleBackToScheduleList}
-        onUpdate={handleUpdateSchedule}
-        onDelete={handleDeleteSchedule}
+      <ScheduleTab
+        schedules={schedules}
+        onAddSchedule={() => navigate(`/studies/${studyId}/schedules/add`)}
+        onDeleteSchedule={handleDeleteSchedule}
+        onUpdateSchedule={handleUpdateSchedule}
+        onViewScheduleDetail={handleViewScheduleDetail}
         isLoading={isLoading}
+        error={error}
       />
     );
-  }
+  };
 
   return (
-    <ScheduleTab
-      schedules={schedules}
-      onAddSchedule={() => navigate(`/studies/${studyId}/schedules/add`)}
-      onDeleteSchedule={handleDeleteSchedule}
-      onUpdateSchedule={handleUpdateSchedule}
-      onViewScheduleDetail={handleViewScheduleDetail}
-      isLoading={isLoading}
-      error={error}
-    />
+    <div style={{
+      width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        display: 'flex',
+        gap: '2rem',
+        width: '100%',
+        maxWidth: '1200px',
+        position: 'relative',
+        padding: '0 1rem',
+        marginTop: '1rem'
+      }}>
+        <StudySidebarContainer activeTab="일정" />
+        <div style={{ flex: 1 }}>
+          {renderContent()}
+        </div>
+      </div>
+    </div>
   );
 }
 
