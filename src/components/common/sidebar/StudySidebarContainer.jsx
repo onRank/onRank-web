@@ -6,6 +6,7 @@ import StudyInfoHeader from './StudyInfoHeader';
 import StudyNavigation from './StudyNavigation';
 import studyContextService from '../../../services/studyContext';
 import { IoHomeOutline, IoChevronForward } from 'react-icons/io5';
+import Breadcrumb from './Breadcrumb';
 
 // 스터디 사이드바 컨테이너 컴포넌트
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
@@ -15,6 +16,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     studyName: '',
     studyImageUrl: null
   });
+  const [memberRole, setMemberRole] = useState('');
 
   // 컴포넌트 마운트 시 스터디 정보 로드
   useEffect(() => {
@@ -26,6 +28,12 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         studyName: cachedContext.studyName || '',
         studyImageUrl: cachedContext.studyImageUrl || null
       });
+      
+      // 멤버 역할 정보 설정
+      if (cachedContext.memberContext && cachedContext.memberContext.memberRole) {
+        setMemberRole(cachedContext.memberContext.memberRole);
+      }
+      
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 사용: ${cachedContext.studyName}`);
     } else {
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 없음: ${studyId}`);
@@ -39,7 +47,8 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       const latestContext = studyContextService.getStudyContext(studyId);
       if (latestContext && 
           (latestContext.studyName !== studyInfo.studyName || 
-           latestContext.studyImageUrl !== studyInfo.studyImageUrl)) {
+           latestContext.studyImageUrl !== studyInfo.studyImageUrl ||
+           (latestContext.memberContext && latestContext.memberContext.memberRole !== memberRole))) {
         // 스터디 컨텍스트 정보 변경을 감지하는 함수
         const handleStudyContextChange = () => {
           if (latestContext) {
@@ -47,6 +56,11 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
               studyName: latestContext.studyName || studyInfo.studyName,
               studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
             });
+            
+            // 멤버 역할 정보 업데이트
+            if (latestContext.memberContext && latestContext.memberContext.memberRole) {
+              setMemberRole(latestContext.memberContext.memberRole);
+            }
           }
         };
         
@@ -55,7 +69,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     }, 1000); // 1초마다 체크
     
     return () => clearInterval(checkForUpdates);
-  }, [studyId, studyInfo]);
+  }, [studyId, studyInfo, memberRole]);
 
   // 브레드크럼 조건부 표시를 위한 함수
   const renderBreadcrumb = () => {
@@ -133,14 +147,15 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       />
       
       {/* 브레드크럼 네비게이션 */}
-      {renderBreadcrumb()}
-      
-      {/* 스터디 네비게이션 메뉴 - 스크롤 제거 */}
-      <div style={{ 
-        flex: 1,
-      }}>
-        <StudyNavigation activeTab={activeTab} />
+      <div style={{ marginBottom: '1rem' }}>
+        <Breadcrumb studyName={studyInfo.studyName} tabName={activeTab} />
       </div>
+      
+      {/* 스터디 네비게이션 메뉴 */}
+      <StudyNavigation 
+        activeTab={activeTab} 
+        memberRole={memberRole}
+      />
     </div>
   );
 });
