@@ -5,13 +5,16 @@ import AddScheduleModal from '../../../components/study/modals/AddScheduleModal'
 import { useTheme } from '../../../contexts/ThemeContext';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 
-function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error }) {
+function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdateSchedule, onViewScheduleDetail, isLoading, error, memberRole }) {
   const { colors } = useTheme();
   const { studyId } = useParams();
   const navigate = useNavigate();
   const [showUpdateSchedulePopup, setShowUpdateSchedulePopup] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
+  
+  // 관리자 권한 확인 (HOST, ADMIN, OWNER인 경우)
+  const isManager = memberRole === 'HOST' || memberRole === 'CREATOR';
   
   // 일정 추가 페이지로 이동
   const handleNavigateToAddSchedule = () => {
@@ -122,38 +125,40 @@ function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdate
     <div style={{ 
       width: '100%'
     }}>
-      {/* 일정 추가 안내 */}
-      <div style={{
-        border: `1px solid ${colors.border}`,
-        borderRadius: '4px',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-        backgroundColor: colors.cardBackground,
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        width: '100%'
-      }}>
-        <div style={{ textAlign: 'left' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>일정 추가</div>
-          <div style={{ color: colors.textSecondary, fontSize: '14px' }}>다가올 일정을 추가해주세요.</div>
+      {/* 일정 추가 안내 - 관리자 권한이 있을 때만 표시 */}
+      {isManager && (
+        <div style={{
+          border: `1px solid ${colors.border}`,
+          borderRadius: '4px',
+          padding: '1.5rem',
+          marginBottom: '2rem',
+          backgroundColor: colors.cardBackground,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%'
+        }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '0.5rem', color: colors.text }}>일정 추가</div>
+            <div style={{ color: colors.textSecondary, fontSize: '14px' }}>다가올 일정을 추가해주세요.</div>
+          </div>
+          <button
+            onClick={handleNavigateToAddSchedule}
+            style={{
+              padding: '0.5rem 2rem',
+              backgroundColor: colors.primary,
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              fontWeight: 'bold'
+            }}
+          >
+            일정 추가
+          </button>
         </div>
-        <button
-          onClick={handleNavigateToAddSchedule}
-          style={{
-            padding: '0.5rem 2rem',
-            backgroundColor: colors.primary,
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}
-        >
-          일정 추가
-        </button>
-      </div>
+      )}
       
       {/* 오류 메시지 표시 */}
       {error && (
@@ -193,7 +198,7 @@ function ScheduleListPage({ schedules, onAddSchedule, onDeleteSchedule, onUpdate
           width: '100%',
           backgroundColor: colors.cardBackground
         }}>
-          등록된 일정이 없습니다. 일정 추가 버튼을 눌러 새 일정을 추가해보세요.
+          등록된 일정이 없습니다. {isManager && "일정 추가 버튼을 눌러 새 일정을 추가해보세요."}
         </div>
       ) : (
         <div style={{ 
@@ -343,13 +348,15 @@ ScheduleListPage.propTypes = {
   onUpdateSchedule: PropTypes.func.isRequired,
   onViewScheduleDetail: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
-  error: PropTypes.string
+  error: PropTypes.string,
+  memberRole: PropTypes.string
 };
 
 ScheduleListPage.defaultProps = {
   schedules: [],
   isLoading: false,
-  error: null
+  error: null,
+  memberRole: ''
 };
 
 export default ScheduleListPage; 

@@ -13,6 +13,7 @@ function ScheduleContainer({ onSubPageChange }) {
   const [error, setError] = useState(null);
   const [showScheduleDetail, setShowScheduleDetail] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [memberRole, setMemberRole] = useState('');
   const { studyId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -33,6 +34,8 @@ function ScheduleContainer({ onSubPageChange }) {
         // 멤버 컨텍스트 정보 저장 (있는 경우)
         if (response && response.memberContext) {
           console.log("[ScheduleContainer] 멤버 컨텍스트:", response.memberContext);
+          // memberRole 상태 업데이트
+          setMemberRole(response.memberContext.memberRole || '');
         }
         
         // data 필드에서 일정 배열을 추출 (없으면 빈 배열)
@@ -238,6 +241,7 @@ function ScheduleContainer({ onSubPageChange }) {
         onViewScheduleDetail={handleViewScheduleDetail}
         isLoading={isLoading}
         error={error}
+        memberRole={memberRole}
       />
     );
   };
