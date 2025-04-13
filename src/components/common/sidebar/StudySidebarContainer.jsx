@@ -34,23 +34,22 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
 
   // 새 스터디 정보가 업데이트될 때마다 실행
   useEffect(() => {
-    // 스터디 컨텍스트 정보 변경을 감지하는 함수
-    const handleStudyContextChange = () => {
-      const latestContext = studyContextService.getStudyContext(studyId);
-      if (latestContext) {
-        setStudyInfo({
-          studyName: latestContext.studyName || studyInfo.studyName,
-          studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
-        });
-      }
-    };
-
     // 이벤트 리스너 등록 (커스텀 이벤트 방식)
     const checkForUpdates = setInterval(() => {
       const latestContext = studyContextService.getStudyContext(studyId);
       if (latestContext && 
           (latestContext.studyName !== studyInfo.studyName || 
            latestContext.studyImageUrl !== studyInfo.studyImageUrl)) {
+        // 스터디 컨텍스트 정보 변경을 감지하는 함수
+        const handleStudyContextChange = () => {
+          if (latestContext) {
+            setStudyInfo({
+              studyName: latestContext.studyName || studyInfo.studyName,
+              studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
+            });
+          }
+        };
+        
         handleStudyContextChange();
       }
     }, 1000); // 1초마다 체크
@@ -123,7 +122,6 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       backgroundColor: colors.cardBackground,
       flexShrink: 0,
       border: `1px solid ${colors.border}`,
-      height: '400px',
       display: 'flex',
       flexDirection: 'column',
       margin: '0.5rem 0'
@@ -137,8 +135,10 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       {/* 브레드크럼 네비게이션 */}
       {renderBreadcrumb()}
       
-      {/* 스터디 네비게이션 메뉴 */}
-      <div style={{ flex: 1, overflow: 'auto' }}>
+      {/* 스터디 네비게이션 메뉴 - 스크롤 제거 */}
+      <div style={{ 
+        flex: 1,
+      }}>
         <StudyNavigation activeTab={activeTab} />
       </div>
     </div>
