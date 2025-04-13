@@ -1,5 +1,5 @@
 import axios from "axios";
-import { studyContextService } from './studyContext';
+import { studyContextService } from "./studyContext";
 
 if (!import.meta.env.VITE_API_URL) {
   console.error("API URL이 설정되지 않았습니다");
@@ -44,14 +44,19 @@ api.interceptors.response.use(
     try {
       // 스터디 API 응답에서 memberContext 정보 추출
       const studyIdMatch = response.config.url.match(/\/studies\/(\d+)/);
-      if (studyIdMatch && studyIdMatch[1] && response.data && response.data.memberContext) {
+      if (
+        studyIdMatch &&
+        studyIdMatch[1] &&
+        response.data &&
+        response.data.memberContext
+      ) {
         const studyId = studyIdMatch[1];
         studyContextService.updateFromApiResponse(studyId, response.data);
       }
     } catch (error) {
-      console.error('[API Interceptor] 스터디 컨텍스트 추출 오류:', error);
+      console.error("[API Interceptor] 스터디 컨텍스트 추출 오류:", error);
     }
-    
+
     return response;
   },
   async (error) => {
@@ -1758,6 +1763,64 @@ export const studyService = {
   },
 };
 
+// api.js 파일에 다음 함수를 추가해야 합니다
+const handleFileUpload = async (responseData, files) => {
+  try {
+    console.log("[FileUpload] 파일 업로드 시작");
+
+    let uploadUrls = [];
+
+    // 다양한 응답 구조 지원
+    if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
+      uploadUrls = responseData.presignedUrls;
+      console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
+    } else if (responseData.uploadUrls && responseData.uploadUrls.length > 0) {
+      uploadUrls = responseData.uploadUrls;
+      console.log("[FileUpload] uploadUrls 사용:", uploadUrls.length);
+    }
+
+    if (uploadUrls.length > 0) {
+      // 각 파일에 대해 업로드 처리
+      for (let i = 0; i < Math.min(files.length, uploadUrls.length); i++) {
+        const file = files[i];
+        const uploadUrl = uploadUrls[i];
+
+        if (!uploadUrl) {
+          console.warn(
+            `[FileUpload] ${i + 1}번째 파일의 업로드 URL이 없습니다`
+          );
+          continue;
+        }
+
+        try {
+          console.log(`[FileUpload] 파일 '${file.name}' 업로드 시작`);
+
+          // 파일 유형에 따라 적절한 업로드 함수 선택
+          if (file.type.startsWith("image/")) {
+            await noticeService.ImageUploadToS3(uploadUrl, file);
+            console.log(`[FileUpload] 이미지 '${file.name}' 업로드 성공`);
+          } else {
+            await noticeService.FileUploadToS3(uploadUrl, file);
+            console.log(`[FileUpload] 파일 '${file.name}' 업로드 성공`);
+          }
+        } catch (individualError) {
+          console.error(
+            `[FileUpload] '${file.name}' 파일 업로드 실패:`,
+            individualError
+          );
+          // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
+        }
+      }
+      console.log("[FileUpload] 모든 파일 업로드 완료");
+    } else {
+      console.log("[FileUpload] 업로드할 URL이 없어 파일 업로드를 건너뜁니다");
+    }
+  } catch (error) {
+    console.error("[FileUpload] 파일 업로드 처리 중 오류:", error);
+    throw error;
+  }
+};
+
 export const noticeService = {
   // 공지사항 목록 조회
   getNotices: async (studyId, params = {}) => {
@@ -2032,8 +2095,8 @@ export const noticeService = {
           headers: {
             Authorization: tokenWithBearer,
             "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest", // CSRF 방지 및 브라우저 호환성 향상
-            Accept: "application/json", // JSON 응답 요청
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json",
           },
           withCredentials: true,
         }
@@ -2041,154 +2104,23 @@ export const noticeService = {
 
       console.log("[NoticeService] 공지사항 생성 응답:", response.data);
 
-      // 기존 코드 제거 및 새로운 파일 업로드 로직 추가
-      // 여러 파일 업로드 처리: 이미지 파일 및 일반 파일 모두 지원
-      if (response.data) {
+      // 파일 업로드 처리
+      if (newNotice.files && newNotice.files.length > 0) {
         try {
-          // 단일 이미지 파일이 있는 경우 (기존 호환성 유지)
-          if (response.data.uploadUrl && newNotice.imageFile) {
-            console.log(
-              "[NoticeService] 이미지 파일 업로드 시작:",
-              newNotice.imageFile.name
-            );
-
-            if (newNotice.imageFile.type.startsWith("image/")) {
-              await noticeService.ImageUploadToS3(
-                response.data.uploadUrl,
-                newNotice.imageFile
-              );
-              console.log("[NoticeService] 이미지 업로드 성공");
-            } else {
-              await noticeService.FileUploadToS3(
-                response.data.uploadUrl,
-                newNotice.imageFile
-              );
-              console.log("[NoticeService] 파일 업로드 성공");
-            }
-          }
-
-          // 여러 파일이 있는 경우 (presignedUrls 또는 uploadUrls 배열)
-          if (newNotice.files && newNotice.files.length > 0) {
-            let uploadUrls = [];
-
-            // 다양한 응답 구조 지원
-            if (
-              response.data.presignedUrls &&
-              response.data.presignedUrls.length > 0
-            ) {
-              uploadUrls = response.data.presignedUrls;
-              console.log(
-                "[NoticeService] presignedUrls 사용:",
-                uploadUrls.length
-              );
-            } else if (
-              response.data.uploadUrls &&
-              response.data.uploadUrls.length > 0
-            ) {
-              uploadUrls = response.data.uploadUrls;
-              console.log(
-                "[NoticeService] uploadUrls 사용:",
-                uploadUrls.length
-              );
-            }
-
-            if (uploadUrls.length > 0) {
-              console.log("[NoticeService] 다중 파일 업로드 시작");
-
-              // 각 파일에 대해 업로드 처리
-              for (
-                let i = 0;
-                i < Math.min(newNotice.files.length, uploadUrls.length);
-                i++
-              ) {
-                const file = newNotice.files[i];
-                const uploadUrl = uploadUrls[i];
-
-                if (!uploadUrl) {
-                  console.warn(
-                    `[NoticeService] ${i + 1}번째 파일의 업로드 URL이 없습니다`
-                  );
-                  continue;
-                }
-
-                try {
-                  console.log(
-                    `[NoticeService] 파일 '${file.name}' 업로드 시작`
-                  );
-
-                  // 파일 유형에 따라 적절한 업로드 함수 선택
-                  if (file.type.startsWith("image/")) {
-                    await noticeService.ImageUploadToS3(uploadUrl, file);
-                    console.log(
-                      `[NoticeService] 이미지 '${file.name}' 업로드 성공`
-                    );
-                  } else {
-                    await noticeService.FileUploadToS3(uploadUrl, file);
-                    console.log(
-                      `[NoticeService] 파일 '${file.name}' 업로드 성공`
-                    );
-                  }
-                } catch (individualError) {
-                  console.error(
-                    `[NoticeService] '${file.name}' 파일 업로드 실패:`,
-                    individualError
-                  );
-                  // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
-                }
-              }
-
-              console.log("[NoticeService] 모든 파일 업로드 완료");
-            } else {
-              console.log(
-                "[NoticeService] 업로드할 URL이 없어 파일 업로드를 건너뜁니다"
-              );
-            }
-          }
+          await handleFileUpload(response.data, newNotice.files);
         } catch (uploadError) {
           console.error("[NoticeService] 파일 업로드 중 오류:", uploadError);
           return {
             ...response.data,
-            warning: "공지사항는 생성되었으나 일부 파일 업로드에 실패했습니다.",
+            warning: "공지사항은 생성되었으나 일부 파일 업로드에 실패했습니다.",
           };
         }
       }
 
-      // 3. 최종 응답 반환
       return response.data;
     } catch (error) {
       console.error("[NoticeService] 공지사항 생성 오류:", error);
-
-      // 인증 오류인 경우 (401, 403)
-      if (error.response && error.response.status === 403) {
-        console.error("[NoticeService] 인증 오류 발생:", error.response.status);
-
-        // 사용자에게 더 명확한 피드백을 제공하기 위한 에러 객체
-        const authError = new Error("해당 공지사항에 대한 권한이 없습니다.");
-        authError.type = "AUTH_ERROR";
-        authError.requireRelogin = true;
-
-        // 로그인 페이지가 아닐 경우에만 리다이렉트
-        if (!window.location.pathname.includes("/login")) {
-          console.log("[NoticeService] 인증 실패로 로그인 페이지로 리다이렉트");
-          const loginUrl = `${window.location.protocol}//${window.location.host}/login`;
-          setTimeout(() => {
-            window.location.href = loginUrl;
-          }, 500);
-        }
-
-        throw authError;
-      }
-
-      // 네트워크 에러 처리
-      if (error.message && error.message.includes("Network Error")) {
-        const networkError = new Error(
-          "네트워크 연결에 문제가 있습니다. 인터넷 연결을 확인해주세요."
-        );
-        networkError.type = "NETWORK_ERROR";
-        throw networkError;
-      }
-
-      // 기타 에러
+      // 에러 처리...
       throw error;
     }
   },
