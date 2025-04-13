@@ -24,7 +24,7 @@ import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPag
 import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
 import { NoticeProvider } from "./components/study/notice/NoticeProvider";
 import PostFormPage from "./pages/study/post/PostFormPage";
-import PostWrittenBy from "./components/study/post/PostWrittenBy";
+import PostWrittenBy from "./pages/study/post/PostWrittenBy";
 import PostPage from "./pages/study/post/PostPage";
 import Header from "./components/common/Header";
 import UserInfoForm from "./components/auth/UserInfoForm";
