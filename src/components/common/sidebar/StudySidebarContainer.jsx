@@ -6,7 +6,6 @@ import StudyInfoHeader from './StudyInfoHeader';
 import StudyNavigation from './StudyNavigation';
 import studyContextService from '../../../services/studyContext';
 import { IoHomeOutline, IoChevronForward } from 'react-icons/io5';
-import Breadcrumb from './Breadcrumb';
 
 // 스터디 사이드바 컨테이너 컴포넌트
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
@@ -147,15 +146,14 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       />
       
       {/* 브레드크럼 네비게이션 */}
-      <div style={{ marginBottom: '1rem' }}>
-        <Breadcrumb studyName={studyInfo.studyName} tabName={activeTab} />
-      </div>
+      {renderBreadcrumb()}
       
-      {/* 스터디 네비게이션 메뉴 */}
-      <StudyNavigation 
-        activeTab={activeTab} 
-        memberRole={memberRole}
-      />
+      {/* 스터디 네비게이션 메뉴 - 스크롤 제거 */}
+      <div style={{ 
+        flex: 1,
+      }}>
+        <StudyNavigation activeTab={activeTab} />
+      </div>
     </div>
   );
 });
