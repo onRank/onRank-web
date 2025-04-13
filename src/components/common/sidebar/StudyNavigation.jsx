@@ -31,7 +31,7 @@ const StudyNavigation = memo(({ activeTab }) => {
       flexDirection: 'column',
       borderRadius: '0 0 4px 4px',
       overflow: 'hidden',
-      borderTop: '1px solid #eaeaea'
+      borderTop: `1px solid ${colors.border}`
     }}>
       {menuItems.map((item) => (
         <button
@@ -41,12 +41,12 @@ const StudyNavigation = memo(({ activeTab }) => {
             padding: '1rem',
             textAlign: 'left',
             border: 'none',
-            borderBottom: '1px solid #eaeaea',
-            background: activeTab === item.id ? '#f7f7f7' : 'white',
+            borderBottom: `1px solid ${colors.border}`,
+            background: activeTab === item.id ? colors.hoverBackground : colors.cardBackground,
             cursor: 'pointer',
             fontSize: '1rem',
             transition: 'all 0.2s ease',
-            color: activeTab === item.id ? '#FF0000' : '#333',
+            color: activeTab === item.id ? colors.primary : colors.textPrimary,
             fontWeight: activeTab === item.id ? 'bold' : 'normal',
             position: 'relative',
             paddingLeft: '2rem'
@@ -62,7 +62,7 @@ const StudyNavigation = memo(({ activeTab }) => {
               width: '6px',
               height: '6px',
               borderRadius: '50%',
-              backgroundColor: '#FF0000'
+              backgroundColor: colors.primary
             }} />
           )}
           {item.label}

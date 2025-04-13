@@ -64,7 +64,8 @@ const StudySidebarContainer = memo(({ activeTab }) => {
       borderRadius: '4px',
       overflow: 'hidden',
       backgroundColor: colors.cardBackground,
-      flexShrink: 0
+      flexShrink: 0,
+      border: `1px solid ${colors.border}`
     }}>
       {/* 스터디 정보 헤더 (이미지와 이름) */}
       <StudyInfoHeader 

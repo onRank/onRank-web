@@ -13,48 +13,49 @@ const StudyInfoHeader = memo(({ studyName, studyImageUrl }) => {
     <div style={{
       backgroundColor: '#333',
       color: 'white',
-      padding: '1.5rem',
+      height: '150px',
+      position: 'relative',
+      borderRadius: '4px 4px 0 0',
+      overflow: 'hidden',
       display: 'flex',
       flexDirection: 'column',
-      alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: '4px 4px 0 0',
-      textAlign: 'center'
+      alignItems: 'center'
     }}>
-      {/* 스터디 이미지 */}
+      {/* 배경 이미지 */}
       <div style={{
-        width: '80px',
-        height: '80px',
-        borderRadius: '50%',
-        overflow: 'hidden',
-        marginBottom: '1rem',
-        border: '2px solid white',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#222'
-      }}>
-        <img 
-          src={studyImageUrl || defaultImageUrl} 
-          alt={studyName}
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = defaultImageUrl;
-          }}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-        />
-      </div>
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundImage: `url(${studyImageUrl || defaultImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        zIndex: 0
+      }} />
+      
+      {/* 검정색 반투명 오버레이 */}
+      <div style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+        zIndex: 1
+      }} />
       
       {/* 스터디 이름 */}
       <h2 style={{
         margin: 0,
-        fontSize: '1.2rem',
+        fontSize: '1.5rem',
         fontWeight: 'bold',
-        wordBreak: 'break-word'
+        textAlign: 'center',
+        wordBreak: 'break-word',
+        padding: '0 1rem',
+        zIndex: 2,
+        textShadow: '1px 1px 3px rgba(0, 0, 0, 0.5)'
       }}>
         {studyName || '정보 로딩 중...'}
       </h2>
