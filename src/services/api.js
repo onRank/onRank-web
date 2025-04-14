@@ -1769,10 +1769,14 @@ const handleFileUpload = async (responseData, files) => {
 
     let uploadUrls = [];
 
-    // 다양한 응답 구조 지원
+    // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
     if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
       uploadUrls = responseData.presignedUrls;
       console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
+    } else if (responseData.data && Array.isArray(responseData.data)) {
+      // 새로운 백엔드 응답 구조: data 배열에서 fileUrl 추출
+      uploadUrls = responseData.data.map(file => file.fileUrl);
+      console.log("[FileUpload] data 배열에서 fileUrl 추출:", uploadUrls.length);
     }
 
     if (uploadUrls.length > 0) {
@@ -2126,9 +2130,10 @@ export const noticeService = {
     }
   },
 
-  createNotice: async (studyId, newNotice) => {
+  createNotice: async (studyId, newNotice, files = []) => {
     try {
       console.log("[NoticeService] 공지사항 생성 요청:", newNotice);
+      console.log("[NoticeService] 첨부 파일 수:", files && files.length);
 
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
@@ -2167,12 +2172,23 @@ export const noticeService = {
       );
 
       console.log("[NoticeService] 공지사항 생성 응답:", response.data);
-      const { presignedUrl, uploadUrls } = response.data;
 
-      // 파일 업로드 처리
-      if (newNotice.files && newNotice.files.length > 0) {
+      // 파일 업로드 처리 (백엔드 응답 구조에 따라 달라짐)
+      if (files && files.length > 0) {
         try {
-          await handleFileUpload(response.data, newNotice.files);
+          // 백엔드 응답에 uploadUrls 또는 data 배열이 있는지 확인
+          const hasUploadUrls = response.data && (
+            (response.data.uploadUrls && response.data.uploadUrls.length > 0) || 
+            (response.data.data && Array.isArray(response.data.data) && response.data.data.length > 0)
+          );
+
+          if (hasUploadUrls) {
+            console.log("[NoticeService] 파일 업로드 URL 감지, 업로드 시작");
+            await handleFileUpload(response.data, files);
+            console.log("[NoticeService] 파일 업로드 완료");
+          } else {
+            console.log("[NoticeService] 업로드 URL이 없어 파일 업로드를 건너뜁니다");
+          }
         } catch (uploadError) {
           console.error("[NoticeService] 파일 업로드 중 오류:", uploadError);
           return {
