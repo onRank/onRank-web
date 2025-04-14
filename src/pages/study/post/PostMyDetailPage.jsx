@@ -1,22 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import {
-  PostProvider,
-  usePost,
-} from "../../../components/study/post/PostProvider";
+import { usePost } from "../../../components/study/post/PostProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 
-function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
-  const { studyId, postId } = useParams();
+function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   const navigate = useNavigate();
-  const { isLoading, error, getPostById } = usePost(); // selectedPost 제거
+  const { studyId, postId } = useParams();
   const [isEditMode, setIsEditMode] = useState(false);
+  const { selectedPost, isLoading, error, getPostById } = usePost();
 
-  // 게시판 제목이 로드되면 부모 컴포넌트에 알림
+  // 페이지 로드 시 게시물 데이터 가져오기
+  useEffect(() => {
+    if (studyId && postId) {
+      getPostById(studyId, parseInt(postId, 10));
+    }
+  }, [studyId, postId, getPostById]);
+
+  // 게시판 제목이 로드되면 부모 컴포넌트에 알림 (편집 모드가 아닐 때만)
   useEffect(() => {
     if (
       selectedPost &&
@@ -28,31 +32,25 @@ function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
     }
   }, [selectedPost, onTitleLoaded, isEditMode]);
 
-  // 닫기 버튼 핸들러 - 게시판 목록으로 이동
-  const handleClose = () => {
-    navigate(`/studies/${studyId}/posts`);
-  };
-
-  // 수정 버튼 핸들러 - URL 변경 대신 수정 모드로 전환
+  // 편집 모드 전환
   const handleEdit = () => {
     setIsEditMode(true);
-    if (onTitleLoaded) {
-      onTitleLoaded("게시판");
+    if (selectedPost && onTitleLoaded) {
+      onTitleLoaded(`${selectedPost.postTitle} 수정`);
     }
   };
 
-  // 수정 취소 및 완료 핸들러
-  const handleEditCancel = () => {
+  // 편집 취소
+  const handleCancelEdit = () => {
     setIsEditMode(false);
     if (selectedPost && onTitleLoaded) {
       onTitleLoaded(selectedPost.postTitle);
     }
   };
 
-  const handleEditComplete = () => {
-    // 수정 완료 후 GET API를 다시 호출하여 최신 데이터 가져오기
-    getPostById(studyId, parseInt(postId, 10));
-    setIsEditMode(false);
+  // 삭제 후 처리
+  const handleAfterDelete = () => {
+    navigate(`/studies/${studyId}/posts`);
   };
 
   if (isLoading) {
@@ -94,6 +92,11 @@ function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
       padding: "16px",
       background: "#fff",
     },
+    buttonContainer: {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "12px",
+    },
     attachmentWrapper: {
       marginTop: "12px",
     },
@@ -108,60 +111,56 @@ function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
       color: "#333",
       cursor: "pointer",
     },
-    buttonContainer: {
-      display: "flex",
-      justifyContent: "flex-end",
-      gap: "12px",
-    },
   };
 
+  // 편집 모드일 때 편집 폼 표시
+  if (isEditMode) {
+    return (
+      <PostEditForm
+        studyId={studyId}
+        postId={postId}
+        initialData={selectedPost}
+        onCancel={handleCancelEdit}
+        onSuccessfulEdit={handleBack}
+      />
+    );
+  }
+
+  // 조회 모드일 때 내용 표시
   return (
     <div style={styles.container}>
-      {isEditMode ? (
-        <PostEditForm
-          studyId={studyId}
-          postId={postId}
-          initialData={selectedPost}
-          onCancel={handleEditCancel}
-          onSaveComplete={handleEditComplete}
-        />
-      ) : (
-        <>
-          <div style={styles.date}>
-            {new Date(selectedPost.postCreatedAt).toLocaleDateString()}
-          </div>
-          <div style={styles.contentBox}>
-            {selectedPost.postContent || <p>내용이 없습니다.</p>}
-          </div>
-          {selectedPost.files?.length > 0 && (
-            <div style={styles.attachmentWrapper}>
-              <div style={styles.attachmentTitle}>첨부 파일</div>
-              <ul style={{ listStyle: "none", padding: 0 }}>
-                {selectedPost.files.map((file) => (
-                  <li
-                    key={file.fileId}
-                    style={styles.attachmentItem}
-                    onClick={() => window.open(file.fileUrl, "_blank")}
-                  >
-                    {file.fileName}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div style={styles.buttonContainer}>
-            <Button variant="edit" onClick={handleEdit} />
-            <Button variant="back" onClick={handleBack} />
-          </div>
-        </>
+      <div style={styles.date}>
+        {new Date(selectedPost.postCreatedAt).toLocaleDateString()}
+      </div>
+      <div style={styles.contentBox}>
+        {selectedPost.postContent || <p>내용이 없습니다.</p>}
+      </div>
+      {selectedPost.files?.length > 0 && (
+        <div style={styles.attachmentWrapper}>
+          <div style={styles.attachmentTitle}>첨부 파일</div>
+          <ul style={{ listStyle: "none", padding: 0 }}>
+            {selectedPost.files.map((file) => (
+              <li
+                key={file.fileId}
+                style={styles.attachmentItem}
+                onClick={() => window.open(file.fileUrl, "_blank")}
+              >
+                {file.fileName}
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
+      <div style={styles.buttonContainer}>
+        <Button variant="back" onClick={handleBack} />
+        <Button variant="edit" onClick={handleEdit} />
+      </div>
     </div>
   );
 }
 
 // PropTypes 추가
 PostDetailManagerContent.propTypes = {
-  selectedPost: PropTypes.object.isRequired,
   handleBack: PropTypes.func.isRequired,
   onTitleLoaded: PropTypes.func,
 };
@@ -171,11 +170,10 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostMyDetailPage({ studyId, postId, selectedPost }) {
+function PostMyDetailPage() {
+  const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
-  const [pageTitle, setPageTitle] = useState(
-    selectedPost?.postTitle || "게시판 상세"
-  );
+  const [pageTitle, setPageTitle] = useState("게시판 상세");
 
   // 스터디 정보 가져오기
   useEffect(() => {
@@ -187,7 +185,7 @@ function PostMyDetailPage({ studyId, postId, selectedPost }) {
         const cachedStudyData = JSON.parse(cachedStudyDataStr);
         setStudyData(cachedStudyData);
       } catch (err) {
-        console.error("[PostDetailManagerPage] 캐시 데이터 파싱 오류:", err);
+        console.error("[PostDetailPage] 캐시 데이터 파싱 오류:", err);
       }
     }
   }, [studyId]);
@@ -227,31 +225,21 @@ function PostMyDetailPage({ studyId, postId, selectedPost }) {
   };
 
   return (
-    <PostProvider>
-      <div style={styles.wrapper}>
-        <div style={styles.main}>
-          <aside>
-            <StudySidebarContainer activeTab="게시판" />
-          </aside>
-          <main style={styles.content}>
-            <h1 style={styles.title}>{pageTitle}</h1>
-            <PostDetailManagerContent
-              selectedPost={selectedPost}
-              handleBack={() => window.history.back()}
-              onTitleLoaded={updatePageTitle}
-            />
-          </main>
-        </div>
+    <div style={styles.wrapper}>
+      <div style={styles.main}>
+        <aside>
+          <StudySidebarContainer activeTab="게시판" />
+        </aside>
+        <main style={styles.content}>
+          <h1 style={styles.title}>{pageTitle}</h1>
+          <PostDetailManagerContent
+            handleBack={() => window.history.back()}
+            onTitleLoaded={updatePageTitle}
+          />
+        </main>
       </div>
-    </PostProvider>
+    </div>
   );
 }
-
-// PostMyDetailPage Props 타입 정의
-PostMyDetailPage.propTypes = {
-  studyId: PropTypes.string.isRequired,
-  postId: PropTypes.string.isRequired,
-  selectedPost: PropTypes.object.isRequired,
-};
 
 export default PostMyDetailPage;

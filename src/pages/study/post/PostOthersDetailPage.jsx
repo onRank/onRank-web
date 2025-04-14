@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
-import {
-  PostProvider,
-  usePost,
-} from "../../../components/study/post/PostProvider";
+import { usePost } from "../../../components/study/post/PostProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
 
-function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
+function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   const { studyId } = useParams();
   const navigate = useNavigate();
-  const { isLoading, error } = usePost(); // selectedPost, getPostById 제거
+  const { selectedPost, isLoading, error } = usePost();
 
   // 게시판 제목이 로드되면 부모 컴포넌트에 알림
   useEffect(() => {
@@ -119,7 +116,6 @@ function PostDetailManagerContent({ selectedPost, handleBack, onTitleLoaded }) {
 
 // PropTypes 추가
 PostDetailManagerContent.propTypes = {
-  selectedPost: PropTypes.object.isRequired,
   handleBack: PropTypes.func.isRequired,
   onTitleLoaded: PropTypes.func,
 };
@@ -129,11 +125,18 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostOtherDetailPage({ studyId, postId, selectedPost }) {
+function PostOtherDetailPage() {
+  const { studyId, postId } = useParams();
+  const { selectedPost, getPostById } = usePost();
   const [studyData, setStudyData] = useState({ title: "스터디" });
-  const [pageTitle, setPageTitle] = useState(
-    selectedPost?.postTitle || "게시판 상세"
-  );
+  const [pageTitle, setPageTitle] = useState("게시판 상세");
+
+  // 페이지 로드 시 게시물 데이터 가져오기
+  useEffect(() => {
+    if (studyId && postId) {
+      getPostById(studyId, parseInt(postId, 10));
+    }
+  }, [studyId, postId, getPostById]);
 
   // 스터디 정보 가져오기
   useEffect(() => {
@@ -185,31 +188,21 @@ function PostOtherDetailPage({ studyId, postId, selectedPost }) {
   };
 
   return (
-    <PostProvider>
-      <div style={styles.wrapper}>
-        <div style={styles.main}>
-          <aside>
-            <StudySidebarContainer activeTab="게시판" />
-          </aside>
-          <main style={styles.content}>
-            <h1 style={styles.title}>{pageTitle}</h1>
-            <PostDetailManagerContent
-              selectedPost={selectedPost}
-              handleBack={() => window.history.back()}
-              onTitleLoaded={updatePageTitle}
-            />
-          </main>
-        </div>
+    <div style={styles.wrapper}>
+      <div style={styles.main}>
+        <aside>
+          <StudySidebarContainer activeTab="게시판" />
+        </aside>
+        <main style={styles.content}>
+          <h1 style={styles.title}>{pageTitle}</h1>
+          <PostDetailManagerContent
+            handleBack={() => window.history.back()}
+            onTitleLoaded={updatePageTitle}
+          />
+        </main>
       </div>
-    </PostProvider>
+    </div>
   );
 }
-
-// PostOtherDetailPage Props 타입 정의
-PostOtherDetailPage.propTypes = {
-  studyId: PropTypes.string.isRequired,
-  postId: PropTypes.string.isRequired,
-  selectedPost: PropTypes.object.isRequired,
-};
 
 export default PostOtherDetailPage;

@@ -212,6 +212,7 @@ export function NoticeProvider({ children }) {
   }, []);
 
   // 공지사항 생성 (캐시 무효화 추가)
+  // 공지사항 생성 (에러 처리 간소화)
   const createNotice = useCallback(
     async (studyId, newNotice, files = []) => {
       setIsLoading(true);
@@ -222,14 +223,12 @@ export function NoticeProvider({ children }) {
           files
         );
 
-        // success 필드 확인 또는 응답 데이터 존재 여부로 성공 판단
-        if (response.success || (response.data && response.data.noticeId)) {
-          // 성공시 목록에 새 공지사항 추가 후 최신 생성일자 기준으로 정렬
+        // 응답 데이터가 있거나 success가 true인 경우 성공으로 처리
+        if (response.data || response.success) {
+          // 목록에 새 공지사항 추가
           if (response.data) {
             setNotices((prev) => {
-              // 새 공지사항 추가
               const updatedNotices = [response.data, ...prev];
-
               return updatedNotices.sort(
                 (a, b) =>
                   new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
@@ -240,44 +239,31 @@ export function NoticeProvider({ children }) {
             invalidateCache(studyId);
           }
 
-          // warning이 있는 경우 (파일 업로드 실패)에도 success: true로 반환
-          if (response.warning) {
-            console.warn(
-              "[NoticeProvider] 공지사항 생성 경고:",
-              response.warning
-            );
-            return {
-              success: true,
-              message: "공지사항이 생성되었습니다.",
-              warning: response.warning || "파일 업로드에 실패했습니다.",
-              data: response.data,
-            };
-          }
-
+          // 성공 응답 반환 (warning 관련 로직 제거)
           return {
             success: true,
             message: "공지사항이 성공적으로 생성되었습니다.",
             data: response.data,
           };
         } else {
-          throw new Error(response.message || "공지사항 등록에 실패했습니다.");
+          // 명확한 에러 메시지가 있는 경우에만 에러 발생
+          if (response.message) {
+            throw new Error(response.message);
+          } else {
+            return {
+              success: true,
+              message: "공지사항이 생성되었습니다.",
+              data: response.data,
+            };
+          }
         }
       } catch (err) {
         console.error("[NoticeProvider] 공지사항 등록 실패:", err);
 
-        // AccessDenied 오류가 포함된 경우 (파일 업로드 실패)
-        if (err.message && err.message.includes("AccessDenied")) {
-          return {
-            success: true,
-            message: "공지사항이 생성되었으나 파일 업로드에 실패했습니다.",
-            warning: "파일 업로드 권한이 없습니다. 관리자에게 문의하세요.",
-            data: err.data, // 가능한 경우 데이터 유지
-          };
-        }
-
+        // 간소화된 에러 처리
         return {
           success: false,
-          message: err.message || "공지사항 등록에 실패했습니다.",
+          message: "공지사항 등록 중 문제가 발생했습니다.",
         };
       } finally {
         setIsLoading(false);

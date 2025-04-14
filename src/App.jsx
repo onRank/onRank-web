@@ -23,6 +23,7 @@ import NoticeDetailUserPage from "./pages/study/notice/NoticeDetailUserPage";
 import NoticeDetailManagerPage from "./pages/study/notice/NoticeDetailManagerPage";
 import NoticeContextRenderer from "./components/study/notice/NoticeContextRenderer";
 import { NoticeProvider } from "./components/study/notice/NoticeProvider";
+import { PostProvider } from "./components/study/post/PostProvider";
 import PostFormPage from "./pages/study/post/PostFormPage";
 import PostWrittenBy from "./pages/study/post/PostWrittenBy";
 import PostPage from "./pages/study/post/PostPage";
@@ -524,9 +525,30 @@ function AppContent() {
                       path="assignment/:id"
                       element={<AssignmentDetail />}
                     />
-                    <Route path="posts" element={<PostPage />} />
-                    <Route path="posts/add" element={<PostFormPage />} />
-                    <Route path="posts/:postId" element={<PostWrittenBy />} />
+                    <Route
+                      path="posts"
+                      element={
+                        <PostProvider>
+                          <PostPage />
+                        </PostProvider>
+                      }
+                    />
+                    <Route
+                      path="posts/add"
+                      element={
+                        <PostProvider>
+                          <PostFormPage />
+                        </PostProvider>
+                      }
+                    />
+                    <Route
+                      path="posts/:postId"
+                      element={
+                        <PostProvider>
+                          <PostWrittenBy />
+                        </PostProvider>
+                      }
+                    />
                     <Route path="attendances" element={<StudyDetailPage />} />
                     <Route
                       path="attendances/:scheduleId"
@@ -584,11 +606,11 @@ function AppContent() {
 function App() {
   return (
     <ThemeProvider>
-      <Router>
-        <AuthProvider>
+      <AuthProvider>
+        <Router>
           <AppContent />
-        </AuthProvider>
-      </Router>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

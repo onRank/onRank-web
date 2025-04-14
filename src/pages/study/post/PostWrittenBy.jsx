@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { usePost } from "../../../components/study/post/PostProvider";
 import PostMyDetailPage from "./PostMyDetailPage";
 import PostOthersDetailPage from "./PostOthersDetailPage";
@@ -7,6 +7,7 @@ import LoadingSpinner from "../../../components/common/LoadingSpinner";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 
 function PostWrittenBy() {
+  const navigate = useNavigate();
   const { studyId, postId } = useParams();
   const { selectedPost, isLoading, error, getPostById } = usePost();
   const [currentUser, setCurrentUser] = useState(null);
@@ -40,19 +41,8 @@ function PostWrittenBy() {
   // 작성자 확인 및 적절한 컴포넌트 렌더링
   const isAuthor = selectedPost.postWritenBy === currentUser.userId;
 
-  return isAuthor ? (
-    <PostMyDetailPage
-      studyId={studyId}
-      postId={postId}
-      selectedPost={selectedPost}
-    />
-  ) : (
-    <PostOthersDetailPage
-      studyId={studyId}
-      postId={postId}
-      selectedPost={selectedPost}
-    />
-  );
+  // 같은 컴포넌트 내에서 조건부 렌더링
+  return isAuthor ? <PostMyDetailPage /> : <PostOthersDetailPage />;
 }
 
 export default PostWrittenBy;

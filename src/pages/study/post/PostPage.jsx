@@ -5,10 +5,7 @@ import PostDetail from "../../../components/study/post/PostDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
-import {
-  PostProvider,
-  usePost,
-} from "../../../components/study/post/PostProvider";
+import { usePost } from "../../../components/study/post/PostProvider";
 
 // 실제 게시판 컨텐츠를 표시하는 컴포넌트
 function PostContent() {
@@ -17,13 +14,12 @@ function PostContent() {
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   // PostProvider에서 상태와 함수 가져오기
-  const { posts, selectedPost, isLoading, error, getPosts, getPostById } =
-    usePost();
+  const { posts, isLoading, error, getPosts, getPostById } = usePost();
 
   // 페이지 마운트 시 게시판 목록 가져오기
   useEffect(() => {
     getPosts(studyId);
-  }, [studyId, getPostById]);
+  }, [studyId, getPosts]);
 
   // 선택된 게시판 ID가 변경될 때 상세 정보 가져오기
   useEffect(() => {
@@ -47,6 +43,11 @@ function PostContent() {
   const handleBack = () => {
     setSelectedPostId(null);
     navigate(`/studies/${studyId}/posts`);
+  };
+
+  // 게시판 수정 페이지로 이동
+  const handleEdit = (postId) => {
+    navigate(`/studies/${studyId}/posts/${postId}`);
   };
 
   const styles = {
@@ -108,10 +109,8 @@ function PostContent() {
         <PostDetail
           studyId={studyId}
           postId={selectedPostId}
-          selectedPost={selectedPost}
           handleBack={handleBack}
-          isLoading={isLoading}
-          error={error}
+          handleEdit={handleEdit}
         />
       ) : (
         <PostList
@@ -162,12 +161,10 @@ function PostPage() {
   };
 
   return (
-    <PostProvider>
-      <div style={styles.container}>
-        <StudySidebarContainer activeTab="게시판" />
-        <PostContent />
-      </div>
-    </PostProvider>
+    <div style={styles.container}>
+      <StudySidebarContainer activeTab="게시판" />
+      <PostContent />
+    </div>
   );
 }
 
