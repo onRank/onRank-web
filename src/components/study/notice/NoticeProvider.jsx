@@ -191,27 +191,45 @@ export function NoticeProvider({ children }) {
     [notices, selectedNotice]
   );
 
-  // 캐시 무효화 함수
-  const invalidateCache = useCallback((studyId) => {
-    // 캐시 초기화
-    if (studyId) {
-      delete cachedNotices.current[studyId];
+  // 캐시 무효화 함수 - 수정: 강제 재로드 기능 추가
+  const invalidateCache = useCallback(
+    (studyId, noticeId = null, forceReload = false) => {
+      // 캐시 초기화
+      if (studyId) {
+        // 목록 캐시 삭제
+        delete cachedNotices.current[studyId];
 
-      // 해당 스터디의 모든 공지사항 상세 캐시 삭제
-      Object.keys(cachedNoticeDetails.current).forEach((key) => {
-        if (key.startsWith(`${studyId}_`)) {
-          delete cachedNoticeDetails.current[key];
+        // 특정 공지사항 상세 캐시 삭제
+        if (noticeId) {
+          delete cachedNoticeDetails.current[`${studyId}_${noticeId}`];
+        } else {
+          // 해당 스터디의 모든 공지사항 상세 캐시 삭제
+          Object.keys(cachedNoticeDetails.current).forEach((key) => {
+            if (key.startsWith(`${studyId}_`)) {
+              delete cachedNoticeDetails.current[key];
+            }
+          });
         }
-      });
-    } else {
-      // 전체 캐시 초기화
-      cachedNotices.current = {};
-      cachedNoticeDetails.current = {};
-    }
-    lastFetchTime.current = null;
-  }, []);
+      } else {
+        // 전체 캐시 초기화
+        cachedNotices.current = {};
+        cachedNoticeDetails.current = {};
+      }
 
-  // 공지사항 생성 (캐시 무효화 추가)
+      // 마지막 패치 시간 초기화
+      lastFetchTime.current = null;
+
+      // 강제 재로드가 필요한 경우
+      if (forceReload && noticeId) {
+        console.log(`[NoticeProvider] 공지사항 ${noticeId} 강제 재로드`);
+        return noticeService.getNoticeById(studyId, noticeId);
+      }
+
+      return Promise.resolve(null);
+    },
+    []
+  );
+
   // 공지사항 생성 (에러 처리 간소화)
   const createNotice = useCallback(
     async (studyId, newNotice, files = []) => {
@@ -272,7 +290,7 @@ export function NoticeProvider({ children }) {
     [invalidateCache]
   );
 
-  // 공지사항 수정 (캐시 무효화 추가)
+  // 공지사항 수정 (수정: 캐시 문제 해결 및 데이터 새로고침 로직 강화)
   const editNotice = useCallback(
     async (studyId, noticeId, noticeData, files = []) => {
       setIsLoading(true);
@@ -283,6 +301,7 @@ export function NoticeProvider({ children }) {
           noticeData,
           files
         );
+
         if (response.success) {
           // 응답 데이터 또는 수정된 데이터 준비
           const updatedNoticeData = response.data || {
@@ -309,23 +328,62 @@ export function NoticeProvider({ children }) {
             );
           });
 
-          // selectedNotice도 업데이트 (현재 보고 있는 공지사항이 수정된 공지사항인 경우)
-          if (selectedNotice && selectedNotice.noticeId === noticeId) {
-            setSelectedNotice((prevSelected) => ({
-              ...prevSelected,
-              ...updatedNoticeData,
-            }));
+          // 캐시 무효화 후 새로운 데이터 가져오기
+          await invalidateCache(studyId, noticeId, true);
+
+          // 파일 정보를 포함한 완전한 데이터를 가져와서 selectedNotice 업데이트
+          // 서버에서 받아온 최신 데이터로 상태 업데이트
+          try {
+            const freshData = await noticeService.getNoticeById(
+              studyId,
+              noticeId
+            );
+            if (freshData.success && freshData.data) {
+              // selectedNotice 업데이트
+              setSelectedNotice(freshData.data);
+
+              // 목록의 데이터도 최신 데이터로 업데이트
+              setNotices((prev) =>
+                prev.map((notice) =>
+                  notice.noticeId === noticeId ? freshData.data : notice
+                )
+              );
+
+              // 캐시 업데이트
+              cachedNoticeDetails.current[`${studyId}_${noticeId}`] = {
+                notice: freshData.data,
+                memberRole: freshData.memberContext?.memberRole,
+              };
+
+              console.log(
+                "[NoticeProvider] 공지사항 수정 후 데이터 새로고침 완료"
+              );
+            }
+          } catch (refreshError) {
+            console.error(
+              "[NoticeProvider] 수정 후 데이터 새로고침 실패:",
+              refreshError
+            );
+
+            // 새로고침에 실패했더라도 기존 데이터로 업데이트
+            if (selectedNotice && selectedNotice.noticeId === noticeId) {
+              setSelectedNotice((prevSelected) => ({
+                ...prevSelected,
+                ...updatedNoticeData,
+              }));
+            }
           }
 
-          // 캐시 무효화
-          invalidateCache(studyId);
-
-          return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
+          return {
+            success: true,
+            message: "공지사항이 성공적으로 수정되었습니다.",
+            data: updatedNoticeData,
+          };
         } else {
           throw new Error(response.message || "공지사항 수정에 실패했습니다.");
         }
       } catch (err) {
-        console.error("공지사항 수정 실패:", err);
+        console.error("[NoticeProvider] 공지사항 수정 실패:", err);
         return {
           success: false,
           message: err.message || "공지사항 수정에 실패했습니다.",
