@@ -1,19 +1,34 @@
 import PropTypes from "prop-types";
 import { useEffect } from "react";
 import { usePost } from "./PostProvider";
-import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 
-function PostDetail({ studyId, postId, handleBack, handleEdit }) {
-  const { selectedPost, isLoading, error, getPostById } = usePost();
+function PostDetail({
+  studyId,
+  postId,
+  selectedPost: propSelectedPost,
+  handleBack,
+  handleEdit,
+}) {
+  const {
+    selectedPost: contextSelectedPost,
+    isLoading,
+    error,
+    getPostById,
+  } = usePost();
+
+  // props로 전달된 selectedPost를 우선 사용하고, 없으면 context에서 가져온 것을 사용
+  const post = propSelectedPost || contextSelectedPost;
 
   useEffect(() => {
-    getPostById(studyId, postId);
-  }, [studyId, postId, getPostById]);
+    if (!propSelectedPost) {
+      getPostById(studyId, postId);
+    }
+  }, [studyId, postId, getPostById, propSelectedPost]);
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <div>로딩중...</div>;
 
   if (error) {
     return (
@@ -24,7 +39,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit }) {
     );
   }
 
-  if (!selectedPost || !selectedPost.postTitle || !selectedPost.postContent) {
+  if (!post || !post.postTitle || !post.postContent) {
     return (
       <div className="p-6">
         <Button onClick={handleBack} variant="back" />
@@ -33,6 +48,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit }) {
     );
   }
 
+  // 이제 post 변수를 사용하여 렌더링
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
@@ -40,11 +56,11 @@ function PostDetail({ studyId, postId, handleBack, handleEdit }) {
         <Button onClick={() => handleEdit(postId)} variant="edit" />
       </div>
       <div className="border rounded-lg p-6">
-        <h1 className="text-2xl font-bold mb-4">{selectedPost.postTitle}</h1>
+        <h1 className="text-2xl font-bold mb-4">{post.postTitle}</h1>
         <div className="flex items-center text-gray-600 mb-6">
-          <span>{formatDate(selectedPost.postCreatedAt)}</span>
+          <span>{formatDate(post.postCreatedAt)}</span>
         </div>
-        <div className="prose max-w-none">{selectedPost.postContent}</div>
+        <div className="prose max-w-none">{post.postContent}</div>
       </div>
     </div>
   );
