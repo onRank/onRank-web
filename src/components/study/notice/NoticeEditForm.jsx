@@ -323,6 +323,7 @@ function NoticeEditForm({
       {/* 파일 업로드 버튼 */}
       <div style={styles.fileUploadRow}>
         <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+          <Button variant="addFiles" type="button" />
           <input
             id="file-upload"
             type="file"
@@ -330,7 +331,6 @@ function NoticeEditForm({
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
-          <Button variant="addFiles" type="button" />
         </label>
       </div>
 

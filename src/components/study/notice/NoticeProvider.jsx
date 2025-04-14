@@ -284,6 +284,12 @@ export function NoticeProvider({ children }) {
           files
         );
         if (response.success) {
+          // 응답 데이터 또는 수정된 데이터 준비
+          const updatedNoticeData = response.data || {
+            ...noticeData,
+            noticeId: noticeId,
+          };
+
           // 수정된 공지사항으로 상태 업데이트 후 생성일자 기준으로 정렬
           setNotices((prev) => {
             // 먼저 해당 공지사항 업데이트
@@ -291,7 +297,7 @@ export function NoticeProvider({ children }) {
               notice.noticeId === noticeId
                 ? {
                     ...notice,
-                    ...noticeData,
+                    ...updatedNoticeData,
                   }
                 : notice
             );
@@ -302,6 +308,14 @@ export function NoticeProvider({ children }) {
                 new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
             );
           });
+
+          // selectedNotice도 업데이트 (현재 보고 있는 공지사항이 수정된 공지사항인 경우)
+          if (selectedNotice && selectedNotice.noticeId === noticeId) {
+            setSelectedNotice((prevSelected) => ({
+              ...prevSelected,
+              ...updatedNoticeData,
+            }));
+          }
 
           // 캐시 무효화
           invalidateCache(studyId);
@@ -320,7 +334,7 @@ export function NoticeProvider({ children }) {
         setIsLoading(false);
       }
     },
-    [invalidateCache]
+    [invalidateCache, selectedNotice]
   );
 
   // 공지사항 삭제 (캐시 무효화 추가)
