@@ -63,59 +63,50 @@ export function PostProvider({ children }) {
   }, []);
 
   // 게시판 생성
-  const createPost = useCallback(
-    async (studyId, newPost, files = []) => {
-      setIsLoading(true);
-      try {
-        const response = await postService.createPost(studyId, newPost, files);
+  const createPost = useCallback(async (studyId, newPost, files = []) => {
+    setIsLoading(true);
+    try {
+      const response = await postService.createPost(studyId, newPost, files);
+      if (response.success) {
+        // 성공시 목록에 새 게시판 추가 후 최신 생성일자 기준으로 정렬
+        if (response.data) {
+          setPosts((prev) => {
+            // 새 게시판 추가
+            const updatedPosts = [response.data, ...prev];
 
-        // 응답 데이터가 있거나 success가 true인 경우 성공으로 처리
-        if (response.data || response.success) {
-          // 목록에 새 공지사항 추가
-          if (response.data) {
-            setNotices((prev) => {
-              const updatedPosts = [response.data, ...prev];
-              return updatedPosts.sort(
-                (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
-              );
-            });
-
-            // 캐시 무효화
-            invalidateCache(studyId);
-          }
-
-          // 성공 응답 반환 (warning 관련 로직 제거)
+            return updatedPosts.sort(
+              (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
+            );
+          });
+        }
+        // 성공 응답 반환 (warning 관련 로직 제거)
+        return {
+          success: true,
+          message: "게시판이 성공적으로 생성되었습니다.",
+          data: response.data,
+        };
+      } else {
+        // 명확한 에러 메시지가 있는 경우에만 에러 발생
+        if (response.message) {
+          throw new Error(response.message);
+        } else {
           return {
             success: true,
-            message: "게시판이 성공적으로 생성되었습니다.",
+            message: "게시판이 생성되었습니다.",
             data: response.data,
           };
-        } else {
-          // 명확한 에러 메시지가 있는 경우에만 에러 발생
-          if (response.message) {
-            throw new Error(response.message);
-          } else {
-            return {
-              success: true,
-              message: "게시판이 생성되었습니다.",
-              data: response.data,
-            };
-          }
         }
-      } catch (err) {
-        console.error("[PostProvider] 게시판 등록 실패:", err);
-
-        // 간소화된 에러 처리
-        return {
-          success: false,
-          message: "게시판 등록 중 문제가 발생했습니다.",
-        };
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [invalidateCache]
-  );
+    } catch (err) {
+      console.error("[PostProvider] 게시판 등록 실패:", err);
+      return {
+        success: false,
+        message: "게시판 등록 중 문제가 발생했습니다.",
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // 공지사항 수정
   const editPost = useCallback(
