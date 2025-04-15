@@ -45,6 +45,16 @@ const styles = {
     fontSize: '14px',
     textAlign: 'center'
   },
+  shortTextarea: {
+    width: '100%',
+    height: '80px',
+    padding: '12px',
+    border: '1px solid #E5E5E5',
+    borderRadius: '4px',
+    resize: 'none',
+    fontSize: '14px',
+    textAlign: 'center'
+  },
   divider: {
     width: '1px',
     height: '80px',
@@ -74,7 +84,7 @@ const styles = {
     marginBottom: '1rem',
     fontSize: '14px'
   },
-  depositInputContainer: {
+  pointInputContainer: {
     width: '100%',
     display: 'flex',
     alignItems: 'center',
@@ -82,30 +92,50 @@ const styles = {
     borderRadius: '4px',
     overflow: 'hidden'
   },
-  depositInput: {
+  pointInput: {
     width: '100%',
     padding: '12px',
     border: 'none',
     fontSize: '14px',
     textAlign: 'center'
   },
-  depositSuffix: {
+  pointSuffix: {
     padding: '0 12px',
     backgroundColor: '#F5F5F5',
     color: '#666666',
     fontSize: '14px'
+  },
+  pointSectionTitle: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '1rem',
+    textAlign: 'center'
+  },
+  pointInputGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.5rem',
+    marginBottom: '1rem'
+  },
+  pointLabel: {
+    fontSize: '14px',
+    color: '#666666',
+    textAlign: 'center'
   }
 };
 
 function CreateStudyForm({ onSuccess, onError, onNavigate }) {
   const [studyName, setStudyName] = useState('');
   const [content, setContent] = useState('');
-  const [googleFormLink, setGoogleFormLink] = useState('');
-  const [deposit, setDeposit] = useState(0);
   const [image, setImage] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  
+  // 포인트 설정 상태 추가
+  const [presentPoint, setPresentPoint] = useState(100);
+  const [latePoint, setLatePoint] = useState(50);
+  const [absentPoint, setAbsentPoint] = useState(0);
   
   // 이미지 업로드 핸들러
   const handleImageChange = (newImage, newPreviewUrl) => {
@@ -184,24 +214,24 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
     }
   };
 
-  // 보증금 입력 처리 함수
-  const handleDepositChange = (e) => {
+  // 포인트 입력 처리 함수
+  const handlePointChange = (setter) => (e) => {
     const value = e.target.value;
     
     // 빈 값인 경우 0으로 설정
     if (value === '') {
-      setDeposit(0);
+      setter(0);
       return;
     }
     
-    // 숫자가 아닌 경우 무시
-    if (!/^\d+$/.test(value)) {
+    // 숫자 검증 (양수, 음수, 0 허용)
+    if (!/^-?\d+$/.test(value)) {
       return;
     }
     
     // 정수로 변환하여 설정
-    const depositAmount = parseInt(value, 10);
-    setDeposit(depositAmount);
+    const pointAmount = parseInt(value, 10);
+    setter(pointAmount);
   };
 
   // 스터디 생성 핸들러
@@ -216,8 +246,8 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
     }
     
     if (!content.trim()) {
-      setError('스터디 소개를 입력해주세요.');
-      if (onError) onError('스터디 소개를 입력해주세요.');
+      setError('한 줄 소개를 입력해주세요.');
+      if (onError) onError('한 줄 소개를 입력해주세요.');
       return;
     }
     
@@ -231,12 +261,21 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         throw new Error(tokenValidation.errorMessage || '인증에 문제가 발생했습니다. 다시 로그인해주세요.');
       }
       
+      // 파일 이름 추출 (이미지가 있는 경우)
+      let fileName = null;
+      if (image) {
+        const fileExtension = image.name.split('.').pop();
+        fileName = `study_${Date.now()}.${fileExtension}`;
+      }
+      
       // API 요청 데이터 준비
       const studyData = { 
         studyName: studyName,
         studyContent: content,
-        studyGoogleFormUrl: googleFormLink || null,
-        deposit: deposit
+        presentPoint: presentPoint,
+        latePoint: latePoint,
+        absentPoint: absentPoint,
+        fileName: fileName
       };
       
       console.log('[CreateStudyForm] 스터디 생성 요청 데이터:', {
@@ -264,7 +303,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
           id: response.studyId,
           title: studyName,
           description: content,
-          imageUrl: previewUrl || '',
+          imageUrl: response.uploadUrl || '',
           currentMembers: 1,
           maxMembers: 10,
           status: '모집중'
@@ -359,44 +398,72 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         {/* 구분선 */}
         <div style={styles.divider} />
 
-        {/* 스터디 소개 */}
+        {/* 한 줄 소개 (기존 스터디 소개를 변경) */}
         <div style={styles.formGroup}>
           <label style={styles.label}>
-            스터디 소개
+            한 줄 소개
           </label>
           <textarea
-            placeholder="스터디를 소개해주세요."
+            placeholder="스터디를 한 줄로 소개해주세요."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            style={styles.textarea}
+            style={styles.shortTextarea}
           />
         </div>
 
         {/* 구분선 */}
         <div style={styles.divider} />
 
-        {/* 보증금 입력 */}
+        {/* 포인트 설정 (새로 추가) */}
         <div style={styles.formGroup}>
-          <label style={styles.label}>
-            1인당 보증금 (원)
-          </label>
-          <div style={styles.depositInputContainer}>
-            <input
-              type="text"
-              value={deposit || 0}
-              onChange={handleDepositChange}
-              placeholder="0"
-              style={styles.depositInput}
-            />
-            <div style={styles.depositSuffix}>원</div>
+          <h3 style={styles.pointSectionTitle}>포인트 설정</h3>
+          
+          {/* 출석 포인트 */}
+          <div style={styles.pointInputGroup}>
+            <label style={styles.pointLabel}>
+              출석 포인트
+            </label>
+            <div style={styles.pointInputContainer}>
+              <input
+                type="text"
+                value={presentPoint}
+                onChange={handlePointChange(setPresentPoint)}
+                style={styles.pointInput}
+              />
+              <div style={styles.pointSuffix}>점</div>
+            </div>
           </div>
-          <div style={{ 
-            fontSize: '12px', 
-            color: '#666666', 
-            marginTop: '6px', 
-            textAlign: 'center' 
-          }}>
-            스터디 참여자가 납부해야 하는 1인당 보증금입니다. 입력하지 않으면 0원으로 설정됩니다.
+          
+          {/* 지각 포인트 */}
+          <div style={styles.pointInputGroup}>
+            <label style={styles.pointLabel}>
+              지각 포인트
+            </label>
+            <div style={styles.pointInputContainer}>
+              <input
+                type="text"
+                value={latePoint}
+                onChange={handlePointChange(setLatePoint)}
+                style={styles.pointInput}
+              />
+              <div style={styles.pointSuffix}>점</div>
+            </div>
+          </div>
+          
+          {/* 결석 포인트 */}
+          <div style={styles.pointInputGroup}>
+            <label style={styles.pointLabel}>
+              결석 포인트
+            </label>
+            <div style={styles.pointInputContainer}>
+              <input
+                type="text"
+                value={absentPoint}
+                onChange={handlePointChange(setAbsentPoint)}
+                style={styles.pointInput}
+              />
+              <div style={styles.pointSuffix}>점</div>
+            </div>
           </div>
         </div>
 
@@ -412,23 +479,6 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             onImageChange={handleImageChange}
             onRemoveImage={handleRemoveImage}
             previewUrl={previewUrl}
-          />
-        </div>
-
-        {/* 구분선 */}
-        <div style={styles.divider} />
-
-        {/* 구글 폼 링크 */}
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            구글폼링크(선택)
-          </label>
-          <input
-            type="url"
-            placeholder="구글 폼 링크를 입력하세요."
-            value={googleFormLink}
-            onChange={(e) => setGoogleFormLink(e.target.value)}
-            style={styles.input}
           />
         </div>
 

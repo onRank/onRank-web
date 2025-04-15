@@ -1596,9 +1596,10 @@ export const studyService = {
       const requestData = {
         studyName: studyData.studyName || "",
         studyContent: studyData.studyContent || "",
-        studyGoogleFormUrl: studyData.studyGoogleFormUrl || null,
-        fileName: imageFile?.name || null, // 파일 이름이 없으면 명시적으로 null 전송
-        deposit: studyData.deposit || 0, // 보증금 추가 (없으면 0으로 기본값 설정)
+        presentPoint: studyData.presentPoint || 100,
+        latePoint: studyData.latePoint || 50,
+        absentPoint: studyData.absentPoint || 0,
+        fileName: studyData.fileName || null
       };
 
       console.log("[StudyService] 백엔드 요청 데이터:", requestData);
