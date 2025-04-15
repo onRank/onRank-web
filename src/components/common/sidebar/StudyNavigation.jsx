@@ -2,18 +2,16 @@ import React, { memo } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useMemberRole } from '../../../contexts/MemberRoleContext';
 
 // 스터디 네비게이션 메뉴 컴포넌트
-const StudyNavigation = memo(({ activeTab, memberRole }) => {
+const StudyNavigation = memo(({ activeTab }) => {
   const navigate = useNavigate();
   const { studyId } = useParams();
   const { colors } = useTheme();
+  const { isManager } = useMemberRole();
 
-  console.log('[디버깅] StudyNavigation 렌더링, props:', { activeTab, memberRole });
-
-  // 관리자 권한 확인
-  const isManager = memberRole === 'HOST' || memberRole === 'CREATOR';
-  console.log('[디버깅] 관리자 권한 여부:', isManager, 'memberRole:', memberRole);
+  console.log('[디버깅] StudyNavigation 렌더링, props:', { activeTab });
 
   // 메뉴 항목 정의
   const menuItems = [
@@ -42,7 +40,7 @@ const StudyNavigation = memo(({ activeTab, memberRole }) => {
     }}>
       {menuItems.map((item) => (
         // requiredRole이 true인 메뉴는 관리자만 볼 수 있음
-        (!item.requiredRole || (item.requiredRole && isManager)) && (
+        (!item.requiredRole || (item.requiredRole && isManager())) && (
           <button
             key={item.id}
             onClick={() => handleTabClick(item.path)}
@@ -86,13 +84,11 @@ const StudyNavigation = memo(({ activeTab, memberRole }) => {
 StudyNavigation.displayName = 'StudyNavigation';
 
 StudyNavigation.propTypes = {
-  activeTab: PropTypes.string,
-  memberRole: PropTypes.string
+  activeTab: PropTypes.string
 };
 
 StudyNavigation.defaultProps = {
-  activeTab: '',
-  memberRole: ''
+  activeTab: ''
 };
 
 export default StudyNavigation; 

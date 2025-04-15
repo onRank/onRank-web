@@ -14,6 +14,7 @@ import OAuthCallback from "./pages/auth/OAuthCallback";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
+import { MemberRoleProvider } from "./contexts/MemberRoleContext";
 import { tokenUtils } from "./services/api";
 import StudyDetailPage from "./pages/study/StudyDetailPage";
 import NoticeFormPage from "./pages/study/notice/NoticeFormPage";
@@ -607,9 +608,11 @@ function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <Router>
-          <AppContent />
-        </Router>
+        <MemberRoleProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </MemberRoleProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -2,6 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useMemberRole } from '../../../contexts/MemberRoleContext';
 import StudyInfoHeader from './StudyInfoHeader';
 import StudyNavigation from './StudyNavigation';
 import studyContextService from '../../../services/studyContext';
@@ -11,11 +12,11 @@ import { IoHomeOutline, IoChevronForward } from 'react-icons/io5';
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
   const { studyId } = useParams();
   const { colors } = useTheme();
+  const { memberRole, updateMemberRoleFromResponse } = useMemberRole();
   const [studyInfo, setStudyInfo] = useState({
     studyName: '',
     studyImageUrl: null
   });
-  const [memberRole, setMemberRole] = useState('');
 
   // 컴포넌트 마운트 시 스터디 정보 로드
   useEffect(() => {
@@ -28,24 +29,22 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         studyImageUrl: cachedContext.studyImageUrl || null
       });
       
-      // 멤버 역할 정보 설정 - 두 가지 위치 모두 확인
+      // 멤버 역할 정보 업데이트
       if (cachedContext.memberContext && cachedContext.memberContext.memberRole) {
         // memberContext 내부에 있는 경우 (API 응답 구조)
         console.log('[디버깅] memberContext에서 역할 정보 가져옴:', cachedContext.memberContext.memberRole);
-        setMemberRole(cachedContext.memberContext.memberRole);
+        updateMemberRoleFromResponse(cachedContext);
       } else if (cachedContext.memberRole) {
         // 최상위 레벨에 있는 경우 (캐시된 구조)
         console.log('[디버깅] 최상위 레벨에서 역할 정보 가져옴:', cachedContext.memberRole);
-        setMemberRole(cachedContext.memberRole);
-      } else {
-        console.log('[디버깅] 역할 정보 없음, 현재 memberRole:', memberRole);
+        updateMemberRoleFromResponse(cachedContext);
       }
       
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 사용: ${cachedContext.studyName}`);
     } else {
       console.log(`[StudySidebarContainer] 캐시된 스터디 정보 없음: ${studyId}`);
     }
-  }, [studyId, memberRole]);
+  }, [studyId, updateMemberRoleFromResponse]);
 
   // 새 스터디 정보가 업데이트될 때마다 실행
   useEffect(() => {
@@ -68,12 +67,8 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
                 studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
               });
               
-              // 멤버 역할 정보 업데이트 - 두 가지 위치 모두 확인
-              if (latestContext.memberContext && latestContext.memberContext.memberRole) {
-                setMemberRole(latestContext.memberContext.memberRole);
-              } else if (latestContext.memberRole) {
-                setMemberRole(latestContext.memberRole);
-              }
+              // 멤버 역할 정보 업데이트
+              updateMemberRoleFromResponse(latestContext);
             }
           };
           
@@ -83,7 +78,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     }, 1000); // 1초마다 체크
     
     return () => clearInterval(checkForUpdates);
-  }, [studyId, studyInfo, memberRole]);
+  }, [studyId, studyInfo, memberRole, updateMemberRoleFromResponse]);
 
   // 브레드크럼 조건부 표시를 위한 함수
   const renderBreadcrumb = () => {
@@ -175,7 +170,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         flex: '0 1 auto',
         overflowY: 'auto'
       }}>
-        <StudyNavigation activeTab={activeTab} memberRole={memberRole} />
+        <StudyNavigation activeTab={activeTab} />
       </div>
     </div>
   );

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useMemberRole } from '../../../contexts/MemberRoleContext';
 import TimeSelector from '../../../components/common/TimeSelector';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 
@@ -10,10 +11,10 @@ const ScheduleDetailView = ({
   onBack, 
   onUpdate, 
   onDelete, 
-  isLoading,
-  memberRole
+  isLoading
 }) => {
   const { colors } = useTheme();
+  const { isManager } = useMemberRole();
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
@@ -22,8 +23,10 @@ const ScheduleDetailView = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
-  // 관리자 권한 확인
-  const isManager = memberRole === 'HOST' || memberRole === 'ADMIN' || memberRole === 'OWNER';
+  // 관리자 권한 확인하여 출력 (디버그용)
+  useEffect(() => {
+    console.log('[ScheduleDetailView] 관리자 권한 여부:', isManager());
+  }, [isManager]);
 
   // 컴포넌트 마운트 시 schedule 데이터로 폼 초기화
   useEffect(() => {
@@ -171,18 +174,18 @@ const ScheduleDetailView = ({
             type="text"
             value={scheduleTitle}
             onChange={(e) => setScheduleTitle(e.target.value)}
-            disabled={!isManager || isSubmitting}
+            disabled={!isManager() || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
               border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: isManager ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
             placeholder="일정 제목을 입력하세요"
-            readOnly={!isManager}
+            readOnly={!isManager()}
           />
         </div>
 
@@ -200,17 +203,17 @@ const ScheduleDetailView = ({
             type="date"
             value={scheduleDate}
             onChange={(e) => setScheduleDate(e.target.value)}
-            disabled={!isManager || isSubmitting}
+            disabled={!isManager() || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
               border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: isManager ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
-            readOnly={!isManager}
+            readOnly={!isManager()}
           />
         </div>
 
@@ -227,7 +230,7 @@ const ScheduleDetailView = ({
           <TimeSelector
             value={scheduleTime}
             onChange={setScheduleTime}
-            disabled={!isManager || isSubmitting}
+            disabled={!isManager() || isSubmitting}
           />
         </div>
 
@@ -244,7 +247,7 @@ const ScheduleDetailView = ({
           <textarea
             value={scheduleContent}
             onChange={(e) => setScheduleContent(e.target.value)}
-            disabled={!isManager || isSubmitting}
+            disabled={!isManager() || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -253,56 +256,54 @@ const ScheduleDetailView = ({
               fontSize: '14px',
               minHeight: '150px',
               resize: 'vertical',
-              backgroundColor: isManager ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
             placeholder="일정 내용을 입력하세요"
-            readOnly={!isManager}
+            readOnly={!isManager()}
           />
         </div>
 
         {/* 관리자만 버튼 표시 */}
-        {isManager && (
+        {isManager() && (
           <div style={{
             display: 'flex',
-            gap: '1rem',
+            gap: '0.5rem',
             justifyContent: 'flex-end',
             marginTop: '2rem'
           }}>
             <button
               type="button"
-              onClick={handleDelete}
-              disabled={isSubmitting}
+              onClick={onBack}
               style={{
                 padding: '0.75rem 1.5rem',
-                backgroundColor: colors.error,
-                color: 'white',
-                border: 'none',
+                backgroundColor: '#F2F2F2',
+                color: '#333333',
+                border: '1px solid #DDDDDD',
                 borderRadius: '4px',
-                cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
-                opacity: isSubmitting ? 0.7 : 1
+                cursor: 'pointer'
               }}
             >
-              삭제
+              닫기
             </button>
             <button
               type="submit"
               disabled={!isFormValid || isSubmitting}
               style={{
                 padding: '0.75rem 1.5rem',
-                backgroundColor: colors.primary,
+                backgroundColor: '#FF0000',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 'bold',
+                cursor: 'pointer',
                 opacity: (!isFormValid || isSubmitting) ? 0.7 : 1
               }}
             >
-              수정
+              {isSubmitting ? '저장 중...' : '저장'}
             </button>
           </div>
         )}
@@ -322,13 +323,11 @@ ScheduleDetailView.propTypes = {
   onBack: PropTypes.func.isRequired,
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool,
-  memberRole: PropTypes.string
+  isLoading: PropTypes.bool
 };
 
 ScheduleDetailView.defaultProps = {
-  isLoading: false,
-  memberRole: ''
+  isLoading: false
 };
 
 export default ScheduleDetailView; 

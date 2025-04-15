@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PropTypes from 'prop-types';
 import { studyService } from "../../../services/api";
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
+import { useMemberRole } from "../../../contexts/MemberRoleContext";
 import ScheduleListPage from "./ScheduleListPage";
 import ScheduleDetailView from "./ScheduleDetailView";
 import ScheduleAddPage from "./ScheduleAddPage";
@@ -13,10 +14,12 @@ function ScheduleContainer({ onSubPageChange }) {
   const [error, setError] = useState(null);
   const [showScheduleDetail, setShowScheduleDetail] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const [memberRole, setMemberRole] = useState('');
   const { studyId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // MemberRole Context 사용
+  const { memberRole, updateMemberRole, updateMemberRoleFromResponse } = useMemberRole();
   
   // 현재 경로를 확인하여 어떤 컴포넌트를 표시할지 결정
   const isAddPage = location.pathname.endsWith('/add');
@@ -31,12 +34,8 @@ function ScheduleContainer({ onSubPageChange }) {
         const response = await studyService.getSchedules(studyId);
         console.log("[ScheduleContainer] 일정 데이터 조회 성공:", response);
         
-        // 멤버 컨텍스트 정보 저장 (있는 경우)
-        if (response && response.memberContext) {
-          console.log("[ScheduleContainer] 멤버 컨텍스트:", response.memberContext);
-          // memberRole 상태 업데이트
-          setMemberRole(response.memberContext.memberRole || '');
-        }
+        // 멤버 컨텍스트 정보 처리 - MemberRoleContext 업데이트
+        updateMemberRoleFromResponse(response);
         
         // data 필드에서 일정 배열을 추출 (없으면 빈 배열)
         const scheduleList = response?.data || [];
@@ -60,7 +59,7 @@ function ScheduleContainer({ onSubPageChange }) {
     if (!isAddPage) {
       fetchSchedules();
     }
-  }, [studyId, isAddPage]);
+  }, [studyId, isAddPage, updateMemberRole, updateMemberRoleFromResponse]);
 
   // subPage 상태 관리 및 콜백 호출
   useEffect(() => {
@@ -92,6 +91,9 @@ function ScheduleContainer({ onSubPageChange }) {
       // API 호출
       const result = await studyService.addSchedule(studyId, scheduleData);
       console.log("[ScheduleContainer] 일정 추가 성공:", result);
+      
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트
+      updateMemberRoleFromResponse(result);
 
       // 성공 시 상태 업데이트
       const addedSchedule = {
@@ -125,6 +127,9 @@ function ScheduleContainer({ onSubPageChange }) {
       // API 호출
       const result = await studyService.deleteSchedule(studyId, scheduleId);
       console.log("[ScheduleContainer] 일정 삭제 성공:", result);
+      
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트
+      updateMemberRoleFromResponse(result);
 
       // 성공 시 상태 업데이트
       setSchedules((prev) =>
@@ -156,6 +161,9 @@ function ScheduleContainer({ onSubPageChange }) {
       // API 호출
       const result = await studyService.updateSchedule(studyId, scheduleId, scheduleData);
       console.log("[ScheduleContainer] 일정 수정 성공:", result);
+      
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트
+      updateMemberRoleFromResponse(result);
 
       // 성공 시 상태 업데이트
       setSchedules((prev) =>
@@ -228,7 +236,6 @@ function ScheduleContainer({ onSubPageChange }) {
           onUpdate={handleUpdateSchedule}
           onDelete={handleDeleteSchedule}
           isLoading={isLoading}
-          memberRole={memberRole}
         />
       );
     }
@@ -242,7 +249,6 @@ function ScheduleContainer({ onSubPageChange }) {
         onViewScheduleDetail={handleViewScheduleDetail}
         isLoading={isLoading}
         error={error}
-        memberRole={memberRole}
       />
     );
   };
