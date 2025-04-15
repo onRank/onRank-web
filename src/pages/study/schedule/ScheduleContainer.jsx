@@ -21,6 +21,8 @@ function ScheduleContainer({ onSubPageChange }) {
   // MemberRole Context 사용
   const { memberRole, updateMemberRole, updateMemberRoleFromResponse } = useMemberRole();
   
+  console.log("[ScheduleContainer] 초기화, studyId:", studyId, "memberRole:", memberRole);
+  
   // 현재 경로를 확인하여 어떤 컴포넌트를 표시할지 결정
   const isAddPage = location.pathname.endsWith('/add');
   
@@ -34,8 +36,9 @@ function ScheduleContainer({ onSubPageChange }) {
         const response = await studyService.getSchedules(studyId);
         console.log("[ScheduleContainer] 일정 데이터 조회 성공:", response);
         
-        // 멤버 컨텍스트 정보 처리 - MemberRoleContext 업데이트
-        updateMemberRoleFromResponse(response);
+        // 멤버 컨텍스트 정보 처리 - MemberRoleContext 업데이트 (studyId 명시적 전달)
+        console.log("[ScheduleContainer] 멤버 역할 업데이트 시도, studyId:", studyId);
+        updateMemberRoleFromResponse(response, studyId);
         
         // data 필드에서 일정 배열을 추출 (없으면 빈 배열)
         const scheduleList = response?.data || [];
@@ -92,8 +95,8 @@ function ScheduleContainer({ onSubPageChange }) {
       const result = await studyService.addSchedule(studyId, scheduleData);
       console.log("[ScheduleContainer] 일정 추가 성공:", result);
       
-      // API 응답에서 멤버 역할 정보 추출 및 업데이트
-      updateMemberRoleFromResponse(result);
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트 (studyId 명시적 전달)
+      updateMemberRoleFromResponse(result, studyId);
 
       // 성공 시 상태 업데이트
       const addedSchedule = {
@@ -128,8 +131,8 @@ function ScheduleContainer({ onSubPageChange }) {
       const result = await studyService.deleteSchedule(studyId, scheduleId);
       console.log("[ScheduleContainer] 일정 삭제 성공:", result);
       
-      // API 응답에서 멤버 역할 정보 추출 및 업데이트
-      updateMemberRoleFromResponse(result);
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트 (studyId 명시적 전달)
+      updateMemberRoleFromResponse(result, studyId);
 
       // 성공 시 상태 업데이트
       setSchedules((prev) =>
@@ -162,8 +165,8 @@ function ScheduleContainer({ onSubPageChange }) {
       const result = await studyService.updateSchedule(studyId, scheduleId, scheduleData);
       console.log("[ScheduleContainer] 일정 수정 성공:", result);
       
-      // API 응답에서 멤버 역할 정보 추출 및 업데이트
-      updateMemberRoleFromResponse(result);
+      // API 응답에서 멤버 역할 정보 추출 및 업데이트 (studyId 명시적 전달)
+      updateMemberRoleFromResponse(result, studyId);
 
       // 성공 시 상태 업데이트
       setSchedules((prev) =>
@@ -249,6 +252,7 @@ function ScheduleContainer({ onSubPageChange }) {
         onViewScheduleDetail={handleViewScheduleDetail}
         isLoading={isLoading}
         error={error}
+        memberRole={memberRole}
       />
     );
   };
