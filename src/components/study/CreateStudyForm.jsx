@@ -8,42 +8,43 @@ const styles = {
     display: 'flex', 
     flexDirection: 'column', 
     gap: '2rem',
-    alignItems: 'center'
+    padding: '0 2rem',
+    maxWidth: '800px',
+    margin: '0 auto'
   },
-  title: {
-    fontSize: '20px', 
-    fontWeight: 'bold',
+  header: {
+    display: 'flex',
+    alignItems: 'center',
     marginBottom: '2rem',
-    textAlign: 'center'
+    fontSize: '24px',
+    fontWeight: 'bold'
+  },
+  searchIcon: {
+    marginRight: '8px',
+    fontSize: '24px'
+  },
+  formSection: {
+    marginBottom: '2rem'
   },
   formGroup: { 
-    width: '100%', 
-    maxWidth: '400px' 
+    width: '100%',
+    marginBottom: '1.5rem'
+  },
+  requiredField: {
+    color: '#FF0000'
   },
   label: { 
     display: 'block', 
     marginBottom: '0.5rem',
-    fontSize: '14px',
-    color: '#666666',
-    textAlign: 'center'
+    fontSize: '16px',
+    fontWeight: 'bold'
   },
   input: {
     width: '100%',
     padding: '12px',
     border: '1px solid #E5E5E5',
     borderRadius: '4px',
-    fontSize: '14px',
-    textAlign: 'center'
-  },
-  textarea: {
-    width: '100%',
-    height: '200px',
-    padding: '12px',
-    border: '1px solid #E5E5E5',
-    borderRadius: '4px',
-    resize: 'none',
-    fontSize: '14px',
-    textAlign: 'center'
+    fontSize: '14px'
   },
   shortTextarea: {
     width: '100%',
@@ -52,25 +53,65 @@ const styles = {
     border: '1px solid #E5E5E5',
     borderRadius: '4px',
     resize: 'none',
-    fontSize: '14px',
-    textAlign: 'center'
+    fontSize: '14px'
   },
-  divider: {
-    width: '1px',
-    height: '80px',
-    backgroundColor: '#FF0000'
+  pointSectionTitle: {
+    fontSize: '16px',
+    fontWeight: 'bold',
+    marginBottom: '1rem'
+  },
+  pointGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr',
+    gap: '1rem'
+  },
+  pointRow: {
+    display: 'flex',
+    alignItems: 'center'
+  },
+  pointLabel: {
+    width: '80px',
+    fontSize: '14px',
+    color: '#000000'
+  },
+  pointInputContainer: {
+    flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    border: '1px solid #E5E5E5',
+    borderRadius: '4px',
+    overflow: 'hidden'
+  },
+  pointInput: {
+    width: '100%',
+    padding: '12px',
+    border: 'none',
+    fontSize: '14px'
+  },
+  pointInputHint: {
+    color: '#999',
+    fontSize: '14px',
+    marginLeft: '8px'
+  },
+  pointSuffix: {
+    padding: '0 12px',
+    backgroundColor: '#F5F5F5',
+    color: '#666666',
+    fontSize: '14px'
+  },
+  buttonContainer: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginTop: '2rem'
   },
   button: {
-    width: '100%',
-    maxWidth: '400px',
-    padding: '12px',
+    padding: '10px 24px',
     backgroundColor: '#FF0000',
     color: '#FFFFFF',
     border: 'none',
     borderRadius: '4px',
-    fontSize: '14px',
-    cursor: 'pointer',
-    marginTop: '1rem'
+    fontSize: '16px',
+    cursor: 'pointer'
   },
   buttonDisabled: {
     backgroundColor: '#CCCCCC',
@@ -83,44 +124,6 @@ const styles = {
     borderRadius: '4px',
     marginBottom: '1rem',
     fontSize: '14px'
-  },
-  pointInputContainer: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    border: '1px solid #E5E5E5',
-    borderRadius: '4px',
-    overflow: 'hidden'
-  },
-  pointInput: {
-    width: '100%',
-    padding: '12px',
-    border: 'none',
-    fontSize: '14px',
-    textAlign: 'center'
-  },
-  pointSuffix: {
-    padding: '0 12px',
-    backgroundColor: '#F5F5F5',
-    color: '#666666',
-    fontSize: '14px'
-  },
-  pointSectionTitle: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    marginBottom: '1rem',
-    textAlign: 'center'
-  },
-  pointInputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '0.5rem',
-    marginBottom: '1rem'
-  },
-  pointLabel: {
-    fontSize: '14px',
-    color: '#666666',
-    textAlign: 'center'
   }
 };
 
@@ -368,10 +371,12 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
   };
 
   return (
-    <div>
-      <h2 style={styles.title}>
-        스터디 정보를 입력해주세요.
-      </h2>
+    <div style={styles.container}>
+      {/* 헤더 */}
+      <div style={styles.header}>
+        <span style={styles.searchIcon}>🔍</span>
+        스터디 생성
+      </div>
 
       {/* 에러 메시지 표시 */}
       {error && (
@@ -380,49 +385,54 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         </div>
       )}
 
-      <div style={styles.container}>
-        {/* 스터디 이름 */}
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            스터디 이름
-          </label>
-          <input
-            type="text"
-            placeholder="스터디 이름을 입력하세요."
-            value={studyName}
-            onChange={(e) => setStudyName(e.target.value)}
-            style={styles.input}
-          />
-        </div>
+      {/* 스터디 이름 */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          <span style={styles.requiredField}>*</span>스터디 이름
+        </label>
+        <input
+          type="text"
+          placeholder="스터디 이름을 입력하세요."
+          value={studyName}
+          onChange={(e) => setStudyName(e.target.value)}
+          style={styles.input}
+        />
+      </div>
 
-        {/* 구분선 */}
-        <div style={styles.divider} />
+      {/* 한 줄 소개 */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          <span style={styles.requiredField}>*</span>한 줄 소개
+        </label>
+        <textarea
+          placeholder="스터디를 한 줄로 소개해주세요."
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          style={styles.shortTextarea}
+        />
+      </div>
 
-        {/* 한 줄 소개 (기존 스터디 소개를 변경) */}
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            한 줄 소개
-          </label>
-          <textarea
-            placeholder="스터디를 한 줄로 소개해주세요."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            style={styles.shortTextarea}
-          />
-        </div>
+      {/* 이미지 업로드 */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          <span style={styles.requiredField}>*</span>이미지
+        </label>
+        <ImageUploader 
+          onImageChange={handleImageChange}
+          onRemoveImage={handleRemoveImage}
+          previewUrl={previewUrl}
+        />
+      </div>
 
-        {/* 구분선 */}
-        <div style={styles.divider} />
-
-        {/* 포인트 설정 (새로 추가) */}
-        <div style={styles.formGroup}>
-          <h3 style={styles.pointSectionTitle}>포인트 설정</h3>
-          
+      {/* 포인트 설정 */}
+      <div style={styles.formGroup}>
+        <label style={styles.label}>
+          <span style={styles.requiredField}>*</span>포인트 설정
+        </label>
+        <div style={styles.pointGrid}>
           {/* 출석 포인트 */}
-          <div style={styles.pointInputGroup}>
-            <label style={styles.pointLabel}>
-              출석 포인트
-            </label>
+          <div style={styles.pointRow}>
+            <div style={styles.pointLabel}>출석</div>
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
@@ -432,13 +442,12 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
               />
               <div style={styles.pointSuffix}>점</div>
             </div>
+            <div style={styles.pointInputHint}>예) 100pt</div>
           </div>
           
           {/* 지각 포인트 */}
-          <div style={styles.pointInputGroup}>
-            <label style={styles.pointLabel}>
-              지각 포인트
-            </label>
+          <div style={styles.pointRow}>
+            <div style={styles.pointLabel}>지각</div>
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
@@ -448,13 +457,12 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
               />
               <div style={styles.pointSuffix}>점</div>
             </div>
+            <div style={styles.pointInputHint}>예) 50pt</div>
           </div>
           
           {/* 결석 포인트 */}
-          <div style={styles.pointInputGroup}>
-            <label style={styles.pointLabel}>
-              결석 포인트
-            </label>
+          <div style={styles.pointRow}>
+            <div style={styles.pointLabel}>결석</div>
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
@@ -464,25 +472,13 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
               />
               <div style={styles.pointSuffix}>점</div>
             </div>
+            <div style={styles.pointInputHint}>예) 0pt</div>
           </div>
         </div>
+      </div>
 
-        {/* 구분선 */}
-        <div style={styles.divider} />
-
-        {/* 이미지 업로드 */}
-        <div style={styles.formGroup}>
-          <label style={styles.label}>
-            이미지
-          </label>
-          <ImageUploader 
-            onImageChange={handleImageChange}
-            onRemoveImage={handleRemoveImage}
-            previewUrl={previewUrl}
-          />
-        </div>
-
-        {/* 생성하기 버튼 */}
+      {/* 완료 버튼 */}
+      <div style={styles.buttonContainer}>
         <button
           onClick={handleCreateStudy}
           disabled={isSubmitting}
@@ -491,7 +487,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             ...(isSubmitting ? styles.buttonDisabled : {})
           }}
         >
-          {isSubmitting ? '처리 중...' : '생성하기'}
+          {isSubmitting ? '처리 중...' : '완료'}
         </button>
       </div>
     </div>
