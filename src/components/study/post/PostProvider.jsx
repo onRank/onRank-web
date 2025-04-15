@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { createContext, useContext, useState, useCallback } from "react";
-import { postService } from "../../../services/api";
+import { postService } from "../../../services/post";
 
 // Context 생성
 const PostContext = createContext();
