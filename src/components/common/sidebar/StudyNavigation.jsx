@@ -2,14 +2,14 @@ import React, { memo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useMemberRole } from '../../../contexts/MemberRoleContext';
+import useStudyRole from '../../../hooks/useStudyRole';
 
 // 스터디 네비게이션 메뉴 컴포넌트
 const StudyNavigation = memo(({ activeTab }) => {
   const navigate = useNavigate();
   const { studyId } = useParams();
   const { colors } = useTheme();
-  const { memberRole, isManager } = useMemberRole();
+  const { memberRole, isManager } = useStudyRole();
 
   // 컴포넌트 마운트 시 로그
   useEffect(() => {
@@ -18,8 +18,7 @@ const StudyNavigation = memo(({ activeTab }) => {
   }, [studyId, memberRole]);
 
   // 관리자 권한 확인
-  const hasManagerRole = isManager();
-  console.log('[StudyNavigation] 관리자 권한 여부:', hasManagerRole, 'memberRole:', memberRole);
+  console.log('[StudyNavigation] 관리자 권한 여부:', isManager, 'memberRole:', memberRole);
 
   // 메뉴 항목 정의
   const menuItems = [
@@ -39,7 +38,7 @@ const StudyNavigation = memo(({ activeTab }) => {
   
   // 표시할 메뉴 항목 필터링
   const visibleMenuItems = menuItems.filter(item => 
-    !item.requiredRole || (item.requiredRole && hasManagerRole)
+    !item.requiredRole || (item.requiredRole && isManager)
   );
   
   return (

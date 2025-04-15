@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from 'react';
 import PropTypes from 'prop-types';
 import { useParams, Link } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useMemberRole } from '../../../contexts/MemberRoleContext';
+import useStudyRole from '../../../hooks/useStudyRole';
 import StudyInfoHeader from './StudyInfoHeader';
 import StudyNavigation from './StudyNavigation';
 import studyContextService from '../../../services/studyContext';
@@ -12,7 +12,7 @@ import { IoHomeOutline, IoChevronForward } from 'react-icons/io5';
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
   const { studyId } = useParams();
   const { colors } = useTheme();
-  const { memberRole, updateMemberRole } = useMemberRole();
+  const { memberRole, updateMemberRole } = useStudyRole();
   const [studyInfo, setStudyInfo] = useState({
     studyName: '',
     studyImageUrl: null

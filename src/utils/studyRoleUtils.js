@@ -1,4 +1,4 @@
- /**
+/**
  * 스터디 역할 관련 유틸리티 함수
  * 백엔드 API 응답에서 memberContext 정보를 추출하여 권한을 확인합니다.
  */
@@ -68,4 +68,28 @@ export const getRoleLevel = (role) => {
 export const hasPermission = (apiResponse, requiredRole) => {
   const currentRole = getStudyRole(apiResponse);
   return getRoleLevel(currentRole) >= getRoleLevel(requiredRole);
+};
+
+/**
+ * 관리자(매니저) 권한 여부 확인 - 직접 역할 문자열 사용
+ * @param {string} role - 역할 문자열
+ * @returns {boolean} 관리자 권한 여부
+ */
+export const isManagerRole = (role) => {
+  return ['CREATOR', 'HOST', 'ADMIN'].includes(role);
+};
+
+/**
+ * 역할 코드를 읽기 쉬운 이름으로 변환
+ * @param {string} role - 역할 문자열
+ * @returns {string} 읽기 쉬운 역할 이름
+ */
+export const getReadableRoleName = (role) => {
+  const roleMap = {
+    'CREATOR': '생성자',
+    'HOST': '호스트',
+    'ADMIN': '관리자',
+    'PARTICIPANT': '참여자'
+  };
+  return roleMap[role] || '일반 회원';
 };

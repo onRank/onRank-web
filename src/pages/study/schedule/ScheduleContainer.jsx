@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PropTypes from 'prop-types';
 import { studyService } from "../../../services/api";
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
-import { useMemberRole } from "../../../contexts/MemberRoleContext";
+import useStudyRole from "../../../hooks/useStudyRole";
 import ScheduleListPage from "./ScheduleListPage";
 import ScheduleDetailView from "./ScheduleDetailView";
 import ScheduleAddPage from "./ScheduleAddPage";
@@ -18,8 +18,8 @@ function ScheduleContainer({ onSubPageChange }) {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // MemberRole Context 사용
-  const { memberRole, updateMemberRole, updateMemberRoleFromResponse } = useMemberRole();
+  // useStudyRole 훅 사용
+  const { memberRole, updateMemberRole, updateMemberRoleFromResponse } = useStudyRole();
   
   console.log("[ScheduleContainer] 초기화, studyId:", studyId, "memberRole:", memberRole);
   

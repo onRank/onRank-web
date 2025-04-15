@@ -6,7 +6,7 @@ import StudySidebarContainer from '../../../components/common/sidebar/StudySideb
 import LoadingSpinner from '../../../components/common/LoadingSpinner';
 import ErrorMessage from '../../../components/common/ErrorMessage';
 import { getStatusText, getStatusIcon, STATUS_STYLES, formatDateTime } from '../../../utils/attendanceUtils';
-import { isStudyHost, getStudyName } from '../../../utils/studyRoleUtils';
+import useStudyRole from '../../../hooks/useStudyRole';
 
 /**
  * 출석 상세 페이지
@@ -23,6 +23,7 @@ function AttendanceDetailPage() {
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleStartingAt, setScheduleStartingAt] = useState('');
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const { isManager, updateMemberRoleFromResponse } = useStudyRole();
 
 const fetchAttendanceDetails = async () => {
   try {
@@ -31,11 +32,14 @@ const fetchAttendanceDetails = async () => {
     const response = await studyService.getAttendanceDetails(studyId, scheduleId);
     console.log('응답 데이터:', response);
     
+    // 멤버 역할 정보 업데이트
+    updateMemberRoleFromResponse(response, studyId);
+    
     if (response.data && Array.isArray(response.data)) {
         setAttendanceDetails(response.data);
         setScheduleTitle(response.scheduleTitle);
         setScheduleStartingAt(response.scheduleStartingAt);
-        setIsHost(isStudyHost(response));
+        setIsHost(isManager);
     } else {
       setError('출석 데이터 형식이 올바르지 않습니다.');
     }

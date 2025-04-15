@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useTheme } from '../../../contexts/ThemeContext';
-import { useMemberRole } from '../../../contexts/MemberRoleContext';
+import useStudyRole from '../../../hooks/useStudyRole';
 import TimeSelector from '../../../components/common/TimeSelector';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 
@@ -14,7 +14,7 @@ const ScheduleDetailView = ({
   isLoading
 }) => {
   const { colors } = useTheme();
-  const { isManager } = useMemberRole();
+  const { isManager } = useStudyRole();
   const [scheduleTitle, setScheduleTitle] = useState('');
   const [scheduleContent, setScheduleContent] = useState('');
   const [scheduleDate, setScheduleDate] = useState('');
@@ -25,7 +25,7 @@ const ScheduleDetailView = ({
   
   // 관리자 권한 확인하여 출력 (디버그용)
   useEffect(() => {
-    console.log('[ScheduleDetailView] 관리자 권한 여부:', isManager());
+    console.log('[ScheduleDetailView] 관리자 권한 여부:', isManager);
   }, [isManager]);
 
   // 컴포넌트 마운트 시 schedule 데이터로 폼 초기화
@@ -174,18 +174,18 @@ const ScheduleDetailView = ({
             type="text"
             value={scheduleTitle}
             onChange={(e) => setScheduleTitle(e.target.value)}
-            disabled={!isManager() || isSubmitting}
+            disabled={!isManager || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
               border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
             placeholder="일정 제목을 입력하세요"
-            readOnly={!isManager()}
+            readOnly={!isManager}
           />
         </div>
 
@@ -203,17 +203,17 @@ const ScheduleDetailView = ({
             type="date"
             value={scheduleDate}
             onChange={(e) => setScheduleDate(e.target.value)}
-            disabled={!isManager() || isSubmitting}
+            disabled={!isManager || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
               border: `1px solid ${colors.border}`,
               borderRadius: '4px',
               fontSize: '14px',
-              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
-            readOnly={!isManager()}
+            readOnly={!isManager}
           />
         </div>
 
@@ -230,7 +230,7 @@ const ScheduleDetailView = ({
           <TimeSelector
             value={scheduleTime}
             onChange={setScheduleTime}
-            disabled={!isManager() || isSubmitting}
+            disabled={!isManager || isSubmitting}
           />
         </div>
 
@@ -247,7 +247,7 @@ const ScheduleDetailView = ({
           <textarea
             value={scheduleContent}
             onChange={(e) => setScheduleContent(e.target.value)}
-            disabled={!isManager() || isSubmitting}
+            disabled={!isManager || isSubmitting}
             style={{
               width: '100%',
               padding: '0.75rem',
@@ -256,16 +256,16 @@ const ScheduleDetailView = ({
               fontSize: '14px',
               minHeight: '150px',
               resize: 'vertical',
-              backgroundColor: isManager() ? colors.background : colors.hoverBackground,
+              backgroundColor: isManager ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
             placeholder="일정 내용을 입력하세요"
-            readOnly={!isManager()}
+            readOnly={!isManager}
           />
         </div>
 
         {/* 관리자만 버튼 표시 */}
-        {isManager() && (
+        {isManager && (
           <div style={{
             display: 'flex',
             gap: '0.5rem',

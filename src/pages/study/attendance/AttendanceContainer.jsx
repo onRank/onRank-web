@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { studyService } from '../../../services/api';
 import AttendanceList from '../../../components/study/attendance/AttendanceList';
 import AttendanceChart from '../../../components/study/attendance/AttendanceChart';
-import { isStudyHost } from '../../../utils/studyRoleUtils';
+import useStudyRole from '../../../hooks/useStudyRole';
 
 /**
  * 출석 컨테이너 컴포넌트
@@ -15,6 +15,7 @@ function AttendanceContainer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isHost, setIsHost] = useState(false);
+  const { updateMemberRoleFromResponse, isManager } = useStudyRole();
   const [statistics, setStatistics] = useState({
     present: 0, 
     absent: 0, 
@@ -28,6 +29,9 @@ function AttendanceContainer() {
       setLoading(true);
       const response = await studyService.getAttendances(studyId);
       console.log('[AttendanceContainer] 원본 응답:', response);
+      
+      // 멤버 역할 정보 업데이트
+      updateMemberRoleFromResponse(response, studyId);
       
       // 출석 데이터 추출
       const extractedAttendances = response.data || [];
@@ -70,11 +74,9 @@ function AttendanceContainer() {
       setAttendances(formattedAttendances);
       setStatistics(stats);
       
-      // 호스트 권한 확인 - 유틸리티 함수 사용
-      const userIsHost = isStudyHost(response);
-      console.log('[AttendanceContainer] 호스트 여부:', userIsHost);
-      
-      setIsHost(userIsHost);
+      // 호스트 권한 설정 - isManager 사용
+      setIsHost(isManager);
+      console.log('[AttendanceContainer] 호스트 여부:', isManager);
       
     } catch (error) {
       console.error('[AttendanceContainer] 출석 데이터 가져오기 오류:', error);

@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
-import AssignmentTab from "./tabs/AssignmentTab";
+import AssignmentContainer from "../../pages/study/assignment";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeTab from "./tabs/NoticeTab";
@@ -12,31 +12,9 @@ import AttendanceContainer from "../../pages/study/attendance/AttendanceContaine
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
 function StudyContent({ activeTab, studyData }) {
-  const [assignments, setAssignments] = useState([]);
   const { studyId } = useParams();
   const location = useLocation();
   const [currentSubPage, setCurrentSubPage] = useState(null);
-
-  useEffect(() => {
-    if (activeTab === "과제") {
-      // TODO: API 연동 후 과제 목록 불러오기
-      setAssignments([
-        {
-          id: 1,
-          title: "[기말 프로젝트]",
-          dueDate: "2025.3.2",
-          status: "진행중",
-        },
-        {
-          id: 2,
-          title: "[중간 프로젝트]",
-          dueDate: "2025.2.1",
-          status: "완료",
-          score: "10/10",
-        },
-      ]);
-    }
-  }, [activeTab]);
 
   useEffect(() => {
     setCurrentSubPage(null);
@@ -55,7 +33,7 @@ function StudyContent({ activeTab, studyData }) {
         return <ScheduleContainer onSubPageChange={handleSubPageChange} />;
       case "과제":
         console.log("[StudyContent] 과제 탭 렌더링");
-        return <AssignmentTab assignments={assignments} studyId={studyId} />;
+        return <AssignmentContainer onSubPageChange={handleSubPageChange} />;
       case "공지사항":
         console.log("[StudyContent] 공지사항 탭 렌더링");
         return <NoticeTab />;
