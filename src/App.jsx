@@ -32,7 +32,13 @@ import Header from "./components/common/Header";
 import UserInfoForm from "./components/auth/UserInfoForm";
 import CalendarPage from "./pages/calendar/CalendarPage";
 import MyPage from "./pages/user/MyPage";
-import AssignmentDetail from "./pages/study/assignment/AssignmentDetail";
+import {
+  AssignmentList,
+  AssignmentCreate,
+  AssignmentDetail,
+  SubmissionList,
+  SubmissionDetail
+} from "./pages/study/assignment";
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import { AttendanceDetailPage } from "./pages/study/attendance";
 import ManagementContainer from "./pages/study/management/ManagementContainer";
@@ -521,11 +527,11 @@ function AppContent() {
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />
-                    <Route path="assignment" element={<StudyDetailPage />} />
-                    <Route
-                      path="assignment/:id"
-                      element={<AssignmentDetail />}
-                    />
+                    <Route path="assignment" element={<AssignmentList />} />
+                    <Route path="assignment/create" element={<AssignmentCreate />} />
+                    <Route path="assignment/:id" element={<AssignmentDetail />} />
+                    <Route path="assignment/:id/submissions" element={<SubmissionList />} />
+                    <Route path="assignment/:id/submissions/:submissionId" element={<SubmissionDetail />} />
                     <Route
                       path="posts"
                       element={

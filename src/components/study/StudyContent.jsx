@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
-import AssignmentContainer from "../../pages/study/assignment";
+import AssignmentList from "../../pages/study/assignment";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeTab from "./tabs/NoticeTab";
@@ -33,7 +33,7 @@ function StudyContent({ activeTab, studyData }) {
         return <ScheduleContainer onSubPageChange={handleSubPageChange} />;
       case "과제":
         console.log("[StudyContent] 과제 탭 렌더링");
-        return <AssignmentContainer onSubPageChange={handleSubPageChange} />;
+        return <AssignmentList />;
       case "공지사항":
         console.log("[StudyContent] 공지사항 탭 렌더링");
         return <NoticeTab />;
