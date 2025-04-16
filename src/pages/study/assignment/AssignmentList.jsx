@@ -112,7 +112,7 @@ function AssignmentList() {
         <Title>과제 목록</Title>
         {isManager && (
           <CreateButton onClick={handleCreateAssignment}>
-            과제 생성
+            과제 업로드
           </CreateButton>
         )}
       </Header>
@@ -128,7 +128,7 @@ function AssignmentList() {
       ) : assignments.length === 0 ? (
         <EmptyMessage>
           등록된 과제가 없습니다.
-          {isManager && <p>오른쪽 상단의 '과제 생성' 버튼을 클릭하여 새 과제를 생성해보세요.</p>}
+          {isManager && <p>오른쪽 상단의 '과제 업로드' 버튼을 클릭하여 새 과제를 생성해보세요.</p>}
         </EmptyMessage>
       ) : (
         <AssignmentList>

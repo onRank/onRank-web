@@ -23,7 +23,7 @@ function AssignmentCreate() {
   // 권한 체크 - 관리자만 접근 가능
   useEffect(() => {
     if (!isManager) {
-      alert("과제 생성 권한이 없습니다.");
+      alert("과제 업로드 권한이 없습니다.");
       navigate(`/studies/${studyId}/assignment`);
     }
   }, [isManager, studyId, navigate]);
@@ -37,7 +37,7 @@ function AssignmentCreate() {
     }));
   };
   
-  // 과제 생성 제출 처리
+  // 과제 업로드 제출 처리
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -67,14 +67,14 @@ function AssignmentCreate() {
         assignmentDueDate: new Date(formData.assignmentDueDate).toISOString()
       };
       
-      // 과제 생성 API 호출
+      // 과제 업로드 API 호출
       await assignmentService.createAssignment(studyId, formattedData);
       
-      alert('과제가 성공적으로 생성되었습니다.');
+      alert('과제가 성공적으로 업로드되었습니다.');
       navigate(`/studies/${studyId}/assignment`); // 목록 페이지로 이동
     } catch (err) {
-      console.error('과제 생성 실패:', err);
-      setError(`과제 생성에 실패했습니다: ${err.message || '알 수 없는 오류가 발생했습니다.'}`);
+      console.error('과제 업로드 실패:', err);
+      setError(`과제 업로드에 실패했습니다: ${err.message || '알 수 없는 오류가 발생했습니다.'}`);
     } finally {
       setIsLoading(false);
     }
@@ -88,7 +88,7 @@ function AssignmentCreate() {
   return (
     <Container>
       <Header>
-        <Title>새 과제 생성</Title>
+        <Title>과제 업로드</Title>
         <BackButton onClick={handleCancel}>목록으로 돌아가기</BackButton>
       </Header>
       
@@ -152,7 +152,7 @@ function AssignmentCreate() {
         <ButtonGroup>
           <CancelButton type="button" onClick={handleCancel}>취소</CancelButton>
           <SubmitButton type="submit" disabled={isLoading}>
-            {isLoading ? '생성 중...' : '과제 생성'}
+            {isLoading ? '업로드 중...' : '업로드'}
           </SubmitButton>
         </ButtonGroup>
       </Form>
