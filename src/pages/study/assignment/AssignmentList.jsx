@@ -131,9 +131,9 @@ function AssignmentList() {
           {isManager && <p>오른쪽 상단의 '과제 업로드' 버튼을 클릭하여 새 과제를 생성해보세요.</p>}
         </EmptyMessage>
       ) : (
-        <AssignmentList>
+        <AssignmentListContainer>
           {assignments.map(renderAssignmentItem)}
-        </AssignmentList>
+        </AssignmentListContainer>
       )}
     </Container>
   );
@@ -172,7 +172,7 @@ const CreateButton = styled.button`
   }
 `;
 
-const AssignmentList = styled.div`
+const AssignmentListContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 1rem;
