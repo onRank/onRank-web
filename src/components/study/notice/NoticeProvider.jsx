@@ -7,7 +7,7 @@ import {
   useEffect,
   useRef,
 } from "react";
-import { noticeService } from "../../../services/notice";
+import { noticeService } from "../../../services/api";
 import { useParams } from "react-router-dom";
 
 const NoticeContext = createContext();
