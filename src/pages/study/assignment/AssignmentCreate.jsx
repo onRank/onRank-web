@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
+import { IoAttach } from 'react-icons/io5';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -10,6 +11,7 @@ function AssignmentCreate() {
   const { isManager } = useStudyRole();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
   
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -19,6 +21,9 @@ function AssignmentCreate() {
     assignmentMaxPoint: 100,
     fileNames: []
   });
+  
+  // 첨부 파일 상태
+  const [attachedFiles, setAttachedFiles] = useState([]);
   
   // 권한 체크 - 관리자만 접근 가능
   useEffect(() => {
@@ -34,6 +39,33 @@ function AssignmentCreate() {
     setFormData(prev => ({
       ...prev,
       [name]: type === 'number' ? parseInt(value, 10) : value
+    }));
+  };
+  
+  // 파일 첨부 처리
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles.length > 0) {
+      setAttachedFiles(prev => [...prev, ...selectedFiles]);
+      // 파일 이름 배열 업데이트
+      setFormData(prev => ({
+        ...prev,
+        fileNames: [...prev.fileNames, ...selectedFiles.map(file => file.name)]
+      }));
+    }
+  };
+  
+  // 파일 첨부 버튼 클릭
+  const handleAttachClick = () => {
+    fileInputRef.current.click();
+  };
+  
+  // 첨부 파일 삭제
+  const handleRemoveFile = (index) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    setFormData(prev => ({
+      ...prev,
+      fileNames: prev.fileNames.filter((_, i) => i !== index)
     }));
   };
   
@@ -64,10 +96,11 @@ function AssignmentCreate() {
       // ISO 형식으로 날짜 변환
       const formattedData = {
         ...formData,
-        assignmentDueDate: new Date(formData.assignmentDueDate).toISOString()
+        assignmentDueDate: new Date(formData.assignmentDueDate).toISOString(),
+        files: attachedFiles // 파일 객체 배열 직접 추가
       };
       
-      // 과제 업로드 API 호출
+      // 과제 업로드 API 호출 (preSignedURL 방식)
       await assignmentService.createAssignment(studyId, formattedData);
       
       alert('과제가 성공적으로 업로드되었습니다.');
@@ -110,7 +143,7 @@ function AssignmentCreate() {
         </FormGroup>
         
         <FormGroup>
-          <Label htmlFor="assignmentContent">과제 내용 *</Label>
+          <Label htmlFor="assignmentContent">지시사항 *</Label>
           <TextArea
             id="assignmentContent"
             name="assignmentContent"
@@ -120,6 +153,7 @@ function AssignmentCreate() {
             rows={6}
             required
           />
+          <CharCount>{formData.assignmentContent.length}/10000</CharCount>
         </FormGroup>
         
         <FormGroup>
@@ -147,7 +181,36 @@ function AssignmentCreate() {
           />
         </FormGroup>
         
-        {/* 추가 구현 가능: 첨부 파일 목록 관리 */}
+        {/* 첨부 파일 영역 */}
+        <FormGroup>
+          <Label>첨부 파일</Label>
+          <HiddenFileInput 
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            multiple
+          />
+          
+          {/* 첨부된 파일 목록 */}
+          {attachedFiles.length > 0 && (
+            <FileList>
+              {attachedFiles.map((file, index) => (
+                <FileItem key={index}>
+                  <FileName>{file.name}</FileName>
+                  <FileSize>({(file.size / 1024).toFixed(1)} KB)</FileSize>
+                  <RemoveFileButton onClick={() => handleRemoveFile(index)}>
+                    ×
+                  </RemoveFileButton>
+                </FileItem>
+              ))}
+            </FileList>
+          )}
+          
+          <AttachButton type="button" onClick={handleAttachClick}>
+            <IoAttach size={18} />
+            파일 첨부
+          </AttachButton>
+        </FormGroup>
         
         <ButtonGroup>
           <CancelButton type="button" onClick={handleCancel}>취소</CancelButton>
@@ -177,11 +240,13 @@ const Header = styled.div`
 const Title = styled.h1`
   font-size: 24px;
   font-weight: bold;
+  color: #000;
 `;
 
 const BackButton = styled.button`
   padding: 8px 16px;
   background-color: #f8f9fa;
+  color: #212529;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
@@ -200,12 +265,14 @@ const Form = styled.form`
 
 const FormGroup = styled.div`
   margin-bottom: 20px;
+  position: relative;
 `;
 
 const Label = styled.label`
   display: block;
   font-weight: bold;
   margin-bottom: 8px;
+  color: #212529;
 `;
 
 const Input = styled.input`
@@ -225,10 +292,17 @@ const TextArea = styled.textarea`
   resize: vertical;
 `;
 
+const CharCount = styled.div`
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  font-size: 12px;
+  color: #6c757d;
+`;
+
 const ButtonGroup = styled.div`
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
+  justify-content: space-between;
   margin-top: 24px;
 `;
 
@@ -254,6 +328,7 @@ const SubmitButton = styled.button`
 const CancelButton = styled.button`
   padding: 12px 24px;
   background-color: #f8f9fa;
+  color: #212529;
   border: 1px solid #ddd;
   border-radius: 4px;
   cursor: pointer;
@@ -269,6 +344,65 @@ const ErrorMessage = styled.div`
   background-color: #f8d7da;
   color: #dc3545;
   border-radius: 4px;
+`;
+
+const HiddenFileInput = styled.input`
+  display: none;
+`;
+
+const AttachButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: #f8f9fa;
+  color: #212529;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #e9ecef;
+  }
+`;
+
+const FileList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px 0;
+`;
+
+const FileItem = styled.li`
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+`;
+
+const FileName = styled.span`
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 8px;
+`;
+
+const FileSize = styled.span`
+  font-size: 12px;
+  color: #6c757d;
+  margin-right: 8px;
+`;
+
+const RemoveFileButton = styled.button`
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
 `;
 
 export default AssignmentCreate; 
