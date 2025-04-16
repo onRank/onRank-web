@@ -8,11 +8,11 @@ import studyContextService from "../../services/studyContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 
-function StudyDetailPage() {
+function StudyDetailPage({ activeTab: propActiveTab }) {
   const { studyId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("");
+  const [activeTab, setActiveTab] = useState(propActiveTab || "");
   const [studyData, setStudyData] = useState({
     title: "로딩 중...",
     description: "스터디 정보를 불러오는 중입니다.",
@@ -64,6 +64,12 @@ function StudyDetailPage() {
 
   // URL에서 현재 섹션 가져오기
   useEffect(() => {
+    // props로 activeTab이 전달된 경우 사용
+    if (propActiveTab) {
+      setActiveTab(propActiveTab);
+      return;
+    }
+
     const path = location.pathname;
     const section = path.split("/").pop();
 
@@ -94,7 +100,7 @@ function StudyDetailPage() {
     } else {
       console.log("No matching tab for section:", section);
     }
-  }, [location.pathname, studyId]);
+  }, [location.pathname, studyId, propActiveTab]);
 
   // 컴포넌트 언마운트시 데이터 로드 상태 초기화
   useEffect(() => {

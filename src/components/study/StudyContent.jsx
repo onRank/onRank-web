@@ -2,7 +2,13 @@ import PropTypes from "prop-types";
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { ScheduleContainer } from "../../pages/study/schedule";
-import AssignmentList from "../../pages/study/assignment";
+import { 
+  AssignmentList, 
+  AssignmentCreate, 
+  AssignmentDetail,
+  SubmissionList,
+  SubmissionDetail
+} from "../../pages/study/assignment";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeTab from "./tabs/NoticeTab";
@@ -12,7 +18,7 @@ import AttendanceContainer from "../../pages/study/attendance/AttendanceContaine
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
 function StudyContent({ activeTab, studyData }) {
-  const { studyId } = useParams();
+  const { studyId, id: assignmentId } = useParams();
   const location = useLocation();
   const [currentSubPage, setCurrentSubPage] = useState(null);
 
@@ -24,6 +30,36 @@ function StudyContent({ activeTab, studyData }) {
     setCurrentSubPage(subPageName);
   };
 
+  // 현재 경로에 따라 과제 관련 컴포넌트 결정
+  const renderAssignmentContent = () => {
+    const pathParts = location.pathname.split('/');
+    const isCreatePath = pathParts.includes('create');
+    const isSubmissionsPath = pathParts.includes('submissions');
+    
+    // /studies/:studyId/assignment/create
+    if (isCreatePath) {
+      return <AssignmentCreate />;
+    }
+    
+    // /studies/:studyId/assignment/:id/submissions/:submissionId
+    if (isSubmissionsPath && pathParts.length > 6) {
+      return <SubmissionDetail />;
+    }
+    
+    // /studies/:studyId/assignment/:id/submissions
+    if (isSubmissionsPath) {
+      return <SubmissionList />;
+    }
+    
+    // /studies/:studyId/assignment/:id
+    if (assignmentId) {
+      return <AssignmentDetail />;
+    }
+    
+    // /studies/:studyId/assignment
+    return <AssignmentList />;
+  };
+
   const renderContent = () => {
     console.log("[StudyContent] renderContent 호출, activeTab:", activeTab);
     
@@ -33,7 +69,7 @@ function StudyContent({ activeTab, studyData }) {
         return <ScheduleContainer onSubPageChange={handleSubPageChange} />;
       case "과제":
         console.log("[StudyContent] 과제 탭 렌더링");
-        return <AssignmentList />;
+        return renderAssignmentContent();
       case "공지사항":
         console.log("[StudyContent] 공지사항 탭 렌더링");
         return <NoticeTab />;

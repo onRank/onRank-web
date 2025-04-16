@@ -527,11 +527,11 @@ function AppContent() {
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />
-                    <Route path="assignment" element={<AssignmentList />} />
-                    <Route path="assignment/create" element={<AssignmentCreate />} />
-                    <Route path="assignment/:id" element={<AssignmentDetail />} />
-                    <Route path="assignment/:id/submissions" element={<SubmissionList />} />
-                    <Route path="assignment/:id/submissions/:submissionId" element={<SubmissionDetail />} />
+                    <Route path="assignment" element={<StudyDetailPage activeTab="과제" />} />
+                    <Route path="assignment/create" element={<StudyDetailPage activeTab="과제" />} />
+                    <Route path="assignment/:id" element={<StudyDetailPage activeTab="과제" />} />
+                    <Route path="assignment/:id/submissions" element={<StudyDetailPage activeTab="과제" />} />
+                    <Route path="assignment/:id/submissions/:submissionId" element={<StudyDetailPage activeTab="과제" />} />
                     <Route
                       path="posts"
                       element={
