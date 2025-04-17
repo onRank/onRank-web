@@ -1,95 +1,6 @@
 import { api, tokenUtils } from "./api";
 import axios from "axios";
 
-const handleFileUpload = async (responseData, files) => {
-  try {
-    console.log("[FileUpload] 파일 업로드 시작");
-
-    let uploadUrls = [];
-
-    // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
-    if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
-      uploadUrls = responseData.presignedUrls;
-      console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
-    } else if (responseData.data && Array.isArray(responseData.data)) {
-      // 새로운 백엔드 응답 구조: data 배열에서 fileUrl 추출
-      uploadUrls = responseData.data.map((file) => file.fileUrl);
-      console.log(
-        "[FileUpload] data 배열에서 fileUrl 추출:",
-        uploadUrls.length
-      );
-    }
-
-    if (uploadUrls.length > 0) {
-      // 각 파일에 대해 업로드 처리
-      for (let i = 0; i < Math.min(files.length, uploadUrls.length); i++) {
-        const file = files[i];
-        const uploadUrl = uploadUrls[i];
-
-        if (!uploadUrl) {
-          console.warn(
-            `[FileUpload] ${i + 1}번째 파일의 업로드 URL이 없습니다`
-          );
-          continue;
-        }
-
-        try {
-          console.log(`[FileUpload] 파일 '${file.name}' 업로드 시작`);
-
-          // 프리사인드 URL에서 필요한 메타데이터 확인
-          let contentType = null;
-          try {
-            const urlObj = new URL(uploadUrl);
-            const params = new URLSearchParams(urlObj.search);
-            if (params.has("Content-Type")) {
-              contentType = params.get("Content-Type");
-              console.log(
-                `[FileUpload] URL에서 찾은 Content-Type: ${contentType}`
-              );
-            }
-          } catch (urlError) {
-            console.warn("[FileUpload] URL 파싱 실패:", urlError);
-          }
-
-          // 파일 유형에 따라 적절한 업로드 함수 선택 (Content-Type 고려)
-          if (contentType) {
-            console.log(
-              `[FileUpload] 프리사인드 URL에 지정된 Content-Type 사용: ${contentType}`
-            );
-            // 백엔드에서 지정한 Content-Type이 있으면 해당 유형으로 업로드
-            if (contentType.startsWith("image/")) {
-              await noticeService.ImageUploadToS3(uploadUrl, file);
-            } else {
-              await noticeService.FileUploadToS3(uploadUrl, file);
-            }
-          } else {
-            // 기존 방식으로 처리 (파일 유형에 따라)
-            if (file.type.startsWith("image/")) {
-              await noticeService.ImageUploadToS3(uploadUrl, file);
-              console.log(`[FileUpload] 이미지 '${file.name}' 업로드 성공`);
-            } else {
-              await noticeService.FileUploadToS3(uploadUrl, file);
-              console.log(`[FileUpload] 파일 '${file.name}' 업로드 성공`);
-            }
-          }
-        } catch (individualError) {
-          console.error(
-            `[FileUpload] '${file.name}' 파일 업로드 실패:`,
-            individualError
-          );
-          // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
-        }
-      }
-      console.log("[FileUpload] 모든 파일 업로드 완료");
-    } else {
-      console.log("[FileUpload] 업로드할 URL이 없어 파일 업로드를 건너뜁니다");
-    }
-  } catch (error) {
-    console.error("[FileUpload] 파일 업로드 처리 중 오류:", error);
-    throw error;
-  }
-};
-
 export const postService = {
   // 게시판 목록 조회
   getPosts: async (studyId, params = {}) => {
@@ -253,6 +164,92 @@ export const postService = {
           error.message || "게시판 목록을 불러오는 중 오류가 발생했습니다",
         data: [],
       };
+    }
+  },
+  
+  // 이미지 업로드 함수
+  ImageUploadToS3: async (presignedUrl, imageFile) => {
+    try {
+      console.log("[ImageUploadToS3] 이미지 업로드 시작:", imageFile.name);
+
+      // 프리사인드 URL에서 Content-Type 추출
+      let contentType = imageFile.type;
+
+      // URL에서 Content-Type 파라미터가 있는지 확인
+      try {
+        const urlObj = new URL(presignedUrl);
+        const params = new URLSearchParams(urlObj.search);
+        if (params.has("Content-Type")) {
+          contentType = params.get("Content-Type");
+          console.log(
+            `[ImageUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
+          );
+        }
+      } catch (urlError) {
+        console.warn(
+          "[ImageUploadToS3] URL 파싱 실패, 파일 타입 사용:",
+          urlError
+        );
+      }
+
+      const uploadResponse = await axios.put(presignedUrl, imageFile, {
+        headers: {
+          "Content-Type": contentType,
+        },
+      });
+
+      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+        console.log("[ImageUploadToS3] 이미지 업로드 성공:", imageFile.name);
+      } else {
+        console.error("[ImageUploadToS3] 이미지 업로드 실패:", imageFile.name);
+        throw new Error(`이미지 업로드 실패: ${imageFile.name}`);
+      }
+    } catch (error) {
+      console.error("[ImageUploadToS3] 이미지 업로드 중 오류:", error);
+      throw error;
+    }
+  },
+
+  // 파일 업로드 함수
+  FileUploadToS3: async (presignedUrl, file) => {
+    try {
+      console.log("[FileUploadToS3] 파일 업로드 시작:", file.name);
+
+      // 프리사인드 URL에서 Content-Type 추출
+      let contentType = file.type || "application/octet-stream";
+
+      // URL에서 Content-Type 파라미터가 있는지 확인
+      try {
+        const urlObj = new URL(presignedUrl);
+        const params = new URLSearchParams(urlObj.search);
+        if (params.has("Content-Type")) {
+          contentType = params.get("Content-Type");
+          console.log(
+            `[FileUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
+          );
+        }
+      } catch (urlError) {
+        console.warn(
+          "[FileUploadToS3] URL 파싱 실패, 파일 타입 사용:",
+          urlError
+        );
+      }
+
+      const uploadResponse = await axios.put(presignedUrl, file, {
+        headers: {
+          "Content-Type": contentType,
+        },
+      });
+
+      if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+        console.log("[FileUploadToS3] 파일 업로드 성공:", file.name);
+      } else {
+        console.error("[FileUploadToS3] 파일 업로드 실패:", file.name);
+        throw new Error(`파일 업로드 실패: ${file.name}`);
+      }
+    } catch (error) {
+      console.error("[FileUploadToS3] 파일 업로드 중 오류:", error);
+      throw error;
     }
   },
 
@@ -570,4 +567,93 @@ export const postService = {
       };
     }
   },
+};
+
+const handleFileUpload = async (responseData, files) => {
+  try {
+    console.log("[FileUpload] 파일 업로드 시작");
+
+    let uploadUrls = [];
+
+    // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
+    if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
+      uploadUrls = responseData.presignedUrls;
+      console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
+    } else if (responseData.data && Array.isArray(responseData.data)) {
+      // 새로운 백엔드 응답 구조: data 배열에서 fileUrl 추출
+      uploadUrls = responseData.data.map((file) => file.fileUrl);
+      console.log(
+        "[FileUpload] data 배열에서 fileUrl 추출:",
+        uploadUrls.length
+      );
+    }
+
+    if (uploadUrls.length > 0) {
+      // 각 파일에 대해 업로드 처리
+      for (let i = 0; i < Math.min(files.length, uploadUrls.length); i++) {
+        const file = files[i];
+        const uploadUrl = uploadUrls[i];
+
+        if (!uploadUrl) {
+          console.warn(
+            `[FileUpload] ${i + 1}번째 파일의 업로드 URL이 없습니다`
+          );
+          continue;
+        }
+
+        try {
+          console.log(`[FileUpload] 파일 '${file.name}' 업로드 시작`);
+
+          // 프리사인드 URL에서 필요한 메타데이터 확인
+          let contentType = null;
+          try {
+            const urlObj = new URL(uploadUrl);
+            const params = new URLSearchParams(urlObj.search);
+            if (params.has("Content-Type")) {
+              contentType = params.get("Content-Type");
+              console.log(
+                `[FileUpload] URL에서 찾은 Content-Type: ${contentType}`
+              );
+            }
+          } catch (urlError) {
+            console.warn("[FileUpload] URL 파싱 실패:", urlError);
+          }
+
+          // 파일 유형에 따라 적절한 업로드 함수 선택 (Content-Type 고려)
+          if (contentType) {
+            console.log(
+              `[FileUpload] 프리사인드 URL에 지정된 Content-Type 사용: ${contentType}`
+            );
+            // 백엔드에서 지정한 Content-Type이 있으면 해당 유형으로 업로드
+            if (contentType.startsWith("image/")) {
+              await noticeService.ImageUploadToS3(uploadUrl, file);
+            } else {
+              await noticeService.FileUploadToS3(uploadUrl, file);
+            }
+          } else {
+            // 기존 방식으로 처리 (파일 유형에 따라)
+            if (file.type.startsWith("image/")) {
+              await noticeService.ImageUploadToS3(uploadUrl, file);
+              console.log(`[FileUpload] 이미지 '${file.name}' 업로드 성공`);
+            } else {
+              await noticeService.FileUploadToS3(uploadUrl, file);
+              console.log(`[FileUpload] 파일 '${file.name}' 업로드 성공`);
+            }
+          }
+        } catch (individualError) {
+          console.error(
+            `[FileUpload] '${file.name}' 파일 업로드 실패:`,
+            individualError
+          );
+          // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
+        }
+      }
+      console.log("[FileUpload] 모든 파일 업로드 완료");
+    } else {
+      console.log("[FileUpload] 업로드할 URL이 없어 파일 업로드를 건너뜁니다");
+    }
+  } catch (error) {
+    console.error("[FileUpload] 파일 업로드 처리 중 오류:", error);
+    throw error;
+  }
 };
