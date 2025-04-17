@@ -256,15 +256,61 @@ export const fileToBase64 = (file) => {
  * @param {string} url - 다운로드할 파일 URL
  * @param {string} fileName - 저장할 파일 이름
  */
-export const downloadFile = (url, fileName) => {
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = fileName;
-  link.target = '_blank';
-  
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+export const downloadFile = async (url, fileName) => {
+  try {
+    console.log(`[fileUtils] 파일 다운로드 시작: ${fileName} (${url})`);
+    
+    // 서버에서 파일 가져오기
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Cache-Control': 'no-cache'
+      }
+    });
+    
+    // 응답이 성공적인지 확인
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`[fileUtils] 파일 다운로드 실패 (${response.status}):`, errorText);
+      throw new Error(`파일 다운로드 실패: ${response.status} ${response.statusText}`);
+    }
+    
+    // 응답을 Blob으로 변환
+    const blob = await response.blob();
+    
+    // Blob URL 생성
+    const downloadUrl = window.URL.createObjectURL(blob);
+    
+    // 다운로드 링크 생성 및 클릭
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = fileName;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // 메모리 누수 방지를 위해 URL 해제
+    setTimeout(() => {
+      window.URL.revokeObjectURL(downloadUrl);
+    }, 100);
+    
+    console.log(`[fileUtils] 파일 다운로드 성공: ${fileName}`);
+    
+  } catch (error) {
+    console.error('[fileUtils] 파일 다운로드 중 오류:', error);
+    
+    // 사용자에게 오류 알림
+    alert(`파일 다운로드에 실패했습니다: ${error.message}`);
+    
+    // 일반적인 방법으로 링크 열기 시도 (대안책)
+    try {
+      window.open(url, '_blank');
+      console.log('[fileUtils] 일반 브라우저 다운로드로 대체');
+    } catch (fallbackError) {
+      console.error('[fileUtils] 대체 다운로드 실패:', fallbackError);
+    }
+  }
 };
 
 // 이미지 유틸리티 함수 재내보내기 (imageUtils.js에서 가져옴)
