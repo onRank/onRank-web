@@ -1,14 +1,30 @@
 import PropTypes from "prop-types";
-import { formatDate } from "../../../utils/dateUtils";
+import { formatDateYMD } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { useState, useRef, useEffect } from "react";
 
-function NoticeListItem({ notice, onClick }) {
+function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   const { isDarkMode } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // 메뉴 영역 외 클릭 시 메뉴 닫기
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [menuRef]);
 
   const styles = {
     noticeCard: {
       backgroundColor: "#ffffff",
-      padding: "12px 16px",
+      padding: "14px 16px",
       borderRadius: "10px",
       marginBottom: "12px",
       display: "flex",
@@ -18,22 +34,17 @@ function NoticeListItem({ notice, onClick }) {
       boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
       transition: "box-shadow 0.2s ease, transform 0.2s ease",
       cursor: "pointer",
-      gap: "10px",
-      hover: {
-        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-        transform: "translateY(-2px)",
-      },
     },
     noticeContentBlock: {
       display: "flex",
       flexDirection: "column",
+      flex: 1,
       overflow: "hidden",
     },
-    noticeLeft: {
-      display: "flex",
-      alignItems: "center",
-      gap: "12px",
-      overflow: "hidden",
+    noticeDate: {
+      color: "#999",
+      fontSize: "12px",
+      marginBottom: "6px",
     },
     noticeTitle: {
       fontSize: "16px",
@@ -43,32 +54,46 @@ function NoticeListItem({ notice, onClick }) {
       overflow: "hidden",
       textOverflow: "ellipsis",
     },
-    noticeIcon: {
-      flexShrink: 0,
-      width: "28px",
-      height: "28px",
-      backgroundColor: "#f1f1f1",
-      borderRadius: "6px",
+    menuContainer: {
+      position: "relative",
+      marginLeft: "12px",
+    },
+    menuButton: {
+      background: "transparent",
+      border: "none",
+      fontSize: "18px",
+      cursor: "pointer",
+      color: "#666",
+      padding: "4px 8px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
-      fontSize: "18px",
     },
-    noticeDate: {
-      fontSize: "13px",
-      color: "#999",
-      marginLeft: "20px",
-      whiteSpace: "nowrap",
-      flexShrink: 0,
+    menuDropdown: {
+      position: "absolute",
+      right: 0,
+      top: "100%",
+      backgroundColor: "#fff",
+      border: "1px solid #eee",
+      borderRadius: "6px",
+      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+      zIndex: 10,
+      minWidth: "120px",
+      display: menuOpen ? "block" : "none",
     },
-    noticeText: {
-      fontSize: "12px",
-      color: "#666",
-      marginTop: "4px",
+    menuItem: {
+      padding: "8px 16px",
+      fontSize: "14px",
+      color: "#333",
+      cursor: "pointer",
       whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      maxWidth: "100%",
+    },
+    menuItemDanger: {
+      padding: "8px 16px",
+      fontSize: "14px",
+      color: "#dc3545",
+      cursor: "pointer",
+      whiteSpace: "nowrap",
     },
   };
 
@@ -81,6 +106,28 @@ function NoticeListItem({ notice, onClick }) {
     e.currentTarget.style.backgroundColor = `var(--cardBackground)`;
   };
 
+  // 토글 메뉴 클릭 처리
+  const handleMenuClick = (e) => {
+    e.stopPropagation(); // 클릭 이벤트가 카드까지 전파되지 않도록 방지
+    setMenuOpen(!menuOpen);
+  };
+
+  // 수정 버튼 클릭 처리
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+    if (onEdit) onEdit(notice.noticeId);
+  };
+
+  // 삭제 버튼 클릭 처리
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    setMenuOpen(false);
+    if (onDelete && window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
+      onDelete(notice.noticeId);
+    }
+  };
+
   return (
     <div
       onClick={onClick}
@@ -88,14 +135,32 @@ function NoticeListItem({ notice, onClick }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div style={styles.noticeLeft}>
-        <div style={styles.noticeIcon}>📢</div>
-        <div style={styles.noticeContentBlock}>
-          <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
-          <div style={styles.noticeText}>{notice.noticeContent}</div>
+      <div style={styles.noticeContentBlock}>
+        <div style={styles.noticeDate}>
+          게시: {formatDateYMD(notice.noticeCreatedAt)}
+        </div>
+        <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
+      </div>
+
+      <div style={styles.menuContainer} ref={menuRef}>
+        <button
+          style={styles.menuButton}
+          onClick={handleMenuClick}
+          aria-label="메뉴 열기"
+        >
+          ⋮
+        </button>
+
+        {/* 드롭다운 메뉴 */}
+        <div style={styles.menuDropdown}>
+          <div style={styles.menuItem} onClick={handleEdit}>
+            수정
+          </div>
+          <div style={styles.menuItemDanger} onClick={handleDelete}>
+            삭제
+          </div>
         </div>
       </div>
-      <div style={styles.noticeDate}>{formatDate(notice.noticeCreatedAt)}</div>
     </div>
   );
 }
@@ -116,6 +181,8 @@ NoticeListItem.propTypes = {
     ),
   }).isRequired,
   onClick: PropTypes.func.isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default NoticeListItem;
