@@ -533,17 +533,17 @@ export const noticeService = {
       );
       console.log("[NoticeService] 수정 데이터:", noticeData);
       console.log("[NoticeService] 첨부 파일 수:", files.length);
-  
+
       // 백엔드 DTO 구조에 맞게 데이터 변환
       const requestData = {
         noticeTitle: noticeData.noticeTitle || "",
         noticeContent: noticeData.noticeContent || "",
         remainingFileIds: noticeData.remainingFileIds || [], // 남겨둘 파일 ID (long 타입)
-        newFileNames: noticeData.newFileNames || [],         // 새로운 파일명 (string 타입)
+        newFileNames: noticeData.newFileNames || [], // 새로운 파일명 (string 타입)
       };
-  
+
       console.log("[NoticeService] 최종 요청 데이터:", requestData);
-  
+
       // 인증 토큰 추가
       const token = tokenUtils.getToken();
       if (!token) {
@@ -553,7 +553,7 @@ export const noticeService = {
       const tokenWithBearer = token.startsWith("Bearer ")
         ? token
         : `Bearer ${token}`;
-  
+
       // API 요청
       const response = await api.put(
         `/studies/${studyId}/notices/${noticeId}`,
@@ -566,9 +566,9 @@ export const noticeService = {
           },
         }
       );
-  
+
       console.log("[NoticeService] 공지사항 수정 성공:", response.data);
-  
+
       // 파일 업로드 처리
       if (files && files.length > 0) {
         // 백엔드 응답에서 업로드 URL 확인
@@ -578,7 +578,7 @@ export const noticeService = {
             (response.data.data &&
               Array.isArray(response.data.data) &&
               response.data.data.length > 0));
-  
+
         if (hasUploadUrls) {
           try {
             console.log("[NoticeService] 파일 업로드 시작");
@@ -589,18 +589,21 @@ export const noticeService = {
             return {
               success: true,
               data: response.data,
-              warning: "공지사항은 수정되었으나 일부 파일 업로드에 실패했습니다.",
+              warning:
+                "공지사항은 수정되었으나 일부 파일 업로드에 실패했습니다.",
             };
           }
         } else {
-          console.warn("[NoticeService] 업로드 URL이 없어 파일 업로드를 건너뜁니다");
+          console.warn(
+            "[NoticeService] 업로드 URL이 없어 파일 업로드를 건너뜁니다"
+          );
         }
       }
-  
+
       return { success: true, data: response.data };
     } catch (error) {
       console.error("[NoticeService] 공지사항 수정 오류:", error);
-  
+
       // 권한이 없는 경우 (403)
       if (error.response && error.response.status === 403) {
         return {
@@ -627,7 +630,7 @@ const handleFileUpload = async (responseData, files) => {
       uploadUrls = responseData.presignedUrls;
       console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
     } else if (responseData.data && Array.isArray(responseData.data)) {
-      uploadUrls = responseData.data.map((file) => file.fileUrl);
+      uploadUrls = responseData.data.map((file) => file.uploadUrl);
       console.log(
         "[FileUpload] data 배열에서 fileUrl 추출:",
         uploadUrls.length
