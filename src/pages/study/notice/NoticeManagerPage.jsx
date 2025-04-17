@@ -1,100 +1,58 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useNotice } from "../../../components/study/notice/NoticeProvider";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import NoticeList from "../../../components/study/notice/NoticeList";
-import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
+import NoticeDetail from "../../../components/study/notice/NoticeDetail";
+import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
-import { noticeService } from "../../../services/notice";
+import {
+  NoticeProvider,
+  useNotice,
+} from "../../../components/study/notice/NoticeProvider";
 
 // 실제 공지사항 컨텐츠를 표시하는 컴포넌트
 function NoticeContent() {
-  const { studyId } = useParams();
   const navigate = useNavigate();
-  const { notices, isLoading, error, getPosts, deleteNotice } = useNotice();
+  const { studyId } = useParams();
+  const [selectedNoticeId, setSelectedNoticeId] = useState(null);
 
-  // 수정 모드 상태 추가
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingNoticeId, setEditingNoticeId] = useState(null);
-  const [editingNotice, setEditingNotice] = useState(null);
-  const [contentLoading, setContentLoading] = useState(false);
+  // NoticeProvider에서 상태와 함수 가져오기
+  const {
+    notices,
+    selectedNotice,
+    isLoading,
+    error,
+    getNotices,
+    getNoticeById,
+  } = useNotice();
 
+  // 페이지 마운트 시 공지사항 목록 가져오기
   useEffect(() => {
-    getPosts(studyId);
-  }, [studyId, getPosts]);
+    getNotices(studyId);
+  }, [studyId, getNotices]);
 
-  // 공지사항 클릭 핸들러 (상세 페이지로 이동)
-  const handleNoticeClick = (noticeId) => {
-    // 이미 수정 모드라면 클릭해도 이동하지 않음
-    if (!isEditMode) {
-      navigate(`/studies/${studyId}/notices/${noticeId}`);
+  // 선택된 공지사항 ID가 변경될 때 상세 정보 가져오기
+  useEffect(() => {
+    if (selectedNoticeId) {
+      getNoticeById(studyId, selectedNoticeId);
     }
-  };
+  }, [studyId, selectedNoticeId, getNoticeById]);
 
-  // 공지사항 추가 버튼 핸들러
+  // 공지사항 작성 페이지로 이동
   const handleCreate = () => {
     navigate(`/studies/${studyId}/notices/add`);
   };
 
-  // 수정 버튼 클릭 핸들러
-  const handleEdit = async (noticeId) => {
-    // 수정 모드로 전환
-    setIsEditMode(true);
-    setEditingNoticeId(noticeId);
-
-    // 수정할 공지사항 데이터 로드
-    try {
-      setContentLoading(true);
-      const response = await noticeService.getNoticeById(studyId, noticeId);
-      if (response.success && response.data) {
-        setEditingNotice(response.data);
-      } else {
-        alert("공지사항 정보를 불러오는데 실패했습니다.");
-        setIsEditMode(false);
-      }
-    } catch (error) {
-      console.error("공지사항 로드 중 오류:", error);
-      alert("공지사항 정보를 불러오는데 실패했습니다.");
-      setIsEditMode(false);
-    } finally {
-      setContentLoading(false);
-    }
+  // 공지사항 상세 보기
+  const handleNoticeClick = (noticeId) => {
+    setSelectedNoticeId(noticeId);
+    navigate(`/studies/${studyId}/notices/${noticeId}`);
   };
 
-  // 삭제 버튼 클릭 핸들러
-  const handleDelete = async (noticeId) => {
-    if (!window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
-      return;
-    }
-
-    try {
-      const result = await deleteNotice(studyId, noticeId);
-      if (result.success) {
-        // 목록 다시 로드
-        getPosts(studyId);
-      } else {
-        alert(result.message || "공지사항 삭제에 실패했습니다.");
-      }
-    } catch (error) {
-      console.error("공지사항 삭제 중 오류:", error);
-      alert("공지사항 삭제 중 오류가 발생했습니다.");
-    }
-  };
-
-  // 수정 취소 핸들러
-  const handleEditCancel = () => {
-    setIsEditMode(false);
-    setEditingNoticeId(null);
-    setEditingNotice(null);
-  };
-
-  // 수정 완료 핸들러
-  const handleEditComplete = () => {
-    setIsEditMode(false);
-    setEditingNoticeId(null);
-    setEditingNotice(null);
-    // 목록 다시 로드
-    getPosts(studyId);
+  // 공지사항 상세 보기에서 목록으로 돌아가기
+  const handleBack = () => {
+    setSelectedNoticeId(null);
+    navigate(`/studies/${studyId}/notices`);
   };
 
   const styles = {
@@ -139,36 +97,33 @@ function NoticeContent() {
   }
 
   return (
-    <div>
-      {isEditMode && editingNotice ? (
-        // 수정 모드일 때 NoticeEditForm 렌더링
-        <NoticeEditForm
+    <div style={styles.contentArea}>
+      <h1 style={styles.title}>공지사항</h1>
+
+      <div style={styles.addNoticeCard}>
+        <div>
+          <div style={styles.addNoticeText}>공지사항 추가</div>
+          <div style={styles.addNoticeSubtext}>공지사항을 추가해주세요.</div>
+        </div>
+        <Button variant="create" onClick={handleCreate} />
+      </div>
+
+      {selectedNoticeId ? (
+        <NoticeDetail
           studyId={studyId}
-          noticeId={editingNoticeId.toString()}
-          initialData={editingNotice}
-          onCancel={handleEditCancel}
-          onSaveComplete={handleEditComplete}
+          noticeId={selectedNoticeId}
+          selectedNotice={selectedNotice}
+          handleBack={handleBack}
+          isLoading={isLoading}
+          error={error}
         />
       ) : (
-        // 목록 모드일 때 NoticeList와 생성 버튼 렌더링
-        <>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBottom: "16px",
-            }}
-          >
-            <Button variant="create" onClick={handleCreate} />
-          </div>
-          <NoticeList
-            notices={notices}
-            onNoticeClick={handleNoticeClick}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            isLoading={isLoading}
-          />
-        </>
+        <NoticeList
+          notices={notices}
+          onNoticeClick={handleNoticeClick}
+          handleCreate={handleCreate}
+          isLoading={isLoading}
+        />
       )}
     </div>
   );
@@ -177,7 +132,6 @@ function NoticeContent() {
 // 메인 공지사항 페이지 컴포넌트
 function NoticeManagerPage() {
   const { studyId } = useParams();
-  const [pageTitle, setPageTitle] = useState("공지사항");
   const [studyData, setStudyData] = useState({ title: "스터디" });
 
   // 스터디 정보 가져오기
@@ -194,48 +148,30 @@ function NoticeManagerPage() {
   }, [studyId]);
 
   const styles = {
-    wrapper: {
+    container: {
+      display: "flex",
       maxHeight: "100vh",
-      fontFamily: "sans-serif",
-      display: "flex",
-      flexDirection: "column",
-    },
-    main: {
-      display: "flex",
-    },
-    content: {
-      flex: 1,
-      padding: "0 40px",
-    },
-    title: {
-      fontSize: "24px",
-      fontWeight: "bold",
-      marginBottom: "20px",
+      overflow: "hidden",
+      height: "fit-content",
+      padding: "0 1rem",
     },
     activeTab: {
       color: "#FF0000",
       fontWeight: "bold",
       padding: "2px 4px",
     },
-    addButton: {
+    contentArea: {
       display: "flex",
-      justifyContent: "flex-end",
-      marginBottom: "16px",
     },
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.main}>
-        <aside>
-          <StudySidebarContainer activeTab="공지사항" />
-        </aside>
-        <main style={styles.content}>
-          <h1 style={styles.title}>{pageTitle}</h1>
-          <NoticeContent />
-        </main>
+    <NoticeProvider>
+      <div style={styles.container}>
+        <StudySidebarContainer activeTab="공지사항" />
+        <NoticeContent />
       </div>
-    </div>
+    </NoticeProvider>
   );
 }
 
