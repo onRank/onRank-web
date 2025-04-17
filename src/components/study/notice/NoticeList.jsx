@@ -1,12 +1,11 @@
 import PropTypes from "prop-types";
-import LoadingSpinner from "../../common/LoadingSpinner";
 import NoticeListItem from "./NoticeListItem";
 import { useTheme } from "../../../contexts/ThemeContext";
 
 function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
   const { colors } = useTheme();
 
-  if (isLoading) return <LoadingSpinner />;
+  if (isLoading) return <div>로딩중...</div>;
 
   return (
     <div>
@@ -16,16 +15,15 @@ function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
             등록된 공지사항이 없습니다.
           </div>
         ) : (
-          <div
-            style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}
-          >
+          <div>
             {notices.map((notice) => (
-              <div key={notice.noticeId}>
-                <NoticeListItem
-                  notice={notice}
-                  onClick={() => onNoticeClick(notice.noticeId)}
-                />
-              </div>
+              <NoticeListItem
+                key={notice.noticeId}
+                notice={notice}
+                onClick={() => onNoticeClick(notice.noticeId)}
+                onEdit={onEdit}
+                onDelete={onDelete}
+              />
             ))}
           </div>
         )}
@@ -52,8 +50,9 @@ NoticeList.propTypes = {
     })
   ).isRequired,
   onNoticeClick: PropTypes.func.isRequired,
-  handleCreate: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
+  onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  isLoading: PropTypes.bool,
 };
 
 export default NoticeList;

@@ -170,7 +170,7 @@ PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
-function PostMyDetailPage() {
+function PostDetailPage() {
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("게시판 상세");
@@ -242,4 +242,4 @@ function PostMyDetailPage() {
   );
 }
 
-export default PostMyDetailPage;
+export default PostDetailPage;

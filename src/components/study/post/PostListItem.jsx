@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { formatDate } from "../../../utils/dateUtils";
+import { formatDateYMD } from "../../../utils/dateUtils";
 
 function PostListItem({ post, onClick }) {
   const styles = {
@@ -40,23 +40,10 @@ function PostListItem({ post, onClick }) {
       overflow: "hidden",
       textOverflow: "ellipsis",
     },
-    postIcon: {
-      flexShrink: 0,
-      width: "28px",
-      height: "28px",
-      backgroundColor: "#f1f1f1",
-      borderRadius: "6px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: "18px",
-    },
     postDate: {
-      fontSize: "13px",
       color: "#999",
-      marginLeft: "20px",
-      whiteSpace: "nowrap",
-      flexShrink: 0,
+      fontSize: "12px",
+      marginBottom: "6px",
     },
     postText: {
       fontSize: "12px",
@@ -85,14 +72,13 @@ function PostListItem({ post, onClick }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div style={styles.postLeft}>
-        <div style={styles.postIcon}>📢</div>
-        <div style={styles.postContentBlock}>
-          <h2 style={styles.postTitle}>{post.postTitle}</h2>
-          <div style={styles.postText}>{post.postContent}</div>
+      <div style={styles.postContentBlock}>
+        <div style={styles.postDate}>
+          게시: {formatDateYMD(post.postCreatedAt)}
         </div>
+        <h2 style={styles.postTitle}>{post.postTitle}</h2>
+        <div style={styles.postText}>{post.postContent}</div>
       </div>
-      <div style={styles.postDate}>{formatDate(post.postCreatedAt)}</div>
     </div>
   );
 }
