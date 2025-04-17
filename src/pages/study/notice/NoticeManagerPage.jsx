@@ -1,14 +1,11 @@
-import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useNotice } from "../../../components/study/notice/NoticeProvider";
 import NoticeList from "../../../components/study/notice/NoticeList";
-import NoticeDetail from "../../../components/study/notice/NoticeDetail";
-import ErrorMessage from "../../../components/common/ErrorMessage";
+import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
-import {
-  NoticeProvider,
-  useNotice,
-} from "../../../components/study/notice/NoticeProvider";
+import { noticeService } from "../../../services/notice";
 
 // 실제 공지사항 컨텐츠를 표시하는 컴포넌트
 function NoticeContent() {
