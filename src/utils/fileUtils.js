@@ -260,55 +260,75 @@ export const downloadFile = async (url, fileName) => {
   try {
     console.log(`[fileUtils] 파일 다운로드 시작: ${fileName} (${url})`);
     
-    // 서버에서 파일 가져오기
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
-    
-    // 응답이 성공적인지 확인
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`[fileUtils] 파일 다운로드 실패 (${response.status}):`, errorText);
-      throw new Error(`파일 다운로드 실패: ${response.status} ${response.statusText}`);
-    }
-    
-    // 응답을 Blob으로 변환
-    const blob = await response.blob();
-    
-    // Blob URL 생성
-    const downloadUrl = window.URL.createObjectURL(blob);
-    
-    // 다운로드 링크 생성 및 클릭
+    // 방법 1: 간접 다운로드 (인증 헤더를 보내지 않음)
+    // 브라우저가 직접 리소스를 가져오도록 함
     const link = document.createElement('a');
-    link.href = downloadUrl;
+    link.href = url;
     link.download = fileName;
+    link.rel = 'noopener noreferrer'; // 보안 강화
     
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     
-    // 메모리 누수 방지를 위해 URL 해제
-    setTimeout(() => {
-      window.URL.revokeObjectURL(downloadUrl);
-    }, 100);
+    console.log(`[fileUtils] 간접 다운로드 시도 완료: ${fileName}`);
     
-    console.log(`[fileUtils] 파일 다운로드 성공: ${fileName}`);
+    // 방법 2: 직접 다운로드 (인증 헤더 없이 시도)
+    try {
+      // S3에 요청할 때는 Authorization 헤더를 명시적으로 제거
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Cache-Control': 'no-cache'
+        },
+        // 기존 인증 정보를 전송하지 않음
+        credentials: 'omit'
+      });
+      
+      // 응답이 성공적인지 확인
+      if (!response.ok) {
+        console.warn(`[fileUtils] 직접 다운로드 실패 (${response.status}), 간접 다운로드로 처리됨`);
+        return; // 간접 다운로드가 이미 시도되었으므로 추가 작업 없이 종료
+      }
+      
+      // 응답을 Blob으로 변환
+      const blob = await response.blob();
+      
+      // Blob URL 생성
+      const downloadUrl = window.URL.createObjectURL(blob);
+      
+      // 다운로드 링크 생성 및 클릭
+      const blobLink = document.createElement('a');
+      blobLink.href = downloadUrl;
+      blobLink.download = fileName;
+      
+      document.body.appendChild(blobLink);
+      blobLink.click();
+      document.body.removeChild(blobLink);
+      
+      // 메모리 누수 방지를 위해 URL 해제
+      setTimeout(() => {
+        window.URL.revokeObjectURL(downloadUrl);
+      }, 100);
+      
+      console.log(`[fileUtils] 직접 다운로드 성공: ${fileName}`);
+    } catch (directError) {
+      console.warn('[fileUtils] 직접 다운로드 중 오류:', directError);
+      // 간접 다운로드가 이미 시도되었으므로 추가 알림 없이 종료
+    }
     
   } catch (error) {
     console.error('[fileUtils] 파일 다운로드 중 오류:', error);
     
     // 사용자에게 오류 알림
-    alert(`파일 다운로드에 실패했습니다: ${error.message}`);
+    alert(`파일 다운로드에 실패했습니다. 나중에 다시 시도해 주세요.`);
     
-    // 일반적인 방법으로 링크 열기 시도 (대안책)
+    // 다른 방법으로 링크 열기 시도 (대안책)
     try {
       window.open(url, '_blank');
-      console.log('[fileUtils] 일반 브라우저 다운로드로 대체');
+      console.log('[fileUtils] 새 창에서 열기로 대체');
     } catch (fallbackError) {
-      console.error('[fileUtils] 대체 다운로드 실패:', fallbackError);
+      console.error('[fileUtils] 대체 열기 실패:', fallbackError);
     }
   }
 };
