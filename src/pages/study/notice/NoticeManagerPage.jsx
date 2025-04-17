@@ -215,12 +215,17 @@ function NoticeManagerPage() {
   };
 
   return (
-    <NoticeProvider>
-      <div style={styles.container}>
-        <StudySidebarContainer activeTab="공지사항" />
-        <NoticeContent />
+    <div style={styles.wrapper}>
+      <div style={styles.main}>
+        <aside>
+          <StudySidebarContainer activeTab="공지사항" />
+        </aside>
+        <main style={styles.content}>
+          <h1 style={styles.title}>{pageTitle}</h1>
+          <NoticeContent />
+        </main>
       </div>
-    </NoticeProvider>
+    </div>
   );
 }
 
