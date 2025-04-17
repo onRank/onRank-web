@@ -197,20 +197,33 @@ function NoticeManagerPage() {
   }, [studyId]);
 
   const styles = {
-    container: {
-      display: "flex",
+    wrapper: {
       maxHeight: "100vh",
-      overflow: "hidden",
-      height: "fit-content",
-      padding: "0 1rem",
+      fontFamily: "sans-serif",
+      display: "flex",
+      flexDirection: "column",
+    },
+    main: {
+      display: "flex",
+    },
+    content: {
+      flex: 1,
+      padding: "0 40px",
+    },
+    title: {
+      fontSize: "24px",
+      fontWeight: "bold",
+      marginBottom: "20px",
     },
     activeTab: {
       color: "#FF0000",
       fontWeight: "bold",
       padding: "2px 4px",
     },
-    contentArea: {
+    addButton: {
       display: "flex",
+      justifyContent: "flex-end",
+      marginBottom: "16px",
     },
   };
 
