@@ -8,11 +8,13 @@ const AssignmentDetail = () => {
   const { studyId, id: assignmentId } = useParams();
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState(null);
+  const [memberContext, setMemberContext] = useState(null);
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [comment, setComment] = useState('');
 
   useEffect(() => {
     const fetchAssignmentDetail = async () => {
@@ -23,6 +25,13 @@ const AssignmentDetail = () => {
       
       try {
         const response = await assignmentService.getAssignmentById(studyId, assignmentId);
+        console.log('과제 상세 정보:', response);
+        
+        // API 응답 구조에 맞게 데이터 저장
+        if (response.memberContext) {
+          setMemberContext(response.memberContext);
+        }
+        
         setAssignment(response.data || null);
       } catch (err) {
         console.error('과제 상세 정보 조회 실패:', err);
@@ -60,7 +69,7 @@ const AssignmentDetail = () => {
     try {
       const submissionData = {
         file: file,
-        comment: '' // 필요시 주석 입력 기능 추가
+        comment: comment
       };
       
       // 진행률 표시를 위한 임의의 상태 업데이트
@@ -79,6 +88,9 @@ const AssignmentDetail = () => {
       
       // 제출 후 과제 정보 다시 로드
       const response = await assignmentService.getAssignmentById(studyId, assignmentId);
+      if (response.memberContext) {
+        setMemberContext(response.memberContext);
+      }
       setAssignment(response.data || null);
     } catch (error) {
       console.error('과제 제출 실패:', error);
@@ -111,56 +123,84 @@ const AssignmentDetail = () => {
     return <ErrorContainer>과제 정보를 찾을 수 없습니다.</ErrorContainer>;
   }
 
+  // 마감일 포맷팅
+  const formatDate = (dateString) => {
+    if (!dateString) return '날짜 정보 없음';
+    const date = new Date(dateString);
+    return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  };
+
+  // 제출 상태에 따른 점수 표시 
+  const getScoreDisplay = () => {
+    if (assignment.submissionStatus === 'SCORED' && assignment.submissionScore !== null) {
+      return `${assignment.submissionScore}/${assignment.assignmentMaxPoint} pt`;
+    }
+    return `--/${assignment.assignmentMaxPoint} pt`;
+  };
+
   return (
     <Container>
       <Header>
         <BackButton onClick={handleBack}>← 목록으로</BackButton>
         <Title>{assignment.assignmentTitle}</Title>
-        <DueDate>제출기한: {new Date(assignment.assignmentDueDate).toLocaleDateString()}</DueDate>
-        <Status>상태: {assignment.submissionStatus || '미제출'}</Status>
+        <InfoRow>
+          <DueDate>마감: {formatDate(assignment.assignmentDueDate)}</DueDate>
+          <PointDisplay>{getScoreDisplay()}</PointDisplay>
+        </InfoRow>
       </Header>
+
       <Content>
+        {/* 1. 지시사항 섹션 */}
         <Section>
           <SectionTitle>지시사항</SectionTitle>
           <Description>{assignment.assignmentContent}</Description>
+          
+          {/* 첨부 파일 목록 (assignmentFiles) */}
+          {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
+            <FilesContainer>
+              <FilesTitle>첨부파일</FilesTitle>
+              <FilesList>
+                {assignment.assignmentFiles.map((file, index) => (
+                  <FileItem key={index}>
+                    <FileInfoRow>
+                      <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                      <FileDetails>
+                        <FileName>{file.fileName}</FileName>
+                      </FileDetails>
+                      <DownloadButton 
+                        onClick={() => downloadFile(file.fileUrl, file.fileName)}
+                      >
+                        다운로드
+                      </DownloadButton>
+                    </FileInfoRow>
+                  </FileItem>
+                ))}
+              </FilesList>
+            </FilesContainer>
+          )}
         </Section>
+
+        {/* 2. 제출물 섹션 - 제출 상태에 따라 다른 UI */}
         <Section>
           <SectionTitle>제출물</SectionTitle>
-          {assignment.submissionInfo ? (
-            <SubmittedFile>
-              <FileInfoRow>
-                <FileIcon>{getFileIcon(assignment.submissionInfo.fileName)}</FileIcon>
-                <FileDetails>
-                  <FileName>{assignment.submissionInfo.fileName}</FileName>
-                  {assignment.submissionInfo.fileSize && (
-                    <FileSize>{formatFileSize(assignment.submissionInfo.fileSize)}</FileSize>
-                  )}
-                </FileDetails>
-                {assignment.submissionInfo.fileUrl && (
-                  <DownloadButton 
-                    onClick={() => downloadFile(
-                      assignment.submissionInfo.fileUrl,
-                      assignment.submissionInfo.fileName
-                    )}
-                  >
-                    다운로드
-                  </DownloadButton>
-                )}
-              </FileInfoRow>
-              <SubmitDate>제출일: {new Date(assignment.submissionInfo.submittedDate).toLocaleDateString()}</SubmitDate>
-              {assignment.submissionInfo.score && (
-                <Score>점수: {assignment.submissionInfo.score}</Score>
-              )}
-            </SubmittedFile>
-          ) : (
+          
+          {/* 상태: 미제출(NOTSUBMITTED) - 제출 폼 표시 */}
+          {assignment.submissionStatus === 'NOTSUBMITTED' && (
             <SubmissionForm>
+              {/* 제출물 내용 입력 영역 */}
+              <TextArea 
+                placeholder="제출 내용을 입력하세요"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+              />
+              
               {/* 파일 선택 영역 */}
               <FileInputArea>
                 <FileLabel>
                   <FileInput
                     type="file"
                     onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.zip,.ppt,.pptx"
+                    accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png"
                     disabled={isUploading}
                   />
                   {file ? (
@@ -185,16 +225,107 @@ const AssignmentDetail = () => {
               )}
               
               {/* 제출 버튼 */}
-              <SubmitButton 
-                onClick={handleSubmit} 
-                disabled={isLoading || !file}
-              >
-                {isLoading ? '제출 중...' : '제출하기'}
-              </SubmitButton>
+              <ButtonContainer>
+                <SubmitButton 
+                  onClick={handleSubmit} 
+                  disabled={isLoading || !file}
+                >
+                  {isLoading ? '제출 중...' : '제출'}
+                </SubmitButton>
+                <CancelButton onClick={handleBack}>취소</CancelButton>
+              </ButtonContainer>
               
               {/* 에러 메시지 */}
               {error && <ErrorMessage>{error}</ErrorMessage>}
             </SubmissionForm>
+          )}
+          
+          {/* 상태: 제출 완료(SUBMITTED) - 제출한 내용 표시 */}
+          {assignment.submissionStatus === 'SUBMITTED' && (
+            <SubmissionInfo>
+              {/* 제출 정보 헤더 */}
+              <SubmissionHeader>
+                <SubmissionStatus>채점 대기중</SubmissionStatus>
+              </SubmissionHeader>
+              
+              {/* 제출한 파일 목록 */}
+              {assignment.submissionFiles && assignment.submissionFiles.length > 0 ? (
+                <FilesList>
+                  {assignment.submissionFiles.map((file, index) => (
+                    <FileItem key={index}>
+                      <FileInfoRow>
+                        <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                        <FileDetails>
+                          <FileName>{file.fileName}</FileName>
+                        </FileDetails>
+                        <DownloadButton 
+                          onClick={() => downloadFile(file.fileUrl, file.fileName)}
+                        >
+                          다운로드
+                        </DownloadButton>
+                      </FileInfoRow>
+                    </FileItem>
+                  ))}
+                </FilesList>
+              ) : (
+                <NoFiles>첨부 파일이 없습니다.</NoFiles>
+              )}
+              
+              {/* 제출한 내용 */}
+              {assignment.submissionContent && (
+                <SubmissionContent>
+                  {assignment.submissionContent}
+                </SubmissionContent>
+              )}
+            </SubmissionInfo>
+          )}
+          
+          {/* 상태: 채점 완료(SCORED) - 채점 결과 표시 */}
+          {assignment.submissionStatus === 'SCORED' && (
+            <SubmissionInfo>
+              {/* 제출 정보 헤더 */}
+              <SubmissionHeader>
+                <ScoreDisplay>{assignment.submissionScore}/{assignment.assignmentMaxPoint}</ScoreDisplay>
+              </SubmissionHeader>
+              
+              {/* 제출한 파일 목록 */}
+              {assignment.submissionFiles && assignment.submissionFiles.length > 0 ? (
+                <FilesList>
+                  {assignment.submissionFiles.map((file, index) => (
+                    <FileItem key={index}>
+                      <FileInfoRow>
+                        <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                        <FileDetails>
+                          <FileName>{file.fileName}</FileName>
+                        </FileDetails>
+                        <DownloadButton 
+                          onClick={() => downloadFile(file.fileUrl, file.fileName)}
+                        >
+                          다운로드
+                        </DownloadButton>
+                      </FileInfoRow>
+                    </FileItem>
+                  ))}
+                </FilesList>
+              ) : (
+                <NoFiles>첨부 파일이 없습니다.</NoFiles>
+              )}
+              
+              {/* 제출한 내용 */}
+              {assignment.submissionContent && (
+                <SubmissionContent>
+                  {assignment.submissionContent}
+                </SubmissionContent>
+              )}
+              
+              {/* 교수자 피드백 */}
+              {assignment.submissionComment && (
+                <FeedbackSection>
+                  <FeedbackTitle>피드백</FeedbackTitle>
+                  <FeedbackContent>{assignment.submissionComment}</FeedbackContent>
+                </FeedbackSection>
+              )}
+            </SubmissionInfo>
           )}
         </Section>
       </Content>
@@ -202,6 +333,7 @@ const AssignmentDetail = () => {
   );
 };
 
+// 스타일 컴포넌트
 const Container = styled.div`
   padding: 20px;
   max-width: 800px;
@@ -218,9 +350,21 @@ const Title = styled.h1`
   margin-bottom: 8px;
 `;
 
+const InfoRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 const DueDate = styled.div`
   color: #666;
   font-size: 14px;
+`;
+
+const PointDisplay = styled.div`
+  font-weight: bold;
+  font-size: 16px;
+  color: #dc3545;
 `;
 
 const Content = styled.div`
@@ -245,12 +389,47 @@ const SectionTitle = styled.h2`
 const Description = styled.p`
   white-space: pre-wrap;
   line-height: 1.6;
+  margin-bottom: 24px;
+`;
+
+const FilesContainer = styled.div`
+  margin-top: 16px;
+`;
+
+const FilesTitle = styled.h3`
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+`;
+
+const FilesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const FileItem = styled.div`
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
 `;
 
 const SubmissionForm = styled.div`
   display: flex;
   flex-direction: column;
   gap: 16px;
+`;
+
+const TextArea = styled.textarea`
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  font-family: inherit;
+  margin-bottom: 16px;
 `;
 
 const FileInputArea = styled.div`
@@ -310,9 +489,14 @@ const SelectedFileInfo = styled.div`
   }
 `;
 
+const ButtonContainer = styled.div`
+  display: flex;
+  gap: 12px;
+`;
+
 const SubmitButton = styled.button`
   padding: 12px 24px;
-  background-color: #007bff;
+  background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 4px;
@@ -320,24 +504,87 @@ const SubmitButton = styled.button`
   font-weight: bold;
 
   &:hover {
-    background-color: #0056b3;
+    background-color: #c82333;
+  }
+  
+  &:disabled {
+    background-color: #f1aeb5;
+    cursor: not-allowed;
   }
 `;
 
-const SubmittedFile = styled.div`
+const CancelButton = styled.button`
+  padding: 12px 24px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  &:hover {
+    background-color: #e9ecef;
+  }
+`;
+
+const SubmissionInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+`;
+
+const SubmissionHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+`;
+
+const SubmissionStatus = styled.div`
+  color: #6c757d;
+  font-weight: bold;
+`;
+
+const ScoreDisplay = styled.div`
+  color: #dc3545;
+  font-size: 18px;
+  font-weight: bold;
+`;
+
+const SubmissionContent = styled.div`
+  white-space: pre-wrap;
+  line-height: 1.6;
   padding: 16px;
   background-color: #f8f9fa;
   border-radius: 4px;
+  margin-top: 16px;
 `;
 
-const FileName = styled.div`
+const FeedbackSection = styled.div`
+  margin-top: 24px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #28a745;
+`;
+
+const FeedbackTitle = styled.h3`
+  font-size: 16px;
   font-weight: bold;
   margin-bottom: 8px;
+  color: #28a745;
 `;
 
-const SubmitDate = styled.div`
-  color: #666;
-  font-size: 14px;
+const FeedbackContent = styled.p`
+  white-space: pre-wrap;
+  line-height: 1.6;
+`;
+
+const NoFiles = styled.div`
+  color: #6c757d;
+  font-style: italic;
+  padding: 16px;
+  text-align: center;
+  background-color: #f8f9fa;
+  border-radius: 4px;
 `;
 
 const ErrorContainer = styled.div`
@@ -358,12 +605,6 @@ const LoadingContainer = styled.div`
   color: #666;
 `;
 
-const Status = styled.div`
-  color: #666;
-  font-size: 14px;
-  margin-top: 4px;
-`;
-
 const BackButton = styled.button`
   padding: 8px 16px;
   background-color: #f8f9fa;
@@ -375,12 +616,6 @@ const BackButton = styled.button`
   &:hover {
     background-color: #e9ecef;
   }
-`;
-
-const Score = styled.div`
-  color: #28a745;
-  font-weight: bold;
-  margin-top: 8px;
 `;
 
 const ErrorMessage = styled.div`
@@ -422,7 +657,6 @@ const FileInfoRow = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 8px;
 `;
 
 const FileIcon = styled.span`
@@ -432,11 +666,12 @@ const FileIcon = styled.span`
 const FileDetails = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
 `;
 
-const FileSize = styled.div`
-  color: #666;
-  font-size: 12px;
+const FileName = styled.div`
+  font-weight: 500;
+  word-break: break-all;
 `;
 
 const DownloadButton = styled.button`
@@ -447,7 +682,7 @@ const DownloadButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  margin-left: auto;
+  white-space: nowrap;
   transition: background-color 0.2s;
 
   &:hover {
