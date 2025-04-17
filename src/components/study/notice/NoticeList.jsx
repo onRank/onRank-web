@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import NoticeListItem from "./NoticeListItem";
 import { useTheme } from "../../../contexts/ThemeContext";
 
-function NoticeList({ notices, onNoticeClick, handleCreate, isLoading }) {
+function NoticeList({ notices, onNoticeClick, onEdit, onDelete }) {
   const { colors } = useTheme();
 
   if (isLoading) return <div>로딩중...</div>;
