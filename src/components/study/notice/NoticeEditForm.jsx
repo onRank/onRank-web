@@ -32,18 +32,13 @@ function NoticeEditForm({
     initialData?.noticeContent || ""
   );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [hasOriginalFiles, setHasOriginalFiles] = useState(false);
+  // 수정: 남겨둘 파일 ID 배열 상태 추가 (기본값은 모든 파일 ID)
+  const [remainingFileIds, setRemainingFileIds] = useState(
+    initialData?.files?.map((file) => file.fileId) || []
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
-
-  // 컴포넌트 마운트 시 한 번만 실행
-  useEffect(() => {
-    // 기존 파일이 있는지 확인
-    if (initialData?.files && initialData.files.length > 0) {
-      setHasOriginalFiles(true); // 원본 파일이 있었음을 표시
-    }
-  }, [initialData]);
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
@@ -79,6 +74,17 @@ function NoticeEditForm({
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
+  // 기존 파일 제거/복원 핸들러 추가
+  const handleToggleExistingFile = (fileId) => {
+    if (remainingFileIds.includes(fileId)) {
+      // 파일 ID가 있으면 제거 (유지하지 않음)
+      setRemainingFileIds((prev) => prev.filter((id) => id !== fileId));
+    } else {
+      // 파일 ID가 없으면 추가 (다시 유지함)
+      setRemainingFileIds((prev) => [...prev, fileId]);
+    }
+  };
+
   // 저장 핸들러
   const handleSave = async (e) => {
     e.preventDefault();
@@ -96,9 +102,9 @@ function NoticeEditForm({
       const updatedNotice = {
         noticeTitle,
         noticeContent,
-        fileNames: selectedFiles.map((file) => file.name),
-        // 기존 파일이 있었다면 모두 제거 플래그 설정
-        removeAllFiles: hasOriginalFiles,
+        // 수정: 백엔드 API 요구사항에 맞게 데이터 구조 변경
+        remainingFileIds: remainingFileIds, // 유지할 파일 ID 배열 (숫자 타입)
+        newFileNames: selectedFiles.map((file) => file.name), // 새 파일명 배열 (문자열 타입)
       };
 
       const result = await editNotice(
@@ -230,30 +236,40 @@ function NoticeEditForm({
       fontWeight: "bold",
       marginBottom: "8px",
     },
-    removeFilesNotice: {
-      backgroundColor: "#f8f9fa",
-      border: "1px dashed #ccc",
-      borderRadius: "4px",
-      padding: "10px",
-      marginTop: "8px",
-      marginBottom: "16px",
+    removeFileButton: {
+      marginLeft: "auto",
       color: "#e74c3c",
-      fontSize: "14px",
-      textAlign: "center",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "12px",
+    },
+    restoreFileButton: {
+      marginLeft: "auto",
+      color: "#27ae60",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "12px",
+    },
+    removedFile: {
+      textDecoration: "line-through",
+      color: "#999",
+    },
+    fileInfo: {
+      display: "flex",
+      alignItems: "center",
+      flex: 1,
     },
   };
+
+  const hasNoFiles =
+    (!initialData?.files || initialData.files.length === 0) &&
+    selectedFiles.length === 0;
 
   return (
     <form onSubmit={handleSave} style={styles.formContainer}>
       {submitError && <div style={styles.errorMessage}>{submitError}</div>}
-
-      {/* 파일 자동 제거 안내 메시지 */}
-      {hasOriginalFiles && (
-        <div style={styles.removeFilesNotice}>
-          수정 시 기존에 첨부된 모든 파일이 삭제됩니다. 필요한 파일은 다시
-          첨부해주세요.
-        </div>
-      )}
 
       <div style={styles.inputGroup}>
         <label style={styles.label} htmlFor="title">
@@ -286,39 +302,66 @@ function NoticeEditForm({
         </div>
       </div>
 
-      {/* 새로 선택된 파일 목록 표시 */}
-      {selectedFiles.length > 0 && (
-        <div style={styles.fileList}>
-          <div style={styles.fileListHeader}>
-            <span>새 파일</span>
-          </div>
-          {selectedFiles.map((file, index) => (
-            <div key={index} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.name}
-              <span
-                style={{ marginLeft: "10px", color: "#666", fontSize: "12px" }}
-              >
-                ({(file.size / 1024).toFixed(1)} KB)
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(file.name)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: "#e74c3c",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+      {/* 통합된 파일 목록 */}
+      <div style={styles.fileList}>
+        <div style={styles.fileListHeader}>
+          <span>첨부 파일</span>
         </div>
-      )}
+
+        {hasNoFiles ? (
+          <div style={styles.noFiles}>첨부된 파일이 없습니다</div>
+        ) : (
+          <div>
+            {/* 기존 파일 목록 */}
+            {initialData?.files?.map((file) => (
+              <div key={`existing-${file.fileId}`} style={styles.fileItem}>
+                <div
+                  style={{
+                    ...styles.fileInfo,
+                    ...(remainingFileIds.includes(file.fileId)
+                      ? {}
+                      : styles.removedFile),
+                  }}
+                >
+                  <span style={styles.fileIcon}>📎</span>
+                  {file.fileName}
+                  <span style={styles.fileSize}>
+                    ({file.fileSize ? (file.fileSize / 1024).toFixed(1) : "?"}{" "}
+                    KB)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleToggleExistingFile(file.fileId)}
+                  style={styles.removeButton}
+                >
+                  {remainingFileIds.includes(file.fileId) ? "✕" : "복원"}
+                </button>
+              </div>
+            ))}
+
+            {/* 새로 선택된 파일 목록 */}
+            {selectedFiles.map((file, index) => (
+              <div key={`new-${index}`} style={styles.fileItem}>
+                <div style={styles.fileInfo}>
+                  <span style={styles.fileIcon}>📎</span>
+                  {file.name}
+                  <span style={styles.fileSize}>
+                    ({(file.size / 1024).toFixed(1)} KB)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(file.name)}
+                  style={styles.removeButton}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* 파일 업로드 버튼 */}
       <div style={styles.fileUploadRow}>
