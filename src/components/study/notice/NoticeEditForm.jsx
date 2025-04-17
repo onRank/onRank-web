@@ -252,19 +252,13 @@ function NoticeEditForm({
       padding: "12px",
     },
     fileAttachButton: {
-      backgroundColor: "#f0f0f0",
-      border: "1px solid #ddd",
-      borderRadius: "4px",
-      padding: "8px 16px",
+      backgroundColor: `var(--primary)`,
+      color: "#fff",
+      border: "none",
+      borderRadius: "6px",
+      padding: "6px 12px",
       cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
       fontSize: "14px",
-      color: "#333",
-    },
-    attachIcon: {
-      marginRight: "8px",
-      fontSize: "16px",
     },
   };
 
@@ -320,7 +314,6 @@ function NoticeEditForm({
           onClick={handleOpenFileDialog}
           style={styles.fileAttachButton}
         >
-          <span style={styles.attachIcon}>📎</span>
           파일 첨부
         </button>
         <input
