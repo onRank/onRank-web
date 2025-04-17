@@ -108,19 +108,20 @@ const assignmentService = {
           withCredentials: true
         });
         
-        console.log("[AssignmentService] 과제 생성 성공, 업로드 URL 확인:", response.data);
+        console.log("[AssignmentService] 과제 생성 성공, 응답 데이터:", response.data);
         
-        // 4. 응답에서 preSignedURL 추출 후 파일 업로드
+        // 4. 응답에서 data 배열에 있는 uploadUrl 추출
         if (files.length > 0 && response.data) {
-          // uploadUrls 필드나 배열을 찾아서 처리
-          const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrls');
+          // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
+          const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
           
           if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-            console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls);
+            console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls.length);
             
             // 파일별로 업로드 URL 매핑하여 업로드
             const uploadPromises = files.map((file, index) => {
               if (index < uploadUrls.length) {
+                console.log(`[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`);
                 return uploadFileToS3(uploadUrls[index], file);
               }
               return Promise.resolve({ success: false, message: 'URL이 충분하지 않음' });
@@ -136,17 +137,10 @@ const assignmentService = {
               console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
             }
           } else {
-            // 단일 uploadUrl인 경우 처리
-            const uploadUrl = extractUploadUrlFromResponse(response.data);
-            
-            if (uploadUrl && files.length > 0) {
-              console.log('[AssignmentService] 단일 업로드 URL 발견:', uploadUrl);
-              const uploadResult = await uploadFileToS3(uploadUrl, files[0]);
-              console.log('[AssignmentService] 파일 업로드 결과:', uploadResult);
-            } else {
-              console.warn('[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
-            }
+            console.warn('[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
           }
+        } else {
+          console.warn('[AssignmentService] 업로드할 파일이 없거나 응답 데이터가 없음');
         }
         
         // 스터디 컨텍스트 정보 업데이트
@@ -190,16 +184,18 @@ const assignmentService = {
       
       console.log("[AssignmentService] 과제 생성 성공:", response.data);
       
-      // 파일 객체가 있고 업로드 URL이 있는 경우 파일 업로드
+      // 파일 객체가 있고 응답에 uploadUrl이 있는 경우 파일 업로드
       if (assignmentData.files && assignmentData.files.length > 0) {
-        const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrls');
+        // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
+        const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
         
         if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-          console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls);
+          console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls.length);
           
           // 파일별로 업로드 URL 매핑하여 업로드
           const uploadPromises = assignmentData.files.map((file, index) => {
             if (index < uploadUrls.length) {
+              console.log(`[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`);
               return uploadFileToS3(uploadUrls[index], file);
             }
             return Promise.resolve({ success: false, message: 'URL이 충분하지 않음' });
@@ -208,6 +204,8 @@ const assignmentService = {
           // 모든 파일 업로드 대기
           const uploadResults = await Promise.all(uploadPromises);
           console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
+        } else {
+          console.warn('[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
         }
       }
       

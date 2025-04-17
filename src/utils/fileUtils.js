@@ -146,90 +146,61 @@ export const uploadFilesToS3 = async (filesWithUrls) => {
  * API 응답에서 업로드 URL 추출
  * @param {Object} response - API 응답 객체
  * @param {string} searchKey - 찾을 키 이름 (uploadUrl, presignedUrl 등)
- * @returns {string|null} 찾은 업로드 URL 또는 null
+ * @param {boolean} extractMultiple - 여러 URL을 배열로 추출할지 여부
+ * @returns {string|Array|null} 찾은 업로드 URL(들) 또는 null
  */
-export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl') => {
+export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl', extractMultiple = false) => {
   // 응답이 null이거나 undefined인 경우
-  if (!response) return null;
+  if (!response) return extractMultiple ? [] : null;
   
   // 응답이 직접 URL인 경우
-  if (typeof response === 'string') return response;
+  if (typeof response === 'string') return extractMultiple ? [response] : response;
+  
+  // data 배열이 있는 새로운 응답 구조 처리
+  if (response.data && Array.isArray(response.data)) {
+    // data 배열에서 uploadUrl 추출
+    const urls = response.data
+      .map(item => item[searchKey])
+      .filter(url => url); // undefined나 null 제거
+    
+    if (urls.length > 0) {
+      return extractMultiple ? urls : urls[0]; // 여러 URL 또는 첫 번째 URL 반환
+    }
+  }
   
   // 응답이 객체인 경우 searchKey 검색
   if (typeof response === 'object') {
     // 직접 키가 있는지 확인
-    if (response[searchKey]) return response[searchKey];
+    if (response[searchKey]) return extractMultiple ? [response[searchKey]] : response[searchKey];
     
-    // 중첩된 객체 내부 검색
+    // 재귀적으로 중첩된 객체 내부 검색
+    let foundUrls = [];
+    
     for (const key in response) {
       if (typeof response[key] === 'object' && response[key] !== null) {
-        const nestedResult = extractUploadUrlFromResponse(response[key], searchKey);
-        if (nestedResult) return nestedResult;
+        const nestedResult = extractUploadUrlFromResponse(response[key], searchKey, extractMultiple);
+        
+        if (nestedResult) {
+          if (extractMultiple) {
+            // 배열이면 합치고, 아니면 배열에 추가
+            foundUrls = foundUrls.concat(Array.isArray(nestedResult) ? nestedResult : [nestedResult]);
+          } else {
+            return nestedResult; // 단일 URL 검색 시 첫 번째 발견된 URL 반환
+          }
+        }
       }
+    }
+    
+    // 여러 URL 추출 모드에서 URL이 있으면 반환
+    if (extractMultiple && foundUrls.length > 0) {
+      return foundUrls;
     }
   }
   
-  return null;
+  return extractMultiple ? [] : null;
 };
 
 /**
- * API에 업로드 URL 요청 후 파일 업로드
- * @param {string} apiUrl - 업로드 URL을 요청할 API 엔드포인트
- * @param {Object} requestData - API 요청 시 전송할 데이터
- * @param {File} file - 업로드할 파일
- * @returns {Promise<{success: boolean, message: string, url?: string, data?: any}>} 업로드 결과
- */
-export const requestUploadUrlAndUpload = async (apiUrl, requestData, file) => {
-  try {
-    // 1. API에 업로드 URL 요청
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestData),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Failed to get upload URL:', errorText);
-      return { 
-        success: false, 
-        message: `업로드 URL 요청 실패: ${response.status} ${response.statusText}` 
-      };
-    }
-    
-    const data = await response.json();
-    
-    // 2. 응답에서 업로드 URL 추출
-    const uploadUrl = extractUploadUrlFromResponse(data);
-    
-    if (!uploadUrl) {
-      console.error('Upload URL not found in response:', data);
-      return { 
-        success: false, 
-        message: '응답에서 업로드 URL을 찾을 수 없습니다.' 
-      };
-    }
-    
-    // 3. S3에 파일 업로드
-    const uploadResult = await uploadFileToS3(uploadUrl, file);
-    
-    return {
-      ...uploadResult,
-      data // 원본 API 응답 데이터도 포함
-    };
-    
-  } catch (error) {
-    console.error('Error in request and upload process:', error);
-    return {
-      success: false,
-      message: `파일 업로드 프로세스 중 오류가 발생했습니다: ${error.message}`,
-      error
-    };
-  }
-};
-
 /**
  * 파일을 Base64 인코딩 문자열로 변환
  * @param {File} file - 변환할 파일 객체
