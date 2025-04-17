@@ -260,12 +260,32 @@ export const downloadFile = async (url, fileName) => {
   try {
     console.log(`[fileUtils] 파일 다운로드 시작: ${fileName} (${url})`);
     
+    // S3 URL 여부 확인 (amazonaws.com 도메인 체크)
+    const isS3Url = url.includes('amazonaws.com') || url.includes('s3.');
+    
+    // S3 URL인 경우 백엔드 프록시 API 경로로 변환 (선택적 구현)
+    if (isS3Url && window.API_BASE_URL) {
+      // 원래 URL을 인코딩하여 백엔드에 전달
+      const encodedFileUrl = encodeURIComponent(url);
+      const proxyUrl = `${window.API_BASE_URL}/api/files/download?url=${encodedFileUrl}&fileName=${encodeURIComponent(fileName)}`;
+      
+      console.log(`[fileUtils] S3 URL 감지, 백엔드 프록시 사용 시도: ${proxyUrl}`);
+      
+      // 백엔드 프록시를 통한 다운로드 시도
+      window.open(proxyUrl, '_blank');
+      
+      // 다운로드 시작됨을 사용자에게 알림
+      console.log(`[fileUtils] 백엔드 프록시를 통한 다운로드 시작됨`);
+      return;
+    }
+    
     // 방법 1: 간접 다운로드 (인증 헤더를 보내지 않음)
     // 브라우저가 직접 리소스를 가져오도록 함
     const link = document.createElement('a');
     link.href = url;
     link.download = fileName;
     link.rel = 'noopener noreferrer'; // 보안 강화
+    link.target = '_blank'; // 새 창에서 열기 시도
     
     document.body.appendChild(link);
     link.click();
