@@ -11,7 +11,7 @@ import {
 } from "../../../components/study/notice/NoticeProvider";
 
 // 실제 공지사항 컨텐츠를 표시하는 컴포넌트
-function NoticeManagerContent() {
+function NoticeContent() {
   const { studyId } = useParams();
   const navigate = useNavigate();
   const { notices, isLoading, error, getPosts, deleteNotice } = useNotice();
