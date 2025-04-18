@@ -31,7 +31,8 @@ function PostEditForm({
   const maxLength = 10000;
 
   // 파일 선택 창 열기 핸들러
-  const handleOpenFileDialog = () => {
+  const handleOpenFileDialog = (e) => {
+    e.preventDefault();
     fileInputRef.current.click();
   };
 
