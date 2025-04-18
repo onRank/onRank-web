@@ -309,13 +309,7 @@ function NoticeEditForm({
 
       {/* 파일 업로드 버튼 */}
       <div style={styles.fileUploadRow}>
-        <button
-          type="button"
-          onClick={handleOpenFileDialog}
-          style={styles.fileAttachButton}
-        >
-          파일 첨부
-        </button>
+        <Button variant="addFiles" onClick={handleOpenFileDialog} />
         <input
           ref={fileInputRef}
           type="file"

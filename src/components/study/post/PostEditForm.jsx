@@ -358,13 +358,7 @@ function PostEditForm({
         )}
 
         {/* 파일 업로드 버튼 */}
-        <button
-          type="button"
-          onClick={handleAttachFileClick}
-          style={styles.fileAttachButton}
-        >
-          파일 첨부
-        </button>
+        <Button variant="addFiles" onClick={handleAttachFileClick} />
         <input
           ref={fileInputRef}
           type="file"
@@ -376,33 +370,11 @@ function PostEditForm({
 
       {/* 액션 버튼들 */}
       <div style={styles.actionButtons}>
-        <button
-          type="button"
-          onClick={handleDelete}
-          style={{
-            backgroundColor: "#e74c3c",
-            color: "white",
-            border: "none",
-            padding: "10px 24px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          삭제
-        </button>
-        <button
-          type="submit"
-          style={{
-            backgroundColor: "#444",
-            color: "white",
-            border: "none",
-            padding: "10px 24px",
-            borderRadius: "4px",
-            cursor: "pointer",
-          }}
-        >
-          저장
-        </button>
+        <div style={styles.leftButtons}>
+          <Button type="submit" variant="store" />
+          <Button type="button" variant="delete" onClick={handleDelete} />
+        </div>
+        <Button type="button" variant="back" onClick={onCancel} />
       </div>
     </form>
   );
