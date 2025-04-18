@@ -14,6 +14,7 @@ import Button from "../../common/Button";
  * @param {Object} props.initialData - 초기 게시판 데이터
  * @param {Function} props.onCancel - 취소 버튼 클릭 핸들러
  * @param {Function} props.onSaveComplete - 저장 완료 후 호출될 콜백
+ * @param {Function} props.onPermissionError - 권한 오류 발생 시 호출될 콜백
  */
 function PostEditForm({
   studyId,
@@ -21,6 +22,7 @@ function PostEditForm({
   initialData,
   onCancel,
   onSaveComplete,
+  onPermissionError,
 }) {
   const { editPost, deletePost } = usePost();
   const navigate = useNavigate();
@@ -107,11 +109,8 @@ function PostEditForm({
       const updatedPost = {
         postTitle,
         postContent,
-        fileNames: selectedFiles.map((file) => file.name),
-        // 유지할 기존 파일 목록
-        existingFileIds: existingFiles.map((file) => file.fileId),
-        // 제거할 파일 목록
-        removeFileIds: filesToRemove.map((file) => file.fileId),
+        newFileNames: selectedFiles.map((file) => file.name),
+        remainingFileIds: existingFiles.map((file) => file.fileId),
       };
 
       const result = await editPost(
@@ -122,14 +121,32 @@ function PostEditForm({
       );
 
       if (!result.success) {
-        setSubmitError(result.message || "게시판 수정 중 오류가 발생했습니다.");
+        if (result.message && result.message.includes("권한이 없습니다")) {
+          const errorMsg =
+            "게시글 수정 권한이 없습니다. 작성자만 수정할 수 있습니다.";
+          setSubmitError(errorMsg);
+          // 부모 컴포넌트에 권한 오류 전달
+          if (onPermissionError) {
+            onPermissionError(errorMsg);
+          }
+        } else {
+          setSubmitError(
+            result.message || "게시판 수정 중 오류가 발생했습니다."
+          );
+        }
         setIsSubmitting(false);
         return;
       }
 
-      // 성공 시 상세 보기 모드로 전환
-      onSaveComplete();
+      // 성공 시 상세 보기 페이지로 리다이렉트
+      if (onSaveComplete) {
+        onSaveComplete();
+      } else {
+        // 콜백 없을 경우 직접 이동
+        navigate(`/studies/${studyId}/posts/${postId}`);
+      }
     } catch (error) {
+      console.error("게시판 수정 중 오류:", error);
       setSubmitError("게시판 수정 중 오류가 발생했습니다.");
       setIsSubmitting(false);
     }
@@ -248,7 +265,6 @@ function PostEditForm({
           placeholder="게시판 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
-          required
         />
       </div>
 
@@ -269,88 +285,110 @@ function PostEditForm({
         </div>
       </div>
 
-      {/* 기존 파일 목록 표시 */}
-      {existingFiles.length > 0 && (
-        <div style={styles.fileList}>
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-            기존 파일
+      <div>
+        <label style={styles.label}>첨부 파일</label>
+
+        {/* 모든 파일 목록 (기존 파일 + 새 파일) 한 번에 표시 */}
+        {(existingFiles.length > 0 || selectedFiles.length > 0) && (
+          <div style={styles.fileList}>
+            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
+              첨부 파일 목록
+            </div>
+
+            {/* 기존 파일 */}
+            {existingFiles.map((file) => (
+              <div key={file.fileId} style={styles.fileItem}>
+                <span style={styles.fileIcon}>📎</span>
+                {file.fileName}
+                <button
+                  type="button"
+                  onClick={() => handleRemoveExistingFile(file)}
+                  style={{
+                    marginBottom: "4px",
+                    marginLeft: "auto",
+                    color: "#e74c3c",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+
+            {/* 새로 선택된 파일 */}
+            {selectedFiles.map((file, index) => (
+              <div key={index} style={styles.fileItem}>
+                <span style={styles.fileIcon}>📎</span>
+                {file.name}
+                <span
+                  style={{
+                    marginLeft: "10px",
+                    color: "#666",
+                    fontSize: "12px",
+                  }}
+                >
+                  ({(file.size / 1024).toFixed(1)} KB)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveFile(file.name)}
+                  style={{
+                    marginBottom: "4px",
+                    marginLeft: "auto",
+                    color: "#e74c3c",
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
-          {existingFiles.map((file) => (
-            <div key={file.fileId} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.fileName}
-              <button
-                type="button"
-                onClick={() => handleRemoveExistingFile(file)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: "#e74c3c",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+        )}
 
-      {/* 새로 선택된 파일 목록 표시 */}
-      {selectedFiles.length > 0 && (
-        <div style={styles.fileList}>
-          <div style={{ fontWeight: "bold", marginBottom: "8px" }}>새 파일</div>
-          {selectedFiles.map((file, index) => (
-            <div key={index} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.name}
-              <span
-                style={{ marginLeft: "10px", color: "#666", fontSize: "12px" }}
-              >
-                ({(file.size / 1024).toFixed(1)} KB)
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(file.name)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: "#e74c3c",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+        {/* 파일 업로드 버튼 */}
+        <div style={styles.fileUploadRow}>
+          <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              style={{ display: "none" }}
+            />
+            <Button variant="addFiles" type="button" />
+          </label>
         </div>
-      )}
-
-      {/* 파일 업로드 버튼 */}
-      <div style={styles.fileUploadRow}>
-        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-          />
-          <Button variant="addFiles" type="button" />
-        </label>
       </div>
 
       {/* 액션 버튼들 */}
       <div style={styles.actionButtons}>
         <div style={styles.leftButtons}>
-          <Button type="submit" variant="store" />
-          <Button type="button" variant="delete" onClick={handleDelete} />
+          <Button
+            type="button"
+            variant="delete"
+            onClick={handleDelete}
+            disabled={isSubmitting}
+          />
         </div>
-        <Button type="button" variant="back" onClick={onCancel} />
+        <div style={{ display: "flex", gap: "12px" }}>
+          <Button
+            type="button"
+            variant="cancel"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          />
+          <Button
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
+            text="저장"
+          />
+        </div>
       </div>
     </form>
   );
@@ -359,9 +397,16 @@ function PostEditForm({
 PostEditForm.propTypes = {
   studyId: PropTypes.string.isRequired,
   postId: PropTypes.string.isRequired,
-  initialData: PropTypes.object.isRequired,
+  initialData: PropTypes.object,
   onCancel: PropTypes.func.isRequired,
-  onSaveComplete: PropTypes.func.isRequired,
+  onSaveComplete: PropTypes.func,
+  onPermissionError: PropTypes.func,
+};
+
+PostEditForm.defaultProps = {
+  initialData: {},
+  onSaveComplete: null,
+  onPermissionError: null,
 };
 
 export default PostEditForm;

@@ -12,6 +12,7 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   const { studyId, postId } = useParams();
   const [isEditMode, setIsEditMode] = useState(false);
   const { selectedPost, isLoading, error, getPostById } = usePost();
+  const [permissionError, setPermissionError] = useState("");
 
   // 페이지 로드 시 게시물 데이터 가져오기
   useEffect(() => {
@@ -43,14 +44,23 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   // 편집 취소
   const handleCancelEdit = () => {
     setIsEditMode(false);
+    setPermissionError("");
     if (selectedPost && onTitleLoaded) {
       onTitleLoaded(selectedPost.postTitle);
     }
   };
 
-  // 삭제 후 처리
-  const handleAfterDelete = () => {
-    navigate(`/studies/${studyId}/posts`);
+  // 편집 완료 후 처리 (추가된 함수)
+  const handleEditComplete = () => {
+    setIsEditMode(false);
+    setPermissionError("");
+    // 데이터 새로 가져오기
+    getPostById(studyId, parseInt(postId, 10));
+  };
+
+  // 권한 오류 발생 처리
+  const handlePermissionError = (message) => {
+    setPermissionError(message);
   };
 
   if (isLoading) {
@@ -111,25 +121,47 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
       color: "#333",
       cursor: "pointer",
     },
+    errorMessage: {
+      backgroundColor: "#fdecea",
+      color: "#e74c3c",
+      padding: "12px",
+      borderRadius: "6px",
+      marginBottom: "16px",
+    },
   };
 
   // 편집 모드일 때 편집 폼 표시
   if (isEditMode) {
     return (
-      <PostEditForm
-        studyId={studyId}
-        postId={postId}
-        initialData={selectedPost}
-        onCancel={handleCancelEdit}
-        onSuccessfulEdit={handleBack}
-      />
+      <>
+        {permissionError && (
+          <div style={styles.errorMessage}>
+            {permissionError}
+            <div style={{ marginTop: "8px" }}>
+              <Button
+                variant="back"
+                onClick={handleCancelEdit}
+                text="돌아가기"
+              />
+            </div>
+          </div>
+        )}
+        <PostEditForm
+          studyId={studyId}
+          postId={postId}
+          initialData={selectedPost}
+          onCancel={handleCancelEdit}
+          onSaveComplete={handleEditComplete}
+          onPermissionError={handlePermissionError}
+        />
+      </>
     );
   }
 
-  // 조회 모드일 때 내용 표시
+  // 조회 모드일 때 내용 표시 (이 부분은 원래 코드 유지)
   return (
     <div style={styles.container}>
-      <div style={styles.date}>
+      <div style={{ fontSize: "12px", color: "#888" }}>
         {new Date(selectedPost.postCreatedAt).toLocaleDateString()}
       </div>
       <div style={styles.contentBox}>
@@ -171,6 +203,7 @@ PostDetailManagerContent.defaultProps = {
 };
 
 function PostDetailPage() {
+  // 이 부분은 원래 코드 유지
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("게시판 상세");
@@ -215,12 +248,7 @@ function PostDetailPage() {
     title: {
       fontSize: "24px",
       fontWeight: "bold",
-      marginBottom: "10px",
-    },
-    activeTab: {
-      color: "#FF0000",
-      fontWeight: "bold",
-      padding: "2px 4px",
+      marginBottom: "24px",
     },
   };
 
