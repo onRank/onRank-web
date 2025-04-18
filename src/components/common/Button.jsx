@@ -54,17 +54,17 @@ function Button({ onClick, variant = "default", label, ...props }) {
 
   const buttonStyle = {
     borderRadius: "10px",
-    fontSize: "13px",
+    fontSize: "12px",
     cursor: "pointer",
     outline: "none",
-    width: "58px",
-    height: "30px",
+    width: "62px",
+    height: "33px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
     transform: isPressed ? "translate(2px, 3px)" : "translate(0, 0)",
     boxShadow: isPressed ? "none" : "2px 4px 0 rgb(0, 0, 0)",
-    transition: "all 0.1s ease-in-out",
+    transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
     ...variantStyles[variant],
   };
 
