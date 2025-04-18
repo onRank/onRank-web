@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 
 function Button({ onClick, variant = "default", label, ...props }) {
+  const [isPressed, setIsPressed] = useState(false);
+
   const defaultLabels = {
     create: "작성",
     back: "닫기",
@@ -14,46 +16,81 @@ function Button({ onClick, variant = "default", label, ...props }) {
 
   const variantStyles = {
     create: {
-      backgroundColor: "#e74c3c",
+      backgroundColor: "#ee0418",
       color: "#fff",
+      border: "none",
     },
     back: {
-      backgroundColor: "#f2f2f2",
+      backgroundColor: "#fff",
       color: "#333",
+      border: "1px solid #ccc",
     },
     edit: {
       backgroundColor: "#f2f2f2",
       color: "#333",
+      border: "1px solid #ccc",
     },
     upload: {
-      backgroundColor: "#e74c3c",
+      backgroundColor: "#ee0418",
       color: "#fff",
+      border: "none",
     },
     delete: {
       backgroundColor: "#e74c3c",
       color: "#fff",
+      border: "none",
     },
     addFiles: {
-      backgroundColor: "#e74c3c",
+      backgroundColor: "#ee0418",
       color: "#fff",
+      border: "none",
     },
     default: {
       backgroundColor: "#f2f2f2",
       color: "#333",
+      border: "1px solid #ccc",
     },
   };
 
   const buttonStyle = {
-    padding: "8px 16px",
-    border: "none",
-    borderRadius: "6px",
-    fontSize: "14px",
+    borderRadius: "10px",
+    fontSize: "13px",
     cursor: "pointer",
+    outline: "none",
+    width: "58px",
+    height: "30px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    transform: isPressed ? "translate(2px, 3px)" : "translate(0, 0)",
+    boxShadow: isPressed ? "none" : "2px 4px 0 rgb(0, 0, 0)",
+    transition: "all 0.1s ease-in-out",
     ...variantStyles[variant],
   };
 
+  const handleMouseDown = () => {
+    setIsPressed(true);
+  };
+
+  const handleMouseUp = () => {
+    setIsPressed(false);
+  };
+
+  const handleClick = (e) => {
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
   return (
-    <button onClick={onClick} style={buttonStyle} {...props}>
+    <button
+      onClick={handleClick}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={() => setIsPressed(false)}
+      style={buttonStyle}
+      {...props}
+    >
       {label || defaultLabels[variant] || "확인"}
     </button>
   );
