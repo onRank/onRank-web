@@ -25,6 +25,11 @@ function Button({ onClick, variant = "default", label, ...props }) {
       color: "#333",
       border: "1px solid #ccc",
     },
+    store: {
+      backgroundColor: "#ee0418",
+      color: "#fff",
+      border: "none",
+    },
     edit: {
       backgroundColor: "#f2f2f2",
       color: "#333",
@@ -44,6 +49,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
       backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
+      width: "76px",
     },
     default: {
       backgroundColor: "#f2f2f2",

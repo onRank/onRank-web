@@ -320,7 +320,7 @@ function PostEditForm({
           type="file"
           multiple
           onChange={handleFileChange}
-          style={{ display: "none", width: "76px" }}
+          style={{ display: "none" }}
         />
       </div>
 
