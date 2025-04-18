@@ -1,21 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 
-/**
- * 게시판 수정 폼 컴포넌트
- *
- * @param {Object} props
- * @param {string} props.studyId - 스터디 ID
- * @param {string} props.postId - 게시판 ID
- * @param {Object} props.initialData - 초기 게시판 데이터
- * @param {Function} props.onCancel - 취소 버튼 클릭 핸들러
- * @param {Function} props.onSaveComplete - 저장 완료 후 호출될 콜백
- * @param {Function} props.onPermissionError - 권한 오류 발생 시 호출될 콜백
- */
 function PostEditForm({
   studyId,
   postId,
@@ -33,11 +22,18 @@ function PostEditForm({
     initialData?.postContent || ""
   );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState(initialData?.files || []);
-  const [filesToRemove, setFilesToRemove] = useState([]);
+  // 남겨둘 파일 ID 배열 상태 (기본값은 모든 파일 ID)
+  const [remainingFileIds, setRemainingFileIds] = useState(
+    initialData?.files?.map((file) => file.fileId) || []
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
+
+  // 파일 선택 창 열기 핸들러
+  const handleOpenFileDialog = () => {
+    fileInputRef.current.click();
+  };
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
@@ -48,20 +44,6 @@ function PostEditForm({
     const newFiles = files.filter(
       (file) => !selectedFiles.some((f) => f.name === file.name)
     );
-
-    // 기존 파일과 이름 중복 확인 (수정 모드에서)
-    const duplicateWithExisting = newFiles.filter((file) =>
-      existingFiles.some((f) => f.fileName === file.name)
-    );
-
-    if (duplicateWithExisting.length > 0) {
-      setSubmitError(
-        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
 
     // 파일 크기 제한 (10MB)
     const oversizedFiles = newFiles.filter(
@@ -82,20 +64,15 @@ function PostEditForm({
     e.target.value = "";
   };
 
-  // 파일 선택 창 열기 핸들러
-  const handleOpenFileDialog = () => {
-    fileInputRef.current.click();
-  };
-
-  // 선택된 파일 제거 핸들러
+  // 선택된 새 파일 제거 핸들러
   const handleRemoveFile = (fileName) => {
     setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  // 기존 파일 제거 핸들러
-  const handleRemoveExistingFile = (file) => {
-    setExistingFiles((prev) => prev.filter((f) => f.fileId !== file.fileId));
-    setFilesToRemove((prev) => [...prev, file]);
+  // 기존 파일 제거 핸들러 - 단순화
+  const handleRemoveExistingFile = (fileId) => {
+    // fileId를 remainingFileIds에서 제거
+    setRemainingFileIds((prev) => prev.filter((id) => id !== fileId));
   };
 
   // 저장 핸들러
@@ -217,19 +194,11 @@ function PostEditForm({
       color: "#888",
       marginTop: "4px",
     },
-    fileSection: {
-      marginTop: "24px",
-      marginBottom: "24px",
-    },
-    fileAttachButton: {
-      marginTop: "10px",
-      backgroundColor: "#f0f0f0",
-      color: "#333",
-      border: "1px solid #ccc",
-      padding: "8px 16px",
-      borderRadius: "4px",
-      cursor: "pointer",
-      fontSize: "14px",
+    fileUploadRow: {
+      display: "flex",
+      justifyContent: "flex-end",
+      marginTop: "8px",
+      marginBottom: "16px",
     },
     fileList: {
       marginTop: "16px",
@@ -247,11 +216,6 @@ function PostEditForm({
       marginRight: "8px",
       color: "#666",
     },
-    noFilesMessage: {
-      color: "#888",
-      fontSize: "14px",
-      padding: "12px 0",
-    },
     errorMessage: {
       backgroundColor: "#fdecea",
       color: "#e74c3c",
@@ -259,37 +223,85 @@ function PostEditForm({
       borderRadius: "6px",
       marginBottom: "16px",
     },
+    actionButtons: {
+      display: "flex",
+      justifyContent: "space-between",
+      marginTop: "24px",
+    },
     leftButtons: {
       display: "flex",
       gap: "12px",
     },
-    actionButtons: {
+    fileListHeader: {
       display: "flex",
-      justifyContent: "center",
-      marginTop: "24px",
-      gap: "16px",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontWeight: "bold",
+      marginBottom: "12px",
+    },
+    removeButton: {
+      marginLeft: "auto",
+      color: "#e74c3c",
+      background: "none",
+      border: "none",
+      cursor: "pointer",
+      fontSize: "12px",
+    },
+    fileInfo: {
+      display: "flex",
+      alignItems: "center",
+      flex: 1,
+    },
+    fileSize: {
+      marginLeft: "10px",
+      color: "#666",
+      fontSize: "12px",
+    },
+    noFiles: {
+      color: "#666",
+      fontSize: "14px",
+      fontStyle: "italic",
+      textAlign: "center",
+      padding: "12px",
     },
   };
+
+  // 현재 표시할 기존 파일 필터링 - remainingFileIds에 있는 파일만 표시
+  const filteredExistingFiles =
+    initialData?.files?.filter((file) =>
+      remainingFileIds.includes(file.fileId)
+    ) || [];
+
+  // 파일이 하나도 없는지 확인
+  const hasNoFiles =
+    filteredExistingFiles.length === 0 && selectedFiles.length === 0;
 
   return (
     <form onSubmit={handleSave} style={styles.formContainer}>
       {submitError && <div style={styles.errorMessage}>{submitError}</div>}
 
       <div style={styles.inputGroup}>
+        <label style={styles.label} htmlFor="title">
+          제목
+        </label>
         <input
           id="title"
           style={styles.input}
-          placeholder="제목"
+          placeholder="게시판 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
+          required
         />
       </div>
 
       <div style={styles.inputGroup}>
+        <label style={styles.label} htmlFor="content">
+          내용을 입력해주세요.
+        </label>
         <textarea
           id="content"
           style={styles.textarea}
-          placeholder="내용을 입력해주세요."
+          placeholder="게시판 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
@@ -299,60 +311,63 @@ function PostEditForm({
         </div>
       </div>
 
-      <div style={styles.fileSection}>
-        <div style={styles.label}>첨부 파일</div>
+      {/* 파일 업로드 버튼 */}
+      <div style={styles.fileUploadRow}>
+        <Button variant="addFiles" onClick={handleOpenFileDialog} />
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
+      </div>
 
-        {existingFiles.length === 0 && selectedFiles.length === 0 ? (
-          <div style={styles.noFilesMessage}>첨부된 파일이 없습니다</div>
+      {/* 통합된 파일 목록 */}
+      <div style={styles.fileList}>
+        <div style={styles.fileListHeader}>
+          <span>첨부 파일</span>
+        </div>
+
+        {hasNoFiles ? (
+          <div style={styles.noFiles}>첨부된 파일이 없습니다</div>
         ) : (
-          <div style={styles.fileList}>
-            {/* 기존 파일 */}
-            {existingFiles.map((file) => (
-              <div key={file.fileId} style={styles.fileItem}>
-                <span style={styles.fileIcon}>📎</span>
-                {file.fileName}
+          <div>
+            {/* 기존 파일 목록 - remainingFileIds에 있는 파일만 표시 */}
+            {filteredExistingFiles.map((file) => (
+              <div key={`existing-${file.fileId}`} style={styles.fileItem}>
+                <div style={styles.fileInfo}>
+                  <span style={styles.fileIcon}>📎</span>
+                  {file.fileName}
+                  <span style={styles.fileSize}>
+                    ({file.fileSize ? (file.fileSize / 1024).toFixed(1) : "?"}{" "}
+                    KB)
+                  </span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveExistingFile(file)}
-                  style={{
-                    marginBottom: "4px",
-                    marginLeft: "auto",
-                    color: "#e74c3c",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  onClick={() => handleRemoveExistingFile(file.fileId)}
+                  style={styles.removeButton}
                 >
                   ✕
                 </button>
               </div>
             ))}
 
-            {/* 새로 선택된 파일 */}
+            {/* 새로 선택된 파일 목록 */}
             {selectedFiles.map((file, index) => (
-              <div key={index} style={styles.fileItem}>
-                <span style={styles.fileIcon}>📎</span>
-                {file.name}
-                <span
-                  style={{
-                    marginLeft: "10px",
-                    color: "#666",
-                    fontSize: "12px",
-                  }}
-                >
-                  ({(file.size / 1024).toFixed(1)} KB)
-                </span>
+              <div key={`new-${index}`} style={styles.fileItem}>
+                <div style={styles.fileInfo}>
+                  <span style={styles.fileIcon}>📎</span>
+                  {file.name}
+                  <span style={styles.fileSize}>
+                    ({(file.size / 1024).toFixed(1)} KB)
+                  </span>
+                </div>
                 <button
                   type="button"
                   onClick={() => handleRemoveFile(file.name)}
-                  style={{
-                    marginBottom: "4px",
-                    marginLeft: "auto",
-                    color: "#e74c3c",
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                  }}
+                  style={styles.removeButton}
                 >
                   ✕
                 </button>
@@ -360,16 +375,6 @@ function PostEditForm({
             ))}
           </div>
         )}
-
-        {/* 파일 업로드 버튼 */}
-        <Button variant="addFiles" onClick={handleOpenFileDialog} />
-        <input
-          ref={fileInputRef}
-          type="file"
-          onChange={handleFileChange}
-          multiple
-          style={{ display: "none" }}
-        />
       </div>
 
       {/* 액션 버튼들 */}
