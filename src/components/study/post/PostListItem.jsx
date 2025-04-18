@@ -77,7 +77,6 @@ function PostListItem({ post, onClick }) {
           게시: {formatDateYMD(post.postCreatedAt)}
         </div>
         <h2 style={styles.postTitle}>{post.postTitle}</h2>
-        <div style={styles.postText}>{post.postContent}</div>
       </div>
     </div>
   );

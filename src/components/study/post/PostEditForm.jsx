@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { usePost } from "./PostProvider";
@@ -320,7 +320,7 @@ function PostEditForm({
           type="file"
           multiple
           onChange={handleFileChange}
-          style={{ display: "none" }}
+          style={{ display: "none", width: "76px" }}
         />
       </div>
 
