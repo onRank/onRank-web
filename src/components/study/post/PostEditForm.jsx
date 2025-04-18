@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { usePost } from "./PostProvider";
@@ -26,6 +26,7 @@ function PostEditForm({
 }) {
   const { editPost, deletePost } = usePost();
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
 
   const [postTitle, setPostTitle] = useState(initialData?.postTitle || "");
   const [postContent, setPostContent] = useState(
@@ -79,6 +80,11 @@ function PostEditForm({
     setSelectedFiles((prev) => [...prev, ...newFiles]);
     // 파일 선택 후 input 초기화
     e.target.value = "";
+  };
+
+  // 파일 첨부 버튼 클릭 핸들러
+  const handleAttachFileClick = () => {
+    fileInputRef.current?.click();
   };
 
   // 선택된 파일 제거 핸들러
@@ -211,14 +217,22 @@ function PostEditForm({
       color: "#888",
       marginTop: "4px",
     },
-    fileUploadRow: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginTop: "8px",
-      marginBottom: "32px",
+    fileSection: {
+      marginTop: "24px",
+      marginBottom: "24px",
+    },
+    fileAttachButton: {
+      marginTop: "10px",
+      backgroundColor: "#f0f0f0",
+      color: "#333",
+      border: "1px solid #ccc",
+      padding: "8px 16px",
+      borderRadius: "4px",
+      cursor: "pointer",
+      fontSize: "14px",
     },
     fileList: {
-      marginTop: "8px",
+      marginTop: "16px",
       padding: "8px 12px",
       backgroundColor: "#f8f9fa",
       borderRadius: "4px",
@@ -227,11 +241,16 @@ function PostEditForm({
     fileItem: {
       display: "flex",
       alignItems: "center",
-      marginBottom: "4px",
+      marginBottom: "8px",
     },
     fileIcon: {
       marginRight: "8px",
       color: "#666",
+    },
+    noFilesMessage: {
+      color: "#888",
+      fontSize: "14px",
+      padding: "12px 0",
     },
     errorMessage: {
       backgroundColor: "#fdecea",
@@ -242,12 +261,9 @@ function PostEditForm({
     },
     actionButtons: {
       display: "flex",
-      justifyContent: "space-between",
+      justifyContent: "center",
       marginTop: "24px",
-    },
-    leftButtons: {
-      display: "flex",
-      gap: "12px",
+      gap: "16px",
     },
   };
 
@@ -256,26 +272,20 @@ function PostEditForm({
       {submitError && <div style={styles.errorMessage}>{submitError}</div>}
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="title">
-          제목
-        </label>
         <input
           id="title"
           style={styles.input}
-          placeholder="게시판 제목을 입력하세요"
+          placeholder="제목"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
         />
       </div>
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="content">
-          내용을 입력해주세요.
-        </label>
         <textarea
           id="content"
           style={styles.textarea}
-          placeholder="게시판 내용을 입력하세요"
+          placeholder="내용을 입력해주세요."
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
@@ -285,16 +295,13 @@ function PostEditForm({
         </div>
       </div>
 
-      <div>
-        <label style={styles.label}>첨부 파일</label>
+      <div style={styles.fileSection}>
+        <div style={styles.label}>첨부 파일</div>
 
-        {/* 모든 파일 목록 (기존 파일 + 새 파일) 한 번에 표시 */}
-        {(existingFiles.length > 0 || selectedFiles.length > 0) && (
+        {existingFiles.length === 0 && selectedFiles.length === 0 ? (
+          <div style={styles.noFilesMessage}>첨부된 파일이 없습니다</div>
+        ) : (
           <div style={styles.fileList}>
-            <div style={{ fontWeight: "bold", marginBottom: "8px" }}>
-              첨부 파일 목록
-            </div>
-
             {/* 기존 파일 */}
             {existingFiles.map((file) => (
               <div key={file.fileId} style={styles.fileItem}>
@@ -351,44 +358,51 @@ function PostEditForm({
         )}
 
         {/* 파일 업로드 버튼 */}
-        <div style={styles.fileUploadRow}>
-          <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-            <input
-              id="file-upload"
-              type="file"
-              multiple
-              onChange={handleFileChange}
-              style={{ display: "none" }}
-            />
-            <Button variant="addFiles" type="button" />
-          </label>
-        </div>
+        <button
+          type="button"
+          onClick={handleAttachFileClick}
+          style={styles.fileAttachButton}
+        >
+          파일 첨부
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          onChange={handleFileChange}
+          multiple
+          style={{ display: "none" }}
+        />
       </div>
 
       {/* 액션 버튼들 */}
       <div style={styles.actionButtons}>
-        <div style={styles.leftButtons}>
-          <Button
-            type="button"
-            variant="delete"
-            onClick={handleDelete}
-            disabled={isSubmitting}
-          />
-        </div>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <Button
-            type="button"
-            variant="cancel"
-            onClick={onCancel}
-            disabled={isSubmitting}
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={isSubmitting}
-            text="저장"
-          />
-        </div>
+        <button
+          type="button"
+          onClick={handleDelete}
+          style={{
+            backgroundColor: "#e74c3c",
+            color: "white",
+            border: "none",
+            padding: "10px 24px",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          삭제
+        </button>
+        <button
+          type="submit"
+          style={{
+            backgroundColor: "#444",
+            color: "white",
+            border: "none",
+            padding: "10px 24px",
+            borderRadius: "4px",
+            cursor: "pointer",
+          }}
+        >
+          저장
+        </button>
       </div>
     </form>
   );
