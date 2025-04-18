@@ -82,9 +82,9 @@ function PostEditForm({
     e.target.value = "";
   };
 
-  // 파일 첨부 버튼 클릭 핸들러
-  const handleAttachFileClick = () => {
-    fileInputRef.current?.click();
+  // 파일 선택 창 열기 핸들러
+  const handleOpenFileDialog = () => {
+    fileInputRef.current.click();
   };
 
   // 선택된 파일 제거 핸들러
@@ -115,8 +115,8 @@ function PostEditForm({
       const updatedPost = {
         postTitle,
         postContent,
+        remainingFileIds: remainingFileIds,
         newFileNames: selectedFiles.map((file) => file.name),
-        remainingFileIds: existingFiles.map((file) => file.fileId),
       };
 
       const result = await editPost(
@@ -259,6 +259,10 @@ function PostEditForm({
       borderRadius: "6px",
       marginBottom: "16px",
     },
+    leftButtons: {
+      display: "flex",
+      gap: "12px",
+    },
     actionButtons: {
       display: "flex",
       justifyContent: "center",
@@ -358,7 +362,7 @@ function PostEditForm({
         )}
 
         {/* 파일 업로드 버튼 */}
-        <Button variant="addFiles" onClick={handleAttachFileClick} />
+        <Button variant="addFiles" onClick={handleOpenFileDialog} />
         <input
           ref={fileInputRef}
           type="file"

@@ -251,15 +251,6 @@ function NoticeEditForm({
       textAlign: "center",
       padding: "12px",
     },
-    fileAttachButton: {
-      backgroundColor: `var(--primary)`,
-      color: "#fff",
-      border: "none",
-      borderRadius: "6px",
-      padding: "6px 12px",
-      cursor: "pointer",
-      fontSize: "14px",
-    },
   };
 
   // 현재 표시할 기존 파일 필터링 - remainingFileIds에 있는 파일만 표시
