@@ -35,7 +35,7 @@ export function NoticeProvider({ children }) {
     return Date.now() - lastFetchTime.current < 600000;
   };
 
-  // 공지사항 목록 불러오기 (최적화)
+  // 공지사항 목록 불러오기
   const getNotices = useCallback(async (studyId) => {
     if (!studyId) return;
 
@@ -77,6 +77,7 @@ export function NoticeProvider({ children }) {
       }
 
       if (response.success) {
+        // 최신순 정렬 유지
         const sortedNotices = [...(response.data || [])].sort(
           (a, b) => new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
         );
@@ -112,7 +113,7 @@ export function NoticeProvider({ children }) {
     }
   }, [studyId, initialLoadDone, getNotices]);
 
-  // 공지사항 상세보기 (최적화)
+  // 공지사항 상세보기
   const getNoticeById = useCallback(
     async (studyId, noticeId) => {
       if (!studyId || !noticeId) return;
@@ -191,7 +192,7 @@ export function NoticeProvider({ children }) {
     [notices, selectedNotice]
   );
 
-  // 캐시 무효화 함수 - 수정: 강제 재로드 기능 추가
+  // 캐시 무효화 함수
   const invalidateCache = useCallback(
     (studyId, noticeId = null, forceReload = false) => {
       // 캐시 초기화
@@ -230,7 +231,7 @@ export function NoticeProvider({ children }) {
     []
   );
 
-  // 공지사항 생성 (에러 처리 간소화)
+  // 공지사항 생성
   const createNotice = useCallback(
     async (studyId, newNotice, files = []) => {
       setIsLoading(true);
@@ -245,19 +246,13 @@ export function NoticeProvider({ children }) {
         if (response.data || response.success) {
           // 목록에 새 공지사항 추가
           if (response.data) {
-            setNotices((prev) => {
-              const updatedNotices = [response.data, ...prev];
-              return updatedNotices.sort(
-                (a, b) =>
-                  new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
-              );
-            });
+            setNotices((prev) => [response.data, ...prev]);
 
             // 캐시 무효화
             invalidateCache(studyId);
           }
 
-          // 성공 응답 반환 (warning 관련 로직 제거)
+          // 성공 응답 반환
           return {
             success: true,
             message: "공지사항이 성공적으로 생성되었습니다.",
@@ -290,7 +285,7 @@ export function NoticeProvider({ children }) {
     [invalidateCache]
   );
 
-  // 공지사항 수정 (수정: 캐시 문제 해결 및 데이터 새로고침 로직 강화)
+  // 공지사항 수정
   const editNotice = useCallback(
     async (studyId, noticeId, noticeData, files = []) => {
       setIsLoading(true);
@@ -309,10 +304,10 @@ export function NoticeProvider({ children }) {
             noticeId: noticeId,
           };
 
-          // 수정된 공지사항으로 상태 업데이트 후 생성일자 기준으로 정렬
+          // 수정된 공지사항으로 상태 업데이트
           setNotices((prev) => {
-            // 먼저 해당 공지사항 업데이트
-            const updatedNotices = prev.map((notice) =>
+            // 해당 공지사항 업데이트
+            return prev.map((notice) =>
               notice.noticeId === noticeId
                 ? {
                     ...notice,
@@ -320,19 +315,12 @@ export function NoticeProvider({ children }) {
                   }
                 : notice
             );
-
-            // 생성일자 기준으로 내림차순 정렬 (최신순)
-            return updatedNotices.sort(
-              (a, b) =>
-                new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
-            );
           });
 
           // 캐시 무효화 후 새로운 데이터 가져오기
           await invalidateCache(studyId, noticeId, true);
 
           // 파일 정보를 포함한 완전한 데이터를 가져와서 selectedNotice 업데이트
-          // 서버에서 받아온 최신 데이터로 상태 업데이트
           try {
             const freshData = await noticeService.getNoticeById(
               studyId,
@@ -395,7 +383,7 @@ export function NoticeProvider({ children }) {
     [invalidateCache, selectedNotice]
   );
 
-  // 공지사항 삭제 (캐시 무효화 추가)
+  // 공지사항 삭제
   const deleteNotice = useCallback(
     async (studyId, noticeId) => {
       setIsLoading(true);

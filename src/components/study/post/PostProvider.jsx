@@ -15,33 +15,32 @@ export function PostProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 공지사항 목록 불러오기
+  // 게시판 목록 불러오기
   const getPosts = useCallback(async (studyId) => {
     setIsLoading(true);
     setError(null);
     try {
       const response = await postService.getPosts(studyId);
       if (response.success) {
+        // 최신순 정렬 (생성일 기준) - 이 부분 유지
         const sortedPosts = [...(response.data || [])].sort(
           (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
         );
         setPosts(sortedPosts);
       } else {
-        setError(
-          response.message || "공지사항 목록을 불러오는데 실패했습니다."
-        );
+        setError(response.message || "게시판 목록을 불러오는데 실패했습니다.");
         setPosts([]);
       }
     } catch (err) {
-      console.error("공지사항 목록 조회 실패:", err);
-      setError(err.message || "공지사항 목록을 불러오는데 실패했습니다.");
+      console.error("게시판 목록 조회 실패:", err);
+      setError(err.message || "게시판 목록을 불러오는데 실패했습니다.");
       setPosts([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // 공지사항 상세보기
+  // 게시판 상세보기
   const getPostById = useCallback(async (studyId, postId) => {
     setIsLoading(true);
     setError(null);
@@ -50,12 +49,12 @@ export function PostProvider({ children }) {
       if (response.success) {
         setSelectedPost(response.data);
       } else {
-        setError(response.message || "공지사항을 불러오는데 실패했습니다.");
+        setError(response.message || "게시판을 불러오는데 실패했습니다.");
         setSelectedPost(null);
       }
     } catch (err) {
-      console.error("공지사항 상세 조회 실패:", err);
-      setError(err.message || "공지사항을 불러오는데 실패했습니다.");
+      console.error("게시판 상세 조회 실패:", err);
+      setError(err.message || "게시판을 불러오는데 실패했습니다.");
       setSelectedPost(null);
     } finally {
       setIsLoading(false);
@@ -68,18 +67,14 @@ export function PostProvider({ children }) {
     try {
       const response = await postService.createPost(studyId, newPost, files);
       if (response.success) {
-        // 성공시 목록에 새 게시판 추가 후 최신 생성일자 기준으로 정렬
+        // 성공시 목록에 새 게시판 추가
         if (response.data) {
           setPosts((prev) => {
-            // 새 게시판 추가
-            const updatedPosts = [response.data, ...prev];
-
-            return updatedPosts.sort(
-              (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
-            );
+            // 새 게시판 추가 수행
+            return [response.data, ...prev];
           });
         }
-        // 성공 응답 반환 (warning 관련 로직 제거)
+        // 성공 응답 반환
         return {
           success: true,
           message: "게시판이 성공적으로 생성되었습니다.",
@@ -108,7 +103,7 @@ export function PostProvider({ children }) {
     }
   }, []);
 
-  // 공지사항 수정
+  // 게시판 수정
   const editPost = useCallback(
     async (studyId, postId, postData, files = []) => {
       setIsLoading(true);
@@ -120,10 +115,10 @@ export function PostProvider({ children }) {
           files
         );
         if (response.success) {
-          // 수정된 공지사항으로 상태 업데이트 후 생성일자 기준으로 정렬
+          // 수정된 게시판으로 상태 업데이트 (정렬 없이)
           setPosts((prev) => {
-            // 먼저 해당 공지사항 업데이트
-            const updatedPosts = prev.map((post) =>
+            // 해당 게시판만 업데이트
+            return prev.map((post) =>
               post.postId === postId
                 ? {
                     ...post,
@@ -131,21 +126,16 @@ export function PostProvider({ children }) {
                   }
                 : post
             );
-
-            // 생성일자 기준으로 내림차순 정렬 (최신순)
-            return updatedPosts.sort(
-              (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
-            );
           });
           return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
         } else {
-          throw new Error(response.message || "공지사항 수정에 실패했습니다.");
+          throw new Error(response.message || "게시판 수정에 실패했습니다.");
         }
       } catch (err) {
-        console.error("공지사항 수정 실패:", err);
+        console.error("게시판 수정 실패:", err);
         return {
           success: false,
-          message: err.message || "공지사항 수정에 실패했습니다.",
+          message: err.message || "게시판 수정에 실패했습니다.",
         };
       } finally {
         setIsLoading(false);
@@ -154,23 +144,23 @@ export function PostProvider({ children }) {
     []
   );
 
-  // 공지사항 삭제
+  // 게시판 삭제
   const deletePost = useCallback(async (studyId, postId) => {
     setIsLoading(true);
     try {
       const response = await postService.deletePost(studyId, postId);
       if (response.success) {
-        // 삭제된 공지사항을 목록에서 제거
+        // 삭제된 게시판을 목록에서 제거
         setPosts((prev) => prev.filter((post) => post.postId !== postId));
         return { success: true };
       } else {
-        throw new Error(response.message || "공지사항 삭제에 실패했습니다.");
+        throw new Error(response.message || "게시판 삭제에 실패했습니다.");
       }
     } catch (err) {
-      console.error("공지사항 삭제 실패:", err);
+      console.error("게시판 삭제 실패:", err);
       return {
         success: false,
-        message: err.message || "공지사항 삭제에 실패했습니다.",
+        message: err.message || "게시판 삭제에 실패했습니다.",
       };
     } finally {
       setIsLoading(false);
