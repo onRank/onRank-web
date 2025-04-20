@@ -2,19 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import assignmentService from '../../../services/assignment';
-import { formatFileSize, getFileIcon, downloadFile } from '../../../utils/fileUtils';
+import { formatFileSize, getFileIcon, downloadFile, uploadFileToS3, extractUploadUrlFromResponse } from '../../../utils/fileUtils';
 
 const AssignmentDetail = () => {
   const { studyId, id: assignmentId } = useParams();
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState(null);
   const [memberContext, setMemberContext] = useState(null);
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [comment, setComment] = useState('');
+  const [charCount, setCharCount] = useState(0);
+  
+  // 재제출 모드 상태
+  const [isResubmitting, setIsResubmitting] = useState(false);
+  
+  // 업로드 진행 상태 추적
+  const [uploadStatus, setUploadStatus] = useState([]);
+  
+  const MAX_CHAR_COUNT = 10000;
 
   useEffect(() => {
     const fetchAssignmentDetail = async () => {
@@ -32,7 +41,24 @@ const AssignmentDetail = () => {
           setMemberContext(response.memberContext);
         }
         
-        setAssignment(response.data || null);
+        // 과제 데이터는 response.data에 있음
+        if (response.data) {
+          // 데이터 검증 및 기본값 설정
+          const assignmentData = {
+            ...response.data,
+            submissionStatus: response.data.submissionStatus || 'NOTSUBMITTED',
+            assignmentFiles: response.data.assignmentFiles || [],
+            submissionFiles: response.data.submissionFiles || [],
+            submissionContent: response.data.submissionContent || '',
+            submissionScore: response.data.submissionScore || null,
+            submissionComment: response.data.submissionComment || ''
+          };
+          
+          setAssignment(assignmentData);
+        } else {
+          console.error('과제 데이터가 없습니다:', response);
+          setError('과제 정보를 불러오는데 실패했습니다.');
+        }
       } catch (err) {
         console.error('과제 상세 정보 조회 실패:', err);
         setError('과제 정보를 불러오는데 실패했습니다.');
@@ -45,18 +71,26 @@ const AssignmentDetail = () => {
   }, [studyId, assignmentId]);
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (selectedFile) {
-      console.log('파일 선택:', selectedFile.name, formatFileSize(selectedFile.size));
-      setFile(selectedFile);
-      // 파일을 선택했으므로 이전 업로드 상태 초기화
+    const selectedFiles = Array.from(e.target.files);
+    if (selectedFiles && selectedFiles.length > 0) {
+      console.log('파일 선택:', selectedFiles.map(file => `${file.name} (${formatFileSize(file.size)})`).join(', '));
+      setFiles(selectedFiles);
       setUploadProgress(0);
       setError(null);
+      setUploadStatus([]);
+    }
+  };
+
+  const handleCommentChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= MAX_CHAR_COUNT) {
+      setComment(value);
+      setCharCount(value.length);
     }
   };
 
   const handleSubmit = async () => {
-    if (!file) {
+    if (files.length === 0) {
       alert('파일을 선택해주세요.');
       return;
     }
@@ -65,33 +99,112 @@ const AssignmentDetail = () => {
     setIsUploading(true);
     setError(null);
     setUploadProgress(10); // 초기 진행률 표시
+    setUploadStatus([]);
 
     try {
-      const submissionData = {
-        file: file,
-        comment: comment
+      // 1. 먼저 서버에 과제 제출 정보를 보내고 업로드 URL을 받아옴
+      const submissionInfo = {
+        comment: comment, 
+        fileCount: files.length,
+        fileNames: files.map(file => file.name),
+        fileSizes: files.map(file => file.size),
+        fileTypes: files.map(file => file.type)
       };
       
-      // 진행률 표시를 위한 임의의 상태 업데이트
-      // 실제로는 axios의 onUploadProgress를 사용하면 더 정확한 진행률 표시 가능
-      setTimeout(() => setUploadProgress(30), 300);
-      setTimeout(() => setUploadProgress(60), 600);
+      const submissionResponse = await assignmentService.submitAssignment(studyId, assignmentId, submissionInfo);
+      console.log('과제 제출 응답:', submissionResponse);
       
-      // Swagger 문서에 정의된 API 형식으로 과제 제출
-      await assignmentService.submitAssignment(studyId, assignmentId, submissionData);
+      // 업로드 URL 확인
+      const uploadUrls = extractUploadUrlFromResponse(submissionResponse, 'uploadUrl', true);
       
-      // 업로드 완료
+      if (!uploadUrls || uploadUrls.length === 0) {
+        throw new Error('파일 업로드 URL을 받아오지 못했습니다.');
+      }
+      
+      if (uploadUrls.length !== files.length) {
+        console.warn(`파일 수(${files.length})와 업로드 URL 수(${uploadUrls.length})가 일치하지 않습니다.`);
+      }
+      
+      // 2. 각 파일을 S3에 업로드
+      setUploadProgress(30);
+      
+      const uploadPromises = files.map((file, index) => {
+        // 파일 수와 URL 수가 일치하지 않을 경우 대비
+        const uploadUrl = index < uploadUrls.length ? uploadUrls[index] : null;
+        
+        if (!uploadUrl) {
+          return Promise.resolve({
+            fileName: file.name,
+            success: false,
+            message: '업로드 URL이 없습니다.'
+          });
+        }
+        
+        // 상태 배열 업데이트
+        setUploadStatus(prev => [...prev, {
+          fileName: file.name,
+          progress: 0,
+          status: 'uploading'
+        }]);
+        
+        return uploadFileToS3(uploadUrl, file)
+          .then(result => {
+            // 업로드 성공 시 상태 업데이트
+            setUploadStatus(prev => prev.map(item => 
+              item.fileName === file.name 
+                ? { ...item, progress: 100, status: result.success ? 'success' : 'error', message: result.message }
+                : item
+            ));
+            return result;
+          })
+          .catch(error => {
+            // 업로드 실패 시 상태 업데이트
+            setUploadStatus(prev => prev.map(item => 
+              item.fileName === file.name 
+                ? { ...item, progress: 0, status: 'error', message: error.message }
+                : item
+            ));
+            return {
+              fileName: file.name,
+              success: false,
+              message: error.message
+            };
+          });
+      });
+      
+      const uploadResults = await Promise.all(uploadPromises);
+      console.log('파일 업로드 결과:', uploadResults);
+      
+      // 모든 파일이 성공적으로 업로드 되었는지 확인
+      const allSuccessful = uploadResults.every(result => result.success);
+      const failedUploads = uploadResults.filter(result => !result.success);
+      
       setUploadProgress(100);
       
-      // 성공 메시지 표시
-      alert('과제가 성공적으로 제출되었습니다.');
+      if (allSuccessful) {
+        // 성공 메시지 표시
+        alert('과제가 성공적으로 제출되었습니다.');
+      } else {
+        // 실패한 업로드 정보 표시
+        const failureMessage = `일부 파일이 업로드되지 않았습니다:\n${
+          failedUploads.map(f => `${f.fileName}: ${f.message}`).join('\n')
+        }`;
+        alert(failureMessage);
+      }
       
       // 제출 후 과제 정보 다시 로드
-      const response = await assignmentService.getAssignmentById(studyId, assignmentId);
-      if (response.memberContext) {
-        setMemberContext(response.memberContext);
+      const updatedResponse = await assignmentService.getAssignmentById(studyId, assignmentId);
+      if (updatedResponse.memberContext) {
+        setMemberContext(updatedResponse.memberContext);
       }
-      setAssignment(response.data || null);
+      setAssignment(updatedResponse.data || null);
+      
+      // 폼 초기화 및 재제출 모드 종료
+      setFiles([]);
+      setComment('');
+      setCharCount(0);
+      setIsResubmitting(false);
+      
     } catch (error) {
       console.error('과제 제출 실패:', error);
       setError(`과제 제출에 실패했습니다: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
@@ -104,6 +217,29 @@ const AssignmentDetail = () => {
 
   const handleBack = () => {
     navigate(`/studies/${studyId}/assignment`);
+  };
+  
+  // 재제출 모드 활성화
+  const handleResubmit = () => {
+    setIsResubmitting(true);
+    setFiles([]);
+    setComment('');
+    setCharCount(0);
+    setUploadStatus([]);
+  };
+  
+  // 재제출 취소
+  const handleCancelResubmit = () => {
+    setIsResubmitting(false);
+    setFiles([]);
+    setComment('');
+    setCharCount(0);
+    setUploadStatus([]);
+  };
+
+  // 파일 업로드 상태 확인
+  const getUploadStatusForFile = (fileName) => {
+    return uploadStatus.find(item => item.fileName === fileName) || { progress: 0, status: 'pending' };
   };
 
   if (isLoading && !assignment) {
@@ -123,19 +259,155 @@ const AssignmentDetail = () => {
     return <ErrorContainer>과제 정보를 찾을 수 없습니다.</ErrorContainer>;
   }
 
-  // 마감일 포맷팅
+  // 일자 포맷 함수
   const formatDate = (dateString) => {
     if (!dateString) return '날짜 정보 없음';
-    const date = new Date(dateString);
-    return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-  };
-
-  // 제출 상태에 따른 점수 표시 
-  const getScoreDisplay = () => {
-    if (assignment.submissionStatus === 'SCORED' && assignment.submissionScore !== null) {
-      return `${assignment.submissionScore}/${assignment.assignmentMaxPoint} pt`;
+    
+    try {
+      const date = new Date(dateString);
+      
+      // 유효한 날짜인지 확인
+      if (isNaN(date.getTime())) {
+        return '날짜 형식 오류';
+      }
+      
+      return `${date.getFullYear()}.${(date.getMonth() + 1).toString().padStart(2, '0')}.${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    } catch (error) {
+      console.error('날짜 변환 오류:', error);
+      return '날짜 변환 오류';
     }
-    return `--/${assignment.assignmentMaxPoint} pt`;
+  };
+  
+  // 제출 폼 렌더링 함수
+  const renderSubmissionForm = () => (
+    <>
+      {/* 제출물 입력 영역 */}
+      <TextareaSection>
+        <TextArea 
+          placeholder="제출물 내용을 입력하세요."
+          value={comment}
+          onChange={handleCommentChange}
+          maxLength={MAX_CHAR_COUNT}
+        />
+        <CharCounter>{charCount}/{MAX_CHAR_COUNT}</CharCounter>
+      </TextareaSection>
+      
+      {/* 파일 첨부 영역 */}
+      <AttachmentSection>
+        <SectionSubtitle>첨부파일</SectionSubtitle>
+        <FileUploadContainer>
+          {files.length > 0 ? (
+            <FileList>
+              {files.map((file, index) => {
+                const fileStatus = getUploadStatusForFile(file.name);
+                return (
+                  <FileItem key={index} status={fileStatus.status}>
+                    <FileIcon>{getFileIcon(file.name)}</FileIcon>
+                    <FileInfo>
+                      <FileName>{file.name}</FileName>
+                      <FileInfoRow>
+                        <FileSize>{formatFileSize(file.size)}</FileSize>
+                        {fileStatus.status === 'uploading' && fileStatus.progress > 0 && (
+                          <FileUploadProgress>
+                            <FileProgressBar width={fileStatus.progress} />
+                          </FileUploadProgress>
+                        )}
+                        {fileStatus.status === 'error' && (
+                          <FileErrorMessage>{fileStatus.message}</FileErrorMessage>
+                        )}
+                      </FileInfoRow>
+                    </FileInfo>
+                    <DeleteButton 
+                      onClick={() => setFiles(files.filter((_, i) => i !== index))}
+                      disabled={isUploading}
+                    >
+                      ✕
+                    </DeleteButton>
+                  </FileItem>
+                );
+              })}
+            </FileList>
+          ) : (
+            <FileUploadBox>
+              <FileInputLabel>
+                <FileInput
+                  type="file"
+                  onChange={handleFileChange}
+                  multiple
+                  accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+                  disabled={isUploading}
+                />
+                <UploadIcon>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 18V6" stroke="#6c757d" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M7 11L12 6L17 11" stroke="#6c757d" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M20 18H4" stroke="#6c757d" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </UploadIcon>
+                <UploadText>
+                  파일을 클릭하여 추가하거나<br />
+                  여기에 드래그하세요
+                </UploadText>
+              </FileInputLabel>
+            </FileUploadBox>
+          )}
+          
+          {files.length > 0 && (
+            <AddMoreFilesButton>
+              <FileInputLabel>
+                <FileInput
+                  type="file"
+                  onChange={(e) => {
+                    const newFiles = Array.from(e.target.files);
+                    setFiles([...files, ...newFiles]);
+                  }}
+                  multiple
+                  accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+                  disabled={isUploading}
+                />
+                + 파일 추가
+              </FileInputLabel>
+            </AddMoreFilesButton>
+          )}
+        </FileUploadContainer>
+        
+        {/* 전체 업로드 진행률 */}
+        {isUploading && (
+          <ProgressContainer>
+            <ProgressBar width={uploadProgress} />
+            <ProgressText>{uploadProgress}% 업로드 중...</ProgressText>
+          </ProgressContainer>
+        )}
+      </AttachmentSection>
+      
+      {/* 에러 메시지 */}
+      {error && <ErrorMessage>{error}</ErrorMessage>}
+      
+      {/* 버튼 영역 */}
+      <ButtonsRow>
+        <SubmitButton 
+          onClick={handleSubmit}
+          disabled={isLoading || files.length === 0}
+        >
+          {isLoading ? '제출 중...' : '제출'}
+        </SubmitButton>
+        <CancelButton onClick={isResubmitting ? handleCancelResubmit : handleBack}>
+          취소
+        </CancelButton>
+      </ButtonsRow>
+    </>
+  );
+  
+  // 페이지 타이틀 결정
+  const getPageTitle = () => {
+    if (isResubmitting) return "다시 제출";
+    
+    switch (assignment.submissionStatus) {
+      case 'NOTSUBMITTED': return "미제출";
+      case 'SUBMITTED': return "제출완료";
+      case 'SCORED': return "채점완료";
+      default: return "";
+    }
   };
 
   return (
@@ -143,10 +415,17 @@ const AssignmentDetail = () => {
       <Header>
         <BackButton onClick={handleBack}>← 목록으로</BackButton>
         <Title>{assignment.assignmentTitle}</Title>
-        <InfoRow>
-          <DueDate>마감: {formatDate(assignment.assignmentDueDate)}</DueDate>
-          <PointDisplay>{getScoreDisplay()}</PointDisplay>
-        </InfoRow>
+        <MetaInfo>
+          <StatusAndDueDate>
+            <PageStatus>{getPageTitle()}</PageStatus>
+            <DueDate>마감: {formatDate(assignment.assignmentDueDate)}</DueDate>
+          </StatusAndDueDate>
+          {assignment.submissionStatus === 'SCORED' ? (
+            <ScoreDisplay>{assignment.submissionScore}/{assignment.assignmentMaxPoint} pt</ScoreDisplay>
+          ) : (
+            <PointDisplay>--/{assignment.assignmentMaxPoint} pt</PointDisplay>
+          )}
+        </MetaInfo>
       </Header>
 
       <Content>
@@ -158,10 +437,10 @@ const AssignmentDetail = () => {
           {/* 첨부 파일 목록 (assignmentFiles) */}
           {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
             <FilesContainer>
-              <FilesTitle>첨부파일</FilesTitle>
+              <SectionSubtitle>첨부파일</SectionSubtitle>
               <FilesList>
                 {assignment.assignmentFiles.map((file, index) => (
-                  <FileItem key={index}>
+                  <FileDownloadItem key={index}>
                     <FileInfoRow>
                       <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
                       <FileDetails>
@@ -173,159 +452,55 @@ const AssignmentDetail = () => {
                         다운로드
                       </DownloadButton>
                     </FileInfoRow>
-                  </FileItem>
+                  </FileDownloadItem>
                 ))}
               </FilesList>
             </FilesContainer>
           )}
         </Section>
 
-        {/* 2. 제출물 섹션 - 제출 상태에 따라 다른 UI */}
+        {/* 2. 제출물 섹션 - 상태에 따라 다른 UI */}
         <Section>
-          <SectionTitle>제출물</SectionTitle>
-          
-          {/* 상태: 미제출(NOTSUBMITTED) - 제출 폼 표시 */}
-          {assignment.submissionStatus === 'NOTSUBMITTED' && (
-            <SubmissionForm>
-              {/* 제출물 내용 입력 영역 */}
-              <TextArea 
-                placeholder="제출 내용을 입력하세요"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-              />
+          {isResubmitting ? (
+            <>
+              <SectionTitle>제출물</SectionTitle>
+              {renderSubmissionForm()}
+            </>
+          ) : assignment.submissionStatus === 'NOTSUBMITTED' ? (
+            <>
+              <SectionTitle>제출물</SectionTitle>
+              {renderSubmissionForm()}
+            </>
+          ) : assignment.submissionStatus === 'SUBMITTED' ? (
+            <>
+              <SectionTitle>제출물</SectionTitle>
+              <SubmissionRow>
+                <SubmissionLabel>제출: {formatDate(assignment.submissionDate)}</SubmissionLabel>
+              </SubmissionRow>
               
-              {/* 파일 선택 영역 */}
-              <FileInputArea>
-                <FileLabel>
-                  <FileInput
-                    type="file"
-                    onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png"
-                    disabled={isUploading}
-                  />
-                  {file ? (
-                    <SelectedFileInfo>
-                      <div>{getFileIcon(file.name)} {file.name}</div>
-                      <div>{formatFileSize(file.size)}</div>
-                    </SelectedFileInfo>
-                  ) : (
-                    <FileInputPlaceholder>
-                      파일을 선택하거나 여기에 드래그하세요
-                    </FileInputPlaceholder>
-                  )}
-                </FileLabel>
-              </FileInputArea>
+              <ButtonsRow>
+                <ResubmitButton onClick={handleResubmit}>다시 제출</ResubmitButton>
+              </ButtonsRow>
+            </>
+          ) : assignment.submissionStatus === 'SCORED' && (
+            <>
+              <SectionTitle>제출물</SectionTitle>
+              <SubmissionRow>
+                <SubmissionLabel>제출: {formatDate(assignment.submissionDate)}</SubmissionLabel>
+              </SubmissionRow>
               
-              {/* 업로드 진행 상태 표시 */}
-              {isUploading && (
-                <ProgressContainer>
-                  <ProgressBar width={uploadProgress} />
-                  <ProgressText>{uploadProgress}% 업로드 중...</ProgressText>
-                </ProgressContainer>
-              )}
+              {/* 피드백 섹션 */}
+              <FeedbackSection>
+                <SectionSubtitle>코멘트</SectionSubtitle>
+                <FeedbackContent>
+                  {assignment.submissionComment || "코멘트가 없습니다."}
+                </FeedbackContent>
+              </FeedbackSection>
               
-              {/* 제출 버튼 */}
-              <ButtonContainer>
-                <SubmitButton 
-                  onClick={handleSubmit} 
-                  disabled={isLoading || !file}
-                >
-                  {isLoading ? '제출 중...' : '제출'}
-                </SubmitButton>
-                <CancelButton onClick={handleBack}>취소</CancelButton>
-              </ButtonContainer>
-              
-              {/* 에러 메시지 */}
-              {error && <ErrorMessage>{error}</ErrorMessage>}
-            </SubmissionForm>
-          )}
-          
-          {/* 상태: 제출 완료(SUBMITTED) - 제출한 내용 표시 */}
-          {assignment.submissionStatus === 'SUBMITTED' && (
-            <SubmissionInfo>
-              {/* 제출 정보 헤더 */}
-              <SubmissionHeader>
-                <SubmissionStatus>채점 대기중</SubmissionStatus>
-              </SubmissionHeader>
-              
-              {/* 제출한 파일 목록 */}
-              {assignment.submissionFiles && assignment.submissionFiles.length > 0 ? (
-                <FilesList>
-                  {assignment.submissionFiles.map((file, index) => (
-                    <FileItem key={index}>
-                      <FileInfoRow>
-                        <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                        <FileDetails>
-                          <FileName>{file.fileName}</FileName>
-                        </FileDetails>
-                        <DownloadButton 
-                          onClick={() => downloadFile(file.fileUrl, file.fileName)}
-                        >
-                          다운로드
-                        </DownloadButton>
-                      </FileInfoRow>
-                    </FileItem>
-                  ))}
-                </FilesList>
-              ) : (
-                <NoFiles>첨부 파일이 없습니다.</NoFiles>
-              )}
-              
-              {/* 제출한 내용 */}
-              {assignment.submissionContent && (
-                <SubmissionContent>
-                  {assignment.submissionContent}
-                </SubmissionContent>
-              )}
-            </SubmissionInfo>
-          )}
-          
-          {/* 상태: 채점 완료(SCORED) - 채점 결과 표시 */}
-          {assignment.submissionStatus === 'SCORED' && (
-            <SubmissionInfo>
-              {/* 제출 정보 헤더 */}
-              <SubmissionHeader>
-                <ScoreDisplay>{assignment.submissionScore}/{assignment.assignmentMaxPoint}</ScoreDisplay>
-              </SubmissionHeader>
-              
-              {/* 제출한 파일 목록 */}
-              {assignment.submissionFiles && assignment.submissionFiles.length > 0 ? (
-                <FilesList>
-                  {assignment.submissionFiles.map((file, index) => (
-                    <FileItem key={index}>
-                      <FileInfoRow>
-                        <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                        <FileDetails>
-                          <FileName>{file.fileName}</FileName>
-                        </FileDetails>
-                        <DownloadButton 
-                          onClick={() => downloadFile(file.fileUrl, file.fileName)}
-                        >
-                          다운로드
-                        </DownloadButton>
-                      </FileInfoRow>
-                    </FileItem>
-                  ))}
-                </FilesList>
-              ) : (
-                <NoFiles>첨부 파일이 없습니다.</NoFiles>
-              )}
-              
-              {/* 제출한 내용 */}
-              {assignment.submissionContent && (
-                <SubmissionContent>
-                  {assignment.submissionContent}
-                </SubmissionContent>
-              )}
-              
-              {/* 교수자 피드백 */}
-              {assignment.submissionComment && (
-                <FeedbackSection>
-                  <FeedbackTitle>피드백</FeedbackTitle>
-                  <FeedbackContent>{assignment.submissionComment}</FeedbackContent>
-                </FeedbackSection>
-              )}
-            </SubmissionInfo>
+              <ButtonsRow>
+                <ResubmitButton onClick={handleResubmit}>다시 제출</ResubmitButton>
+              </ButtonsRow>
+            </>
           )}
         </Section>
       </Content>
@@ -350,10 +525,21 @@ const Title = styled.h1`
   margin-bottom: 8px;
 `;
 
-const InfoRow = styled.div`
+const MetaInfo = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+`;
+
+const StatusAndDueDate = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+`;
+
+const PageStatus = styled.div`
+  font-size: 14px;
+  color: #666;
 `;
 
 const DueDate = styled.div`
@@ -364,7 +550,7 @@ const DueDate = styled.div`
 const PointDisplay = styled.div`
   font-weight: bold;
   font-size: 16px;
-  color: #dc3545;
+  color: #666;
 `;
 
 const Content = styled.div`
@@ -386,6 +572,12 @@ const SectionTitle = styled.h2`
   margin-bottom: 16px;
 `;
 
+const SectionSubtitle = styled.h3`
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+`;
+
 const Description = styled.p`
   white-space: pre-wrap;
   line-height: 1.6;
@@ -396,61 +588,87 @@ const FilesContainer = styled.div`
   margin-top: 16px;
 `;
 
-const FilesTitle = styled.h3`
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 12px;
-`;
-
 const FilesList = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
 `;
 
-const FileItem = styled.div`
+const FileDownloadItem = styled.div`
   padding: 12px;
   background-color: #f8f9fa;
   border-radius: 4px;
   border: 1px solid #e9ecef;
 `;
 
-const SubmissionForm = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+const TextareaSection = styled.div`
+  position: relative;
+  margin-bottom: 20px;
 `;
 
 const TextArea = styled.textarea`
   width: 100%;
-  min-height: 100px;
+  min-height: 120px;
   padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   resize: vertical;
   font-family: inherit;
-  margin-bottom: 16px;
+  line-height: 1.5;
 `;
 
-const FileInputArea = styled.div`
+const CharCounter = styled.div`
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #666;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px 6px;
+  border-radius: 4px;
+`;
+
+const AttachmentSection = styled.div`
+  margin-bottom: 20px;
+`;
+
+const FileUploadContainer = styled.div`
+  margin-top: 10px;
+`;
+
+const FileUploadBox = styled.div`
   border: 2px dashed #ddd;
   border-radius: 4px;
-  padding: 20px;
-  text-align: center;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa;
   cursor: pointer;
-  margin-bottom: 16px;
-  transition: all 0.2s;
   
   &:hover {
-    border-color: #007bff;
-    background-color: rgba(0, 123, 255, 0.05);
+    border-color: #adb5bd;
+    background-color: #f1f3f5;
   }
 `;
 
-const FileLabel = styled.label`
+const FileInputLabel = styled.label`
   cursor: pointer;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
   width: 100%;
+  color: #6c757d;
+`;
+
+const UploadIcon = styled.div`
+  margin-bottom: 10px;
+`;
+
+const UploadText = styled.div`
+  text-align: center;
+  line-height: 1.4;
 `;
 
 const FileInput = styled.input`
@@ -460,61 +678,142 @@ const FileInput = styled.input`
   height: 0;
 `;
 
-const FileInputPlaceholder = styled.div`
-  color: #666;
+const FileList = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 10px;
+`;
+
+const FileItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  
+  ${props => props.status === 'error' && `
+    border-color: #dc3545;
+    background-color: #f8d7da;
+  `}
+  
+  ${props => props.status === 'success' && `
+    border-color: #28a745;
+    background-color: #d4edda;
+  `}
+`;
+
+const FileIcon = styled.div`
+  font-size: 24px;
+`;
+
+const FileInfo = styled.div`
+  flex: 1;
+  overflow: hidden;
+`;
+
+const FileName = styled.div`
+  font-weight: 500;
+  word-break: break-all;
+`;
+
+const FileInfoRow = styled.div`
+  display: flex;
   align-items: center;
   gap: 8px;
+`;
+
+const FileSize = styled.div`
+  font-size: 12px;
+  color: #6c757d;
+`;
+
+const FileUploadProgress = styled.div`
+  flex: 1;
+  height: 4px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+`;
+
+const FileProgressBar = styled.div`
+  height: 100%;
+  width: ${props => props.width}%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+`;
+
+const FileErrorMessage = styled.div`
+  font-size: 12px;
+  color: #dc3545;
+`;
+
+const DeleteButton = styled.button`
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 5px;
   
-  &:before {
-    content: '📎';
-    font-size: 24px;
-    margin-bottom: 8px;
+  &:hover {
+    color: #bd2130;
+  }
+  
+  &:disabled {
+    color: #dee2e6;
+    cursor: not-allowed;
   }
 `;
 
-const SelectedFileInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  
-  > div:first-child {
-    font-weight: bold;
-  }
-  
-  > div:last-child {
-    color: #666;
-    font-size: 14px;
-  }
+const AddMoreFilesButton = styled.div`
+  margin-top: 10px;
+  text-align: center;
 `;
 
-const ButtonContainer = styled.div`
+const ButtonsRow = styled.div`
   display: flex;
-  gap: 12px;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
 `;
 
 const SubmitButton = styled.button`
-  padding: 12px 24px;
+  padding: 8px 16px;
   background-color: #dc3545;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-
+  
   &:hover {
     background-color: #c82333;
   }
   
   &:disabled {
-    background-color: #f1aeb5;
+    opacity: 0.65;
     cursor: not-allowed;
   }
 `;
 
+const ResubmitButton = styled.button`
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  
+  &:hover {
+    background-color: #c82333;
+  }
+`;
+
 const CancelButton = styled.button`
-  padding: 12px 24px;
+  padding: 8px 16px;
   background-color: #f8f9fa;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -525,66 +824,14 @@ const CancelButton = styled.button`
   }
 `;
 
-const SubmissionInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-`;
-
-const SubmissionHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-`;
-
-const SubmissionStatus = styled.div`
-  color: #6c757d;
-  font-weight: bold;
-`;
-
 const ScoreDisplay = styled.div`
-  color: #dc3545;
-  font-size: 18px;
+  color: white;
+  font-size: 14px;
   font-weight: bold;
-`;
-
-const SubmissionContent = styled.div`
-  white-space: pre-wrap;
-  line-height: 1.6;
-  padding: 16px;
-  background-color: #f8f9fa;
+  background-color: #dc3545;
+  padding: 4px 8px;
   border-radius: 4px;
-  margin-top: 16px;
-`;
-
-const FeedbackSection = styled.div`
-  margin-top: 24px;
-  padding: 16px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border-left: 4px solid #28a745;
-`;
-
-const FeedbackTitle = styled.h3`
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #28a745;
-`;
-
-const FeedbackContent = styled.p`
-  white-space: pre-wrap;
-  line-height: 1.6;
-`;
-
-const NoFiles = styled.div`
-  color: #6c757d;
-  font-style: italic;
-  padding: 16px;
-  text-align: center;
-  background-color: #f8f9fa;
-  border-radius: 4px;
+  display: inline-block;
 `;
 
 const ErrorContainer = styled.div`
@@ -624,7 +871,7 @@ const ErrorMessage = styled.div`
 `;
 
 const ProgressContainer = styled.div`
-  margin-bottom: 16px;
+  margin-top: 16px;
   width: 100%;
   background-color: #f0f0f0;
   border-radius: 4px;
@@ -653,25 +900,10 @@ const ProgressText = styled.div`
   text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 `;
 
-const FileInfoRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-`;
-
-const FileIcon = styled.span`
-  font-size: 24px;
-`;
-
 const FileDetails = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
-`;
-
-const FileName = styled.div`
-  font-weight: 500;
-  word-break: break-all;
 `;
 
 const DownloadButton = styled.button`
@@ -688,6 +920,29 @@ const DownloadButton = styled.button`
   &:hover {
     background-color: #218838;
   }
+`;
+
+const SubmissionRow = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+`;
+
+const SubmissionLabel = styled.div`
+  color: #6c757d;
+  font-size: 14px;
+`;
+
+const FeedbackSection = styled.div`
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+`;
+
+const FeedbackContent = styled.div`
+  white-space: pre-wrap;
+  line-height: 1.6;
 `;
 
 export default AssignmentDetail; 
