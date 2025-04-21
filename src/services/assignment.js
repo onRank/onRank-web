@@ -277,65 +277,34 @@ const assignmentService = {
    * 과제 제출
    * @param {string} studyId - 스터디 ID
    * @param {string} assignmentId - 과제 ID
-   * @param {Object} submissionData - 제출 데이터 (파일 포함)
-   * @returns {Promise<Object>} - 제출 결과
+   * @param {Object} submissionData - 제출 데이터
+   * @returns {Promise<Object>} - 제출 결과 (uploadUrl 포함)
    */
-  // submitAssignment: async (studyId, assignmentId, submissionData) => {
-  //   try {
-  //     console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
+  submitAssignment: async (studyId, assignmentId, submissionData) => {
+    try {
+      console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, submissionData);
       
-  //     if (!submissionData.file) {
-  //       throw new Error('제출할 파일이 필요합니다.');
-  //     }
+      // Swagger 문서에 맞는 API 호출
+      const response = await api.post(
+        `/studies/${studyId}/assignments/${assignmentId}/submissions`, 
+        submissionData,
+        {
+          withCredentials: true
+        }
+      );
       
-  //     // 1단계: 파일 메타데이터 준비 및 업로드 URL 요청
-  //     const formData = new FormData();
-  //     formData.append('file', submissionData.file);
+      console.log("[AssignmentService] 과제 제출 응답:", response.data);
       
-  //     if (submissionData.comment) {
-  //       formData.append('comment', submissionData.comment);
-  //     }
+      // 스터디 컨텍스트 정보 업데이트
+      studyContextService.updateFromApiResponse(studyId, response.data);
       
-  //     // 제출 정보 API 호출 (Swagger 문서에 맞게)
-  //     const response = await api.post(
-  //       `/studies/${studyId}/assignments/${assignmentId}/submissions`, 
-  //       formData,
-  //       {
-  //         headers: {
-  //           'Content-Type': 'multipart/form-data'
-  //         },
-  //         withCredentials: true
-  //       }
-  //     );
-      
-  //     console.log("[AssignmentService] 과제 제출 성공:", response.data);
-      
-  //     // 2단계: 응답에 uploadUrl이 있는 경우, fileUtils를 사용하여 S3에 업로드
-  //     const uploadUrl = extractUploadUrlFromResponse(response.data);
-      
-  //     if (uploadUrl) {
-  //       console.log('[AssignmentService] 업로드 URL 발견:', uploadUrl);
-        
-  //       // fileUtils의 uploadFileToS3 사용하여 업로드
-  //       const uploadResult = await uploadFileToS3(uploadUrl, submissionData.file);
-        
-  //       if (!uploadResult.success) {
-  //         console.error('[AssignmentService] S3 업로드 실패:', uploadResult);
-  //         throw new Error(`파일 업로드 실패: ${uploadResult.message}`);
-  //       }
-        
-  //       console.log("[AssignmentService] fileUtils를 이용한 S3 업로드 성공:", uploadResult);
-  //     }
-      
-  //     // 스터디 컨텍스트 정보 업데이트
-  //     studyContextService.updateFromApiResponse(studyId, response.data);
-      
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('[AssignmentService] 과제 제출 실패:', error);
-  //     throw error;
-  //   }
-  // },
+      return response.data;
+    } catch (error) {
+      console.error('[AssignmentService] 과제 제출 실패:', error);
+      throw error;
+    }
+  },
+
   /**
    * 제출 목록 조회 (관리자용)
    * @param {string} studyId - 스터디 ID
