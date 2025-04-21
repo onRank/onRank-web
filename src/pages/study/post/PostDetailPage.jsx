@@ -184,8 +184,8 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
         </div>
       )}
       <div style={styles.buttonContainer}>
-        <Button variant="back" onClick={handleBack} />
         <Button variant="edit" onClick={handleEdit} />
+        <Button variant="back" onClick={handleBack} />
       </div>
     </div>
   );

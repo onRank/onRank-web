@@ -11,6 +11,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
   const [filesToRemove, setFilesToRemove] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [isDragging, setIsDragging] = useState(false);
   const { isLoading, createPost, editPost } = usePost();
   const maxLength = 10000;
 
@@ -67,6 +68,68 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     setSelectedFiles((prev) => [...prev, ...newFiles]);
     // 파일 선택 후 input 초기화
     e.target.value = "";
+  };
+
+  // 드래그 앤 드롭 이벤트 핸들러
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // 이미 선택된 파일과 중복 확인 (새로 추가하는 파일)
+    const newFiles = files.filter(
+      (file) => !selectedFiles.some((f) => f.name === file.name)
+    );
+
+    // 기존 파일과 이름 중복 확인 (수정 모드에서)
+    const duplicateWithExisting = newFiles.filter((file) =>
+      existingFiles.some((f) => f.fileName === file.name)
+    );
+
+    if (duplicateWithExisting.length > 0) {
+      setError(
+        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
+          .map((f) => f.name)
+          .join(", ")}`
+      );
+      return;
+    }
+
+    // 파일 크기 제한 (10MB)
+    const oversizedFiles = newFiles.filter(
+      (file) => file.size > 10 * 1024 * 1024
+    );
+    if (oversizedFiles.length > 0) {
+      setError(
+        `다음 파일이 10MB를 초과합니다: ${oversizedFiles
+          .map((f) => f.name)
+          .join(", ")}`
+      );
+      return;
+    }
+
+    // 선택된 파일 추가
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   // 선택된 파일 제거 핸들러
@@ -238,6 +301,35 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     },
   };
 
+  // 드래그 앤 드롭 영역 스타일
+  const dragDropStyles = {
+    dropZone: {
+      border: isDragging ? "2px dashed #e74c3c" : "2px dashed #ccc",
+      borderRadius: "6px",
+      padding: "20px",
+      textAlign: "center",
+      backgroundColor: isDragging ? "#fef2f2" : "#f8f9fa",
+      marginBottom: "16px",
+      transition: "all 0.2s ease",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+    },
+    icon: {
+      fontSize: "24px",
+      marginBottom: "8px",
+      color: isDragging ? "#e74c3c" : "#666",
+    },
+    text: {
+      color: "#666",
+      fontSize: "14px",
+      textAlign: "center",
+      lineHeight: "1.5",
+    },
+  };
+
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
@@ -306,23 +398,70 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
         </div>
       )}
 
+      {/* 드래그 앤 드롭 영역 */}
+      <div
+        style={dragDropStyles.dropZone}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => document.getElementById("file-upload").click()}
+      >
+        <div style={dragDropStyles.icon}>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 8L12 3L7 8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M12 3V15"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div style={dragDropStyles.text}>
+          파일의 주소나 놓기
+          <br />
+          클릭하여 추가하세요
+        </div>
+        <input
+          id="file-upload"
+          type="file"
+          multiple
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
+      </div>
+
+      {/* 기존 파일 업로드 버튼은 유지 (선택적) */}
       <div style={styles.fileUploadRow}>
         <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
           <div style={styles.fileUploadButton}>파일 첨부</div>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-          />
         </label>
       </div>
 
       <div style={styles.actionButtons}>
-        <div style={styles.leftButtons}>
-          <Button type="submit" variant="upload" disabled={isSubmitting} />
-        </div>
+        {/* <div style={styles.leftButtons}></div> */}
+        <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
