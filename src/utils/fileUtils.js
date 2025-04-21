@@ -83,7 +83,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     
     console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
     
-    const response = await fetch(uploadUrl, {
+    const response = (uploadUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': file.type,

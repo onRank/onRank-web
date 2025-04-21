@@ -245,7 +245,7 @@ const assignmentService = {
       console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, submissionData);
 
       if (submissionData instanceof FormData) {
-        console.log('[AssignmentService] FormData 객체 감지, preSignedURL 방식으로 처리');
+        console.log('[AssignmentService] FormData 객체 감지');
 
         const files = [];
         const formDataObj = {};
@@ -261,30 +261,33 @@ const assignmentService = {
         console.log('[AssignmentService] 추출된 데이터:', formDataObj);
         console.log('[AssignmentService] 추출된 파일 수:', files.length);
 
-        const fileNames = files.map(file => file.name);
-        
+        // API 요청 데이터 준비 (Swagger 명세에 맞춤)
         const requestData = {
-          submissionContent: formDataObj.submissionContent,
-          fileNames: fileNames
+          submissionContent: formDataObj.submissionContent || '',
+          fileNames: files.map(file => file.name)
         };
 
         console.log('[AssignmentService] 요청 데이터:', requestData);
 
+        // 1. 과제 제출 API 호출
         const response = await api.post(`/studies/${studyId}/assignments/${assignmentId}`, requestData, {
           withCredentials: true
         });
 
         console.log("[AssignmentService] 과제 제출 성공:", response.data);
-        
-        if (files.length > 0 && response.data) {
-          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
 
+        // 2. 파일 업로드 처리 (handleFileUploadWithS3 사용)
+        if (files.length > 0 && response.data?.data) {
+          const uploadResults = await handleFileUploadWithS3(response.data, files);
+          
+          // 업로드 실패 확인
           const failedUploads = uploadResults.filter(result => !result.success);
           if (failedUploads.length > 0) {
-            console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
+            console.error('[AssignmentService] 파일 업로드 실패:', failedUploads);
+            throw new Error('일부 파일 업로드에 실패했습니다.');
           }
-        } else {
-          console.warn('[AssignmentService] 업로드할 파일이 없거나 응답 데이터가 없음');
+
+          console.log('[AssignmentService] 모든 파일 업로드 완료');
         }
 
         // 스터디 컨텍스트 정보 업데이트
@@ -292,6 +295,8 @@ const assignmentService = {
 
         return response.data;
       }
+
+      throw new Error('잘못된 제출 데이터 형식입니다.');
     } catch (error) {
       console.error('[AssignmentService] 과제 제출 실패:', error);
       throw error;
