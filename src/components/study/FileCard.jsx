@@ -70,10 +70,11 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
       cursor: onClick ? "pointer" : "default",
       position: "relative",
       transition: "all 0.2s ease",
-      display: "flex",
       flexDirection: "column",
       border: "1px solid #e0e0e0",
-      margin: "10px 0",
+      margin: "10px",
+      display: "inline-flex",
+      verticalAlign: "top",
     },
     previewContainer: {
       flex: 1,
