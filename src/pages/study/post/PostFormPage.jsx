@@ -49,6 +49,7 @@ function PostFormPage() {
     content: {
       flex: 1,
       padding: "20px 40px",
+      maxHeight: "100px",
     },
     title: {
       fontSize: "24px",

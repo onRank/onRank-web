@@ -269,8 +269,9 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     },
     actionButtons: {
       display: "flex",
-      justifyContent: "space-between",
-      marginTop: "24px",
+      padding: "24px 0",
+      gap: "12px",
+      justifyContent: "flex-end",
     },
     leftButtons: {
       display: "flex",
@@ -316,6 +317,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "column",
+      width: "45%",
     },
     icon: {
       fontSize: "24px",
@@ -324,7 +326,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     },
     text: {
       color: "#666",
-      fontSize: "14px",
+      fontSize: "12px",
       textAlign: "center",
       lineHeight: "1.5",
     },
@@ -452,16 +454,8 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
         />
       </div>
 
-      {/* 기존 파일 업로드 버튼은 유지 (선택적) */}
-      <div style={styles.fileUploadRow}>
-        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-          <div style={styles.fileUploadButton}>파일 첨부</div>
-        </label>
-      </div>
-
       <div style={styles.actionButtons}>
-        {/* <div style={styles.leftButtons}></div> */}
-        <Button type="submit" variant="upload" disabled={isSubmitting} />
+        <Button type="button" variant="upload" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
