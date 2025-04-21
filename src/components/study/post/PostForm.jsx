@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
+import FileCard from "../FileCard"; // FileCard 컴포넌트 import 추가
 
 const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
   const [postTitle, setPostTitle] = useState("");
@@ -133,8 +134,18 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
   };
 
   // 선택된 파일 제거 핸들러
-  const handleRemoveFile = (fileName) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
+  const handleRemoveFile = (fileToRemove) => {
+    setSelectedFiles((prev) =>
+      prev.filter((file) => file.name !== fileToRemove.name)
+    );
+  };
+
+  // 기존 파일 제거 핸들러
+  const handleRemoveExistingFile = (fileToRemove) => {
+    setExistingFiles((prev) =>
+      prev.filter((file) => file.fileId !== fileToRemove.fileId)
+    );
+    setFilesToRemove((prev) => [...prev, fileToRemove]);
   };
 
   // 게시판 생성 핸들러
@@ -186,7 +197,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
           postContent,
           fileNames: selectedFiles.map((file) => file.name),
           // 유지할 기존 파일 목록
-          existingFileIds: existingFiles.map((file) => file.fileId),
+          remainingFileIds: existingFiles.map((file) => file.fileId),
           // 제거할 파일 목록
           removeFileIds: filesToRemove.map((file) => file.fileId),
         };
@@ -252,30 +263,11 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       color: "#888",
       marginTop: "4px",
     },
-    fileUploadRow: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginTop: "8px",
-      marginBottom: "32px",
-    },
-    fileUploadButton: {
-      backgroundColor: "#e74c3c",
-      color: "#fff",
-      border: "none",
-      borderRadius: "6px",
-      padding: "6px 12px",
-      cursor: "pointer",
-      fontSize: "14px",
-    },
     actionButtons: {
       display: "flex",
       padding: "24px 0",
       gap: "12px",
       justifyContent: "flex-end",
-    },
-    leftButtons: {
-      display: "flex",
-      gap: "12px",
     },
     errorMessage: {
       backgroundColor: "#fdecea",
@@ -284,21 +276,15 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       borderRadius: "6px",
       marginBottom: "16px",
     },
-    fileList: {
-      marginTop: "8px",
-      padding: "8px 12px",
-      backgroundColor: "#f8f9fa",
-      borderRadius: "4px",
+    fileGroupTitle: {
+      marginTop: "20px",
+      marginBottom: "10px",
+      fontWeight: "bold",
       fontSize: "14px",
+      color: "#555",
     },
-    fileItem: {
-      display: "flex",
-      alignItems: "center",
-      marginBottom: "4px",
-    },
-    fileIcon: {
-      marginRight: "8px",
-      color: "#666",
+    fileContainer: {
+      marginBottom: "20px",
     },
   };
 
@@ -317,7 +303,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       alignItems: "center",
       justifyContent: "center",
       flexDirection: "column",
-      width: "45%",
+      width: "100%",
     },
     icon: {
       fontSize: "24px",
@@ -369,36 +355,37 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
         </div>
       </div>
 
-      {/* 파일 목록 표시 */}
-      {selectedFiles.length > 0 && (
-        <div style={styles.fileList}>
-          {selectedFiles.map((file, index) => (
-            <div key={index} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.name}
-              <span
-                style={{ marginLeft: "10px", color: "#666", fontSize: "12px" }}
-              >
-                ({(file.size / 1024).toFixed(1)} KB)
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(file.name)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: "#e74c3c",
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
+      {/* 파일 목록 표시 (기존 및 새 파일) */}
+      <div style={styles.fileContainer}>
+        {existingFiles.length > 0 && (
+          <div>
+            <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
+            {existingFiles.map((file) => (
+              <FileCard
+                key={file.fileId}
+                file={{
+                  name: file.fileName,
+                  type:
+                    file.fileUrl && file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
+                      ? "image/jpeg"
+                      : "application/octet-stream",
+                  size: file.fileSize,
                 }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
+                onDelete={() => handleRemoveExistingFile(file)}
+              />
+            ))}
+          </div>
+        )}
+
+        {selectedFiles.length > 0 && (
+          <div>
+            <div style={styles.fileGroupTitle}>새 첨부 파일</div>
+            {selectedFiles.map((file, index) => (
+              <FileCard key={index} file={file} onDelete={handleRemoveFile} />
+            ))}
+          </div>
+        )}
+      </div>
 
       {/* 드래그 앤 드롭 영역 */}
       <div
@@ -455,7 +442,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       </div>
 
       <div style={styles.actionButtons}>
-        <Button type="button" variant="upload" disabled={isSubmitting} />
+        <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
