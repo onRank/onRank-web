@@ -60,53 +60,52 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
     }
   };
 
-  // 파일 크기를 읽기 쉬운 형식으로 변환
-  const formatFileSize = (size) => {
-    if (!size) return "";
-
-    const kb = size / 1024;
-    if (kb < 1024) {
-      return `${kb.toFixed(1)} KB`;
-    } else {
-      const mb = kb / 1024;
-      return `${mb.toFixed(1)} MB`;
-    }
-  };
-
   const styles = {
     cardContainer: {
-      backgroundColor: "#f8f9fa",
+      width: "270px",
+      height: "170px",
       borderRadius: "8px",
-      padding: "12px",
-      marginBottom: "12px",
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
+      overflow: "hidden",
       boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
       cursor: onClick ? "pointer" : "default",
       position: "relative",
-      overflow: "hidden",
       transition: "all 0.2s ease",
+      display: "flex",
+      flexDirection: "column",
       border: "1px solid #e0e0e0",
+      margin: "10px 0",
     },
     previewContainer: {
-      width: "50px",
-      height: "50px",
-      borderRadius: "4px",
-      overflow: "hidden",
-      backgroundColor: "#e9ecef",
+      flex: 1,
+      backgroundColor: "#f0f0f0",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
+      overflow: "hidden",
     },
     previewImage: {
       width: "100%",
       height: "100%",
-      objectFit: "cover",
+      objectFit: "contain",
     },
     fileIcon: {
-      fontSize: "24px",
-      color: "#495057",
+      fontSize: "48px",
+      color: "#888",
+    },
+    fileInfoBar: {
+      backgroundColor: "#fff",
+      padding: "12px",
+      display: "flex",
+      alignItems: "center",
+      borderTop: "1px solid #e0e0e0",
+    },
+    downloadIcon: {
+      width: "24px",
+      height: "24px",
+      marginRight: "8px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
     },
     fileInfo: {
       flex: 1,
@@ -118,33 +117,26 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
       overflow: "hidden",
       textOverflow: "ellipsis",
       fontSize: "14px",
-      fontWeight: "bold",
-      color: "#212529",
-    },
-    fileSize: {
-      margin: 0,
-      fontSize: "12px",
-      color: "#6c757d",
+      fontWeight: "normal",
+      color: "#333",
     },
     deleteButton: {
-      background: "none",
+      position: "absolute",
+      top: "8px",
+      right: "8px",
+      background: "rgba(255, 255, 255, 0.7)",
       border: "none",
       outline: "none",
       color: "#dc3545",
       cursor: "pointer",
       fontSize: "16px",
-      padding: "4px",
+      padding: "4px 8px",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
       borderRadius: "50%",
       transition: "background-color 0.2s",
-      marginLeft: "auto",
-    },
-    downloadIcon: {
-      width: "24px",
-      height: "24px",
-      marginRight: "5px",
+      zIndex: 2,
     },
   };
 
@@ -161,11 +153,15 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
         )}
       </div>
 
-      <div style={styles.fileInfo}>
-        <p style={styles.fileName}>{file.name}</p>
-        {file.size && (
-          <p style={styles.fileSize}>{formatFileSize(file.size)}</p>
-        )}
+      <div style={styles.fileInfoBar}>
+        <div style={styles.downloadIcon}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="#555">
+            <path d="M19 9h-4V3H9v6H5l7 7 7-7zm-8 2V5h2v6h1.17L12 13.17 9.83 11H11zm-6 7h14v2H5v-2z" />
+          </svg>
+        </div>
+        <div style={styles.fileInfo}>
+          <p style={styles.fileName}>{file.name}</p>
+        </div>
       </div>
 
       {onDelete && (

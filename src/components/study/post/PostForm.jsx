@@ -379,7 +379,7 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
 
         {selectedFiles.length > 0 && (
           <div>
-            <div style={styles.fileGroupTitle}>새 첨부 파일</div>
+            <div style={styles.fileGroupTitle}>첨부 파일</div>
             {selectedFiles.map((file, index) => (
               <FileCard key={index} file={file} onDelete={handleRemoveFile} />
             ))}
