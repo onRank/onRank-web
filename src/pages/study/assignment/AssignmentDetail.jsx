@@ -116,6 +116,15 @@ const AssignmentDetail = () => {
       };
       
       const submissionResponse = await assignmentService.submitAssignment(studyId, assignmentId, submissionInfo);
+      
+      // OAuth 리다이렉트 응답 처리
+      if (submissionResponse.isRedirect && submissionResponse.redirectUrl) {
+        console.log('OAuth 인증이 필요합니다. 리다이렉트 URL:', submissionResponse.redirectUrl);
+        // 전체 페이지를 리다이렉트 (Swagger에 맞게 OAuth 플로우 처리)
+        window.location.href = submissionResponse.redirectUrl;
+        return;
+      }
+      
       console.log('과제 제출 응답:', submissionResponse);
       
       // 파일이 있는 경우에만 업로드 처리
@@ -221,6 +230,14 @@ const AssignmentDetail = () => {
       
     } catch (error) {
       console.error('과제 제출 실패:', error);
+      
+      // 오류 응답에서 리다이렉트 여부 확인
+      if (error.isRedirect && error.redirectUrl) {
+        console.log('OAuth 인증이 필요합니다. 리다이렉트 URL:', error.redirectUrl);
+        window.location.href = error.redirectUrl;
+        return;
+      }
+      
       setError(`과제 제출에 실패했습니다: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
       setUploadProgress(0);
     } finally {
@@ -498,7 +515,7 @@ const AssignmentDetail = () => {
             </>
           ) : assignment.submissionStatus === 'SCORED' && (
             <>
-              <SectionTitle>제출물</SectionTitle>
+          <SectionTitle>제출물</SectionTitle>
               <SubmissionRow>
                 <SubmissionLabel>제출: {formatDate(assignment.submissionDate)}</SubmissionLabel>
               </SubmissionRow>
@@ -820,7 +837,7 @@ const ResubmitButton = styled.button`
   border-radius: 4px;
   cursor: pointer;
   font-weight: bold;
-  
+
   &:hover {
     background-color: #c82333;
   }

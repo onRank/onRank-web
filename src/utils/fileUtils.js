@@ -201,6 +201,80 @@ export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl', 
 };
 
 /**
+ * API 응답에서 업로드 URL을 추출하고 여러 파일을 S3에 업로드
+ * @param {Object} responseData - API 응답 데이터 (uploadUrl을 포함)
+ * @param {File[]} files - 업로드할 파일 배열
+ * @param {string} urlKeyName - 응답에서 업로드 URL이 저장된 키 이름 (기본값: 'uploadUrl')
+ * @returns {Promise<Array<{fileName: string, success: boolean, message: string, url?: string}>>} 업로드 결과 배열
+ */
+export const handleFileUploadWithS3 = async (responseData, files, urlKeyName = 'uploadUrl') => {
+  if (!files || files.length === 0) {
+    console.log('[FileUtils] 업로드할 파일이 없습니다.');
+    return [];
+  }
+  
+  if (!responseData) {
+    console.error('[FileUtils] API 응답 데이터가 없습니다.');
+    return files.map(file => ({
+      fileName: file.name,
+      success: false,
+      message: 'API 응답 데이터가 없습니다.'
+    }));
+  }
+  
+  // 업로드 URL 추출
+  const uploadUrls = extractUploadUrlFromResponse(responseData, urlKeyName, true);
+  
+  if (!uploadUrls || uploadUrls.length === 0) {
+    console.warn('[FileUtils] 업로드 URL을 찾을 수 없습니다.');
+    return files.map(file => ({
+      fileName: file.name,
+      success: false,
+      message: '업로드 URL을 찾을 수 없습니다.'
+    }));
+  }
+  
+  console.log(`[FileUtils] ${uploadUrls.length}개의 업로드 URL을 발견했습니다.`);
+  
+  // 파일 수와 URL 수가 일치하지 않을 수 있음을 경고
+  if (uploadUrls.length !== files.length) {
+    console.warn(`[FileUtils] 파일 수(${files.length})와 업로드 URL 수(${uploadUrls.length})가 일치하지 않습니다.`);
+  }
+  
+  // 파일별로 업로드 URL 매핑하여 업로드
+  const uploadPromises = files.map((file, index) => {
+    if (index < uploadUrls.length) {
+      console.log(`[FileUtils] 파일 "${file.name}"의 업로드 URL 확인됨`);
+      return uploadFileToS3(uploadUrls[index], file)
+        .then(result => ({
+          fileName: file.name,
+          size: file.size,
+          type: file.type,
+          ...result
+        }));
+    }
+    return Promise.resolve({
+      fileName: file.name,
+      size: file.size,
+      type: file.type,
+      success: false,
+      message: '업로드 URL이 충분하지 않습니다.'
+    });
+  });
+  
+  // 모든 파일 업로드 대기
+  const uploadResults = await Promise.all(uploadPromises);
+  console.log('[FileUtils] 파일 업로드 결과:', uploadResults);
+  
+  // 업로드 실패 발생 시 경고
+  const failedUploads = uploadResults.filter(result => !result.success);
+  if (failedUploads.length > 0) {
+    console.warn('[FileUtils] 일부 파일 업로드 실패:', failedUploads);
+  }
+  
+  return uploadResults;
+};
+
 /**
  * 파일을 Base64 인코딩 문자열로 변환
  * @param {File} file - 변환할 파일 객체

@@ -1,6 +1,6 @@
 import { api, tokenUtils } from "./api";
 import studyContextService from "./studyContext";
-import { uploadFileToS3, extractUploadUrlFromResponse } from "../utils/fileUtils";
+import { uploadFileToS3, extractUploadUrlFromResponse, handleFileUploadWithS3 } from "../utils/fileUtils";
 
 /**
  * 과제 관련 API 서비스
@@ -110,34 +110,14 @@ const assignmentService = {
         
         console.log("[AssignmentService] 과제 생성 성공, 응답 데이터:", response.data);
         
-        // 4. 응답에서 data 배열에 있는 uploadUrl 추출
+        // 4. 파일 업로드 처리 (fileUtils의 공통 함수 사용)
         if (files.length > 0 && response.data) {
-          // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
-          const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
+          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
           
-          if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-            console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls.length);
-            
-            // 파일별로 업로드 URL 매핑하여 업로드
-            const uploadPromises = files.map((file, index) => {
-              if (index < uploadUrls.length) {
-                console.log(`[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`);
-                return uploadFileToS3(uploadUrls[index], file);
-              }
-              return Promise.resolve({ success: false, message: 'URL이 충분하지 않음' });
-            });
-            
-            // 모든 파일 업로드 대기
-            const uploadResults = await Promise.all(uploadPromises);
-            console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
-            
-            // 업로드 실패 발생 시 경고
-            const failedUploads = uploadResults.filter(result => !result.success);
-            if (failedUploads.length > 0) {
-              console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
-            }
-          } else {
-            console.warn('[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
+          // 업로드 실패 발생 시 경고
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
           }
         } else {
           console.warn('[AssignmentService] 업로드할 파일이 없거나 응답 데이터가 없음');
@@ -184,29 +164,9 @@ const assignmentService = {
       
       console.log("[AssignmentService] 과제 생성 성공:", response.data);
       
-      // 파일 객체가 있고 응답에 uploadUrl이 있는 경우 파일 업로드
+      // 파일 업로드 처리 (fileUtils의 공통 함수 사용)
       if (assignmentData.files && assignmentData.files.length > 0) {
-        // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
-        const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
-        
-        if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-          console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls.length);
-          
-          // 파일별로 업로드 URL 매핑하여 업로드
-          const uploadPromises = assignmentData.files.map((file, index) => {
-            if (index < uploadUrls.length) {
-              console.log(`[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`);
-              return uploadFileToS3(uploadUrls[index], file);
-            }
-            return Promise.resolve({ success: false, message: 'URL이 충분하지 않음' });
-          });
-          
-          // 모든 파일 업로드 대기
-          const uploadResults = await Promise.all(uploadPromises);
-          console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
-        } else {
-          console.warn('[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
-        }
+        await handleFileUploadWithS3(response.data, assignmentData.files, 'uploadUrl');
       }
       
       // 스터디 컨텍스트 정보 업데이트
@@ -295,11 +255,32 @@ const assignmentService = {
       
       console.log("[AssignmentService] 과제 제출 응답:", response.data);
       
+      // OAuth 리다이렉트 처리
+      if (response.status === 302 || response.headers?.location) {
+        const redirectUrl = response.headers?.location;
+        console.log("[AssignmentService] 리다이렉트 감지:", redirectUrl);
+        return {
+          ...response.data,
+          redirectUrl,
+          isRedirect: true
+        };
+      }
+      
       // 스터디 컨텍스트 정보 업데이트
       studyContextService.updateFromApiResponse(studyId, response.data);
       
       return response.data;
     } catch (error) {
+      // 오류 응답에서 리다이렉트 감지
+      if (error.response?.status === 302 || error.response?.headers?.location) {
+        const redirectUrl = error.response.headers.location;
+        console.log("[AssignmentService] 오류 응답에서 리다이렉트 감지:", redirectUrl);
+        return {
+          redirectUrl,
+          isRedirect: true
+        };
+      }
+      
       console.error('[AssignmentService] 과제 제출 실패:', error);
       throw error;
     }
