@@ -83,7 +83,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     
     console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
     
-    const response = (uploadUrl, {
+    const response = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': file.type,
@@ -207,6 +207,8 @@ export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl', 
  * @param {string} urlKeyName - 응답에서 업로드 URL이 저장된 키 이름 (기본값: 'uploadUrl')
  * @returns {Promise<Array<{fileName: string, success: boolean, message: string, url?: string}>>} 업로드 결과 배열
  */
+
+//여러 개의 file들을 S3에 업로드하는 함수
 export const handleFileUploadWithS3 = async (responseData, files, urlKeyName = 'uploadUrl') => {
   if (!files || files.length === 0) {
     console.log('[FileUtils] 업로드할 파일이 없습니다.');

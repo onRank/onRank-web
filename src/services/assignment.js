@@ -73,7 +73,7 @@ const assignmentService = {
       
       // FormData 객체인 경우 파일 처리를 위해 추출
       if (assignmentData instanceof FormData) {
-        console.log('[AssignmentService] FormData 객체 감지, preSignedURL 방식으로 처리');
+        console.log('[AssignmentService] FormData 객체 감지');
         
         // FormData에서 파일들과 다른 데이터 추출
         const files = [];
@@ -110,9 +110,14 @@ const assignmentService = {
         
         console.log("[AssignmentService] 과제 생성 성공, 응답 데이터:", response.data);
         
-        // 4. 파일 업로드 처리 (fileUtils의 공통 함수 사용)
+        // 4. 파일 업로드 처리
         if (files.length > 0 && response.data) {
+          console.log('[AssignmentService] 파일 업로드 시작');
+          // 전체 응답을 handleFileUploadWithS3에 전달
           const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
+          
+          // 업로드 결과 확인
+          console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
           
           // 업로드 실패 발생 시 경고
           const failedUploads = uploadResults.filter(result => !result.success);
@@ -163,11 +168,6 @@ const assignmentService = {
       });
       
       console.log("[AssignmentService] 과제 생성 성공:", response.data);
-      
-      // 파일 업로드 처리 (fileUtils의 공통 함수 사용)
-      if (assignmentData.files && assignmentData.files.length > 0) {
-        await handleFileUploadWithS3(response.data, assignmentData.files, 'uploadUrl');
-      }
       
       // 스터디 컨텍스트 정보 업데이트
       studyContextService.updateFromApiResponse(studyId, response.data);
@@ -247,24 +247,25 @@ const assignmentService = {
       if (submissionData instanceof FormData) {
         console.log('[AssignmentService] FormData 객체 감지');
 
-        const files = [];
+        // 제출할 파일들 추출
+        const submissionFiles = [];
         const formDataObj = {};
 
         for (const [key, value] of submissionData.entries()) {
           if (value instanceof File) {
-            files.push(value);
+            submissionFiles.push(value);
           } else {
             formDataObj[key] = value;
           }
         }
 
         console.log('[AssignmentService] 추출된 데이터:', formDataObj);
-        console.log('[AssignmentService] 추출된 파일 수:', files.length);
+        console.log('[AssignmentService] 제출할 파일 수:', submissionFiles.length);
 
         // API 요청 데이터 준비 (Swagger 명세에 맞춤)
         const requestData = {
           submissionContent: formDataObj.submissionContent || '',
-          fileNames: files.map(file => file.name)
+          fileNames: submissionFiles.map(file => file.name)
         };
 
         console.log('[AssignmentService] 요청 데이터:', requestData);
@@ -277,8 +278,12 @@ const assignmentService = {
         console.log("[AssignmentService] 과제 제출 성공:", response.data);
 
         // 2. 파일 업로드 처리 (handleFileUploadWithS3 사용)
-        if (files.length > 0 && response.data?.data) {
-          const uploadResults = await handleFileUploadWithS3(response.data, files);
+        if (submissionFiles.length > 0 && response.data) {
+          // 전체 응답을 handleFileUploadWithS3에 전달
+          const uploadResults = await handleFileUploadWithS3(response.data, submissionFiles);
+          
+          // 업로드 결과 확인
+          console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
           
           // 업로드 실패 확인
           const failedUploads = uploadResults.filter(result => !result.success);
