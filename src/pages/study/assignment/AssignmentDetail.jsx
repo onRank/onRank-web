@@ -106,111 +106,21 @@ const AssignmentDetail = () => {
     setUploadStatus([]);
 
     try {
-      // 1. 먼저 서버에 과제 제출 정보를 보내고 업로드 URL을 받아옴
-      const submissionInfo = {
-        submissionContent: comment,
-        fileCount: files.length,
-        fileNames: hasFiles ? files.map(file => file.name) : [],
-        fileSizes: hasFiles ? files.map(file => file.size) : [],
-        fileTypes: hasFiles ? files.map(file => file.type) : []
-      };
+      // FormData 객체 생성
+      const formData = new FormData();
+      formData.append('submissionContent', comment);
       
-      const submissionResponse = await assignmentService.submitAssignment(studyId, assignmentId, submissionInfo);
-      
-      // OAuth 리다이렉트 응답 처리
-      if (submissionResponse.isRedirect && submissionResponse.redirectUrl) {
-        console.log('OAuth 인증이 필요합니다. 리다이렉트 URL:', submissionResponse.redirectUrl);
-        // 전체 페이지를 리다이렉트 (Swagger에 맞게 OAuth 플로우 처리)
-        window.location.href = submissionResponse.redirectUrl;
-        return;
+      // 파일이 있는 경우 추가
+      if (hasFiles) {
+        files.forEach(file => {
+          formData.append('files', file);
+        });
       }
+      
+      // assignment.js의 submitAssignment 함수 호출
+      const submissionResponse = await assignmentService.submitAssignment(studyId, assignmentId, formData);
       
       console.log('과제 제출 응답:', submissionResponse);
-      
-      // 파일이 있는 경우에만 업로드 처리
-      if (hasFiles) {
-        // 업로드 URL 확인
-        const uploadUrls = extractUploadUrlFromResponse(submissionResponse, 'uploadUrl', true);
-        
-        if (!uploadUrls || uploadUrls.length === 0) {
-          // 파일은 있지만 업로드 URL이 없는 경우 경고
-          console.warn('업로드 URL을 받아오지 못했습니다. 파일 업로드를 건너뜁니다.');
-          // 하지만 제출은 계속 진행 (서버에서 파일 업로드를 요구하지 않는 경우일 수 있음)
-        } else {
-          if (uploadUrls.length !== files.length) {
-            console.warn(`파일 수(${files.length})와 업로드 URL 수(${uploadUrls.length})가 일치하지 않습니다.`);
-          }
-          
-          // 2. 각 파일을 S3에 업로드
-          setUploadProgress(30);
-          
-          const uploadPromises = files.map((file, index) => {
-            // 파일 수와 URL 수가 일치하지 않을 경우 대비
-            const uploadUrl = index < uploadUrls.length ? uploadUrls[index] : null;
-            
-            if (!uploadUrl) {
-              return Promise.resolve({
-                fileName: file.name,
-                success: false,
-                message: '업로드 URL이 없습니다.'
-              });
-            }
-            
-            // 상태 배열 업데이트
-            setUploadStatus(prev => [...prev, {
-              fileName: file.name,
-              progress: 0,
-              status: 'uploading'
-            }]);
-            
-            return uploadFileToS3(uploadUrl, file)
-              .then(result => {
-                // 업로드 성공 시 상태 업데이트
-                setUploadStatus(prev => prev.map(item => 
-                  item.fileName === file.name 
-                    ? { ...item, progress: 100, status: result.success ? 'success' : 'error', message: result.message }
-                    : item
-                ));
-                return result;
-              })
-              .catch(error => {
-                // 업로드 실패 시 상태 업데이트
-                setUploadStatus(prev => prev.map(item => 
-                  item.fileName === file.name 
-                    ? { ...item, progress: 0, status: 'error', message: error.message }
-                    : item
-                ));
-                return {
-                  fileName: file.name,
-                  success: false,
-                  message: error.message
-                };
-              });
-          });
-          
-          const uploadResults = await Promise.all(uploadPromises);
-          console.log('파일 업로드 결과:', uploadResults);
-          
-          // 모든 파일이 성공적으로 업로드 되었는지 확인
-          const allSuccessful = uploadResults.every(result => result.success);
-          const failedUploads = uploadResults.filter(result => !result.success);
-          
-          setUploadProgress(100);
-          
-          if (!allSuccessful) {
-            // 실패한 업로드 정보 표시
-            const failureMessage = `일부 파일이 업로드되지 않았습니다:\n${
-              failedUploads.map(f => `${f.fileName}: ${f.message}`).join('\n')
-            }`;
-            alert(failureMessage);
-            // 파일 업로드에 실패했지만, 제출은 계속 진행
-          }
-        }
-      } else {
-        // 파일이 없는 경우 업로드 단계 건너뛰기
-        console.log('첨부 파일 없음, 파일 업로드 단계 건너뜀');
-        setUploadProgress(100);
-      }
       
       // 성공 메시지 표시
       alert('과제가 성공적으로 제출되었습니다.');
@@ -230,14 +140,6 @@ const AssignmentDetail = () => {
       
     } catch (error) {
       console.error('과제 제출 실패:', error);
-      
-      // 오류 응답에서 리다이렉트 여부 확인
-      if (error.isRedirect && error.redirectUrl) {
-        console.log('OAuth 인증이 필요합니다. 리다이렉트 URL:', error.redirectUrl);
-        window.location.href = error.redirectUrl;
-        return;
-      }
-      
       setError(`과제 제출에 실패했습니다: ${error.message || '알 수 없는 오류가 발생했습니다.'}`);
       setUploadProgress(0);
     } finally {
