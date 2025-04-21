@@ -243,44 +243,56 @@ const assignmentService = {
   submitAssignment: async (studyId, assignmentId, submissionData) => {
     try {
       console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, submissionData);
-      
-      // Swagger 문서에 맞는 API 호출
-      const response = await api.post(
-        `/studies/${studyId}/assignments/${assignmentId}/submissions`, 
-        submissionData,
-        {
-          withCredentials: true
+
+      if (submissionData instanceof FormData) {
+        console.log('[AssignmentService] FormData 객체 감지, preSignedURL 방식으로 처리');
+
+        const files = [];
+        const formDataObj = {};
+
+        for (const [key, value] of submissionData.entries()) {
+          if (value instanceof File) {
+            files.push(value);
+          } else {
+            formDataObj[key] = value;
+          }
         }
-      );
-      
-      console.log("[AssignmentService] 과제 제출 응답:", response.data);
-      
-      // OAuth 리다이렉트 처리
-      if (response.status === 302 || response.headers?.location) {
-        const redirectUrl = response.headers?.location;
-        console.log("[AssignmentService] 리다이렉트 감지:", redirectUrl);
-        return {
-          ...response.data,
-          redirectUrl,
-          isRedirect: true
+
+        console.log('[AssignmentService] 추출된 데이터:', formDataObj);
+        console.log('[AssignmentService] 추출된 파일 수:', files.length);
+
+        const fileNames = files.map(file => file.name);
+        
+        const requestData = {
+          submissionContent: formDataObj.submissionContent,
+          fileNames: fileNames
         };
+
+        console.log('[AssignmentService] 요청 데이터:', requestData);
+
+        const response = await api.post(`/studies/${studyId}/assignments/${assignmentId}`, requestData, {
+          withCredentials: true
+        });
+
+        console.log("[AssignmentService] 과제 제출 성공:", response.data);
+        
+        if (files.length > 0 && response.data) {
+          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
+
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
+          }
+        } else {
+          console.warn('[AssignmentService] 업로드할 파일이 없거나 응답 데이터가 없음');
+        }
+
+        // 스터디 컨텍스트 정보 업데이트
+        studyContextService.updateFromApiResponse(studyId, response.data);
+
+        return response.data;
       }
-      
-      // 스터디 컨텍스트 정보 업데이트
-      studyContextService.updateFromApiResponse(studyId, response.data);
-      
-      return response.data;
     } catch (error) {
-      // 오류 응답에서 리다이렉트 감지
-      if (error.response?.status === 302 || error.response?.headers?.location) {
-        const redirectUrl = error.response.headers.location;
-        console.log("[AssignmentService] 오류 응답에서 리다이렉트 감지:", redirectUrl);
-        return {
-          redirectUrl,
-          isRedirect: true
-        };
-      }
-      
       console.error('[AssignmentService] 과제 제출 실패:', error);
       throw error;
     }
