@@ -158,36 +158,6 @@ export const uploadFilesToS3 = async (filesWithUrls) => {
 };
 
 /**
- * 파일 배열과 presigned URL 배열을 받아 모든 파일을 S3에 업로드
- * @param {Array<File>} files - 업로드할 파일 객체 배열
- * @param {Array<string>} uploadUrls - S3 presigned URL 배열 
- * @returns {Promise<Array>} 업로드 결과 배열
- */
-export const uploadFilesWithPresignedUrls = async (files, uploadUrls) => {
-  if (!files || !Array.isArray(files) || !uploadUrls || !Array.isArray(uploadUrls)) {
-    console.error('[fileUtils] 유효하지 않은 파일 또는 URL 배열:', { files, uploadUrls });
-    return [{ success: false, message: '유효하지 않은 파일 또는 URL 배열' }];
-  }
-  
-  console.log(`[fileUtils] ${files.length}개 파일을 ${uploadUrls.length}개 URL로 업로드 시작`);
-  
-  // 파일별로 업로드 URL 매핑하여 업로드
-  const uploadPromises = files.map((file, index) => {
-    if (index < uploadUrls.length) {
-      console.log(`[fileUtils] 파일 "${file.name}"의 업로드 URL 확인됨`);
-      return uploadFileToS3(uploadUrls[index], file);
-    }
-    return Promise.resolve({ success: false, message: 'URL이 충분하지 않음' });
-  });
-  
-  // 모든 파일 업로드 대기
-  const results = await Promise.all(uploadPromises);
-  console.log('[fileUtils] 파일 업로드 결과:', results);
-  
-  return results;
-};
-
-/**
  * API 응답에서 업로드 URL 추출
  * @param {Object} response - API 응답 객체
  * @param {string} searchKey - 찾을 키 이름 (uploadUrl, presignedUrl 등)

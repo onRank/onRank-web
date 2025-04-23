@@ -1,6 +1,6 @@
 import { api, tokenUtils } from "./api";
 import studyContextService from "./studyContext";
-import { uploadFileToS3, extractUploadUrlFromResponse, uploadFilesWithPresignedUrls } from "../utils/fileUtils";
+import { uploadFilesToS3, extractUploadUrlFromResponse, uploadFilesToS3 } from "../utils/fileUtils";
 
 /**
  * 과제 관련 API 서비스
@@ -103,7 +103,6 @@ const assignmentService = {
         withCredentials: true
       });
       
-      console.log("[AssignmentService] 과제 생성 성공:", response.data);
       
       // 파일 객체가 있고 응답에 uploadUrl이 있는 경우 파일 업로드
       if (assignmentData.files && assignmentData.files.length > 0) {
@@ -113,8 +112,7 @@ const assignmentService = {
         if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
           console.log('[AssignmentService] 업로드 URL 배열 발견:', uploadUrls.length);
           
-          // 새로 만든 함수를 사용하여 파일 업로드
-          const uploadResults = await uploadFilesWithPresignedUrls(assignmentData.files, uploadUrls);
+          const uploadResults = await uploadFilesToS3(assignmentData.files, uploadUrls);
           console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
           
           // 업로드 실패 발생 시 경고
