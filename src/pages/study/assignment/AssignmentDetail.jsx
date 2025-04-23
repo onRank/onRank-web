@@ -101,11 +101,22 @@ const AssignmentDetail = () => {
       setIsLoading(true);
       setError(null);
 
-      const formattedData = {
-        ...formData
+      // 파일이 하나도 없고 댓글도 비어있으면 제출 불가
+      if (files.length === 0 && comment.trim() === '') {
+        setError('과제 내용 또는 첨부 파일을 추가해주세요.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 제출용 데이터 구성 (AssignmentCreate.jsx 방식 참고)
+      const submissionData = {
+        submissionContent: comment,
+        fileNames: files.map(file => file.name),
+        files: files // 실제 파일 객체를 포함
       };
 
-      await assignmentService.submitAssignment(studyId, assignmentId, formattedData);
+      // 서비스 레이어 호출 (인자 3개 유지)
+      await assignmentService.submitAssignment(studyId, assignmentId, submissionData);
 
       alert('과제가 성공적으로 제출되었습니다.');
       navigate(`/studies/${studyId}/assignment`);

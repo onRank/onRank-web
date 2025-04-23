@@ -195,17 +195,31 @@ const assignmentService = {
    * 과제 제출
    * @param {string} studyId - 스터디 ID
    * @param {string} assignmentId - 과제 ID
-   * @param {Object} submissionData - 제출 데이터
+   * @param {Object} submissionData - 제출 데이터 (submissionContent, fileNames, files)
    * @returns {Promise<Object>} - 제출 결과 (uploadUrl 포함)
    */
   submitAssignment: async (studyId, assignmentId, submissionData) => {
     try {
       console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, submissionData);
       
+      // 파일 객체와 파일명 확인
+      const files = submissionData.files || [];
+      
+      // 기본 유효성 검사
+      if (!submissionData.submissionContent && files.length === 0) {
+        throw new Error('과제 내용 또는 첨부 파일은 필수 항목입니다.');
+      }
+      
+      // API 요청 데이터 - 백엔드에는 파일명만 전송
+      const requestData = {
+        submissionContent: submissionData.submissionContent || '',
+        fileNames: submissionData.fileNames || []
+      };
+      
       // Swagger 문서에 맞는 API 호출
       const response = await api.post(
         `/studies/${studyId}/assignments/${assignmentId}`, 
-        submissionData,
+        requestData,
         {
           withCredentials: true
         }
@@ -213,19 +227,20 @@ const assignmentService = {
       
       console.log("[AssignmentService] 과제 제출 응답:", response.data);
       
-      if (submissionData.files && submissionData.files.length > 0) {
+      // 파일이 있으면 업로드 처리
+      if (files && files.length > 0) {
         const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
         if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-          const uploadResults = await uploadFilesWithPresignedUrls(submissionData.files, uploadUrls);
+          console.log('[AssignmentService] 업로드 URL 발견:', uploadUrls.length);
+          const uploadResults = await uploadFilesWithPresignedUrls(files, uploadUrls);
           console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
 
           const failedUploads = uploadResults.filter(result => !result.success);
           if (failedUploads.length > 0) {
             console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
           }
-          else {
-            console.log('AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
-          }
+        } else {
+          console.warn('[AssignmentService] 업로드 URL을 찾을 수 없음. 백엔드 응답:', response.data);
         }
       }
 
