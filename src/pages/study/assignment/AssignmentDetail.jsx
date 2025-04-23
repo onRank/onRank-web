@@ -102,7 +102,8 @@ const AssignmentDetail = () => {
       setError(null);
 
       const formattedData = {
-        ...formData
+        ...formData,
+        files: files
       };
 
       await assignmentService.submitAssignment(studyId, assignmentId, formattedData);
