@@ -104,6 +104,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
         'Content-Type': contentType,
       },
       body: file,
+      credentials: 'omit'
     });
     
     if (!response.ok) {
