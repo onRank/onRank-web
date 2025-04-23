@@ -14,8 +14,8 @@ const AssignmentDetail = () => {
   const [error, setError] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [comment, setComment] = useState('');
   const [charCount, setCharCount] = useState(0);
+  const [submissionContent, setSubmissionContent] = useState('');
   
   // 재제출 모드 상태
   const [isResubmitting, setIsResubmitting] = useState(false);
@@ -24,11 +24,6 @@ const AssignmentDetail = () => {
   const [uploadStatus, setUploadStatus] = useState([]);
   
   const MAX_CHAR_COUNT = 10000;
-
-  const [formData, setFormData] = useState({
-    submissionContent: '',
-    fileNames: []
-  });
 
   useEffect(() => {
     const fetchAssignmentDetail = async () => {
@@ -86,10 +81,10 @@ const AssignmentDetail = () => {
     }
   };
 
-  const handleCommentChange = (e) => {
+  const handleSubmissionContentChange = (e) => {
     const value = e.target.value;
     if (value.length <= MAX_CHAR_COUNT) {
-      setComment(value);
+      setSubmissionContent(value);
       setCharCount(value.length);
     }
   };
@@ -101,10 +96,16 @@ const AssignmentDetail = () => {
       setIsLoading(true);
       setError(null);
 
+      // 파일명 배열 생성
+      const fileNames = files.map(file => file.name);
+
       const formattedData = {
-        ...formData,
+        submissionContent: submissionContent,
+        fileNames: fileNames,
         files: files
       };
+
+      console.log('제출 데이터:', formattedData);
 
       await assignmentService.submitAssignment(studyId, assignmentId, formattedData);
 
@@ -126,7 +127,7 @@ const AssignmentDetail = () => {
   const handleResubmit = () => {
     setIsResubmitting(true);
     setFiles([]);
-    setComment('');
+    setSubmissionContent('');
     setCharCount(0);
     setUploadStatus([]);
   };
@@ -135,7 +136,7 @@ const AssignmentDetail = () => {
   const handleCancelResubmit = () => {
     setIsResubmitting(false);
     setFiles([]);
-    setComment('');
+    setSubmissionContent('');
     setCharCount(0);
     setUploadStatus([]);
   };
@@ -188,8 +189,8 @@ const AssignmentDetail = () => {
       <TextareaSection>
         <TextArea 
           placeholder="제출물 내용을 입력하세요."
-          value={comment}
-          onChange={handleCommentChange}
+          value={submissionContent}
+          onChange={handleSubmissionContentChange}
           maxLength={MAX_CHAR_COUNT}
         />
         <CharCounter>{charCount}/{MAX_CHAR_COUNT}</CharCounter>
@@ -290,7 +291,7 @@ const AssignmentDetail = () => {
       <ButtonsRow>
         <SubmitButton 
           onClick={handleSubmit}
-          disabled={isLoading || (files.length === 0 && comment.trim() === '')}
+          disabled={isLoading || (files.length === 0 && submissionContent.trim() === '')}
         >
           {isLoading ? '제출 중...' : '제출'}
         </SubmitButton>
