@@ -202,7 +202,7 @@ const assignmentService = {
     try {
       console.log(`[AssignmentService] 과제 제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, submissionData);
       
-      if (!submissionData.assignmentContent && !submissionData.files){
+      if (!submissionData.submissionContent && submissionData.fileNames.length === 0){
         throw new Error('과제 내용 또는 첨부 파일은 필수 항목입니다.');
       }
       
