@@ -1,6 +1,6 @@
 import { api, tokenUtils } from "./api";
 import studyContextService from "./studyContext";
-import { uploadFilesToS3, extractUploadUrlFromResponse, uploadFilesToS3 } from "../utils/fileUtils";
+import {  extractUploadUrlFromResponse, uploadFilesToS3 } from "../utils/fileUtils";
 
 /**
  * 과제 관련 API 서비스
