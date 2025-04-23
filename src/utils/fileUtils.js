@@ -83,10 +83,25 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     
     console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
     
+    // 프리사인드 URL에서 Content-Type 추출
+    let contentType = file.type || "application/octet-stream";
+
+    // URL에서 Content-Type 파라미터가 있는지 확인
+    try {
+      const urlObj = new URL(uploadUrl);
+      const params = new URLSearchParams(urlObj.search);
+      if (params.has("Content-Type")) {
+        contentType = params.get("Content-Type");
+        console.log(`[uploadFileToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`);
+      }
+    } catch (urlError) {
+      console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
+    }
+    
     const response = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': file.type,
+        'Content-Type': contentType,
       },
       body: file,
     });
