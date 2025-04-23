@@ -204,7 +204,7 @@ const assignmentService = {
       
       // Swagger 문서에 맞는 API 호출
       const response = await api.post(
-        `/studies/${studyId}/assignments/${assignmentId}/submissions`, 
+        `/studies/${studyId}/assignments/${assignmentId}`, 
         submissionData,
         {
           withCredentials: true
@@ -213,6 +213,22 @@ const assignmentService = {
       
       console.log("[AssignmentService] 과제 제출 응답:", response.data);
       
+      if (submissionData.files && submissionData.files.length > 0) {
+        const uploadUrls = extractUploadUrlFromResponse(response.data, 'uploadUrl', true);
+        if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
+          const uploadResults = await uploadFilesWithPresignedUrls(submissionData.files, uploadUrls);
+          console.log('[AssignmentService] 파일 업로드 결과:', uploadResults);
+
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn('[AssignmentService] 일부 파일 업로드 실패:', failedUploads);
+          }
+          else {
+            console.log('AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음');
+          }
+        }
+      }
+
       // 스터디 컨텍스트 정보 업데이트
       studyContextService.updateFromApiResponse(studyId, response.data);
       
