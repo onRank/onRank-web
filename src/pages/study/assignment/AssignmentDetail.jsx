@@ -102,7 +102,6 @@ const AssignmentDetail = () => {
       const formattedData = {
         submissionContent: submissionContent,
         fileNames: fileNames,
-        files: files
       };
 
       console.log('제출 데이터:', formattedData);
