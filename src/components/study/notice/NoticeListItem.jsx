@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { formatDateYMD } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { useState, useRef, useEffect } from "react";
-import { useNotice } from "../../../contexts/NoticeContext";
+import { useNotice } from "./NoticeProvider";
 
 function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   const { isDarkMode } = useTheme();
