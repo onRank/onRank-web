@@ -2,7 +2,8 @@ import { api, tokenUtils } from "./api";
 import studyContextService from "./studyContext";
 import {
   extractUploadUrlFromResponse,
-  uploadFilesToS3,
+  handleFileUploadWithS3,
+  uploadFileToS3
 } from "../utils/fileUtils";
 
 /**
@@ -100,6 +101,7 @@ const assignmentService = {
 
         console.log("[AssignmentService] 추출된 데이터:", formDataObj);
         console.log("[AssignmentService] 추출된 파일 수:", files.length);
+        console.log("[AssignmentService] 추출된 파일:", files.map(f => f.name));
 
         // 1. 파일 이름 배열 만들기
         const fileNames = files.map((file) => file.name);
@@ -124,60 +126,21 @@ const assignmentService = {
 
         console.log(
           "[AssignmentService] 과제 생성 성공, 응답 데이터:",
-          response.data
+          JSON.stringify(response.data, null, 2)
         );
 
-        // 4. 응답에서 data 배열에 있는 uploadUrl 추출
+        // 4. 파일 업로드 처리
         if (files.length > 0 && response.data) {
-          // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
-          const uploadUrls = extractUploadUrlFromResponse(
-            response.data,
-            "uploadUrl",
-            true
-          );
-
-          if (
-            uploadUrls &&
-            Array.isArray(uploadUrls) &&
-            uploadUrls.length > 0
-          ) {
-            console.log(
-              "[AssignmentService] 업로드 URL 배열 발견:",
-              uploadUrls.length
-            );
-
-            // 파일별로 업로드 URL 매핑하여 업로드
-            const uploadPromises = files.map((file, index) => {
-              if (index < uploadUrls.length) {
-                console.log(
-                  `[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`
-                );
-                return uploadFileToS3(uploadUrls[index], file);
-              }
-              return Promise.resolve({
-                success: false,
-                message: "URL이 충분하지 않음",
-              });
-            });
-
-            // 모든 파일 업로드 대기
-            const uploadResults = await Promise.all(uploadPromises);
-            console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
-
-            // 업로드 실패 발생 시 경고
-            const failedUploads = uploadResults.filter(
-              (result) => !result.success
-            );
-            if (failedUploads.length > 0) {
-              console.warn(
-                "[AssignmentService] 일부 파일 업로드 실패:",
-                failedUploads
-              );
-            }
-          } else {
-            console.warn(
-              "[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음"
-            );
+          console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", files.length);
+          
+          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
+          console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
+          
+          // 업로드 실패 발생 시 경고
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn("[AssignmentService] 일부 파일 업로드 실패:", failedUploads);
           }
         } else {
           console.warn(
@@ -219,6 +182,7 @@ const assignmentService = {
       };
 
       console.log("[AssignmentService] 요청 데이터:", requestData);
+      console.log("[AssignmentService] 파일 객체 확인:", assignmentData.files);
 
       const response = await api.post(
         `/studies/${studyId}/assignments`,
@@ -228,44 +192,21 @@ const assignmentService = {
         }
       );
 
-      console.log("[AssignmentService] 과제 생성 성공:", response.data);
+      console.log("[AssignmentService] 과제 생성 성공:", JSON.stringify(response.data, null, 2));
 
       // 파일 객체가 있고 응답에 uploadUrl이 있는 경우 파일 업로드
       if (assignmentData.files && assignmentData.files.length > 0) {
-        // 업데이트된 함수 사용: extractMultiple=true로 모든 uploadUrl 추출
-        const uploadUrls = extractUploadUrlFromResponse(
-          response.data,
-          "uploadUrl",
-          true
-        );
-
-        if (uploadUrls && Array.isArray(uploadUrls) && uploadUrls.length > 0) {
-          console.log(
-            "[AssignmentService] 업로드 URL 배열 발견:",
-            uploadUrls.length
-          );
-
-          // 파일별로 업로드 URL 매핑하여 업로드
-          const uploadPromises = assignmentData.files.map((file, index) => {
-            if (index < uploadUrls.length) {
-              console.log(
-                `[AssignmentService] 파일 "${file.name}"의 업로드 URL 확인됨`
-              );
-              return uploadFileToS3(uploadUrls[index], file);
-            }
-            return Promise.resolve({
-              success: false,
-              message: "URL이 충분하지 않음",
-            });
-          });
-
-          // 모든 파일 업로드 대기
-          const uploadResults = await Promise.all(uploadPromises);
-          console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
-        } else {
-          console.warn(
-            "[AssignmentService] 업로드 URL을 찾을 수 없거나 파일이 없음"
-          );
+        console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", assignmentData.files.length);
+        console.log("[AssignmentService] 파일 목록:", assignmentData.files.map(f => f.name));
+        
+        // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+        const uploadResults = await handleFileUploadWithS3(response.data, assignmentData.files, 'uploadUrl');
+        console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
+        
+        // 업로드 실패 발생 시 경고
+        const failedUploads = uploadResults.filter(result => !result.success);
+        if (failedUploads.length > 0) {
+          console.warn("[AssignmentService] 일부 파일 업로드 실패:", failedUploads);
         }
       }
 

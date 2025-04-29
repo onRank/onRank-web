@@ -93,12 +93,18 @@ function AssignmentCreate() {
       setIsLoading(true);
       setError(null);
       
+      // 디버깅 로그: 첨부된 파일 확인
+      console.log('[AssignmentCreate] 첨부된 파일:', attachedFiles);
+      console.log('[AssignmentCreate] 첨부된 파일 목록:', attachedFiles.map(file => `${file.name} (${file.size} bytes)`));
+      
       // ISO 형식으로 날짜 변환
       const formattedData = {
         ...formData,
         assignmentDueDate: new Date(formData.assignmentDueDate).toISOString(),
         files: attachedFiles // 파일 객체 배열 직접 추가
       };
+      
+      console.log('[AssignmentCreate] 과제 생성 요청 데이터:', formattedData);
       
       // 과제 업로드 API 호출 (preSignedURL 방식)
       await assignmentService.createAssignment(studyId, formattedData);

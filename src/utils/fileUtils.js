@@ -82,6 +82,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     }
     
     console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
+    console.log(`업로드 URL: ${uploadUrl.substring(0, 100)}...`);
     
     // 프리사인드 URL에서 Content-Type 추출
     let contentType = file.type || "application/octet-stream";
@@ -98,18 +99,21 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
       console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
     }
     
+    console.log(`[uploadFileToS3] 파일 업로드 요청 - 파일: ${file.name}, 타입: ${contentType}`);
+    
     const response = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': contentType,
       },
       body: file,
-      credentials: 'omit'
+      credentials: 'omit' // 중요: 인증 정보 전송 안함
     });
     
     if (!response.ok) {
       const errorText = await response.text();
       console.error('File upload failed:', errorText);
+      console.error('Response status:', response.status, response.statusText);
       return { 
         success: false, 
         message: `파일 업로드 실패: ${response.status} ${response.statusText}`,
@@ -120,7 +124,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     // S3 업로드 URL로부터 다운로드 URL 가져오기
     // 일반적으로 사전 서명된 PUT URL에서 쿼리 파라미터를 제거하면 다운로드 URL을 얻을 수 있음
     const fileUrl = uploadUrl.split('?')[0];
-    console.log(`파일 업로드 성공: ${file.name}`);
+    console.log(`파일 업로드 성공: ${file.name} -> ${fileUrl}`);
     
     return {
       success: true,
