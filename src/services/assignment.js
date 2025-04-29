@@ -289,7 +289,7 @@ const assignmentService = {
 
       // Swagger 문서에 맞는 API 호출
       const response = await api.post(
-        `/studies/${studyId}/assignments/${assignmentId}/submissions`,
+        `/studies/${studyId}/assignments/${assignmentId}`,
         submissionData,
         {
           withCredentials: true,
