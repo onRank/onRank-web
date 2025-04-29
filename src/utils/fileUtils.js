@@ -146,21 +146,6 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
  * @param {Array<{file: File, uploadUrl: string}>} filesWithUrls - 파일과 업로드 URL 쌍의 배열
  * @returns {Promise<Array<{fileName: string, success: boolean, message: string, url?: string}>>} 업로드 결과 배열
  */
-export const uploadFilesToS3 = async (filesWithUrls) => {
-  const results = [];
-  
-  for (const { file, uploadUrl } of filesWithUrls) {
-    const result = await uploadFileToS3(uploadUrl, file);
-    results.push({
-      fileName: file.name,
-      size: file.size,
-      type: file.type,
-      ...result
-    });
-  }
-  
-  return results;
-};
 
 /**
  * API 응답에서 업로드 URL 추출
