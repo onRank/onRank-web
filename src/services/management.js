@@ -173,7 +173,7 @@ export const managementService = {
   // 스터디 삭제
   deleteStudy: async (studyId) => {
     try {
-      const response = await api.delete(`/api/studies/${studyId}/management`);
+      const response = await api.delete(`/studies/${studyId}/management`);
       return response.data;
     } catch (error) {
       console.error("[managementService] 스터디 삭제 실패:", error);
