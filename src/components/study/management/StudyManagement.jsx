@@ -731,9 +731,9 @@ function StudyManagement() {
             <Button onClick={handleDelete} variant="delete">
               삭제
             </Button>
-            <button onClick={handleEdit} variant="edit">
+            <Button onClick={handleEdit} variant="edit">
               수정
-            </button>
+            </Button>
           </div>
         </div>
       )}
