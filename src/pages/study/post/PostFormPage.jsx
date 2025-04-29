@@ -22,14 +22,14 @@ function PostFormPage() {
     }
   }, [studyId]);
 
-  // 공지사항 생성/수정 완료 후 호출될 콜백
+  // 게시판 생성/수정 완료 후 호출될 콜백
   const handleFinish = (postId) => {
     // postId가 있으면 상세 페이지로, 없으면 목록 페이지로 이동
     if (postId) {
-      console.log(`[PostFormPage] 공지사항 생성 완료, ID=${postId}로 이동`);
+      console.log(`[PostFormPage] 게시판 생성 완료, ID=${postId}로 이동`);
       navigate(`/studies/${studyId}/posts/${postId}`);
     } else {
-      console.log(`[PostFormPage] 공지사항 ID 없음, 목록으로 이동`);
+      console.log(`[PostFormPage] 게시판 ID 없음, 목록으로 이동`);
       navigate(`/studies/${studyId}/posts`);
     }
   };
