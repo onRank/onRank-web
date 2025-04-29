@@ -4,7 +4,7 @@ import { useParams } from "react-router-dom";
 import { managementService } from "../../../services/management";
 import { studyService } from "../../../services/api";
 import { getBackgroundImageStyle } from "../../../utils/imageUtils";
-import Button from "../../components/common/Button";
+import Button from "../../common/Button";
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -729,12 +729,34 @@ function StudyManagement() {
           </div>
 
           <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <Button onClick={handleDelete} variant="delete">
+            <button
+              onClick={handleDelete}
+              style={{
+                padding: "0.5rem 1rem",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "#dc3545", // 빨간색 배경
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
               삭제
-            </Button>
-            <Button onClick={handleEdit} variant="edit">
+            </button>
+
+            {/* 수정 버튼도 일반 HTML 버튼으로 변경 */}
+            <button
+              onClick={handleEdit}
+              style={{
+                padding: "0.5rem 1rem",
+                border: "none",
+                borderRadius: "4px",
+                backgroundColor: "#000000",
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
               수정
-            </Button>
+            </button>
           </div>
         </div>
       )}
