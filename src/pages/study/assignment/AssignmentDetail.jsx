@@ -8,6 +8,7 @@ import {
   downloadFile,
   uploadFileToS3,
   extractUploadUrlFromResponse,
+  handleFileUploadWithS3,
 } from "../../../utils/fileUtils";
 
 const AssignmentDetail = () => {
@@ -109,6 +110,7 @@ const AssignmentDetail = () => {
     try {
       setIsLoading(true);
       setError(null);
+      setIsUploading(true);
 
       // 파일명 배열 생성
       const fileNames = files.map((file) => file.name);
@@ -118,18 +120,59 @@ const AssignmentDetail = () => {
         fileNames: fileNames,
       };
 
-      console.log("제출 데이터:", formattedData);
+      console.log("[AssignmentDetail] 제출 데이터:", formattedData);
+      console.log("[AssignmentDetail] 첨부 파일:", files.map(f => `${f.name} (${formatFileSize(f.size)})`));
 
-      await assignmentService.submitAssignment(
+      // 서버에 과제 제출 정보 전송
+      const response = await assignmentService.submitAssignment(
         studyId,
         assignmentId,
         formattedData
       );
+      
+      console.log("[AssignmentDetail] 제출 응답:", response);
+      
+      // 파일 업로드 처리 (createAssignment와 동일한 패턴)
+      if (files.length > 0 && response) {
+        console.log("[AssignmentDetail] 파일 업로드 시작, 파일 개수:", files.length);
+        
+        try {
+          // 파일 업로드 상태 트래킹을 위한 초기 상태 설정
+          setUploadStatus(files.map(file => ({
+            fileName: file.name,
+            progress: 0,
+            status: 'uploading'
+          })));
+          
+          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+          const uploadResults = await handleFileUploadWithS3(response, files, 'uploadUrl');
+          console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
+          
+          // 업로드 실패 발생 시 경고
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn("[AssignmentDetail] 일부 파일 업로드 실패:", failedUploads);
+            setError("일부 파일 업로드에 실패했습니다. 다시 시도해 주세요.");
+            return; // 성공 메시지 표시하지 않음
+          }
+          
+          // 모든 파일 업로드 성공 시 상태 업데이트
+          setUploadStatus(files.map(file => ({
+            fileName: file.name,
+            progress: 100,
+            status: 'success'
+          })));
+        } catch (uploadErr) {
+          console.error("[AssignmentDetail] 파일 업로드 중 오류:", uploadErr);
+          setError(`파일 업로드 중 오류가 발생했습니다: ${uploadErr.message || '알 수 없는 오류'}`);
+          return; // 성공 메시지 표시하지 않음
+        }
+      }
 
       alert("과제가 성공적으로 제출되었습니다.");
       navigate(`/studies/${studyId}/assignment`);
     } catch (err) {
-      console.error("과제 제출 실패:", err);
+      console.error("[AssignmentDetail] 과제 제출 실패:", err);
       setError(
         `과제 제출에 실패했습니다: ${
           err.message || "알 수 없는 오류가 발생했습니다."
@@ -137,6 +180,7 @@ const AssignmentDetail = () => {
       );
     } finally {
       setIsLoading(false);
+      setIsUploading(false);
     }
   };
 
