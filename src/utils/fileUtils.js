@@ -83,12 +83,27 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     
     console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
     
+    // 프리사인드 URL에서 Content-Type 추출
+    let contentType = file.type || "application/octet-stream";
+
+    // URL에서 Content-Type 파라미터가 있는지 확인
+    try {
+      const urlObj = new URL(uploadUrl);
+      const params = new URLSearchParams(urlObj.search);
+      if (params.has("Content-Type")) {
+        contentType = params.get("Content-Type");
+        console.log(`[uploadFileToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`);
+      }
+    } catch (urlError) {
+      console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
+    }
+    
     const response = await fetch(uploadUrl, {
       method: 'PUT',
       headers: {
-        'Content-Type': file.type,
+        'Content-Type': contentType,
       },
-      body: file,
+      body: file
     });
     
     if (!response.ok) {
@@ -326,21 +341,7 @@ export const downloadFile = async (url, fileName) => {
       return;
     }
     
-    // 방법 1: 간접 다운로드 (인증 헤더를 보내지 않음)
-    // 브라우저가 직접 리소스를 가져오도록 함
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    link.rel = 'noopener noreferrer'; // 보안 강화
-    link.target = '_blank'; // 새 창에서 열기 시도
-    
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    console.log(`[fileUtils] 간접 다운로드 시도 완료: ${fileName}`);
-    
-    // 방법 2: 직접 다운로드 (인증 헤더 없이 시도)
+    // 직접 다운로드 (fetch API 사용)
     try {
       // S3에 요청할 때는 Authorization 헤더를 명시적으로 제거
       const response = await fetch(url, {
@@ -354,8 +355,8 @@ export const downloadFile = async (url, fileName) => {
       
       // 응답이 성공적인지 확인
       if (!response.ok) {
-        console.warn(`[fileUtils] 직접 다운로드 실패 (${response.status}), 간접 다운로드로 처리됨`);
-        return; // 간접 다운로드가 이미 시도되었으므로 추가 작업 없이 종료
+        console.warn(`[fileUtils] 직접 다운로드 실패 (${response.status})`);
+        throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
       }
       
       // 응답을 Blob으로 변환
@@ -380,8 +381,8 @@ export const downloadFile = async (url, fileName) => {
       
       console.log(`[fileUtils] 직접 다운로드 성공: ${fileName}`);
     } catch (directError) {
-      console.warn('[fileUtils] 직접 다운로드 중 오류:', directError);
-      // 간접 다운로드가 이미 시도되었으므로 추가 알림 없이 종료
+      console.error('[fileUtils] 직접 다운로드 중 오류:', directError);
+      throw directError;
     }
     
   } catch (error) {
