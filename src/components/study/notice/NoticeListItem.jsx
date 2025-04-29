@@ -2,12 +2,16 @@ import PropTypes from "prop-types";
 import { formatDateYMD } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { useState, useRef, useEffect } from "react";
+import { useNotice } from "../../../contexts/NoticeContext";
 
 function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   const { isDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const { memberRole } = useNotice();
 
+  // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
+  const isManager = memberRole === "CREATOR" || memberRole === "HOST";
   // 메뉴 영역 외 클릭 시 메뉴 닫기
   useEffect(() => {
     function handleClickOutside(event) {
@@ -142,25 +146,27 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
         <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
       </div>
 
-      <div style={styles.menuContainer} ref={menuRef}>
-        <button
-          style={styles.menuButton}
-          onClick={handleMenuClick}
-          aria-label="메뉴 열기"
-        >
-          ⋮
-        </button>
+      {isManager && (
+        <div style={styles.menuContainer} ref={menuRef}>
+          <button
+            style={styles.menuButton}
+            onClick={handleMenuClick}
+            aria-label="메뉴 열기"
+          >
+            ⋮
+          </button>
 
-        {/* 드롭다운 메뉴 */}
-        <div style={styles.menuDropdown}>
-          <div style={styles.menuItem} onClick={handleEdit}>
-            수정
-          </div>
-          <div style={styles.menuItemDanger} onClick={handleDelete}>
-            삭제
+          {/* 드롭다운 메뉴 */}
+          <div style={styles.menuDropdown}>
+            <div style={styles.menuItem} onClick={handleEdit}>
+              수정
+            </div>
+            <div style={styles.menuItemDanger} onClick={handleDelete}>
+              삭제
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
