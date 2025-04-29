@@ -37,7 +37,7 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   const handleEdit = () => {
     setIsEditMode(true);
     if (selectedPost && onTitleLoaded) {
-      onTitleLoaded(`${selectedPost.postTitle} 수정`);
+      onTitleLoaded(`게시판 수정`);
     }
   };
 
