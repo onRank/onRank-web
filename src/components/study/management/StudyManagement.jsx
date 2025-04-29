@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { managementService } from "../../../services/management";
 import { studyService } from "../../../services/api";
 import { getBackgroundImageStyle } from "../../../utils/imageUtils";
+import Button from "../../common/Button";
 
 function StudyManagement() {
   const { studyId } = useParams();
