@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { NoticeProvider } from "../../../components/study/notice/NoticeProvider";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 function NoticeFormPage() {
   const { studyId } = useParams();
@@ -24,7 +24,7 @@ function NoticeFormPage() {
 
   // 공지사항 생성/수정 완료 후 호출될 콜백
   const handleFinish = (noticeId) => {
-    // noticeId가 있으면 상세 페이지로, 없으면 목록 페이지로 이동
+    // postId가 있으면 상세 페이지로, 없으면 목록 페이지로 이동
     if (noticeId) {
       console.log(`[NoticeFormPage] 공지사항 생성 완료, ID=${noticeId}로 이동`);
       navigate(`/studies/${studyId}/notices/${noticeId}`);
@@ -40,6 +40,7 @@ function NoticeFormPage() {
       fontFamily: "sans-serif",
       display: "flex",
       flexDirection: "column",
+      padding: "0 1rem",
     },
     main: {
       display: "flex",
@@ -48,6 +49,7 @@ function NoticeFormPage() {
     content: {
       flex: 1,
       padding: "20px 40px",
+      maxHeight: "100px",
     },
     title: {
       fontSize: "24px",
@@ -59,7 +61,6 @@ function NoticeFormPage() {
       maxHeight: "100vh",
       overflow: "hidden",
       height: "fit-content",
-      padding: "0 1rem",
     },
     activeTab: {
       color: "#FF0000",
@@ -82,9 +83,9 @@ function NoticeFormPage() {
           <main style={styles.content}>
             <h1 style={styles.title}>공지사항</h1>
 
-            {/* NoticeForm 컴포넌트 사용 */}
             <NoticeForm
               studyId={studyId}
+              notice={null}
               mode="create"
               onFinish={handleFinish}
             />
