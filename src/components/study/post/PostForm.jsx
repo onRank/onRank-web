@@ -295,13 +295,11 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       overflowX: "auto",
       overflowY: "hidden",
       width: "100%",
-      maxWidth: "100%",
       padding: "5px",
       minHeight: "120px",
       alignItems: "center",
-      boxSizing: "border-box",
-      border: "1px solid #eee",
-      borderRadius: "4px",
+      whiteSpace: "nowrap",
+      msOverflowStyle: "none",
     },
   };
 
