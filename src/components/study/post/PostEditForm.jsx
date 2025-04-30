@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
+import FileCard from "../../study/FileCard";
 
 function PostEditForm({
   studyId,
@@ -289,37 +290,12 @@ function PostEditForm({
     },
     actionButtons: {
       display: "flex",
-      justifyContent: "space-between",
+      justifyContent: "flex-end",
       marginTop: "24px",
     },
     leftButtons: {
       display: "flex",
       gap: "12px",
-    },
-    fileListHeader: {
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      fontWeight: "bold",
-      marginBottom: "12px",
-    },
-    removeButton: {
-      marginLeft: "auto",
-      color: "#e74c3c",
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      fontSize: "12px",
-    },
-    fileInfo: {
-      display: "flex",
-      alignItems: "center",
-      flex: 1,
-    },
-    fileSize: {
-      marginLeft: "10px",
-      color: "#666",
-      fontSize: "12px",
     },
     noFiles: {
       color: "#666",
@@ -420,7 +396,6 @@ function PostEditForm({
                       file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
                         ? "image/jpeg"
                         : "application/octet-stream",
-                    size: file.fileSize,
                   }}
                   onDelete={() => handleRemoveExistingFile(file.fileId)}
                 />
@@ -502,6 +477,7 @@ function PostEditForm({
           variant="back"
           onClick={() => onCancel()}
           disabled={isSubmitting}
+          style={{ marginLeft: "10px" }}
         />
       </div>
     </form>
