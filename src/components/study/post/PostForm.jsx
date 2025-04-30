@@ -288,9 +288,15 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     },
     fileCardContainer: {
       display: "flex",
-      flexWrap: "wrap",
+      flexDirection: "row", // 가로 방향 명시적 지정
+      flexWrap: "nowrap", // 줄바꿈 방지
       gap: "10px",
       marginBottom: "16px",
+      overflowX: "auto", // 가로 스크롤 허용
+      width: "100%", // 부모 너비 전체 사용
+      padding: "5px", // 약간의 패딩 추가
+      minHeight: "120px", // 최소 높이 설정 (파일 카드 높이에 맞게 조정)
+      alignItems: "center", // 수직 중앙 정렬
     },
   };
 
@@ -367,8 +373,6 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
           <div>
             <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
             <div style={styles.fileCardContainer}>
-              {" "}
-              {/* 이 div에 스타일 적용 */}
               {existingFiles.map((file) => (
                 <FileCard
                   key={file.fileId}
@@ -392,8 +396,6 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
           <div>
             <div style={styles.fileGroupTitle}>첨부 파일</div>
             <div style={styles.fileCardContainer}>
-              {" "}
-              {/* 이 div에 스타일 적용 */}
               {selectedFiles.map((file, index) => (
                 <FileCard key={index} file={file} onDelete={handleRemoveFile} />
               ))}
