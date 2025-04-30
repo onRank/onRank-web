@@ -103,8 +103,14 @@ function StudyManagement() {
 
   // 삭제 처리
   const handleDelete = () => {
-    setIsDeleting(true);
-    deleteStudy();
+    if (
+      window.confirm(
+        "정말로 이 스터디를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
+      )
+    ) {
+      setIsDeleting(true);
+      deleteStudy();
+    }
   };
 
   // 스터디 삭제 API 호출
@@ -743,7 +749,6 @@ function StudyManagement() {
               삭제
             </button>
 
-            {/* 수정 버튼도 일반 HTML 버튼으로 변경 */}
             <button
               onClick={handleEdit}
               style={{

@@ -173,7 +173,12 @@ export const managementService = {
   // 스터디 삭제
   deleteStudy: async (studyId) => {
     try {
-      const response = await api.delete(`/studies/${studyId}/management`);
+      const response = await api.delete(`/studies/${studyId}/management`, {
+        withCredentials: true, // 쿠키 기반 인증 사용 시
+        headers: {
+          Authorization: `Bearer ${tokenUtils.getAccessToken()}`,
+        },
+      });
       return response.data;
     } catch (error) {
       console.error("[managementService] 스터디 삭제 실패:", error);
