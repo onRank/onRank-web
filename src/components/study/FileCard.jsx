@@ -62,7 +62,6 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
 
   const styles = {
     cardContainer: {
-      flexShrink: 0,
       width: "270px",
       height: "170px",
       borderRadius: "8px",

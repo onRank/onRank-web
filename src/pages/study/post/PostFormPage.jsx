@@ -50,6 +50,7 @@ function PostFormPage() {
       flex: 1,
       padding: "20px 40px",
       maxHeight: "100px",
+      overflowX: "hidden",
     },
     title: {
       fontSize: "24px",

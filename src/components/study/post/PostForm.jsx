@@ -288,15 +288,20 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     },
     fileCardContainer: {
       display: "flex",
-      flexDirection: "row", // 가로 방향 명시적 지정
-      flexWrap: "nowrap", // 줄바꿈 방지
+      flexDirection: "row",
+      flexWrap: "nowrap",
       gap: "10px",
       marginBottom: "16px",
-      overflowX: "auto", // 가로 스크롤 허용
-      width: "100%", // 부모 너비 전체 사용
-      padding: "5px", // 약간의 패딩 추가
-      minHeight: "120px", // 최소 높이 설정 (파일 카드 높이에 맞게 조정)
-      alignItems: "center", // 수직 중앙 정렬
+      overflowX: "auto",
+      overflowY: "hidden",
+      width: "100%",
+      maxWidth: "100%",
+      padding: "5px",
+      minHeight: "120px",
+      alignItems: "center",
+      boxSizing: "border-box",
+      border: "1px solid #eee",
+      borderRadius: "4px",
     },
   };
 
