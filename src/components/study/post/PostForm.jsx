@@ -286,6 +286,12 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     fileContainer: {
       marginBottom: "20px",
     },
+    fileCardContainer: {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      marginBottom: "16px",
+    },
   };
 
   // 드래그 앤 드롭 영역 스타일
@@ -360,29 +366,38 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
         {existingFiles.length > 0 && (
           <div>
             <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
-            {existingFiles.map((file) => (
-              <FileCard
-                key={file.fileId}
-                file={{
-                  name: file.fileName,
-                  type:
-                    file.fileUrl && file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
-                      ? "image/jpeg"
-                      : "application/octet-stream",
-                  size: file.fileSize,
-                }}
-                onDelete={() => handleRemoveExistingFile(file)}
-              />
-            ))}
+            <div style={styles.fileCardContainer}>
+              {" "}
+              {/* 이 div에 스타일 적용 */}
+              {existingFiles.map((file) => (
+                <FileCard
+                  key={file.fileId}
+                  file={{
+                    name: file.fileName,
+                    type:
+                      file.fileUrl &&
+                      file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
+                        ? "image/jpeg"
+                        : "application/octet-stream",
+                    size: file.fileSize,
+                  }}
+                  onDelete={() => handleRemoveExistingFile(file)}
+                />
+              ))}
+            </div>
           </div>
         )}
 
         {selectedFiles.length > 0 && (
           <div>
             <div style={styles.fileGroupTitle}>첨부 파일</div>
-            {selectedFiles.map((file, index) => (
-              <FileCard key={index} file={file} onDelete={handleRemoveFile} />
-            ))}
+            <div style={styles.fileCardContainer}>
+              {" "}
+              {/* 이 div에 스타일 적용 */}
+              {selectedFiles.map((file, index) => (
+                <FileCard key={index} file={file} onDelete={handleRemoveFile} />
+              ))}
+            </div>
           </div>
         )}
       </div>
