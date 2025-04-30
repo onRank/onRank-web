@@ -29,6 +29,7 @@ function PostEditForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
+  const [isDragging, setIsDragging] = useState(false);
 
   // 파일 선택 창 열기 핸들러
   const handleOpenFileDialog = (e) => {
@@ -74,6 +75,68 @@ function PostEditForm({
   const handleRemoveExistingFile = (fileId) => {
     // fileId를 remainingFileIds에서 제거
     setRemainingFileIds((prev) => prev.filter((id) => id !== fileId));
+  };
+
+  // 드래그 앤 드롭 이벤트 핸들러
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
+
+    // 이미 선택된 파일과 중복 확인 (새로 추가하는 파일)
+    const newFiles = files.filter(
+      (file) => !selectedFiles.some((f) => f.name === file.name)
+    );
+
+    // 기존 파일과 이름 중복 확인 (수정 모드에서)
+    const duplicateWithExisting = newFiles.filter((file) =>
+      remainingFileIds.some((id) => id === file.name)
+    );
+
+    if (duplicateWithExisting.length > 0) {
+      setSubmitError(
+        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
+          .map((f) => f.name)
+          .join(", ")}`
+      );
+      return;
+    }
+
+    // 파일 크기 제한 (10MB)
+    const oversizedFiles = newFiles.filter(
+      (file) => file.size > 10 * 1024 * 1024
+    );
+    if (oversizedFiles.length > 0) {
+      setSubmitError(
+        `다음 파일이 10MB를 초과합니다: ${oversizedFiles
+          .map((f) => f.name)
+          .join(", ")}`
+      );
+      return;
+    }
+
+    // 선택된 파일 추가
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   // 저장 핸들러
@@ -307,8 +370,8 @@ function PostEditForm({
   };
 
   return (
-    <form onSubmit={handleCreatePost} style={styles.formContainer}>
-      {error && <div style={styles.errorMessage}>{error}</div>}
+    <form onSubmit={handleSave} style={styles.formContainer}>
+      {submitError && <div style={styles.errorMessage}>{submitError}</div>}
 
       <div style={styles.inputGroup}>
         <label style={styles.label} htmlFor="title">
@@ -343,11 +406,11 @@ function PostEditForm({
 
       {/* 파일 목록 표시 (기존 및 새 파일) */}
       <div style={styles.fileContainer}>
-        {existingFiles.length > 0 && (
+        {filteredExistingFiles.length > 0 && (
           <div>
             <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
             <div style={styles.fileCardContainer}>
-              {existingFiles.map((file) => (
+              {filteredExistingFiles.map((file) => (
                 <FileCard
                   key={file.fileId}
                   file={{
@@ -359,7 +422,7 @@ function PostEditForm({
                         : "application/octet-stream",
                     size: file.fileSize,
                   }}
-                  onDelete={() => handleRemoveExistingFile(file)}
+                  onDelete={() => handleRemoveExistingFile(file.fileId)}
                 />
               ))}
             </div>
@@ -437,7 +500,7 @@ function PostEditForm({
         <Button
           type="button"
           variant="back"
-          onClick={() => onFinish()}
+          onClick={() => onCancel()}
           disabled={isSubmitting}
         />
       </div>
