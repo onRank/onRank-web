@@ -167,8 +167,10 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
 
       {onDelete && (
         <button
+          type="button"
           style={styles.deleteButton}
           onClick={(e) => {
+            e.preventDefault();
             e.stopPropagation();
             onDelete(file);
           }}

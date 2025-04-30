@@ -277,9 +277,38 @@ function PostEditForm({
   const hasNoFiles =
     filteredExistingFiles.length === 0 && selectedFiles.length === 0;
 
+  const dragDropStyles = {
+    dropZone: {
+      border: isDragging ? "2px dashed #e74c3c" : "2px dashed #ccc",
+      borderRadius: "6px",
+      padding: "20px",
+      textAlign: "center",
+      backgroundColor: isDragging ? "#fef2f2" : "#f8f9fa",
+      marginBottom: "16px",
+      transition: "all 0.2s ease",
+      cursor: "pointer",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "column",
+      width: "100%",
+    },
+    icon: {
+      fontSize: "24px",
+      marginBottom: "8px",
+      color: isDragging ? "#e74c3c" : "#666",
+    },
+    text: {
+      color: "#666",
+      fontSize: "12px",
+      textAlign: "center",
+      lineHeight: "1.5",
+    },
+  };
+
   return (
-    <form onSubmit={handleSave} style={styles.formContainer}>
-      {submitError && <div style={styles.errorMessage}>{submitError}</div>}
+    <form onSubmit={handleCreatePost} style={styles.formContainer}>
+      {error && <div style={styles.errorMessage}>{error}</div>}
 
       <div style={styles.inputGroup}>
         <label style={styles.label} htmlFor="title">
@@ -312,11 +341,90 @@ function PostEditForm({
         </div>
       </div>
 
-      {/* 파일 업로드 버튼 */}
-      <div style={styles.fileUploadRow}>
-        <Button variant="addFiles" onClick={handleOpenFileDialog} />
+      {/* 파일 목록 표시 (기존 및 새 파일) */}
+      <div style={styles.fileContainer}>
+        {existingFiles.length > 0 && (
+          <div>
+            <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
+            <div style={styles.fileCardContainer}>
+              {existingFiles.map((file) => (
+                <FileCard
+                  key={file.fileId}
+                  file={{
+                    name: file.fileName,
+                    type:
+                      file.fileUrl &&
+                      file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
+                        ? "image/jpeg"
+                        : "application/octet-stream",
+                    size: file.fileSize,
+                  }}
+                  onDelete={() => handleRemoveExistingFile(file)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {selectedFiles.length > 0 && (
+          <div>
+            <div style={styles.fileGroupTitle}>첨부 파일</div>
+            <div style={styles.fileCardContainer}>
+              {selectedFiles.map((file, index) => (
+                <FileCard key={index} file={file} onDelete={handleRemoveFile} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 드래그 앤 드롭 영역 */}
+      <div
+        style={dragDropStyles.dropZone}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => document.getElementById("file-upload").click()}
+      >
+        <div style={dragDropStyles.icon}>
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M17 8L12 3L7 8"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M12 3V15"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div style={dragDropStyles.text}>
+          파일의 주소나 놓기
+          <br />
+          클릭하여 추가하세요
+        </div>
         <input
-          ref={fileInputRef}
+          id="file-upload"
           type="file"
           multiple
           onChange={handleFileChange}
@@ -324,67 +432,14 @@ function PostEditForm({
         />
       </div>
 
-      {/* 통합된 파일 목록 */}
-      <div style={styles.fileList}>
-        <div style={styles.fileListHeader}>
-          <span>첨부 파일</span>
-        </div>
-
-        {hasNoFiles ? (
-          <div style={styles.noFiles}>첨부된 파일이 없습니다</div>
-        ) : (
-          <div>
-            {/* 기존 파일 목록 - remainingFileIds에 있는 파일만 표시 */}
-            {filteredExistingFiles.map((file) => (
-              <div key={`existing-${file.fileId}`} style={styles.fileItem}>
-                <div style={styles.fileInfo}>
-                  <span style={styles.fileIcon}>📎</span>
-                  {file.fileName}
-                  <span style={styles.fileSize}>
-                    ({file.fileSize ? (file.fileSize / 1024).toFixed(1) : "?"}{" "}
-                    KB)
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveExistingFile(file.fileId)}
-                  style={styles.removeButton}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-
-            {/* 새로 선택된 파일 목록 */}
-            {selectedFiles.map((file, index) => (
-              <div key={`new-${index}`} style={styles.fileItem}>
-                <div style={styles.fileInfo}>
-                  <span style={styles.fileIcon}>📎</span>
-                  {file.name}
-                  <span style={styles.fileSize}>
-                    ({(file.size / 1024).toFixed(1)} KB)
-                  </span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveFile(file.name)}
-                  style={styles.removeButton}
-                >
-                  ✕
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 액션 버튼들 */}
       <div style={styles.actionButtons}>
-        <div style={styles.leftButtons}>
-          <Button type="submit" variant="store" />
-          <Button type="button" variant="delete" onClick={handleDelete} />
-        </div>
-        <Button type="button" variant="back" onClick={onCancel} />
+        <Button type="submit" variant="upload" disabled={isSubmitting} />
+        <Button
+          type="button"
+          variant="back"
+          onClick={() => onFinish()}
+          disabled={isSubmitting}
+        />
       </div>
     </form>
   );

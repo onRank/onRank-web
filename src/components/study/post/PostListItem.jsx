@@ -74,7 +74,7 @@ function PostListItem({ post, onClick }) {
     >
       <div style={styles.postContentBlock}>
         <div style={styles.postDate}>
-          게시: {formatDateYMD(post.postCreatedAt)}
+          게시: {formatDateYMD(post.postCreatedAt)} 작성자: {post.postWritenBy}
         </div>
         <h2 style={styles.postTitle}>{post.postTitle}</h2>
       </div>
