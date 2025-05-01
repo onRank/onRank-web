@@ -31,7 +31,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
       border: "none",
     },
     edit: {
-      backgroundColor: "#f2f2f2",
+      backgroundColor: "#fff",
       color: "#333",
       border: "1px solid #ccc",
     },

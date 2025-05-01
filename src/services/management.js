@@ -174,10 +174,7 @@ export const managementService = {
   deleteStudy: async (studyId) => {
     try {
       const response = await api.delete(`/studies/${studyId}/management`, {
-        withCredentials: true, // 쿠키 기반 인증 사용 시
-        headers: {
-          Authorization: `Bearer ${tokenUtils.getAccessToken()}`,
-        },
+        withCredentials: true,
       });
       return response.data;
     } catch (error) {
