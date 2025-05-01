@@ -14,7 +14,8 @@ function PostContent() {
   const [selectedPostId, setSelectedPostId] = useState(null);
 
   // PostProvider에서 상태와 함수 가져오기
-  const { posts, isLoading, error, getPosts, getPostById } = usePost();
+  const { posts, isLoading, error, getPosts, getPostById, deletePost } =
+    usePost();
 
   // 페이지 마운트 시 게시판 목록 가져오기
   useEffect(() => {
@@ -48,6 +49,27 @@ function PostContent() {
   // 게시판 수정 페이지로 이동
   const handleEdit = (postId) => {
     navigate(`/studies/${studyId}/posts/${postId}`);
+  };
+
+  // 게시물 삭제 처리 함수
+  const handleDelete = async (postId) => {
+    try {
+      const result = await deletePost(studyId, postId);
+
+      if (result.success) {
+        // 삭제 성공 시 목록 새로고침
+        getPosts(studyId);
+
+        // 성공 메시지 표시 (선택사항)
+        alert("게시물이 삭제되었습니다.");
+      } else {
+        // 실패 시 오류 메시지
+        alert(result.message || "게시물 삭제 중 오류가 발생했습니다.");
+      }
+    } catch (error) {
+      console.error("게시물 삭제 중 오류:", error);
+      alert("게시물 삭제 중 오류가 발생했습니다.");
+    }
   };
 
   const styles = {
@@ -116,6 +138,8 @@ function PostContent() {
         <PostList
           posts={posts}
           onPostClick={handlePostClick}
+          onEditPost={handleEdit}
+          onDeletePost={handleDelete}
           handleCreate={handleCreate}
           isLoading={isLoading}
         />
@@ -128,6 +152,7 @@ function PostContent() {
 function PostPage() {
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 스터디 정보 가져오기
   useEffect(() => {
