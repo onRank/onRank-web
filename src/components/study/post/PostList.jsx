@@ -1,8 +1,15 @@
 import PropTypes from "prop-types";
+import PostCard from "./PostCard";
 import LoadingSpinner from "../../common/LoadingSpinner";
-import PostListItem from "./PostListItem";
 
-function PostList({ posts, onPostClick, handleCreate, isLoading }) {
+function PostList({
+  posts,
+  onPostClick,
+  onEditPost,
+  onDeletePost,
+  handleCreate,
+  isLoading,
+}) {
   if (isLoading) return <LoadingSpinner />;
 
   return (
@@ -16,9 +23,11 @@ function PostList({ posts, onPostClick, handleCreate, isLoading }) {
           <div className="space-y-2">
             {posts.map((post) => (
               <div key={post.postId}>
-                <PostListItem
+                <PostCard
                   post={post}
                   onClick={() => onPostClick(post.postId)}
+                  onEdit={() => onEditPost(post.postId)}
+                  onDelete={() => onDeletePost(post.postId)}
                 />
               </div>
             ))}
@@ -48,8 +57,9 @@ PostList.propTypes = {
     })
   ).isRequired,
   onPostClick: PropTypes.func.isRequired,
+  onEditPost: PropTypes.func,
+  onDeletePost: PropTypes.func,
   handleCreate: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
 };
 
 export default PostList;
