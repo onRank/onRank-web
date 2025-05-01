@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
   const [preview, setPreview] = useState(null);
   const [isImage, setIsImage] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     // 파일이 이미지인지 확인
@@ -12,11 +13,19 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
 
       // 이미지 파일이면 미리보기 URL 생성
       if (showPreview) {
-        const fileUrl = URL.createObjectURL(file);
-        setPreview(fileUrl);
-
-        // 컴포넌트가 언마운트될 때 URL 해제
-        return () => URL.revokeObjectURL(fileUrl);
+        // 실제 File 객체인지 확인 (instanceof Blob이나 size 속성으로 판단)
+        if (
+          file instanceof Blob ||
+          (file.size !== undefined && typeof file.size === "number")
+        ) {
+          const fileUrl = URL.createObjectURL(file);
+          setPreview(fileUrl);
+          // 컴포넌트가 언마운트될 때 URL 해제
+          return () => URL.revokeObjectURL(fileUrl);
+        } else if (file.fileUrl) {
+          // 기존 파일인 경우 이미 있는 URL 사용
+          setPreview(file.fileUrl);
+        }
       }
     } else {
       setIsImage(false);
@@ -125,7 +134,7 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
       position: "absolute",
       top: "8px",
       right: "8px",
-      background: "rgba(255, 255, 255, 0.7)",
+      background: "none",
       border: "none",
       outline: "none",
       color: "#dc3545",
@@ -136,8 +145,9 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
       alignItems: "center",
       justifyContent: "center",
       borderRadius: "50%",
-      transition: "background-color 0.2s",
+      transition: "all 0.2s ease",
       zIndex: 2,
+      opacity: isHovered ? 1 : 0,
     },
   };
 
@@ -145,6 +155,8 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
     <div
       style={styles.cardContainer}
       onClick={onClick ? () => onClick(file) : undefined}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       <div style={styles.previewContainer}>
         {isImage && preview ? (
