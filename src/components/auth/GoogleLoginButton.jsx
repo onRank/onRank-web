@@ -1,7 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 
 // 구글 로그인 버튼 컴포넌트 - 2024-04-06 수정
 function GoogleLoginButton() {
+  // 호버 상태 추적을 위한 상태 추가
+  const [isHovered, setIsHovered] = useState(false);
+
   const handleLogin = (e) => {
     e.preventDefault();
 
@@ -29,10 +32,12 @@ function GoogleLoginButton() {
   return (
     <button
       onClick={handleLogin}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="google-login-button"
       style={{
         padding: "8px 16px",
-        backgroundColor: "#ffffff",
+        backgroundColor: isHovered ? "#f8f8f8" : "#ffffff",
         color: "#000000",
         border: "1px solid #dadce0",
         borderRadius: "24px",
@@ -45,9 +50,10 @@ function GoogleLoginButton() {
         justifyContent: "center",
         gap: "8px",
         boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
-        transition: "background-color 0.3s",
+        transition: "background-color 0.2s ease",
         height: "40px",
         minWidth: "180px",
+        outline: "none", // 클릭 시 파란색 테두리 제거
       }}
     >
       {/* 구글 로고로 변경 */}

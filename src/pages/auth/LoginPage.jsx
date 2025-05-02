@@ -17,12 +17,12 @@ function LoginPage() {
       marginBottom: "2rem",
     },
     logo: {
-      width: "160px",
+      width: "180px",
       marginBottom: "1rem",
       marginRight: "1rem",
     },
     brandName: {
-      fontSize: "24px",
+      fontSize: "30px",
       fontWeight: "bold",
     },
     message: {
