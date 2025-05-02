@@ -7,6 +7,10 @@ import { studyService } from "../../services/api";
 import studyContextService from "../../services/studyContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
+import Ranking from "../../components/study/ranking/Ranking";
+import RankingList from "../../components/study/ranking/RankingList";
+import PointContainer from "../../components/study/ranking/PointContainer";
+import MyRank from "../../components/study/ranking/MyRank";
 
 function StudyDetailPage({ activeTab: propActiveTab }) {
   const { studyId } = useParams();
@@ -28,26 +32,29 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
     const fetchStudyData = async () => {
       if (dataLoadAttempted.current) return;
       dataLoadAttempted.current = true;
-      
+
       setIsLoading(true);
-      
+
       try {
         const data = await studyService.getStudyById(studyId);
         console.log("Fetched study data:", data);
-        
+
         if (data) {
           setStudyData(data);
-          
+
           // 스터디 컨텍스트 정보 업데이트 (없는 경우)
           if (data.memberContext) {
-            console.log('[디버깅] StudyDetailPage에서 memberContext 확인:', data.memberContext);
+            console.log(
+              "[디버깅] StudyDetailPage에서 memberContext 확인:",
+              data.memberContext
+            );
             studyContextService.setStudyContext(studyId, data.memberContext);
           } else if (data.title) {
             // memberContext가 없는 경우 최소한의 정보 저장
-            console.log('[디버깅] memberContext 없음, 기본 정보만 저장');
+            console.log("[디버깅] memberContext 없음, 기본 정보만 저장");
             studyContextService.setStudyContext(studyId, {
               studyName: data.title,
-              file: null
+              file: null,
             });
           }
         }
@@ -58,7 +65,7 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
         setIsLoading(false);
       }
     };
-    
+
     fetchStudyData();
   }, [studyId]);
 
@@ -114,6 +121,51 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
     return <LoadingSpinner />;
   }
 
+  const styles = {
+    wrapper: {
+      minHeight: "100vh",
+      fontFamily: "sans-serif",
+      backgroundColor: "#ffffff",
+      display: "flex",
+      flexDirection: "column",
+    },
+    main: {
+      display: "flex",
+      flex: 1,
+    },
+    sidebar: {
+      width: "200px",
+      padding: "16px",
+      borderRight: "1px solid #e5e5e5",
+    },
+    content: {
+      flex: 1,
+      background: "none",
+      minHeight: "100vh",
+      padding: "40px 60px",
+      boxSizing: "border-box",
+    },
+    grid: {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gridTemplateRows: "auto auto",
+      gap: "32px 40px",
+    },
+    topLeft: {
+      display: "flex",
+      gap: "20px",
+      justifyContent: "center",
+    },
+    topRight: {
+      display: "flex",
+      justifyContent: "flex-end",
+    },
+    bottomLeft: {
+      display: "flex",
+      justifyContent: "center",
+    },
+  };
+
   return (
     <div
       style={{
@@ -126,7 +178,7 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
       }}
     >
       {/* 경로 표시 - 제거 */}
-      
+
       {/* 오류 메시지 표시 - 숨김 처리 */}
       {error && false && <ErrorMessage message={error} />}
 

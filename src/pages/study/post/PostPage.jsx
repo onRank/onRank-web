@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "../../../components/study/post/PostDetail";
 import ErrorMessage from "../../../components/common/ErrorMessage";
@@ -12,7 +12,6 @@ import PostEditForm from "../../../components/study/post/PostEditForm";
 function PostContent() {
   const navigate = useNavigate();
   const { studyId, postId } = useParams();
-  const location = useLocation();
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
   const [permissionError, setPermissionError] = useState("");
@@ -41,18 +40,6 @@ function PostContent() {
     }
   }, [studyId, postId, getPostById]);
 
-  // 추가: URL에서 쿼리 파라미터 감지하는 useEffect
-  useEffect(() => {
-    // URL에서 edit 쿼리 파라미터 확인
-    const searchParams = new URLSearchParams(location.search);
-    const editMode = searchParams.get("edit") === "true";
-
-    // edit=true 파라미터가 있으면 수정 모드 활성화
-    if (editMode && postId) {
-      setIsEditMode(true);
-    }
-  }, [location.search, postId]);
-
   // 게시판 작성 페이지로 이동
   const handleCreate = () => {
     navigate(`/studies/${studyId}/posts/add`);
@@ -72,32 +59,27 @@ function PostContent() {
     navigate(`/studies/${studyId}/posts`);
   };
 
-  // 게시판 수정 모드 활성화 - 수정
+  // 게시판 수정 모드 활성화
   const handleEdit = (postId) => {
-    // 쿼리 파라미터 사용
-    navigate(`/studies/${studyId}/posts/${postId}?edit=true`);
+    setIsEditMode(true);
+    setSelectedPostId(postId);
+    navigate(`/studies/${studyId}/posts/${postId}`);
   };
 
-  // 수정 취소 - 수정
+  // 수정 취소
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setPermissionError("");
-
-    // 쿼리 파라미터 제거
-    navigate(`/studies/${studyId}/posts/${selectedPostId}`, { replace: true });
 
     if (selectedPostId) {
       getPostById(studyId, selectedPostId);
     }
   };
 
-  // 수정 완료 후 처리 - 수정
+  // 수정 완료 후 처리
   const handleEditComplete = () => {
     setIsEditMode(false);
     setPermissionError("");
-
-    // 쿼리 파라미터 제거
-    navigate(`/studies/${studyId}/posts/${selectedPostId}`, { replace: true });
 
     // 데이터 새로 가져오기
     getPostById(studyId, selectedPostId);
