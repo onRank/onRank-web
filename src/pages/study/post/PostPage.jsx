@@ -59,20 +59,9 @@ function PostContent() {
 
   // 게시판 수정 모드 활성화
   const handleEdit = (postId) => {
-    // 수정 모드 즉시 활성화
     setIsEditMode(true);
-
-    // 현재 선택된 게시물과 다른 경우
-    if (selectedPostId !== postId) {
-      // 게시물 ID 설정
-      setSelectedPostId(postId);
-
-      // 게시물 데이터 로드
-      getPostById(studyId, postId);
-
-      // URL 변경 (히스토리 대체)
-      navigate(`/studies/${studyId}/posts/${postId}`, { replace: true });
-    }
+    setSelectedPostId(postId);
+    navigate(`/studies/${studyId}/posts/${postId}`);
   };
 
   // 편집 취소
@@ -90,7 +79,6 @@ function PostContent() {
   const handleEditComplete = () => {
     setIsEditMode(false);
     setPermissionError("");
-    // 데이터 새로 가져오기
     getPostById(studyId, parseInt(selectedPostId, 10));
   };
 
