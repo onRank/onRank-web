@@ -57,22 +57,33 @@ function PostContent() {
     navigate(`/studies/${studyId}/posts`);
   };
 
-  // 게시판 수정 모드 활성화 - 상태 변경만 수행
+  // 게시판 수정 모드 활성화
   const handleEdit = (postId) => {
-    // 이미 상세 페이지에 있지 않다면 상세 페이지로 이동
-    if (selectedPostId !== postId) {
-      setSelectedPostId(postId);
-      navigate(`/studies/${studyId}/posts/${postId}`);
-    }
-
-    // 수정 모드 활성화
+    // 수정 모드 즉시 활성화
     setIsEditMode(true);
+
+    // 현재 선택된 게시물과 다른 경우
+    if (selectedPostId !== postId) {
+      // 게시물 ID 설정
+      setSelectedPostId(postId);
+
+      // 게시물 데이터 로드
+      getPostById(studyId, postId);
+
+      // URL 변경 (히스토리 대체)
+      navigate(`/studies/${studyId}/posts/${postId}`, { replace: true });
+    }
   };
 
   // 편집 취소
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setPermissionError("");
+
+    // 선택된 게시물 유지하여 상세 화면으로 돌아가기
+    if (selectedPostId) {
+      getPostById(studyId, selectedPostId);
+    }
   };
 
   // 편집 완료 후 처리
