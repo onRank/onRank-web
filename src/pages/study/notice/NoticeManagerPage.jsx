@@ -108,7 +108,7 @@ function NoticeContent() {
           <div style={styles.addNoticeText}>공지사항 추가</div>
           <div style={styles.addNoticeSubtext}>공지사항을 추가해주세요.</div>
         </div>
-        <Button variant="create" onClick={handleCreate} />
+        <Button variant="add" onClick={handleCreate} />
       </div>
 
       {selectedNoticeId ? (

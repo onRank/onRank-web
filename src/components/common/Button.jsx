@@ -4,13 +4,18 @@ function Button({ onClick, variant = "default", label, ...props }) {
   const [isPressed, setIsPressed] = useState(false);
 
   const defaultLabels = {
-    create: "작성",
+    create: "+생성",
     back: "닫기",
     store: "저장",
     upload: "업로드",
-    delete: "삭제",
-    edit: "수정",
-    addFiles: "파일 첨부",
+    add: "+추가",
+    edit: "수정하기",
+    logout: "logout",
+    complete: "완료",
+    submit: "제출",
+    reSubmit: "다시 제출",
+    addFiles: "파일 첨부", // 삭제 필요
+    delete: "삭제", // 삭제 필요
     default: "확인",
   };
 
@@ -30,26 +35,53 @@ function Button({ onClick, variant = "default", label, ...props }) {
       color: "#fff",
       border: "none",
     },
-    edit: {
-      backgroundColor: "#fff",
-      color: "#333",
-      border: "1px solid #ccc",
-    },
     upload: {
       backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
     },
-    delete: {
-      backgroundColor: "#e74c3c",
+    add: {
+      backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
+    },
+    edit: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
+    logout: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+      borderRadius: "20px",
+    },
+    complete: {
+      backgroundColor: "#ee0418",
+      color: "#fff",
+      border: "none",
+    },
+    submit: {
+      backgroundColor: "#ee0418",
+      color: "#fff",
+      border: "none",
+    },
+    reSubmit: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "none",
+      width: "76px",
     },
     addFiles: {
       backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
       width: "76px",
+    },
+    delete: {
+      backgroundColor: "#e74c3c",
+      color: "#fff",
+      border: "none",
     },
     default: {
       backgroundColor: "#f2f2f2",

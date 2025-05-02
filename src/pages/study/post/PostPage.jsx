@@ -174,11 +174,7 @@ function PostContent() {
           <div style={styles.errorMessage}>
             {permissionError}
             <div style={{ marginTop: "8px" }}>
-              <Button
-                variant="back"
-                onClick={handleCancelEdit}
-                text="돌아가기"
-              />
+              <Button variant="back" onClick={handleCancelEdit} />
             </div>
           </div>
         )}
@@ -214,7 +210,7 @@ function PostContent() {
             새로운 게시판 글을 추가해주세요
           </div>
         </div>
-        <Button variant="create" onClick={handleCreate} />
+        <Button variant="add" onClick={handleCreate} />
       </div>
 
       {selectedPostId ? (

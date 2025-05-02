@@ -450,7 +450,7 @@ function PostEditForm({
       </div>
 
       <div style={styles.actionButtons}>
-        <Button type="submit" variant="upload" disabled={isSubmitting} />
+        <Button type="submit" variant="store" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
