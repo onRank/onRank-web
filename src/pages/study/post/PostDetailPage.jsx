@@ -5,12 +5,13 @@ import { usePost } from "../../../components/study/post/PostProvider";
 import ErrorMessage from "../../../components/common/ErrorMessage";
 import StudySidebarContainer from "../../../components/common/sidebar/StudySidebarContainer";
 import Button from "../../../components/common/Button";
+import PostEditForm from "../../../components/study/post/PostEditForm";
 
 function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
   const navigate = useNavigate();
   const { studyId, postId } = useParams();
   const [isEditMode, setIsEditMode] = useState(false);
-  const { selectedPost, isLoading, error, getPostById, deletePost } = usePost();
+  const { selectedPost, isLoading, error, getPostById } = usePost();
   const [permissionError, setPermissionError] = useState("");
 
   // 페이지 로드 시 게시물 데이터 가져오기
@@ -31,6 +32,36 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
       onTitleLoaded(selectedPost.postTitle);
     }
   }, [selectedPost, onTitleLoaded, isEditMode]);
+
+  // 편집 모드 전환
+  const handleEdit = () => {
+    setIsEditMode(true);
+    if (selectedPost && onTitleLoaded) {
+      onTitleLoaded(`게시판 수정`);
+    }
+  };
+
+  // 편집 취소
+  const handleCancelEdit = () => {
+    setIsEditMode(false);
+    setPermissionError("");
+    if (selectedPost && onTitleLoaded) {
+      onTitleLoaded(selectedPost.postTitle);
+    }
+  };
+
+  // 편집 완료 후 처리 (추가된 함수)
+  const handleEditComplete = () => {
+    setIsEditMode(false);
+    setPermissionError("");
+    // 데이터 새로 가져오기
+    getPostById(studyId, parseInt(postId, 10));
+  };
+
+  // 권한 오류 발생 처리
+  const handlePermissionError = (message) => {
+    setPermissionError(message);
+  };
 
   if (isLoading) {
     return <div>로딩중...</div>;
@@ -99,7 +130,35 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
     },
   };
 
-  // 조회 모드일 때 내용 표시
+  // 편집 모드일 때 편집 폼 표시
+  if (isEditMode) {
+    return (
+      <>
+        {permissionError && (
+          <div style={styles.errorMessage}>
+            {permissionError}
+            <div style={{ marginTop: "8px" }}>
+              <Button
+                variant="back"
+                onClick={handleCancelEdit}
+                text="돌아가기"
+              />
+            </div>
+          </div>
+        )}
+        <PostEditForm
+          studyId={studyId}
+          postId={postId}
+          initialData={selectedPost}
+          onCancel={handleCancelEdit}
+          onSaveComplete={handleEditComplete}
+          onPermissionError={handlePermissionError}
+        />
+      </>
+    );
+  }
+
+  // 조회 모드일 때 내용 표시 (이 부분은 원래 코드 유지)
   return (
     <div style={styles.container}>
       <div style={{ fontSize: "12px", color: "#888" }}>
@@ -125,30 +184,33 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
         </div>
       )}
       <div style={styles.buttonContainer}>
+        <Button variant="edit" onClick={handleEdit} />
         <Button variant="back" onClick={handleBack} />
       </div>
     </div>
   );
 }
 
+// PropTypes 추가
 PostDetailManagerContent.propTypes = {
   handleBack: PropTypes.func.isRequired,
   onTitleLoaded: PropTypes.func,
 };
 
+// 기본 props 설정
 PostDetailManagerContent.defaultProps = {
   onTitleLoaded: () => {},
 };
 
 function PostDetailPage() {
+  // 이 부분은 원래 코드 유지
   const { studyId } = useParams();
   const [studyData, setStudyData] = useState({ title: "스터디" });
   const [pageTitle, setPageTitle] = useState("게시판 상세");
-  const navigate = useNavigate();
 
   // 스터디 정보 가져오기
   useEffect(() => {
-    if (!studyId) return;
+    if (!studyId) return; // studyId가 없으면 실행하지 않음
 
     const cachedStudyDataStr = localStorage.getItem(`study_${studyId}`);
     if (cachedStudyDataStr) {
@@ -164,11 +226,6 @@ function PostDetailPage() {
   // 자식 컴포넌트에서 제목을 받아오는 함수
   const updatePageTitle = (title) => {
     setPageTitle(title);
-  };
-
-  // 목록으로 돌아가기
-  const handleBack = () => {
-    navigate(`/studies/${studyId}/posts`);
   };
 
   const styles = {
@@ -204,7 +261,7 @@ function PostDetailPage() {
         <main style={styles.content}>
           <h1 style={styles.title}>{pageTitle}</h1>
           <PostDetailManagerContent
-            handleBack={handleBack}
+            handleBack={() => window.history.back()}
             onTitleLoaded={updatePageTitle}
           />
         </main>

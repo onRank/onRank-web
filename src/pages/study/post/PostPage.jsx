@@ -62,20 +62,20 @@ function PostContent() {
     setIsEditMode(true);
     setSelectedPostId(postId);
     navigate(`/studies/${studyId}/posts/${postId}`);
+    <PostEditform />;
   };
 
-  // 편집 취소
+  // 수정 취소
   const handleCancelEdit = () => {
     setIsEditMode(false);
     setPermissionError("");
 
-    // 선택된 게시물 유지하여 상세 화면으로 돌아가기
     if (selectedPostId) {
       getPostById(studyId, selectedPostId);
     }
   };
 
-  // 편집 완료 후 처리
+  // 수정 완료 후 처리
   const handleEditComplete = () => {
     setIsEditMode(false);
     setPermissionError("");

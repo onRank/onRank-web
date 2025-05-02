@@ -200,27 +200,6 @@ function PostEditForm({
     }
   };
 
-  // 삭제 핸들러
-  const handleDelete = async () => {
-    if (!window.confirm("정말로 이 게시판을 삭제하시겠습니까?")) {
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const result = await deletePost(studyId, parseInt(postId, 10));
-      if (result.success) {
-        navigate(`/studies/${studyId}/posts`);
-      } else {
-        setSubmitError(result.message || "게시판 삭제 중 오류가 발생했습니다.");
-        setIsSubmitting(false);
-      }
-    } catch (error) {
-      setSubmitError("게시판 삭제 중 오류가 발생했습니다.");
-      setIsSubmitting(false);
-    }
-  };
-
   if (isSubmitting) {
     return <LoadingSpinner />;
   }
