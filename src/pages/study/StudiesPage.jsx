@@ -295,7 +295,7 @@ function StudiesPage() {
               setActiveFilter(activeFilter === "all" ? null : "all")
             }
             style={{
-              backgroundColor: activeFilter === "all" ? "#E2E2E2" : "#fff",
+              backgroundColor: activeFilter === "all" ? "#F3F3F3" : "#fff",
               color: activeFilter === "all" ? "#333" : "#333",
             }}
           />
@@ -310,7 +310,7 @@ function StudiesPage() {
             }
             style={{
               backgroundColor:
-                activeFilter === "progressing" ? "#E2E2E2" : "#fff",
+                activeFilter === "progressing" ? "#F3F3F3" : "#fff",
               color: activeFilter === "progressing" ? "#333" : "#333",
             }}
           />
