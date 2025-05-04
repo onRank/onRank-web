@@ -319,16 +319,7 @@ function StudiesPage() {
 
       {/* 스터디 목록 그리드 */}
       {studies.length > 0 ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
-            gap: "1.5rem",
-          }}
-        >
-          {/* 기존 StudyList 컴포넌트 사용 */}
-          <StudyList studies={studies} />
-        </div>
+        <StudyList studies={studies} />
       ) : (
         <div
           style={{
@@ -348,7 +339,7 @@ function StudiesPage() {
           <button
             onClick={() => navigate("/studies/add")}
             style={{
-              backgroundColor: "#ee0418",
+              backgroundColor: "#4263eb",
               color: "white",
               border: "none",
               borderRadius: "4px",
