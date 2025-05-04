@@ -12,28 +12,33 @@ function StudyCard({ study, onClick }) {
     <div
       onClick={onClick}
       style={{
-        backgroundColor: "#fff",
-        borderRadius: "10px",
-        border: "2px solid ${colors.border}",
+        backgroundColor: colors.cardBackground,
+        borderRadius: "15px",
+        border: `1px solid ${colors.border}`,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
-        height: "260px",
-        width: "100%",
+        height: "100%",
         cursor: "pointer",
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        boxShadow: `0 2px 4px ${
+          colors.isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"
+        }`,
+        ":hover": {
+          transform: "translateY(-4px)",
+          boxShadow: `0 4px 6px ${
+            colors.isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"
+          }`,
+        },
       }}
     >
-      {/* 스터디 이미지/로고 영역 */}
+      {/* 스터디 이미지 */}
       <div
         style={{
           width: "100%",
           height: "180px",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          backgroundColor: "#fff",
-          borderBottom: "1px solid #000",
+          overflow: "hidden",
+          backgroundColor: colors.secondaryBackground,
         }}
       >
         <img
@@ -41,30 +46,26 @@ function StudyCard({ study, onClick }) {
           alt={study.title}
           onError={(e) => handleImageError(e, study.imageUrl)}
           style={{
-            maxWidth: "50%",
-            maxHeight: "50%",
-            objectFit: "contain",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
         />
       </div>
 
-      {/* 텍스트 영역 */}
       <div
         style={{
-          padding: "12px 16px",
+          padding: "16px",
           display: "flex",
           flexDirection: "column",
-          backgroundColor: "#fff",
-          height: "80px",
         }}
       >
         <h3
           style={{
             fontSize: "16px",
             fontWeight: "600",
-            color: "#000",
-            marginBottom: "4px",
-            marginTop: 0,
+            color: colors.text,
+            marginBottom: "8px",
           }}
         >
           {study.title || "제목 없음"}
@@ -72,7 +73,7 @@ function StudyCard({ study, onClick }) {
         <p
           style={{
             fontSize: "14px",
-            color: "#666",
+            color: colors.textSecondary,
             margin: 0,
             overflow: "hidden",
             textOverflow: "ellipsis",
