@@ -50,9 +50,20 @@ function AssignmentEdit() {
         const response = await assignmentService.getAssignmentForEdit(studyId, assignmentId);
         console.log(`[AssignmentEdit] 과제 데이터 조회 성공:`, response);
         
-        // ISO 문자열에서 로컬 datetime-local 형식으로 변환
-        const dueDate = new Date(response.assignmentDueDate);
-        const dueDateString = dueDate.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM" 형식으로 잘라냄
+        // 날짜 처리 안전하게 수정
+        let dueDateString = '';
+        try {
+          if (response.assignmentDueDate) {
+            const dueDate = new Date(response.assignmentDueDate);
+            if (!isNaN(dueDate.getTime())) {
+              dueDateString = dueDate.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM" 형식으로 잘라냄
+            } else {
+              console.warn('[AssignmentEdit] 유효하지 않은 날짜 형식:', response.assignmentDueDate);
+            }
+          }
+        } catch (dateError) {
+          console.error('[AssignmentEdit] 날짜 변환 오류:', dateError);
+        }
         
         setFormData({
           assignmentTitle: response.assignmentTitle || '',
@@ -146,7 +157,22 @@ function AssignmentEdit() {
       const formDataObj = new FormData();
       formDataObj.append('assignmentTitle', formData.assignmentTitle);
       formDataObj.append('assignmentContent', formData.assignmentContent);
-      formDataObj.append('assignmentDueDate', new Date(formData.assignmentDueDate).toISOString());
+      
+      // 날짜 안전하게 변환
+      try {
+        const dueDate = new Date(formData.assignmentDueDate);
+        if (!isNaN(dueDate.getTime())) {
+          formDataObj.append('assignmentDueDate', dueDate.toISOString());
+        } else {
+          throw new Error('유효하지 않은 날짜 형식입니다.');
+        }
+      } catch (dateError) {
+        console.error('[AssignmentEdit] 날짜 변환 오류:', dateError);
+        setError('날짜 형식이 올바르지 않습니다. 다시 선택해주세요.');
+        setIsLoading(false);
+        return;
+      }
+      
       formDataObj.append('assignmentMaxPoint', formData.assignmentMaxPoint);
       
       // 기존 파일 이름만 추가 (Swagger API 형식에 맞게)
