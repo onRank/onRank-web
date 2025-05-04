@@ -105,7 +105,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
 
   const buttonStyle = {
     borderRadius: "10px",
-    fontSize: "14px",
+    fontSize: "12px",
     cursor: "pointer",
     outline: "none",
     width: "62px",

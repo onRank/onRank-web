@@ -6,6 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import Button from "../../components/common/Button";
+import { FaBookReader } from "react-icons/fa";
 
 function StudiesPage() {
   const navigate = useNavigate();
@@ -17,7 +18,6 @@ function StudiesPage() {
   const [pageInitialized, setPageInitialized] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
-  const [studyTitle, setStudyTitle] = useState("");
 
   // URL 쿼리 파라미터에서 토큰 확인 및 처리
   useEffect(() => {
@@ -216,7 +216,9 @@ function StudiesPage() {
             marginBottom: "1.5rem",
           }}
         >
-          <span style={{ fontSize: "24px", marginRight: "10px" }}>📚</span>
+          <span style={{ fontSize: "24px", marginRight: "10px" }}>
+            <FaBookReader />
+          </span>
           <h1
             style={{
               fontSize: "24px",
@@ -227,33 +229,45 @@ function StudiesPage() {
           </h1>
         </div>
 
-        {/* 스터디 설정 입력폼 */}
+        {/* 스터디 생성폼 */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
             marginBottom: "1.5rem",
-            border: "1px solid #ddd",
+            border: "1px solid #A3A1A1",
             borderRadius: "8px",
-            padding: "8px",
+            padding: "10px 16px",
             backgroundColor: "#fff",
           }}
         >
-          <input
-            type="text"
-            placeholder="새로운 스터디를 생성하세요."
-            value={studyTitle}
-            onChange={(e) => setStudyTitle(e.target.value)}
+          <div
             style={{
-              flex: 1,
-              border: "none",
-              outline: "none",
-              padding: "8px",
               fontSize: "14px",
+              fontWeight: "500",
+              color: "#333",
+            }}
+          >
+            스터디 생성
+          </div>
+          <div
+            style={{
+              fontSize: "14px",
+              color: "#666",
+              flex: 1,
+              marginLeft: "16px",
+            }}
+          >
+            새로운 스터디를 생성하세요.
+          </div>
+          <Button
+            variant="create"
+            onClick={handleCreateClick}
+            style={{
+              marginLeft: "16px",
             }}
           />
-          <Button variant="create" onClick={handleCreateClick} />
         </div>
 
         {/* 필터 버튼 */}
@@ -267,20 +281,40 @@ function StudiesPage() {
           <Button
             variant="all"
             label="전체"
-            onClick={() => setActiveFilter("all")}
+            onClick={() =>
+              setActiveFilter(activeFilter === "all" ? null : "all")
+            }
             style={{
               backgroundColor: activeFilter === "all" ? "#ee0418" : "#fff",
               color: activeFilter === "all" ? "#fff" : "#333",
+              transform:
+                activeFilter === "all"
+                  ? "translate(2px, 3px)"
+                  : "translate(0, 0)",
+              boxShadow:
+                activeFilter === "all" ? "none" : "2px 4px 0 rgb(0, 0, 0)",
             }}
           />
           <Button
             variant="progressing"
             label="진행중"
-            onClick={() => setActiveFilter("progressing")}
+            onClick={() =>
+              setActiveFilter(
+                activeFilter === "progressing" ? null : "progressing"
+              )
+            }
             style={{
               backgroundColor:
                 activeFilter === "progressing" ? "#ee0418" : "#fff",
               color: activeFilter === "progressing" ? "#fff" : "#333",
+              transform:
+                activeFilter === "progressing"
+                  ? "translate(2px, 3px)"
+                  : "translate(0, 0)",
+              boxShadow:
+                activeFilter === "progressing"
+                  ? "none"
+                  : "2px 4px 0 rgb(0, 0, 0)",
             }}
           />
         </div>
