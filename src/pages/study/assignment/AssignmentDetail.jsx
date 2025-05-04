@@ -12,7 +12,9 @@ import {
 } from "../../../utils/fileUtils";
 
 const AssignmentDetail = () => {
-  const { studyId, id: assignmentId } = useParams();
+  const { studyId, assignmentId } = useParams();
+  console.log("[AssignmentDetail] URL 파라미터:", { studyId, assignmentId });
+  
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState(null);
   const [memberContext, setMemberContext] = useState(null);
@@ -34,17 +36,22 @@ const AssignmentDetail = () => {
 
   useEffect(() => {
     const fetchAssignmentDetail = async () => {
-      if (!studyId || !assignmentId) return;
+      if (!studyId || !assignmentId) {
+        console.error("[AssignmentDetail] studyId 또는 assignmentId가 없음:", { studyId, assignmentId });
+        return;
+      }
 
       setIsLoading(true);
       setError(null);
+
+      console.log(`[AssignmentDetail] 과제 상세 정보 조회 시작: studyId=${studyId}, assignmentId=${assignmentId}`);
 
       try {
         const response = await assignmentService.getAssignmentById(
           studyId,
           assignmentId
         );
-        console.log("과제 상세 정보:", response);
+        console.log("[AssignmentDetail] 과제 상세 정보 조회 성공:", response);
 
         // API 응답 구조에 맞게 데이터 저장
         if (response.memberContext) {
@@ -66,11 +73,11 @@ const AssignmentDetail = () => {
 
           setAssignment(assignmentData);
         } else {
-          console.error("과제 데이터가 없습니다:", response);
+          console.error("[AssignmentDetail] 과제 데이터가 없습니다:", response);
           setError("과제 정보를 불러오는데 실패했습니다.");
         }
       } catch (err) {
-        console.error("과제 상세 정보 조회 실패:", err);
+        console.error("[AssignmentDetail] 과제 상세 정보 조회 실패:", err);
         setError("과제 정보를 불러오는데 실패했습니다.");
       } finally {
         setIsLoading(false);

@@ -65,6 +65,7 @@ function StudyContent({ activeTab, studyData }) {
     
     // /studies/:studyId/assignment/:assignmentId
     if (assignmentId) {
+      console.log("[StudyContent] 과제 상세 페이지 렌더링, assignmentId:", assignmentId);
       return <AssignmentDetail />;
     }
     
