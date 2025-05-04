@@ -21,7 +21,8 @@ function AssignmentEdit() {
     assignmentContent: '',
     assignmentDueDate: '',
     assignmentMaxPoint: 100,
-    fileNames: []
+    remainingFileIds: [],
+    newFileNames: []
   });
   
   // 첨부 파일 상태
@@ -40,7 +41,10 @@ function AssignmentEdit() {
   // 과제 데이터 불러오기
   useEffect(() => {
     const fetchAssignmentData = async () => {
-      if (!studyId || !assignmentId) return;
+      if (!studyId || !assignmentId) {
+        console.error("[AssignmentEdit] studyId 또는 assignmentId가 없음:", { studyId, assignmentId });
+        return;
+      }
       
       setIsFetching(true);
       setError(null);
@@ -53,29 +57,33 @@ function AssignmentEdit() {
         // 날짜 처리 안전하게 수정
         let dueDateString = '';
         try {
-          if (response.assignmentDueDate) {
-            const dueDate = new Date(response.assignmentDueDate);
+          if (response.data.assignmentDueDate) {
+            const dueDate = new Date(response.data.assignmentDueDate);
             if (!isNaN(dueDate.getTime())) {
               dueDateString = dueDate.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM" 형식으로 잘라냄
             } else {
-              console.warn('[AssignmentEdit] 유효하지 않은 날짜 형식:', response.assignmentDueDate);
+              console.warn('[AssignmentEdit] 유효하지 않은 날짜 형식:', response.data.assignmentDueDate);
             }
           }
         } catch (dateError) {
           console.error('[AssignmentEdit] 날짜 변환 오류:', dateError);
         }
         
+        // 기존 파일에서 ID 추출하여 remainingFileIds 설정
+        const fileIds = response.data.assignmentFiles?.map(file => file.fileId) || [];
+        
         setFormData({
-          assignmentTitle: response.assignmentTitle || '',
-          assignmentContent: response.assignmentContent || '',
+          assignmentTitle: response.data.assignmentTitle || '',
+          assignmentContent: response.data.assignmentContent || '',
           assignmentDueDate: dueDateString,
-          assignmentMaxPoint: response.assignmentMaxPoint || 100,
-          fileNames: []
+          assignmentMaxPoint: response.data.assignmentMaxPoint || 100,
+          remainingFileIds: fileIds,
+          newFileNames: []
         });
         
         // 기존 파일 설정
-        if (response.files && response.files.length > 0) {
-          setExistingFiles(response.files);
+        if (response.data.assignmentFiles && response.data.assignmentFiles.length > 0) {
+          setExistingFiles(response.data.assignmentFiles);
         }
       } catch (err) {
         console.error('[AssignmentEdit] 과제 조회 실패:', err);
@@ -102,10 +110,10 @@ function AssignmentEdit() {
     const selectedFiles = Array.from(e.target.files);
     if (selectedFiles.length > 0) {
       setAttachedFiles(prev => [...prev, ...selectedFiles]);
-      // 파일 이름 배열 업데이트
+      // 새 파일 이름 배열 업데이트
       setFormData(prev => ({
         ...prev,
-        fileNames: [...prev.fileNames, ...selectedFiles.map(file => file.name)]
+        newFileNames: [...prev.newFileNames, ...selectedFiles.map(file => file.name)]
       }));
     }
   };
@@ -116,16 +124,26 @@ function AssignmentEdit() {
   };
   
   // 기존 첨부 파일 삭제
-  const handleRemoveExistingFile = (index) => {
+  const handleRemoveExistingFile = (index, fileId) => {
+    // 기존 파일 목록에서 해당 파일 제거
     setExistingFiles(prev => prev.filter((_, i) => i !== index));
+    
+    // remainingFileIds에서 해당 파일의 ID 제거
+    setFormData(prev => ({
+      ...prev,
+      remainingFileIds: prev.remainingFileIds.filter(id => id !== fileId)
+    }));
   };
   
   // 새로 첨부한 파일 삭제
   const handleRemoveFile = (index) => {
+    // 새 파일 목록에서 해당 파일 제거
     setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+    
+    // newFileNames에서 해당 파일 이름 제거
     setFormData(prev => ({
       ...prev,
-      fileNames: prev.fileNames.filter((_, i) => i !== index)
+      newFileNames: prev.newFileNames.filter((_, i) => i !== index)
     }));
   };
   
@@ -175,17 +193,14 @@ function AssignmentEdit() {
       
       formDataObj.append('assignmentMaxPoint', formData.assignmentMaxPoint);
       
-      // 기존 파일 이름만 추가 (Swagger API 형식에 맞게)
-      const fileNames = [...existingFiles.map(file => file.fileName)];
-      
-      // 새 파일의 이름 추가
-      attachedFiles.forEach(file => {
-        fileNames.push(file.name);
+      // 남길 기존 파일 ID 추가 (각각 별도의 remainingFileIds 파라미터로)
+      formData.remainingFileIds.forEach(fileId => {
+        formDataObj.append('remainingFileIds', fileId);
       });
       
-      // 파일 이름 배열 추가 (각각 별도의 fileNames 파라미터로)
-      fileNames.forEach(fileName => {
-        formDataObj.append('fileNames', fileName);
+      // 새 파일 이름 추가 (각각 별도의 newFileNames 파라미터로)
+      formData.newFileNames.forEach(fileName => {
+        formDataObj.append('newFileNames', fileName);
       });
       
       // 새 파일 추가
@@ -193,9 +208,9 @@ function AssignmentEdit() {
         formDataObj.append('files', file);
       });
       
-      console.log('[AssignmentEdit] 기존 파일:', existingFiles.map(f => f.fileName));
+      console.log('[AssignmentEdit] 남길 파일 ID:', formData.remainingFileIds);
       console.log('[AssignmentEdit] 새로 첨부된 파일:', attachedFiles.map(f => f.name));
-      console.log('[AssignmentEdit] 전체 파일명 목록:', fileNames);
+      console.log('[AssignmentEdit] 새 파일 이름 목록:', formData.newFileNames);
       
       // 과제 수정 API 호출
       await assignmentService.updateAssignment(studyId, assignmentId, formDataObj);
@@ -290,6 +305,7 @@ function AssignmentEdit() {
             ref={fileInputRef}
             onChange={handleFileChange}
             multiple
+            accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
           />
           
           {/* 기존 첨부파일 목록 */}
@@ -300,7 +316,10 @@ function AssignmentEdit() {
                 {existingFiles.map((file, index) => (
                   <FileItem key={`existing-${index}`}>
                     <FileName>{file.fileName}</FileName>
-                    <RemoveFileButton onClick={() => handleRemoveExistingFile(index)}>
+                    <RemoveFileButton 
+                      onClick={() => handleRemoveExistingFile(index, file.fileId)}
+                      title="이 파일을 삭제합니다"
+                    >
                       ×
                     </RemoveFileButton>
                   </FileItem>
@@ -318,7 +337,10 @@ function AssignmentEdit() {
                   <FileItem key={`new-${index}`}>
                     <FileName>{file.name}</FileName>
                     <FileSize>({formatFileSize(file.size)})</FileSize>
-                    <RemoveFileButton onClick={() => handleRemoveFile(index)}>
+                    <RemoveFileButton 
+                      onClick={() => handleRemoveFile(index)}
+                      title="이 파일을 삭제합니다"
+                    >
                       ×
                     </RemoveFileButton>
                   </FileItem>
