@@ -1,6 +1,15 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 function Ranking({ rankingData }) {
+  const [animate, setAnimate] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimate(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   const styles = {
     container: {
       display: "flex",
@@ -19,7 +28,8 @@ function Ranking({ rankingData }) {
       alignItems: "center",
       justifyContent: "center",
       color: "#fff",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+      position: "relative",
+      overflow: "hidden",
     },
     card2: {
       backgroundColor: "#d94135",
@@ -32,7 +42,8 @@ function Ranking({ rankingData }) {
       alignItems: "center",
       justifyContent: "center",
       color: "#fff",
-      boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+      position: "relative",
+      overflow: "hidden",
     },
     card3: {
       backgroundColor: "#d94135",
@@ -45,7 +56,17 @@ function Ranking({ rankingData }) {
       alignItems: "center",
       justifyContent: "center",
       color: "#fff",
-      boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+      position: "relative",
+      overflow: "hidden",
+    },
+    overlay: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      backgroundColor: "#fff",
+      height: animate ? "0%" : "100%",
+      transition: "height 0.6s ease-in-out",
     },
     icon: {
       fontSize: "28px",
@@ -76,6 +97,13 @@ function Ranking({ rankingData }) {
     return styles.card3;
   };
 
+  const getAnimationDelay = (rank) => {
+    if (rank === 3) return "0s";
+    if (rank === 2) return "0.3s";
+    if (rank === 1) return "0.6s";
+    return "0s";
+  };
+
   return (
     <div style={styles.container}>
       {rankingData.map((person, index) => (
@@ -83,6 +111,12 @@ function Ranking({ rankingData }) {
           <div style={styles.icon}>{renderIcon(person.rank)}</div>
           <div style={styles.name}>{person.name}</div>
           <div style={styles.point}>{person.point.toLocaleString()} pt</div>
+          <div
+            style={{
+              ...styles.overlay,
+              transitionDelay: getAnimationDelay(person.rank),
+            }}
+          />
         </div>
       ))}
     </div>

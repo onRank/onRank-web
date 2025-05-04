@@ -1,12 +1,12 @@
-import React, { useState, useEffect, memo } from 'react';
-import PropTypes from 'prop-types';
-import { useParams, Link } from 'react-router-dom';
-import { useTheme } from '../../../contexts/ThemeContext';
-import useStudyRole from '../../../hooks/useStudyRole';
-import StudyInfoHeader from './StudyInfoHeader';
-import StudyNavigation from './StudyNavigation';
-import studyContextService from '../../../services/studyContext';
-import { IoHomeOutline, IoChevronForward } from 'react-icons/io5';
+import React, { useState, useEffect, memo } from "react";
+import PropTypes from "prop-types";
+import { useParams, Link } from "react-router-dom";
+import { useTheme } from "../../../contexts/ThemeContext";
+import useStudyRole from "../../../hooks/useStudyRole";
+import StudyInfoHeader from "./StudyInfoHeader";
+import StudyNavigation from "./StudyNavigation";
+import studyContextService from "../../../services/studyContext";
+import { IoHomeOutline, IoChevronForward } from "react-icons/io5";
 
 // 스터디 사이드바 컨테이너 컴포넌트
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
@@ -14,35 +14,50 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
   const { colors } = useTheme();
   const { memberRole, updateMemberRole } = useStudyRole();
   const [studyInfo, setStudyInfo] = useState({
-    studyName: '',
-    studyImageUrl: null
+    studyName: "",
+    studyImageUrl: null,
   });
 
-  console.log('[StudySidebarContainer] 렌더링, studyId:', studyId, 'memberRole:', memberRole);
+  console.log(
+    "[StudySidebarContainer] 렌더링, studyId:",
+    studyId,
+    "memberRole:",
+    memberRole
+  );
 
   // 컴포넌트 마운트 시 스터디 정보 로드
   useEffect(() => {
     // 캐시된 스터디 컨텍스트 정보 가져오기
     const cachedContext = studyContextService.getStudyContext(studyId);
-    
-    console.log('[StudySidebarContainer] 캐시된 컨텍스트:', cachedContext);
-    
+
+    console.log("[StudySidebarContainer] 캐시된 컨텍스트:", cachedContext);
+
     if (cachedContext) {
       // 스터디 정보 설정
       setStudyInfo({
-        studyName: cachedContext.studyName || '',
-        studyImageUrl: cachedContext.studyImageUrl || null
+        studyName: cachedContext.studyName || "",
+        studyImageUrl: cachedContext.studyImageUrl || null,
       });
-      
+
       // 역할 정보 설정 (memberRole이 없는 경우에만)
-      if (cachedContext.memberRole && (!memberRole || memberRole !== cachedContext.memberRole)) {
-        console.log('[StudySidebarContainer] 캐시에서 역할 업데이트:', cachedContext.memberRole);
+      if (
+        cachedContext.memberRole &&
+        (!memberRole || memberRole !== cachedContext.memberRole)
+      ) {
+        console.log(
+          "[StudySidebarContainer] 캐시에서 역할 업데이트:",
+          cachedContext.memberRole
+        );
         updateMemberRole(cachedContext.memberRole, studyId);
       }
-      
-      console.log(`[StudySidebarContainer] 캐시된 스터디 정보 사용: ${cachedContext.studyName}`);
+
+      console.log(
+        `[StudySidebarContainer] 캐시된 스터디 정보 사용: ${cachedContext.studyName}`
+      );
     } else {
-      console.log(`[StudySidebarContainer] 캐시된 스터디 정보 없음: ${studyId}`);
+      console.log(
+        `[StudySidebarContainer] 캐시된 스터디 정보 없음: ${studyId}`
+      );
     }
   }, [studyId, memberRole, updateMemberRole]);
 
@@ -53,136 +68,151 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       if (latestContext) {
         // 현재 memberRole 값 (API 응답 또는 캐시된 값)
         const currentContextRole = latestContext.memberRole;
-        
+
         // 이미지나 이름이 변경된 경우 업데이트
-        if (latestContext.studyName !== studyInfo.studyName || 
-            latestContext.studyImageUrl !== studyInfo.studyImageUrl) {
-          
-          console.log('[StudySidebarContainer] 스터디 정보 변경 감지');
+        if (
+          latestContext.studyName !== studyInfo.studyName ||
+          latestContext.studyImageUrl !== studyInfo.studyImageUrl
+        ) {
+          console.log("[StudySidebarContainer] 스터디 정보 변경 감지");
           setStudyInfo({
             studyName: latestContext.studyName || studyInfo.studyName,
-            studyImageUrl: latestContext.studyImageUrl || studyInfo.studyImageUrl
+            studyImageUrl:
+              latestContext.studyImageUrl || studyInfo.studyImageUrl,
           });
         }
-        
+
         // 역할이 변경된 경우 업데이트
         if (currentContextRole && currentContextRole !== memberRole) {
-          console.log('[StudySidebarContainer] 역할 변경 감지:', { 
-            old: memberRole, 
-            new: currentContextRole 
+          console.log("[StudySidebarContainer] 역할 변경 감지:", {
+            old: memberRole,
+            new: currentContextRole,
           });
-          
+
           updateMemberRole(currentContextRole, studyId);
         }
       }
     }, 1000);
-    
+
     return () => clearInterval(checkForUpdates);
   }, [studyId, studyInfo, memberRole, updateMemberRole]);
 
   // 브레드크럼 조건부 표시를 위한 함수
   const renderBreadcrumb = () => {
     return (
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '0.75rem 1rem',
-        borderBottom: `1px solid ${colors.border}`,
-        backgroundColor: 'white',
-        borderRadius: '4px',
-        margin: '0.5rem',
-        boxShadow: '0 1px 2px rgba(0,0,0,0.05)'
-      }}>
-        <Link to={`/studies/${studyId}`} style={{ color: '#4A5568', display: 'flex', alignItems: 'center' }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "0.75rem 1rem",
+          margin: "0.5rem",
+        }}
+      >
+        <Link
+          to={`/studies/${studyId}`}
+          style={{ color: "#4A5568", display: "flex", alignItems: "center" }}
+        >
           <IoHomeOutline size={18} />
         </Link>
-        
-        <IoChevronForward size={16} style={{ margin: '0 0.5rem', color: '#718096' }} />
-        
+
+        <IoChevronForward
+          size={16}
+          style={{ margin: "0 0.5rem", color: "#718096" }}
+        />
+
         {activeTab && (
-          <Link 
-            to={`/studies/${studyId}/${getPathFromTab(activeTab)}`} 
-            style={{ 
-              color: subPage ? '#4A5568' : '#FF0000',
-              fontWeight: '500', 
-              textDecoration: 'none'
+          <Link
+            to={`/studies/${studyId}/${getPathFromTab(activeTab)}`}
+            style={{
+              color: subPage ? "#4A5568" : "#FF0000",
+              fontWeight: "500",
+              textDecoration: "none",
             }}
           >
             {activeTab}
           </Link>
         )}
-        
+
         {subPage && (
           <>
-            <IoChevronForward size={16} style={{ margin: '0 0.5rem', color: '#718096' }} />
-            <span style={{ color: '#FF0000', fontWeight: '500' }}>{subPage}</span>
+            <IoChevronForward
+              size={16}
+              style={{ margin: "0 0.5rem", color: "#718096" }}
+            />
+            <span style={{ color: "#FF0000", fontWeight: "500" }}>
+              {subPage}
+            </span>
           </>
         )}
       </div>
     );
   };
-  
+
   // 탭 이름에서 경로를 가져오는 도우미 함수
   const getPathFromTab = (tab) => {
     const pathMap = {
-      '공지사항': 'notices',
-      '일정': 'schedules',
-      '과제': 'assignment',
-      '게시판': 'posts',
-      '출석': 'attendances',
-      '관리': 'management',
-      '랭킹': 'ranking'
+      공지사항: "notices",
+      일정: "schedules",
+      과제: "assignment",
+      게시판: "posts",
+      출석: "attendances",
+      관리: "management",
+      랭킹: "ranking",
     };
-    return pathMap[tab] || '';
+    return pathMap[tab] || "";
   };
 
   return (
-    <div style={{
-      width: '240px',
-      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.08)',
-      borderRadius: '8px',
-      overflow: 'hidden',
-      backgroundColor: colors.cardBackground,
-      flexShrink: 0,
-      border: `1px solid ${colors.border}`,
-      display: 'flex',
-      flexDirection: 'column',
-      margin: '0.5rem 0',
-      alignSelf: 'flex-start',
-      position: 'sticky',
-      top: '1rem',
-      maxHeight: 'calc(100vh - 2rem)'
-    }}>
+    <div
+      style={{
+        width: "240px",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
+        borderRadius: "8px",
+        overflow: "hidden",
+        backgroundColor: colors.cardBackground,
+        flexShrink: 0,
+        border: `1px solid ${colors.border}`,
+        display: "flex",
+        flexDirection: "column",
+        margin: "0.5rem 0",
+        alignSelf: "flex-start",
+        position: "sticky",
+        top: "1rem",
+        maxHeight: "calc(100vh - 2rem)",
+      }}
+    >
       {/* 스터디 정보 헤더 (이미지와 이름) */}
-      <StudyInfoHeader 
-        studyName={studyInfo.studyName} 
+      <StudyInfoHeader
+        studyName={studyInfo.studyName}
         studyImageUrl={studyInfo.studyImageUrl}
       />
-      
+
       {/* 브레드크럼 네비게이션 */}
       {renderBreadcrumb()}
-      
+
       {/* 스터디 네비게이션 메뉴 - 스크롤 제거 */}
-      <div style={{ 
-        flex: '0 1 auto',
-        overflowY: 'auto'
-      }}>
+      <div
+        style={{
+          flex: "0 1 auto",
+          overflowY: "auto",
+        }}
+      >
         <StudyNavigation activeTab={activeTab} />
       </div>
     </div>
   );
 });
 
-StudySidebarContainer.displayName = 'StudySidebarContainer';
+StudySidebarContainer.displayName = "StudySidebarContainer";
 
 StudySidebarContainer.propTypes = {
   activeTab: PropTypes.string,
-  subPage: PropTypes.string
+  subPage: PropTypes.string,
 };
 
 StudySidebarContainer.defaultProps = {
-  activeTab: '',
-  subPage: ''
+  activeTab: "",
+  subPage: "",
 };
 
-export default StudySidebarContainer; 
+export default StudySidebarContainer;

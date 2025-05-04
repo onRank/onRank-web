@@ -336,21 +336,6 @@ function StudiesPage() {
           <p style={{ color: "#6c757d", marginBottom: "1.5rem" }}>
             참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
           </p>
-          <button
-            onClick={() => navigate("/studies/add")}
-            style={{
-              backgroundColor: "#4263eb",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              padding: "0.75rem 1.5rem",
-              fontSize: "1rem",
-              cursor: "pointer",
-              transition: "background-color 0.2s",
-            }}
-          >
-            스터디 생성하기
-          </button>
         </div>
       )}
     </div>
