@@ -76,10 +76,6 @@ function PostFormPage() {
     <PostProvider>
       <div style={styles.wrapper}>
         <div style={styles.main}>
-          <aside>
-            <StudySidebarContainer activeTab="게시판" />
-          </aside>
-
           <main style={styles.content}>
             <h1 style={styles.title}>게시판</h1>
 

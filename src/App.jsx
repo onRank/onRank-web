@@ -551,7 +551,7 @@ function AppContent() {
                       path="posts"
                       element={
                         <PostProvider>
-                          <PostPage />
+                          <PostPage activeTab="게시판" />
                         </PostProvider>
                       }
                     />
@@ -559,7 +559,7 @@ function AppContent() {
                       path="posts/add"
                       element={
                         <PostProvider>
-                          <PostFormPage />
+                          <PostFormPage activeTab="게시판" />
                         </PostProvider>
                       }
                     />
@@ -567,7 +567,7 @@ function AppContent() {
                       path="posts/:postId"
                       element={
                         <PostProvider>
-                          <PostDetailPage />
+                          <PostDetailPage activeTab="게시판" />
                         </PostProvider>
                       }
                     />

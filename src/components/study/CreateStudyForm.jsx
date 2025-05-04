@@ -497,13 +497,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
           variant="complete"
           onClick={handleCreateStudy}
           disabled={isSubmitting}
-          style={{
-            ...styles.button,
-            ...(isSubmitting ? styles.buttonDisabled : {}),
-          }}
-        >
-          {isSubmitting ? "처리 중..." : "완료"}
-        </Button>
+        />
       </div>
     </div>
   );
