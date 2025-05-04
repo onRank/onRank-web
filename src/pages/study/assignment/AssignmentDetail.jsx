@@ -536,6 +536,55 @@ const AssignmentDetail = () => {
                 </SubmissionLabel>
               </SubmissionRow>
 
+              {/* 제출 내용 표시 */}
+              {assignment.submissionContent && (
+                <SubmissionContentSection>
+                  <SectionSubtitle>제출 내용</SectionSubtitle>
+                  <SubmissionContentText>
+                    {assignment.submissionContent}
+                  </SubmissionContentText>
+                </SubmissionContentSection>
+              )}
+
+              {/* 제출 파일 표시 */}
+              {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
+                <FilesContainer>
+                  <SectionSubtitle>제출 파일</SectionSubtitle>
+                  <FilesList>
+                    {assignment.submissionFiles.map((file, index) => (
+                      <FileDownloadItem key={index}>
+                        <FileInfoRow>
+                          <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                          <FileDetails>
+                            <FileName>{file.fileName}</FileName>
+                          </FileDetails>
+                          {isImageFile(file.fileName) && file.fileUrl && (
+                            <PreviewButton 
+                              onClick={() => window.open(file.fileUrl, '_blank')}
+                              title="이미지 미리보기"
+                            >
+                              미리보기
+                            </PreviewButton>
+                          )}
+                          <DownloadButton
+                            onClick={() =>
+                              downloadFile(file.fileUrl, file.fileName)
+                            }
+                          >
+                            다운로드
+                          </DownloadButton>
+                        </FileInfoRow>
+                        {isImageFile(file.fileName) && file.fileUrl && (
+                          <ImagePreviewContainer>
+                            <ImagePreview src={file.fileUrl} alt={file.fileName} />
+                          </ImagePreviewContainer>
+                        )}
+                      </FileDownloadItem>
+                    ))}
+                  </FilesList>
+                </FilesContainer>
+              )}
+
               <ButtonsRow>
                 <ResubmitButton onClick={handleResubmit}>
                   다시 제출
@@ -551,6 +600,55 @@ const AssignmentDetail = () => {
                     제출: {formatDate(assignment.submissionDate)}
                   </SubmissionLabel>
                 </SubmissionRow>
+
+                {/* 제출 내용 표시 */}
+                {assignment.submissionContent && (
+                  <SubmissionContentSection>
+                    <SectionSubtitle>제출 내용</SectionSubtitle>
+                    <SubmissionContentText>
+                      {assignment.submissionContent}
+                    </SubmissionContentText>
+                  </SubmissionContentSection>
+                )}
+
+                {/* 제출 파일 표시 */}
+                {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
+                  <FilesContainer>
+                    <SectionSubtitle>제출 파일</SectionSubtitle>
+                    <FilesList>
+                      {assignment.submissionFiles.map((file, index) => (
+                        <FileDownloadItem key={index}>
+                          <FileInfoRow>
+                            <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                            <FileDetails>
+                              <FileName>{file.fileName}</FileName>
+                            </FileDetails>
+                            {isImageFile(file.fileName) && file.fileUrl && (
+                              <PreviewButton 
+                                onClick={() => window.open(file.fileUrl, '_blank')}
+                                title="이미지 미리보기"
+                              >
+                                미리보기
+                              </PreviewButton>
+                            )}
+                            <DownloadButton
+                              onClick={() =>
+                                downloadFile(file.fileUrl, file.fileName)
+                              }
+                            >
+                              다운로드
+                            </DownloadButton>
+                          </FileInfoRow>
+                          {isImageFile(file.fileName) && file.fileUrl && (
+                            <ImagePreviewContainer>
+                              <ImagePreview src={file.fileUrl} alt={file.fileName} />
+                            </ImagePreviewContainer>
+                          )}
+                        </FileDownloadItem>
+                      ))}
+                    </FilesList>
+                  </FilesContainer>
+                )}
 
                 {/* 피드백 섹션 */}
                 <FeedbackSection>
@@ -1057,6 +1155,21 @@ const PreviewIconButton = styled.button`
   &:hover {
     opacity: 0.7;
   }
+`;
+
+const SubmissionContentSection = styled.div`
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+`;
+
+const SubmissionContentText = styled.div`
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #333;
+  font-size: 14px;
 `;
 
 export default AssignmentDetail;
