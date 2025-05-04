@@ -9,6 +9,7 @@ import {
   SubmissionList,
   SubmissionDetail
 } from "../../pages/study/assignment";
+import AssignmentEdit from "../../pages/study/assignment/AssignmentEdit";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeTab from "./tabs/NoticeTab";
@@ -35,10 +36,16 @@ function StudyContent({ activeTab, studyData }) {
     const pathParts = location.pathname.split('/');
     const isCreatePath = pathParts.includes('create');
     const isSubmissionsPath = pathParts.includes('submissions');
+    const isEditPath = pathParts.includes('edit');
     
     // /studies/:studyId/assignment/create
     if (isCreatePath) {
       return <AssignmentCreate />;
+    }
+    
+    // /studies/:studyId/assignment/:id/edit
+    if (isEditPath) {
+      return <AssignmentEdit />;
     }
     
     // /studies/:studyId/assignment/:id/submissions/:submissionId

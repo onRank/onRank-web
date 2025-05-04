@@ -227,10 +227,84 @@ const assignmentService = {
    * @param {Object} assignmentData - 수정할 과제 데이터
    * @returns {Promise<Object>} - 수정된 과제 정보
    */
-  /*
   updateAssignment: async (studyId, assignmentId, assignmentData) => {
     try {
-      console.log(`[AssignmentService] 과제 수정 요청: 스터디 ${studyId}, 과제 ${assignmentId}`, assignmentData);
+      console.log(`[AssignmentService] 과제 수정 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
+      
+      // FormData 객체인 경우 파일 처리를 위해 추출
+      if (assignmentData instanceof FormData) {
+        console.log(
+          "[AssignmentService] FormData 객체 감지, preSignedURL 방식으로 처리"
+        );
+
+        // FormData에서 파일들과 다른 데이터 추출
+        const files = [];
+        const formDataObj = {};
+        const fileNames = [];
+
+        // FormData 객체에서 파일과 다른 필드 추출
+        for (const [key, value] of assignmentData.entries()) {
+          if (key === 'files' && value instanceof File) {
+            files.push(value);
+          } else if (key === 'fileNames') {
+            fileNames.push(value);
+          } else {
+            formDataObj[key] = value;
+          }
+        }
+
+        console.log("[AssignmentService] 추출된 데이터:", formDataObj);
+        console.log("[AssignmentService] 추출된 파일 수:", files.length);
+        console.log("[AssignmentService] 추출된 파일 목록:", files.map(f => f.name));
+        console.log("[AssignmentService] 파일 이름 목록:", fileNames);
+
+        // API 호출에 필요한 데이터 준비
+        const requestData = {
+          assignmentTitle: formDataObj.assignmentTitle,
+          assignmentContent: formDataObj.assignmentContent,
+          assignmentDueDate: formDataObj.assignmentDueDate,
+          assignmentMaxPoint: parseInt(formDataObj.assignmentMaxPoint, 10) || 100,
+          fileNames: fileNames,
+        };
+
+        // API 호출하여 과제 수정 및 preSignedURL 받기
+        const response = await api.put(
+          `/studies/${studyId}/assignments/${assignmentId}`,
+          requestData,
+          {
+            withCredentials: true,
+          }
+        );
+
+        console.log(
+          "[AssignmentService] 과제 수정 성공, 응답 데이터:",
+          JSON.stringify(response.data, null, 2)
+        );
+
+        // 파일 업로드 처리
+        if (files.length > 0 && response.data) {
+          console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", files.length);
+          
+          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
+          console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
+          
+          // 업로드 실패 발생 시 경고
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn("[AssignmentService] 일부 파일 업로드 실패:", failedUploads);
+          }
+        } else {
+          console.log("[AssignmentService] 업로드할 새 파일이 없거나 응답 데이터가 없음");
+        }
+
+        // 스터디 컨텍스트 정보 업데이트
+        studyContextService.updateFromApiResponse(studyId, response.data);
+
+        return response.data;
+      }
+      
+      // 일반 JSON 객체인 경우 기존 로직 사용
       const response = await api.put(`/studies/${studyId}/assignments/${assignmentId}`, assignmentData, {
         withCredentials: true
       });
@@ -246,32 +320,61 @@ const assignmentService = {
       throw error;
     }
   },
-  */
 
   /**
-  //  * 과제 삭제
-  //  * @param {string} studyId - 스터디 ID
-  //  * @param {string} assignmentId - 과제 ID
-  //  * @returns {Promise<Object>} - 삭제 결과
-  //  */
-  // deleteAssignment: async (studyId, assignmentId) => {
-  //   try {
-  //     console.log(`[AssignmentService] 과제 삭제 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
-  //     const response = await api.delete(`/studies/${studyId}/assignments/${assignmentId}`, {
-  //       withCredentials: true
-  //     });
+   * 수정용 과제 조회
+   * @param {string} studyId - 스터디 ID
+   * @param {string} assignmentId - 과제 ID
+   * @returns {Promise<Object>} - 수정할 과제 정보
+   */
+  getAssignmentForEdit: async (studyId, assignmentId) => {
+    try {
+      console.log(
+        `[AssignmentService] 수정용 과제 조회 요청: 스터디 ${studyId}, 과제 ${assignmentId}`
+      );
+      const response = await api.get(
+        `/studies/${studyId}/assignments/${assignmentId}/edit`,
+        {
+          withCredentials: true,
+        }
+      );
 
-  //     console.log("[AssignmentService] 과제 삭제 성공:", response.data);
+      console.log("[AssignmentService] 수정용 과제 조회 성공:", response.data);
 
-  //     // 스터디 컨텍스트 정보 업데이트
-  //     studyContextService.updateFromApiResponse(studyId, response.data);
+      // 스터디 컨텍스트 정보 업데이트
+      studyContextService.updateFromApiResponse(studyId, response.data);
 
-  //     return response.data;
-  //   } catch (error) {
-  //     console.error('[AssignmentService] 과제 삭제 실패:', error);
-  //     throw error;
-  //   }
-  // },
+      return response.data;
+    } catch (error) {
+      console.error("[AssignmentService] 수정용 과제 조회 실패:", error);
+      throw error;
+    }
+  },
+
+  /**
+   * 과제 삭제
+   * @param {string} studyId - 스터디 ID
+   * @param {string} assignmentId - 과제 ID
+   * @returns {Promise<Object>} - 삭제 결과
+   */
+  deleteAssignment: async (studyId, assignmentId) => {
+    try {
+      console.log(`[AssignmentService] 과제 삭제 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
+      const response = await api.delete(`/studies/${studyId}/assignments/${assignmentId}`, {
+        withCredentials: true
+      });
+
+      console.log("[AssignmentService] 과제 삭제 성공:", response.data);
+
+      // 스터디 컨텍스트 정보 업데이트
+      studyContextService.updateFromApiResponse(studyId, response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error('[AssignmentService] 과제 삭제 실패:', error);
+      throw error;
+    }
+  },
 
   /**
    * 과제 제출

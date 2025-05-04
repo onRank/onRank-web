@@ -2,6 +2,7 @@
 import AssignmentList from './AssignmentList';
 import AssignmentCreate from './AssignmentCreate';
 import AssignmentDetail from './AssignmentDetail';
+import AssignmentEdit from './AssignmentEdit';
 import SubmissionList from './SubmissionList';
 import SubmissionDetail from './SubmissionDetail';
 
@@ -9,6 +10,7 @@ export {
   AssignmentList,
   AssignmentCreate,
   AssignmentDetail,
+  AssignmentEdit,
   SubmissionList,
   SubmissionDetail
 };
