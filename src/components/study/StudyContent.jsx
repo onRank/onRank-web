@@ -19,7 +19,7 @@ import AttendanceContainer from "../../pages/study/attendance/AttendanceContaine
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
 function StudyContent({ activeTab, studyData }) {
-  const { studyId, id } = useParams();
+  const { studyId, assignmentId } = useParams();
   const location = useLocation();
   const [currentSubPage, setCurrentSubPage] = useState(null);
 
@@ -40,31 +40,31 @@ function StudyContent({ activeTab, studyData }) {
     
     console.log("[StudyContent] 현재 경로:", location.pathname);
     console.log("[StudyContent] 경로 구성요소:", pathParts);
-    console.log("[StudyContent] id 파라미터:", id);
+    console.log("[StudyContent] assignmentId 파라미터:", assignmentId);
     
     // /studies/:studyId/assignment/create
     if (isCreatePath) {
       return <AssignmentCreate />;
     }
     
-    // /studies/:studyId/assignment/:id/edit
+    // /studies/:studyId/assignment/:assignmentId/edit
     if (isEditPath) {
       console.log("[StudyContent] 과제 수정 페이지 렌더링");
       return <AssignmentEdit />;
     }
     
-    // /studies/:studyId/assignment/:id/submissions/:submissionId
+    // /studies/:studyId/assignment/:assignmentId/submissions/:submissionId
     if (isSubmissionsPath && pathParts.length > 6) {
       return <SubmissionDetail />;
     }
     
-    // /studies/:studyId/assignment/:id/submissions
+    // /studies/:studyId/assignment/:assignmentId/submissions
     if (isSubmissionsPath) {
       return <SubmissionList />;
     }
     
-    // /studies/:studyId/assignment/:id
-    if (id) {
+    // /studies/:studyId/assignment/:assignmentId
+    if (assignmentId) {
       return <AssignmentDetail />;
     }
     
