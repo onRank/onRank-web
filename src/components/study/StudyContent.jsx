@@ -19,7 +19,7 @@ import AttendanceContainer from "../../pages/study/attendance/AttendanceContaine
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
 function StudyContent({ activeTab, studyData }) {
-  const { studyId, id: assignmentId } = useParams();
+  const { studyId, id } = useParams();
   const location = useLocation();
   const [currentSubPage, setCurrentSubPage] = useState(null);
 
@@ -38,6 +38,10 @@ function StudyContent({ activeTab, studyData }) {
     const isSubmissionsPath = pathParts.includes('submissions');
     const isEditPath = pathParts.includes('edit');
     
+    console.log("[StudyContent] 현재 경로:", location.pathname);
+    console.log("[StudyContent] 경로 구성요소:", pathParts);
+    console.log("[StudyContent] id 파라미터:", id);
+    
     // /studies/:studyId/assignment/create
     if (isCreatePath) {
       return <AssignmentCreate />;
@@ -45,6 +49,7 @@ function StudyContent({ activeTab, studyData }) {
     
     // /studies/:studyId/assignment/:id/edit
     if (isEditPath) {
+      console.log("[StudyContent] 과제 수정 페이지 렌더링");
       return <AssignmentEdit />;
     }
     
@@ -59,7 +64,7 @@ function StudyContent({ activeTab, studyData }) {
     }
     
     // /studies/:studyId/assignment/:id
-    if (assignmentId) {
+    if (id) {
       return <AssignmentDetail />;
     }
     

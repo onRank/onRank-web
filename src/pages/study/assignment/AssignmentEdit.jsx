@@ -7,7 +7,8 @@ import { IoAttach } from 'react-icons/io5';
 import { formatFileSize } from '../../../utils/fileUtils';
 
 function AssignmentEdit() {
-  const { studyId, id: assignmentId } = useParams();
+  const { studyId, id } = useParams();
+  const assignmentId = id; // URL 파라미터는 id, API는 assignmentId 사용
   const navigate = useNavigate();
   const { isManager } = useStudyRole();
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +47,9 @@ function AssignmentEdit() {
       setError(null);
       
       try {
+        console.log(`[AssignmentEdit] 과제 데이터 조회 시작: studyId=${studyId}, assignmentId=${assignmentId}`);
         const response = await assignmentService.getAssignmentForEdit(studyId, assignmentId);
+        console.log(`[AssignmentEdit] 과제 데이터 조회 성공:`, response);
         
         // ISO 문자열에서 로컬 datetime-local 형식으로 변환
         const dueDate = new Date(response.assignmentDueDate);

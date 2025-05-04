@@ -51,7 +51,11 @@ function AssignmentList() {
   };
   
   // 과제 수정 페이지로 이동
-  const handleEditAssignment = (assignmentId) => {
+  const handleEditAssignment = (assignmentId, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log(`[AssignmentList] 과제 수정 페이지로 이동: studyId=${studyId}, assignmentId=${assignmentId}`);
     navigate(`/studies/${studyId}/assignment/${assignmentId}/edit`);
     setActivePopup(null);
   };
