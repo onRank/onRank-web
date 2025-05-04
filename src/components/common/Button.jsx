@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-function Button({ onClick, variant = "default", label, ...props }) {
+function Button({ onClick, variant = "default", label, isActive, ...props }) {
   const [isPressed, setIsPressed] = useState(false);
 
   const defaultLabels = {
@@ -16,8 +16,8 @@ function Button({ onClick, variant = "default", label, ...props }) {
     reSubmit: "다시 제출",
     all: "전체",
     progressing: "진행중",
-    addFiles: "파일 첨부", // 삭제 필요
-    delete: "삭제", // 삭제 필요
+    addFiles: "파일 첨부",
+    delete: "삭제",
     default: "확인",
   };
 
@@ -103,7 +103,9 @@ function Button({ onClick, variant = "default", label, ...props }) {
     },
   };
 
-  const buttonStyle = {
+  const isFilterButton = variant === "all" || variant === "progressing";
+
+  let buttonStyle = {
     borderRadius: "10px",
     fontSize: "12px",
     cursor: "pointer",
@@ -113,17 +115,49 @@ function Button({ onClick, variant = "default", label, ...props }) {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    transform: isPressed ? "translate(2px, 3px)" : "translate(0, 0)",
-    boxShadow: isPressed ? "none" : "2px 4px 0 rgb(0, 0, 0)",
     transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
     ...variantStyles[variant],
   };
 
+  if (isFilterButton) {
+    buttonStyle = {
+      ...buttonStyle,
+      transform: isActive
+        ? "translate(2px, 3px)"
+        : isPressed
+        ? "translate(2px, 3px)"
+        : "translate(0, 0)",
+      boxShadow: isActive
+        ? "none"
+        : isPressed
+        ? "none"
+        : "2px 4px 0 rgb(0, 0, 0)",
+    };
+  } else {
+    buttonStyle = {
+      ...buttonStyle,
+      transform: isPressed ? "translate(2px, 3px)" : "translate(0, 0)",
+      boxShadow: isPressed ? "none" : "2px 4px 0 rgb(0, 0, 0)",
+    };
+  }
+
+  buttonStyle = {
+    ...buttonStyle,
+    ...(props.style || {}),
+  };
+
   const handleMouseDown = () => {
+    if (isFilterButton && isActive) return;
     setIsPressed(true);
   };
 
   const handleMouseUp = () => {
+    if (isFilterButton && isActive) return;
+    setIsPressed(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isFilterButton && isActive) return;
     setIsPressed(false);
   };
 
@@ -133,14 +167,16 @@ function Button({ onClick, variant = "default", label, ...props }) {
     }
   };
 
+  const { style, ...restProps } = props;
+
   return (
     <button
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onMouseLeave={() => setIsPressed(false)}
+      onMouseLeave={handleMouseLeave}
       style={buttonStyle}
-      {...props}
+      {...restProps}
     >
       {label || defaultLabels[variant] || "확인"}
     </button>

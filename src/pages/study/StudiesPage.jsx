@@ -233,7 +233,7 @@ function StudiesPage() {
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "flex-start",
             justifyContent: "space-between",
             marginBottom: "1.5rem",
             border: "1px solid #A3A1A1",
@@ -244,28 +244,37 @@ function StudiesPage() {
         >
           <div
             style={{
-              fontSize: "14px",
-              fontWeight: "500",
-              color: "#333",
-            }}
-          >
-            스터디 생성
-          </div>
-          <div
-            style={{
-              fontSize: "14px",
-              color: "#666",
+              display: "flex",
+              flexDirection: "column",
               flex: 1,
-              marginLeft: "16px",
             }}
           >
-            새로운 스터디를 생성하세요.
+            <div
+              style={{
+                fontSize: "16px",
+                fontWeight: "500",
+                color: "#333",
+                marginBottom: "4px",
+              }}
+            >
+              스터디 생성
+            </div>
+            <div
+              style={{
+                fontSize: "14px",
+                color: "#666",
+                marginLeft: "2px",
+              }}
+            >
+              새로운 스터디를 생성하세요.
+            </div>
           </div>
           <Button
             variant="create"
             onClick={handleCreateClick}
             style={{
               marginLeft: "16px",
+              alignSelf: "center",
             }}
           />
         </div>
@@ -281,23 +290,19 @@ function StudiesPage() {
           <Button
             variant="all"
             label="전체"
+            isActive={activeFilter === "all"}
             onClick={() =>
               setActiveFilter(activeFilter === "all" ? null : "all")
             }
             style={{
               backgroundColor: activeFilter === "all" ? "#ee0418" : "#fff",
               color: activeFilter === "all" ? "#fff" : "#333",
-              transform:
-                activeFilter === "all"
-                  ? "translate(2px, 3px)"
-                  : "translate(0, 0)",
-              boxShadow:
-                activeFilter === "all" ? "none" : "2px 4px 0 rgb(0, 0, 0)",
             }}
           />
           <Button
             variant="progressing"
             label="진행중"
+            isActive={activeFilter === "progressing"}
             onClick={() =>
               setActiveFilter(
                 activeFilter === "progressing" ? null : "progressing"
@@ -307,14 +312,6 @@ function StudiesPage() {
               backgroundColor:
                 activeFilter === "progressing" ? "#ee0418" : "#fff",
               color: activeFilter === "progressing" ? "#fff" : "#333",
-              transform:
-                activeFilter === "progressing"
-                  ? "translate(2px, 3px)"
-                  : "translate(0, 0)",
-              boxShadow:
-                activeFilter === "progressing"
-                  ? "none"
-                  : "2px 4px 0 rgb(0, 0, 0)",
             }}
           />
         </div>
