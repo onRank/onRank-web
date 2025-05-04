@@ -240,14 +240,18 @@ const assignmentService = {
         // FormData에서 파일들과 다른 데이터 추출
         const files = [];
         const formDataObj = {};
-        const fileNames = [];
+        const remainingFileIds = [];
+        const newFileNames = [];
 
         // FormData 객체에서 파일과 다른 필드 추출
         for (const [key, value] of assignmentData.entries()) {
           if (key === 'files' && value instanceof File) {
             files.push(value);
-          } else if (key === 'fileNames') {
-            fileNames.push(value);
+          } else if (key === 'remainingFileIds') {
+            // FormData에서는 모든 값이 문자열로 오므로 숫자로 변환
+            remainingFileIds.push(parseInt(value, 10));
+          } else if (key === 'newFileNames') {
+            newFileNames.push(value);
           } else {
             formDataObj[key] = value;
           }
@@ -255,17 +259,20 @@ const assignmentService = {
 
         console.log("[AssignmentService] 추출된 데이터:", formDataObj);
         console.log("[AssignmentService] 추출된 파일 수:", files.length);
-        console.log("[AssignmentService] 추출된 파일 목록:", files.map(f => f.name));
-        console.log("[AssignmentService] 파일 이름 목록:", fileNames);
+        console.log("[AssignmentService] 남길 파일 ID 목록:", remainingFileIds);
+        console.log("[AssignmentService] 새 파일 이름 목록:", newFileNames);
 
-        // API 호출에 필요한 데이터 준비
+        // API 호출에 필요한 데이터 준비 (API 문서에 맞게 변경)
         const requestData = {
           assignmentTitle: formDataObj.assignmentTitle,
           assignmentContent: formDataObj.assignmentContent,
           assignmentDueDate: formDataObj.assignmentDueDate,
           assignmentMaxPoint: parseInt(formDataObj.assignmentMaxPoint, 10) || 100,
-          fileNames: fileNames,
+          remainingFileIds: remainingFileIds,
+          newFileNames: newFileNames
         };
+
+        console.log("[AssignmentService] API 요청 데이터:", requestData);
 
         // API 호출하여 과제 수정 및 preSignedURL 받기
         const response = await api.put(
@@ -304,7 +311,21 @@ const assignmentService = {
         return response.data;
       }
       
-      // 일반 JSON 객체인 경우 기존 로직 사용
+      // 일반 JSON 객체인 경우 기존 로직 사용 (API 문서에 맞게 변경)
+      // fileNames 대신 remainingFileIds와 newFileNames를 사용하도록 확인
+      if (assignmentData.fileNames !== undefined && !assignmentData.remainingFileIds) {
+        // 기존 형식을 새 형식으로 변환
+        console.warn("[AssignmentService] fileNames 필드 감지, API 스펙에 맞게 변환합니다");
+        assignmentData = {
+          ...assignmentData,
+          remainingFileIds: [],
+          newFileNames: assignmentData.fileNames || [],
+        };
+        delete assignmentData.fileNames;
+      }
+      
+      console.log("[AssignmentService] JSON 요청 데이터:", assignmentData);
+      
       const response = await api.put(`/studies/${studyId}/assignments/${assignmentId}/edit`, assignmentData, {
         withCredentials: true
       });

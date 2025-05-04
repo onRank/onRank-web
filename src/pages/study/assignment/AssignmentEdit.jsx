@@ -308,14 +308,23 @@ function AssignmentEdit() {
             accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
           />
           
-          {/* 기존 첨부파일 목록 */}
-          {existingFiles.length > 0 && (
+          {/* 첨부파일 목록 (기존파일 + 새 파일 통합) */}
+          {(existingFiles.length > 0 || attachedFiles.length > 0) && (
             <>
-              <FileListLabel>기존 파일</FileListLabel>
+              <FileListLabel>첨부파일</FileListLabel>
               <FileList>
+                {/* 기존 파일 목록 */}
                 {existingFiles.map((file, index) => (
                   <FileItem key={`existing-${index}`}>
-                    <FileName>{file.fileName}</FileName>
+                    {isImageFile(file.fileName) && file.fileUrl && (
+                      <ImagePreview>
+                        <img src={file.fileUrl} alt={file.fileName} />
+                      </ImagePreview>
+                    )}
+                    <FileInfo>
+                      <FileName>{file.fileName}</FileName>
+                      <FileSource>기존 파일</FileSource>
+                    </FileInfo>
                     <RemoveFileButton 
                       onClick={() => handleRemoveExistingFile(index, file.fileId)}
                       title="이 파일을 삭제합니다"
@@ -324,19 +333,19 @@ function AssignmentEdit() {
                     </RemoveFileButton>
                   </FileItem>
                 ))}
-              </FileList>
-            </>
-          )}
-          
-          {/* 새로 첨부된 파일 목록 */}
-          {attachedFiles.length > 0 && (
-            <>
-              <FileListLabel>새로 추가된 파일</FileListLabel>
-              <FileList>
+                
+                {/* 새로 첨부된 파일 목록 */}
                 {attachedFiles.map((file, index) => (
                   <FileItem key={`new-${index}`}>
-                    <FileName>{file.name}</FileName>
-                    <FileSize>({formatFileSize(file.size)})</FileSize>
+                    {isImageFile(file.name) && (
+                      <ImagePreview>
+                        <img src={URL.createObjectURL(file)} alt={file.name} />
+                      </ImagePreview>
+                    )}
+                    <FileInfo>
+                      <FileName>{file.name}</FileName>
+                      <FileSize>({formatFileSize(file.size)})</FileSize>
+                    </FileInfo>
                     <RemoveFileButton 
                       onClick={() => handleRemoveFile(index)}
                       title="이 파일을 삭제합니다"
@@ -593,6 +602,40 @@ const LoadingMessage = styled.div`
   padding: 40px;
   font-size: 16px;
   color: #666;
+`;
+
+// isImageFile 함수 추가
+function isImageFile(filename) {
+  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+  const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
+  return imageExtensions.includes(ext);
+}
+
+// 이미지 미리보기 스타일 추가
+const ImagePreview = styled.div`
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const FileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+`;
+
+const FileSource = styled.span`
+  font-size: 11px;
+  color: #6c757d;
 `;
 
 export default AssignmentEdit; 
