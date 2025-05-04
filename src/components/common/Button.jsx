@@ -110,7 +110,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     fontSize: "12px",
     cursor: "pointer",
     outline: "none",
-    width: "62px",
+    width: "64px",
     height: "33px",
     display: "flex",
     justifyContent: "center",

@@ -205,7 +205,7 @@ function StudiesPage() {
         style={{
           display: "flex",
           flexDirection: "column",
-          marginBottom: "2rem",
+          marginBottom: "1rem",
         }}
       >
         {/* 아이콘과 제목 */}
@@ -235,10 +235,10 @@ function StudiesPage() {
             display: "flex",
             alignItems: "flex-start",
             justifyContent: "space-between",
-            marginBottom: "1.5rem",
+            marginBottom: "1rem",
             border: "1px solid #A3A1A1",
-            borderRadius: "8px",
-            padding: "10px 16px",
+            borderRadius: "12px",
+            padding: "14px 20px",
             backgroundColor: "#fff",
           }}
         >
@@ -284,7 +284,7 @@ function StudiesPage() {
           style={{
             display: "flex",
             gap: "0.5rem",
-            marginBottom: "1rem",
+            margin: "1rem 1rem",
           }}
         >
           <Button
@@ -295,8 +295,8 @@ function StudiesPage() {
               setActiveFilter(activeFilter === "all" ? null : "all")
             }
             style={{
-              backgroundColor: activeFilter === "all" ? "#ee0418" : "#fff",
-              color: activeFilter === "all" ? "#fff" : "#333",
+              backgroundColor: activeFilter === "all" ? "#E2E2E2" : "#fff",
+              color: activeFilter === "all" ? "#333" : "#333",
             }}
           />
           <Button
@@ -310,8 +310,8 @@ function StudiesPage() {
             }
             style={{
               backgroundColor:
-                activeFilter === "progressing" ? "#ee0418" : "#fff",
-              color: activeFilter === "progressing" ? "#fff" : "#333",
+                activeFilter === "progressing" ? "#E2E2E2" : "#fff",
+              color: activeFilter === "progressing" ? "#333" : "#333",
             }}
           />
         </div>
