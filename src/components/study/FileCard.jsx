@@ -1,72 +1,32 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { isImageFile, getFilePreviewUrl, revokeFilePreviewUrl, getFileIcon as getFileIconUtil } from "../../utils/fileUtils";
 
 const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
   const [preview, setPreview] = useState(null);
-  const [isImage, setIsImage] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // 파일이 이미지인지 확인
-    if (file && file.type && file.type.startsWith("image/")) {
-      setIsImage(true);
-
-      // 이미지 파일이면 미리보기 URL 생성
-      if (showPreview) {
-        // 실제 File 객체인지 확인 (instanceof Blob이나 size 속성으로 판단)
-        if (
-          file instanceof Blob ||
-          (file.size !== undefined && typeof file.size === "number")
-        ) {
-          const fileUrl = URL.createObjectURL(file);
-          setPreview(fileUrl);
-          // 컴포넌트가 언마운트될 때 URL 해제
-          return () => URL.revokeObjectURL(fileUrl);
-        } else if (file.fileUrl) {
-          // 기존 파일인 경우 이미 있는 URL 사용
-          setPreview(file.fileUrl);
+    // 파일이 이미지인지 확인하고 미리보기 URL 생성
+    if (showPreview && isImageFile(file)) {
+      const previewUrl = getFilePreviewUrl(file);
+      setPreview(previewUrl);
+      
+      // 컴포넌트가 언마운트될 때 URL 해제
+      return () => {
+        if (previewUrl) {
+          revokeFilePreviewUrl(previewUrl);
         }
-      }
+      };
     } else {
-      setIsImage(false);
       setPreview(null);
     }
   }, [file, showPreview]);
 
-  // 파일 확장자에 따른 아이콘 결정
+  // 파일 확장자에 따른 아이콘 결정 - fileUtils에서 가져옴
   const getFileIcon = () => {
     if (!file) return "📄";
-
-    const fileName = file.name || "";
-    const extension = fileName.split(".").pop().toLowerCase();
-
-    switch (extension) {
-      case "pdf":
-        return "📕";
-      case "doc":
-      case "docx":
-        return "📘";
-      case "xls":
-      case "xlsx":
-        return "📗";
-      case "ppt":
-      case "pptx":
-        return "📙";
-      case "zip":
-      case "rar":
-        return "🗜️";
-      case "txt":
-        return "📝";
-      case "jpg":
-      case "jpeg":
-      case "png":
-      case "gif":
-      case "bmp":
-      case "webp":
-        return "🖼️";
-      default:
-        return "📄";
-    }
+    return getFileIconUtil(file.name || file.fileName || "");
   };
 
   const styles = {
@@ -159,8 +119,8 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div style={styles.previewContainer}>
-        {isImage && preview ? (
-          <img src={preview} alt={file.name} style={styles.previewImage} />
+        {isImageFile(file) && preview ? (
+          <img src={preview} alt={file.name || file.fileName} style={styles.previewImage} />
         ) : (
           <span style={styles.fileIcon}>{getFileIcon()}</span>
         )}
@@ -173,7 +133,7 @@ const FileCard = ({ file, onDelete, onClick, showPreview = true }) => {
           </svg>
         </div>
         <div style={styles.fileInfo}>
-          <p style={styles.fileName}>{file.name}</p>
+          <p style={styles.fileName}>{file.name || file.fileName}</p>
         </div>
       </div>
 

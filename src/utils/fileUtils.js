@@ -62,6 +62,107 @@ export const getFileExtension = (fileName) => {
 };
 
 /**
+ * 파일이 이미지인지 확인
+ * @param {string|Object} file - 파일 이름 문자열 또는 File 객체
+ * @returns {boolean} 이미지 파일 여부
+ */
+export const isImageFile = (file) => {
+  // File 객체인 경우
+  if (file instanceof File || (file && typeof file === 'object' && file.type)) {
+    // MIME 타입으로 판단
+    return file.type.startsWith('image/');
+  }
+  
+  // 문자열(파일명)인 경우
+  if (typeof file === 'string') {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const ext = file.toLowerCase().substring(file.lastIndexOf('.'));
+    return imageExtensions.includes(ext);
+  }
+  
+  // 파일 객체에서 fileName 속성 사용
+  if (file && typeof file === 'object' && file.fileName) {
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const ext = file.fileName.toLowerCase().substring(file.fileName.lastIndexOf('.'));
+    return imageExtensions.includes(ext);
+  }
+  
+  return false;
+};
+
+/**
+ * 파일 미리보기 URL 생성
+ * @param {File|Object} file - File 객체 또는 파일 정보가 담긴 객체
+ * @returns {string|null} 미리보기 URL 또는 null
+ */
+export const getFilePreviewUrl = (file) => {
+  if (!file) return null;
+  
+  // 이미지 파일이 아니면 null 반환
+  if (!isImageFile(file)) return null;
+  
+  // 파일이 File 객체일 경우 (새로 첨부된 파일)
+  if (file instanceof File || (file instanceof Blob)) {
+    return URL.createObjectURL(file);
+  }
+  
+  // 파일 객체가 fileUrl 속성을 가진 경우 (기존 파일)
+  if (file.fileUrl) {
+    return file.fileUrl;
+  }
+  
+  // 파일 객체에 name이 있고 url이 있는 경우
+  if (file.name && file.url) {
+    return file.url;
+  }
+  
+  return null;
+};
+
+/**
+ * 파일 미리보기 URL 생성 시 메모리 해제
+ * @param {string} previewUrl - URL.createObjectURL로 생성된 URL
+ */
+export const revokeFilePreviewUrl = (previewUrl) => {
+  if (previewUrl && previewUrl.startsWith('blob:')) {
+    URL.revokeObjectURL(previewUrl);
+  }
+};
+
+/**
+ * 파일 또는 파일 목록의 미리보기 정보 생성
+ * 컴포넌트에서 사용하기 위한 형태로 데이터 변환
+ * 
+ * @param {File|Object|Array} files - 파일 객체 또는 파일 객체 배열
+ * @returns {Array} 미리보기 정보가 포함된 파일 객체 배열
+ */
+export const prepareFilePreviewsData = (files) => {
+  if (!files) return [];
+  
+  // 단일 파일을 배열로 변환
+  const fileArray = Array.isArray(files) ? files : [files];
+  
+  return fileArray.map(file => {
+    // 기본 파일 정보
+    const fileInfo = {
+      id: file.fileId || file.id || Math.random().toString(36).substr(2, 9),
+      name: file.fileName || file.name || 'unnamed',
+      size: file.fileSize || file.size || 0,
+      type: file.fileType || file.type || '',
+      isImage: isImageFile(file),
+      originalFile: file
+    };
+    
+    // 이미지 파일인 경우 미리보기 URL 추가
+    if (fileInfo.isImage) {
+      fileInfo.previewUrl = getFilePreviewUrl(file);
+    }
+    
+    return fileInfo;
+  });
+};
+
+/**
  * S3 사전 서명된 URL을 사용하여 파일을 S3에 업로드
  * @param {string} uploadUrl - S3 사전 서명된 URL
  * @param {File} file - 업로드할 파일 객체

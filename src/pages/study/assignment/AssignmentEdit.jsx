@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import { IoAttach } from 'react-icons/io5';
-import { formatFileSize } from '../../../utils/fileUtils';
+import { formatFileSize, isImageFile, getFilePreviewUrl, revokeFilePreviewUrl } from '../../../utils/fileUtils';
 
 function AssignmentEdit() {
   const { studyId, assignmentId } = useParams();
@@ -339,7 +339,7 @@ function AssignmentEdit() {
                   <FileItem key={`new-${index}`}>
                     {isImageFile(file.name) && (
                       <ImagePreview>
-                        <img src={URL.createObjectURL(file)} alt={file.name} />
+                        <img src={getFilePreviewUrl(file)} alt={file.name} />
                       </ImagePreview>
                     )}
                     <FileInfo>
@@ -603,13 +603,6 @@ const LoadingMessage = styled.div`
   font-size: 16px;
   color: #666;
 `;
-
-// isImageFile 함수 추가
-function isImageFile(filename) {
-  const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
-  const ext = filename.toLowerCase().substring(filename.lastIndexOf('.'));
-  return imageExtensions.includes(ext);
-}
 
 // 이미지 미리보기 스타일 추가
 const ImagePreview = styled.div`

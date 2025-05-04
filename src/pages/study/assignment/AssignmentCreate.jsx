@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import { IoAttach } from 'react-icons/io5';
+import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -202,8 +203,15 @@ function AssignmentCreate() {
             <FileList>
               {attachedFiles.map((file, index) => (
                 <FileItem key={index}>
-                  <FileName>{file.name}</FileName>
-                  <FileSize>({(file.size / 1024).toFixed(1)} KB)</FileSize>
+                  {isImageFile(file) && (
+                    <ImagePreview>
+                      <img src={URL.createObjectURL(file)} alt={file.name} />
+                    </ImagePreview>
+                  )}
+                  <FileInfo>
+                    <FileName>{file.name}</FileName>
+                    <FileSize>({formatFileSize(file.size)})</FileSize>
+                  </FileInfo>
                   <RemoveFileButton onClick={() => handleRemoveFile(index)}>
                     ×
                   </RemoveFileButton>
@@ -372,34 +380,40 @@ const AttachButton = styled.button`
   }
 `;
 
-const FileList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0 0 16px 0;
-`;
-
-const FileItem = styled.li`
-  display: flex;
-  align-items: center;
-  padding: 8px 12px;
-  margin-bottom: 4px;
-  border: 1px solid #e9ecef;
+const FileList = styled.div`
+  margin-bottom: 12px;
+  border: 1px solid #eee;
   border-radius: 4px;
+  padding: 8px;
   background-color: #f8f9fa;
 `;
 
-const FileName = styled.span`
+const FileItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+`;
+
+const FileInfo = styled.div`
+  display: flex;
+  flex-direction: column;
   flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+`;
+
+const FileName = styled.span`
+  font-size: 13px;
   margin-right: 8px;
+  word-break: break-all;
 `;
 
 const FileSize = styled.span`
   font-size: 12px;
-  color: #6c757d;
-  margin-right: 8px;
+  color: #666;
 `;
 
 const RemoveFileButton = styled.button`
@@ -408,7 +422,26 @@ const RemoveFileButton = styled.button`
   color: #dc3545;
   font-size: 18px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 8px;
+  
+  &:hover {
+    color: #bd2130;
+  }
+`;
+
+const ImagePreview = styled.div`
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 `;
 
 export default AssignmentCreate; 

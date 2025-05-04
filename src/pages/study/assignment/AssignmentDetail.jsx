@@ -9,6 +9,8 @@ import {
   uploadFileToS3,
   extractUploadUrlFromResponse,
   handleFileUploadWithS3,
+  isImageFile,
+  getFilePreviewUrl,
 } from "../../../utils/fileUtils";
 
 const AssignmentDetail = () => {
@@ -316,6 +318,18 @@ const AssignmentDetail = () => {
                     >
                       ✕
                     </DeleteButton>
+                    {isImageFile(file) && (
+                      <PreviewIconButton
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const previewUrl = URL.createObjectURL(file);
+                          window.open(previewUrl);
+                        }}
+                        title="이미지 미리보기"
+                      >
+                        👁️
+                      </PreviewIconButton>
+                    )}
                   </FileItem>
                 );
               })}
@@ -473,6 +487,14 @@ const AssignmentDetail = () => {
                         <FileDetails>
                           <FileName>{file.fileName}</FileName>
                         </FileDetails>
+                        {isImageFile(file.fileName) && file.fileUrl && (
+                          <PreviewButton 
+                            onClick={() => window.open(file.fileUrl, '_blank')}
+                            title="이미지 미리보기"
+                          >
+                            미리보기
+                          </PreviewButton>
+                        )}
                         <DownloadButton
                           onClick={() =>
                             downloadFile(file.fileUrl, file.fileName)
@@ -481,6 +503,11 @@ const AssignmentDetail = () => {
                           다운로드
                         </DownloadButton>
                       </FileInfoRow>
+                      {isImageFile(file.fileName) && file.fileUrl && (
+                        <ImagePreviewContainer>
+                          <ImagePreview src={file.fileUrl} alt={file.fileName} />
+                        </ImagePreviewContainer>
+                      )}
                     </FileDownloadItem>
                   ))}
                 </FilesList>
@@ -986,6 +1013,50 @@ const FeedbackSection = styled.div`
 const FeedbackContent = styled.div`
   white-space: pre-wrap;
   line-height: 1.6;
+`;
+
+const ImagePreviewContainer = styled.div`
+  margin-top: 12px;
+  text-align: center;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+`;
+
+const ImagePreview = styled.img`
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+`;
+
+const PreviewButton = styled.button`
+  padding: 6px 12px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  margin-right: 8px;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: #138496;
+  }
+`;
+
+const PreviewIconButton = styled.button`
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 8px;
+  
+  &:hover {
+    opacity: 0.7;
+  }
 `;
 
 export default AssignmentDetail;
