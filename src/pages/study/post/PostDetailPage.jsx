@@ -184,7 +184,7 @@ function PostDetailManagerContent({ handleBack, onTitleLoaded }) {
         </div>
       )}
       <div style={styles.buttonContainer}>
-        <Button variant="edit" onClick={handleEdit} /> //TODO 삭제 필요요
+        <Button variant="edit" onClick={handleEdit} />
         <Button variant="back" onClick={handleBack} />
       </div>
     </div>

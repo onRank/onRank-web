@@ -9,11 +9,13 @@ function Button({ onClick, variant = "default", label, ...props }) {
     store: "저장",
     upload: "업로드",
     add: "+추가",
-    edit: "수정하기",
+    edit: "수정",
     logout: "logout",
     complete: "완료",
     submit: "제출",
     reSubmit: "다시 제출",
+    all: "전체",
+    progressing: "진행중",
     addFiles: "파일 첨부", // 삭제 필요
     delete: "삭제", // 삭제 필요
     default: "확인",
@@ -55,6 +57,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
       color: "#333",
       border: "1px solid #ccc",
       borderRadius: "20px",
+      width: "75px",
     },
     complete: {
       backgroundColor: "#ee0418",
@@ -83,6 +86,16 @@ function Button({ onClick, variant = "default", label, ...props }) {
       color: "#fff",
       border: "none",
     },
+    all: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
+    progressing: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
     default: {
       backgroundColor: "#f2f2f2",
       color: "#333",
@@ -92,7 +105,7 @@ function Button({ onClick, variant = "default", label, ...props }) {
 
   const buttonStyle = {
     borderRadius: "10px",
-    fontSize: "12px",
+    fontSize: "14px",
     cursor: "pointer",
     outline: "none",
     width: "62px",
