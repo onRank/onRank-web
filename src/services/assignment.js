@@ -269,7 +269,7 @@ const assignmentService = {
 
         // API 호출하여 과제 수정 및 preSignedURL 받기
         const response = await api.put(
-          `/studies/${studyId}/assignments/${assignmentId}`,
+          `/studies/${studyId}/assignments/${assignmentId}/edit`,
           requestData,
           {
             withCredentials: true,
@@ -305,7 +305,7 @@ const assignmentService = {
       }
       
       // 일반 JSON 객체인 경우 기존 로직 사용
-      const response = await api.put(`/studies/${studyId}/assignments/${assignmentId}`, assignmentData, {
+      const response = await api.put(`/studies/${studyId}/assignments/${assignmentId}/edit`, assignmentData, {
         withCredentials: true
       });
       
