@@ -7,8 +7,7 @@ import { IoAttach } from 'react-icons/io5';
 import { formatFileSize } from '../../../utils/fileUtils';
 
 function AssignmentEdit() {
-  const { studyId, id } = useParams();
-  const assignmentId = id; // URL 파라미터는 id, API는 assignmentId 사용
+  const { studyId, assignmentId } = useParams();
   const navigate = useNavigate();
   const { isManager } = useStudyRole();
   const [isLoading, setIsLoading] = useState(false);
