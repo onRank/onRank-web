@@ -159,41 +159,92 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
     topRight: {
       display: "flex",
       justifyContent: "flex-end",
+      alignItems: "center",
     },
     bottomLeft: {
       display: "flex",
       justifyContent: "center",
     },
+    bottomRight: {},
+    // 추가: 전체 컨테이너를 감싸는 스타일
+    container: {
+      width: "100%",
+      display: "flex",
+      flexDirection: "column",
+    },
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "100%",
-        overflowX: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {/* 경로 표시 - 제거 */}
+    <div style={styles.container}>
+      {/* 첫 번째 섹션: 랭킹 데이터 */}
+      <div style={styles.wrapper}>
+        <div style={styles.main}>
+          <div style={styles.content}>
+            <div style={styles.grid}>
+              {/* ① PointContainer */}
+              <div style={styles.topLeft}>
+                {points.map((p, i) => (
+                  <PointContainer
+                    key={i}
+                    title={p.title}
+                    icon={p.icon}
+                    point={p.point}
+                  />
+                ))}
+              </div>
 
-      {/* 오류 메시지 표시 - 숨김 처리 */}
-      {error && false && <ErrorMessage message={error} />}
+              {/* ② MyRank */}
+              <div style={styles.topRight}>
+                <MyRank {...myRank} />
+              </div>
 
-      {/* 메인 컨텐츠 */}
+              {/* ③ Ranking */}
+              <div style={styles.bottomLeft}>
+                <Ranking
+                  rankingData={[
+                    rankingData.find((r) => r.rank === 2),
+                    rankingData.find((r) => r.rank === 1),
+                    rankingData.find((r) => r.rank === 3),
+                  ]}
+                />
+              </div>
+
+              {/* ④ RankingList */}
+              <div style={styles.bottomRight}>
+                <RankingList rankingList={rankingData} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 두 번째 섹션: 스터디 콘텐츠 */}
       <div
         style={{
-          display: "flex",
-          gap: "2rem",
           width: "100%",
-          maxWidth: "1200px",
-          position: "relative",
-          padding: "0 1rem",
+          maxWidth: "100%",
+          overflowX: "hidden",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
-        <StudyContent activeTab={activeTab} studyData={studyData} />
+        {/* 오류 메시지 표시 - 숨김 처리 */}
+        {error && false && <ErrorMessage message={error} />}
+
+        {/* 메인 컨텐츠 */}
+        <div
+          style={{
+            display: "flex",
+            gap: "2rem",
+            width: "100%",
+            maxWidth: "1200px",
+            position: "relative",
+            padding: "0 1rem",
+          }}
+        >
+          <StudyContent activeTab={activeTab} studyData={studyData} />
+        </div>
       </div>
     </div>
   );

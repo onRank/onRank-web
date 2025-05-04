@@ -30,7 +30,7 @@ function PointContainer({ title, icon, point }) {
     },
     title: {
       fontWeight: "bold",
-      fontSize: "16px",
+      fontSize: "20px",
     },
     pointText: {
       fontSize: "14px",
