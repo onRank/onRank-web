@@ -33,74 +33,77 @@ const SubmissionDetail = () => {
       try {
         setIsLoading(true);
         
-        // 제출물 상세 정보 가져오기 (새로운 API 메소드 사용)
+        // 제출물 상세 정보 가져오기
         try {
           const submissionResponse = await assignmentService.getSubmissionById(studyId, assignmentId, submissionId);
           if (submissionResponse && submissionResponse.data) {
-            const submissionData = submissionResponse.data;
-            console.log("[SubmissionDetail] 제출물 상세 조회 성공:", submissionData);
+            const data = submissionResponse.data;
+            console.log("[SubmissionDetail] 제출물 상세 조회 성공:", data);
             
-            // 과제 정보 설정
+            // 과제 및 제출물 정보 설정
             setAssignment({
-              assignmentId: submissionData.assignmentId,
-              assignmentTitle: submissionData.assignmentTitle,
-              assignmentMaxPoint: submissionData.assignmentMaxPoint,
-              assignmentContent: submissionData.assignmentContent,
-              assignmentFiles: submissionData.assignmentFiles || []
+              assignmentId: data.assignmentId || assignmentId,
+              assignmentTitle: data.assignmentTitle || "",
+              assignmentContent: data.assignmentContent || "",
+              assignmentDueDate: data.assignmentDueDate || "",
+              assignmentMaxPoint: data.assignmentMaxPoint || 100,
+              assignmentFiles: data.assignmentFiles || []
             });
             
-            // 제출물 정보 설정
             setSubmission({
               submissionId: parseInt(submissionId),
-              memberId: submissionData.memberId,
-              memberName: submissionData.memberName || "사용자",
-              memberEmail: submissionData.memberEmail || "",
-              submissionCreatedAt: submissionData.submissionCreatedAt,
-              submissionContent: submissionData.submissionContent,
-              submissionFiles: submissionData.submissionFiles || [],
-              submissionScore: submissionData.submissionScore,
-              submissionComment: submissionData.submissionComment || "",
-              submissionStatus: submissionData.submissionStatus
+              memberId: data.memberId,
+              memberName: data.memberName || "사용자",
+              memberEmail: data.memberEmail || "",
+              submissionCreatedAt: data.submissionCreatedAt,
+              submissionContent: data.submissionContent || "",
+              submissionFiles: data.submissionFiles || [],
+              submissionScore: data.submissionScore,
+              submissionComment: data.submissionComment || "",
+              submissionStatus: data.submissionStatus
             });
             
             // 기존 채점 정보가 있으면 설정
-            setScore(submissionData.submissionScore || '');
-            setComment(submissionData.submissionComment || '');
+            setScore(data.submissionScore || '');
+            setComment(data.submissionComment || '');
             return;
           }
-        } catch (submissionError) {
-          console.warn("[SubmissionDetail] 제출물 상세 조회 API 실패, 대체 방법 시도:", submissionError);
+        } catch (err) {
+          console.warn("[SubmissionDetail] 제출물 상세 조회 API 실패, 대체 방법 시도:", err);
         }
         
-        // 제출물 상세 API 실패 시, 대체 방법으로 데이터 조회
-        // 1. 과제 상세 정보 가져오기
+        // API 호출 실패 시 대체 방법으로 데이터 조회
         const assignmentResponse = await assignmentService.getAssignmentById(studyId, assignmentId);
         if (assignmentResponse && assignmentResponse.data) {
-          setAssignment(assignmentResponse.data);
+          const data = assignmentResponse.data;
           
-          // 제출물 정보가 포함되어 있는 경우
-          if (assignmentResponse.data.submissionContent !== undefined) {
-            const assignmentData = assignmentResponse.data;
-            
-            // 제출물 정보 설정
+          setAssignment({
+            assignmentId: data.assignmentId || assignmentId,
+            assignmentTitle: data.assignmentTitle || "",
+            assignmentContent: data.assignmentContent || "",
+            assignmentDueDate: data.assignmentDueDate || "",
+            assignmentMaxPoint: data.assignmentMaxPoint || 100,
+            assignmentFiles: data.assignmentFiles || []
+          });
+          
+          if (data.submissionContent !== undefined) {
             setSubmission({
               submissionId: parseInt(submissionId),
-              memberId: assignmentData.memberId,
-              memberName: assignmentData.memberName || "사용자",
-              memberEmail: assignmentData.memberEmail || "",
-              submissionCreatedAt: assignmentData.submissionCreatedAt,
-              submissionContent: assignmentData.submissionContent,
-              submissionFiles: assignmentData.submissionFiles || [],
-              submissionScore: assignmentData.submissionScore,
-              submissionComment: assignmentData.submissionComment || "",
-              submissionStatus: assignmentData.submissionStatus
+              memberId: data.memberId,
+              memberName: data.memberName || "사용자",
+              memberEmail: data.memberEmail || "",
+              submissionCreatedAt: data.submissionCreatedAt,
+              submissionContent: data.submissionContent || "",
+              submissionFiles: data.submissionFiles || [],
+              submissionScore: data.submissionScore,
+              submissionComment: data.submissionComment || "",
+              submissionStatus: data.submissionStatus
             });
             
-            // 기존 채점 정보가 있으면 설정
-            setScore(assignmentData.submissionScore || '');
-            setComment(assignmentData.submissionComment || '');
+            setScore(data.submissionScore || '');
+            setComment(data.submissionComment || '');
           } else {
-            // API가 제출물 정보를 제공하지 않는 경우, 제출물 목록에서 찾기
+            // 제출물 목록에서 찾기
             const submissionsResponse = await assignmentService.getSubmissions(studyId, assignmentId);
             if (submissionsResponse && submissionsResponse.data) {
               const foundSubmission = submissionsResponse.data.find(s => s.submissionId === parseInt(submissionId));
@@ -210,109 +213,120 @@ const SubmissionDetail = () => {
         <p className="submission-time">제출: {formatDate(submission.submissionCreatedAt)}</p>
       </header>
       
-      {/* 과제 지시사항 토글 섹션 */}
-      {assignment.assignmentContent && (
-        <div className="instructions-section">
-          <div 
-            className="instructions-toggle" 
-            onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}
-          >
-            <h2 className="toggle-title">지시사항</h2>
-            <button className="toggle-button">
-              {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
-            </button>
-          </div>
-          
-          {isInstructionsOpen && (
-            <div className="instructions-content">
-              <div className="instructions-text">{assignment.assignmentContent}</div>
-              
-              {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
-                <div className="instructions-files">
-                  <h3 className="files-title">첨부파일</h3>
-                  <div className="attachment-files-list">
-                    {assignment.assignmentFiles.map((file, index) => (
-                      <div key={index} className="attachment-file-item">
-                        <span className="file-name">{file.fileName}</span>
-                        <div className="file-actions">
-                          {isImageFile(file.fileName) && (
-                            <button 
-                              className="preview-button" 
-                              onClick={() => window.open(file.fileUrl, '_blank')}
-                            >
-                              미리보기
-                            </button>
-                          )}
-                          <button 
-                            className="download-button"
-                            onClick={() => handleDownload(file.fileUrl, file.fileName)}
-                          >
-                            다운로드
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+      {/* 지시사항 토글 섹션 */}
+      <div className="instructions-section">
+        <div 
+          className="instructions-toggle" 
+          onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}
+        >
+          <h2 className="toggle-title">지시사항</h2>
+          <button className="toggle-button">
+            {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
+          </button>
         </div>
-      )}
-      
-      <div className="submission-content-section">
-        {submission.submissionContent && (
-          <div className="submission-content-box">
-            <h2 className="section-title">제출완료</h2>
-            <div className="submission-content-text">{submission.submissionContent}</div>
-          </div>
-        )}
         
-        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
-          <div className="attachment-files-section">
-            <h2 className="section-title">첨부파일</h2>
-            <div className="attachment-files-list">
-              {submission.submissionFiles.map((file, index) => (
-                <div key={index} className="attachment-file-item">
-                  <span className="file-name">{file.fileName}</span>
-                  <div className="file-actions">
-                    {isImageFile(file.fileName) && (
-                      <button 
-                        className="preview-button" 
-                        onClick={() => window.open(file.fileUrl, '_blank')}
-                      >
-                        미리보기
-                      </button>
-                    )}
-                    <button 
-                      className="download-button"
-                      onClick={() => handleDownload(file.fileUrl, file.fileName)}
-                    >
-                      다운로드
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
-          <div className="image-previews-section">
-            {submission.submissionFiles.filter(file => isImageFile(file.fileName)).map((file, index) => (
-              <div key={index} className="image-preview-container">
-                <h3 className="image-title">{file.fileName}</h3>
-                <div className="image-preview">
-                  <img src={file.fileUrl} alt={file.fileName} />
+        {isInstructionsOpen && (
+          <div className="instructions-content">
+            <h3 className="instructions-title">{assignment.assignmentTitle}</h3>
+            <div className="instructions-text">{assignment.assignmentContent}</div>
+            
+            {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
+              <div className="instructions-files">
+                <h3 className="files-title">첨부파일</h3>
+                <div className="attachment-files-list">
+                  {assignment.assignmentFiles.map((file, index) => (
+                    <div key={index} className="attachment-file-item">
+                      <span className="file-name">{file.fileName}</span>
+                      <div className="file-actions">
+                        {isImageFile(file.fileName) && (
+                          <button 
+                            className="preview-button" 
+                            onClick={() => window.open(file.fileUrl, '_blank')}
+                          >
+                            미리보기
+                          </button>
+                        )}
+                        <button 
+                          className="download-button"
+                          onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                        >
+                          다운로드
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>
       
+      {/* 제출물 내용 */}
+      <div className="student-submission-section">
+        <div className="section-header">
+          <h2 className="section-title">제출완료</h2>
+        </div>
+        
+        <div className="submission-content-wrapper">
+          {submission.submissionContent && (
+            <div className="submission-content-box">
+              <div className="submission-content-text">{submission.submissionContent}</div>
+            </div>
+          )}
+          
+          {/* 제출물 첨부파일 */}
+          {submission.submissionFiles && submission.submissionFiles.length > 0 && (
+            <div className="submission-files-section">
+              <h3 className="files-title">첨부파일</h3>
+              <div className="submission-files-list">
+                {submission.submissionFiles.map((file, index) => (
+                  <div key={index} className="submission-file-item">
+                    <span className="file-name">{file.fileName}</span>
+                    <div className="file-actions">
+                      {isImageFile(file.fileName) && (
+                        <button 
+                          className="preview-button" 
+                          onClick={() => window.open(file.fileUrl, '_blank')}
+                        >
+                          미리보기
+                        </button>
+                      )}
+                      <button 
+                        className="download-button"
+                        onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                      >
+                        다운로드
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* 이미지 미리보기 */}
+        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
+          <div className="image-previews-section">
+            {submission.submissionFiles
+              .filter(file => isImageFile(file.fileName))
+              .map((file, index) => (
+                <div key={index} className="image-preview-item">
+                  <h3 className="image-title">{file.fileName}</h3>
+                  <div className="image-preview">
+                    <img src={file.fileUrl} alt={file.fileName} />
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        )}
+      </div>
+      
+      {/* 채점 섹션 */}
       <div className="grading-section">
-        <h2 className="section-title">채점하기</h2>
+        <h2 className="grading-title">채점하기</h2>
         
         <div className="max-point-info">
           최대 포인트: {assignment.assignmentMaxPoint} pt
@@ -341,11 +355,11 @@ const SubmissionDetail = () => {
             rows={4}
           />
         </div>
-      </div>
-      
-      <div className="submission-detail-actions">
-        <Button variant="back" onClick={handleCancel} />
-        <Button variant="store" onClick={handleSaveGrade} disabled={isSubmitting} />
+        
+        <div className="submission-detail-actions">
+          <Button variant="back" onClick={handleCancel} />
+          <Button variant="store" onClick={handleSaveGrade} disabled={isSubmitting} />
+        </div>
       </div>
     </div>
   );
