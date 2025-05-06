@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
+import Button from '../../../components/common/Button';
 import './SubmissionList.css';
 
 const SubmissionList = () => {
@@ -69,7 +70,7 @@ const SubmissionList = () => {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     
-    return `제출: ${year}.${month}.${day} ${hours}:${minutes}`;
+    return `제출: ${year}.${month}.${day} ${hours}:${minutes}PM`;
   };
   
   // 제출 상태를 한글로 변환하는 함수
@@ -115,19 +116,25 @@ const SubmissionList = () => {
                 onClick={() => handleViewSubmission(submission.submissionId)}
               >
                 <div className="member-info">
-                  <div className="member-name">{submission.memberName}</div>
-                  <div className="member-email">{submission.memberEmail}</div>
+                  <div className="name-email-container">
+                    <div className="member-name">{submission.memberName}</div>
+                    <div className="member-email">{submission.memberEmail}</div>
+                  </div>
+                  <div className="submission-date">{formatDate(submission.submissionCreatedAt)}</div>
                 </div>
                 
-                <div className={`submission-status ${submission.submissionStatus.toLowerCase()}`}>
-                  {getStatusText(submission.submissionStatus)}
-                </div>
-                
-                <div className="submission-score">
-                  {submission.submissionStatus === 'SCORED' 
-                    ? <div className="score-badge">{submission.submissionScore}/{assignment.assignmentMaxPoint} pt</div>
-                    : <div className="score-badge not-scored">---/{assignment.assignmentMaxPoint} pt</div>
-                  }
+                <div className="submission-right">
+                  <div className="status-text">
+                    {getStatusText(submission.submissionStatus)}
+                  </div>
+                  
+                  <div className="submission-score">
+                    {submission.submissionStatus === 'SCORED' ? (
+                      <div className="score-badge red">{submission.submissionScore}/{assignment.assignmentMaxPoint} pt</div>
+                    ) : (
+                      <div className="score-badge gray">---/{assignment.assignmentMaxPoint} pt</div>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -136,7 +143,7 @@ const SubmissionList = () => {
       </div>
       
       <div className="submission-actions">
-        <button className="close-button" onClick={handleBack}>닫기</button>
+        <Button variant="back" onClick={handleBack} />
       </div>
     </div>
   );
