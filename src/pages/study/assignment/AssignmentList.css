@@ -106,7 +106,7 @@
 
 .assignment-meta-row {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
 }
 
@@ -130,13 +130,24 @@
   color: #155724;
 }
 
+.score-display-wrapper {
+  margin-right: 5px;
+}
+
 .score-display {
   background-color: #dc3545;
   color: white;
-  padding: 4px 8px;
+  padding: 6px 10px;
   border-radius: 4px;
   font-size: 14px;
   font-weight: bold;
+  min-width: 80px;
+  text-align: center;
+}
+
+.score-display.not-scored {
+  background-color: #adb5bd;
+  color: white;
 }
 
 .actions-container {
@@ -284,16 +295,4 @@
 .assignment-info-container {
   display: flex;
   flex-direction: column;
-}
-
-/* 점수 표시 개선 */
-.score-display {
-  background-color: #dc3545;
-  color: white;
-  padding: 6px 10px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-  min-width: 80px;
-  text-align: center;
 } 

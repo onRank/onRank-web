@@ -197,37 +197,6 @@ function AssignmentList() {
     ));
   };
   
-  // 참여자 뷰에서 사용할 과제 항목 렌더링
-  const renderParticipantAssignmentItem = (assignment, category) => {
-    const { assignmentId, assignmentTitle, assignmentDueDate, submissionStatus, submissionScore, assignmentMaxPoint } = assignment;
-    
-    // 제출 상태에 따른 클래스 설정
-    let statusClass = '';
-    if (submissionStatus === 'SUBMITTED') statusClass = 'submitted';
-    if (submissionStatus === 'SCORED') statusClass = 'scored';
-    
-    return (
-      <div 
-        className="assignment-item" 
-        key={assignmentId} 
-        onClick={() => handleViewAssignment(assignmentId)}
-      >
-        <div className="assignment-info">
-          <div className="assignment-info-container">
-            <div className="assignment-date">마감: {formatDate(assignmentDueDate)}</div>
-            <h3 className="assignment-title">{assignmentTitle}</h3>
-          </div>
-          <div className="assignment-meta-row">
-            <span className={`status-tag ${submissionStatus.toLowerCase()}`}>{getStatusText(submissionStatus)}</span>
-            <div className="score-display">
-              {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-  
   // 관리자 뷰에서 사용할 과제 항목 렌더링
   const renderManagerAssignmentItem = (assignment, category) => {
     const { assignmentId, assignmentTitle, assignmentDueDate, submissionStatus, submissionScore, assignmentMaxPoint } = assignment;
@@ -244,16 +213,18 @@ function AssignmentList() {
             <h3 className="assignment-title">{assignmentTitle}</h3>
           </div>
           <div className="assignment-meta-row">
-            <span className={`status-tag ${category === '마감' ? 'not-submitted' : ''}`}>
-              {category}
+            <span className={`status-tag ${submissionStatus ? submissionStatus.toLowerCase() : 'notsubmitted'}`}>
+              {getStatusText(submissionStatus || 'NOTSUBMITTED')}
             </span>
-            <div className="score-display">
-              {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
-            </div>
           </div>
         </div>
         
         <div className="actions-container">
+          <div className="score-display-wrapper">
+            <div className={`score-display ${!submissionScore ? 'not-scored' : ''}`}>
+              {submissionScore !== null ? submissionScore : '---'}/{assignmentMaxPoint} pt
+            </div>
+          </div>
           <button className="more-button" onClick={(e) => togglePopup(e, assignmentId)}>
             <FiMoreVertical size={18} />
           </button>
@@ -281,6 +252,39 @@ function AssignmentList() {
     );
   };
   
+  // 참여자 뷰에서 사용할 과제 항목 렌더링
+  const renderParticipantAssignmentItem = (assignment, category) => {
+    const { assignmentId, assignmentTitle, assignmentDueDate, submissionStatus, submissionScore, assignmentMaxPoint } = assignment;
+    
+    return (
+      <div 
+        className="assignment-item" 
+        key={assignmentId} 
+        onClick={() => handleViewAssignment(assignmentId)}
+      >
+        <div className="assignment-info">
+          <div className="assignment-info-container">
+            <div className="assignment-date">마감: {formatDate(assignmentDueDate)}</div>
+            <h3 className="assignment-title">{assignmentTitle}</h3>
+          </div>
+          <div className="assignment-meta-row">
+            <span className={`status-tag ${submissionStatus ? submissionStatus.toLowerCase() : 'notsubmitted'}`}>
+              {getStatusText(submissionStatus || 'NOTSUBMITTED')}
+            </span>
+          </div>
+        </div>
+        
+        <div className="actions-container">
+          <div className="score-display-wrapper">
+            <div className={`score-display ${!submissionScore ? 'not-scored' : ''}`}>
+              {submissionScore !== null ? submissionScore : '---'}/{assignmentMaxPoint} pt
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
   // 과제 항목 렌더링 함수 (관리자/참여자 구분)
   const renderAssignmentItem = (assignment, category) => {
     return isManager 
@@ -295,9 +299,9 @@ function AssignmentList() {
     return (
       <div className="assignment-add-section">
         <div>
-          <div className="assignment-add-title">새로운 과제 추가</div>
+          <div className="assignment-add-title">과제 추가</div>
           <div className="assignment-add-description">
-            학생들에게 제공할 새로운 과제를 추가해보세요.
+             새로운 과제를 추가해주세요.
           </div>
         </div>
         <button className="create-button" onClick={handleCreateAssignment}>
