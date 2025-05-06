@@ -6,6 +6,7 @@ import Button from '../../../components/common/Button';
 import { isImageFile, downloadFile } from '../../../utils/fileUtils';
 import './SubmissionDetail.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
+import { IoAttach } from 'react-icons/io5';
 
 const SubmissionDetail = () => {
   const { studyId, assignmentId, submissionId } = useParams();
@@ -19,6 +20,7 @@ const SubmissionDetail = () => {
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
+  const [scoreError, setScoreError] = useState('');
 
   // 컴포넌트 마운트 시 제출물 상세 정보 조회
   useEffect(() => {
@@ -127,11 +129,37 @@ const SubmissionDetail = () => {
     
     fetchSubmissionDetail();
   }, [studyId, assignmentId, submissionId, isManager, navigate]);
+
+  // 점수 입력 변경 처리
+  const handleScoreChange = (e) => {
+    const value = e.target.value;
+    setScore(value);
+    
+    // 최대 포인트 검증
+    if (assignment && parseInt(value) > assignment.assignmentMaxPoint) {
+      setScoreError(`최대 ${assignment.assignmentMaxPoint}점까지 입력 가능합니다.`);
+    } else if (parseInt(value) < 0) {
+      setScoreError('0점 이상 입력해주세요.');
+    } else {
+      setScoreError('');
+    }
+  };
   
   // 채점 저장 처리
   const handleSaveGrade = async () => {
     if (!score) {
       alert("점수를 입력해주세요.");
+      return;
+    }
+
+    // 최대 포인트 체크
+    if (assignment && parseInt(score) > assignment.assignmentMaxPoint) {
+      alert(`최대 ${assignment.assignmentMaxPoint}점까지 입력 가능합니다.`);
+      return;
+    }
+
+    if (parseInt(score) < 0) {
+      alert('0점 이상 입력해주세요.');
       return;
     }
     
@@ -219,10 +247,12 @@ const SubmissionDetail = () => {
           className="instructions-toggle" 
           onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}
         >
-          <h2 className="toggle-title">지시사항</h2>
-          <button className="toggle-button">
-            {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
-          </button>
+          <div className="toggle-header">
+            <h2 className="toggle-title">지시사항</h2>
+            <span className="toggle-icon">
+              {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
+            </span>
+          </div>
         </div>
         
         {isInstructionsOpen && (
@@ -233,22 +263,35 @@ const SubmissionDetail = () => {
             {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
               <div className="instructions-files">
                 <h3 className="files-title">첨부파일</h3>
-                <div className="attachment-files-list">
+                <div className="file-list">
                   {assignment.assignmentFiles.map((file, index) => (
-                    <div key={index} className="attachment-file-item">
-                      <span className="file-name">{file.fileName}</span>
+                    <div key={index} className="file-item">
+                      {isImageFile(file.fileName) && (
+                        <div className="file-preview">
+                          <img src={file.fileUrl} alt={file.fileName} />
+                        </div>
+                      )}
+                      <div className="file-info">
+                        <span className="file-name">{file.fileName}</span>
+                      </div>
                       <div className="file-actions">
                         {isImageFile(file.fileName) && (
                           <button 
                             className="preview-button" 
-                            onClick={() => window.open(file.fileUrl, '_blank')}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(file.fileUrl, '_blank');
+                            }}
                           >
                             미리보기
                           </button>
                         )}
                         <button 
                           className="download-button"
-                          onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownload(file.fileUrl, file.fileName);
+                          }}
                         >
                           다운로드
                         </button>
@@ -279,22 +322,35 @@ const SubmissionDetail = () => {
           {submission.submissionFiles && submission.submissionFiles.length > 0 && (
             <div className="submission-files-section">
               <h3 className="files-title">첨부파일</h3>
-              <div className="submission-files-list">
+              <div className="file-list">
                 {submission.submissionFiles.map((file, index) => (
-                  <div key={index} className="submission-file-item">
-                    <span className="file-name">{file.fileName}</span>
+                  <div key={index} className="file-item">
+                    {isImageFile(file.fileName) && (
+                      <div className="file-preview">
+                        <img src={file.fileUrl} alt={file.fileName} />
+                      </div>
+                    )}
+                    <div className="file-info">
+                      <span className="file-name">{file.fileName}</span>
+                    </div>
                     <div className="file-actions">
                       {isImageFile(file.fileName) && (
                         <button 
                           className="preview-button" 
-                          onClick={() => window.open(file.fileUrl, '_blank')}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            window.open(file.fileUrl, '_blank');
+                          }}
                         >
                           미리보기
                         </button>
                       )}
                       <button 
                         className="download-button"
-                        onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDownload(file.fileUrl, file.fileName);
+                        }}
                       >
                         다운로드
                       </button>
@@ -305,23 +361,6 @@ const SubmissionDetail = () => {
             </div>
           )}
         </div>
-        
-        {/* 이미지 미리보기 */}
-        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
-          <div className="image-previews-section">
-            {submission.submissionFiles
-              .filter(file => isImageFile(file.fileName))
-              .map((file, index) => (
-                <div key={index} className="image-preview-item">
-                  <h3 className="image-title">{file.fileName}</h3>
-                  <div className="image-preview">
-                    <img src={file.fileUrl} alt={file.fileName} />
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        )}
       </div>
       
       {/* 채점 섹션 */}
@@ -340,9 +379,10 @@ const SubmissionDetail = () => {
             min="0"
             max={assignment.assignmentMaxPoint}
             value={score}
-            onChange={(e) => setScore(e.target.value)}
+            onChange={handleScoreChange}
             placeholder={`0-${assignment.assignmentMaxPoint}`}
           />
+          {scoreError && <div className="score-error">{scoreError}</div>}
         </div>
         
         <div className="comment-input-section">
@@ -358,7 +398,11 @@ const SubmissionDetail = () => {
         
         <div className="submission-detail-actions">
           <Button variant="back" onClick={handleCancel} />
-          <Button variant="store" onClick={handleSaveGrade} disabled={isSubmitting} />
+          <Button 
+            variant="store" 
+            onClick={handleSaveGrade} 
+            disabled={isSubmitting || scoreError} 
+          />
         </div>
       </div>
     </div>
