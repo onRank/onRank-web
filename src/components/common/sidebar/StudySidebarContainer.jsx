@@ -104,11 +104,13 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "1rem",
-          margin: "0.5rem 0",
+          padding: "0.75rem 1rem",
+          margin: "0.5rem auto",
           backgroundColor: "#fff",
           borderRadius: "8px",
-          border: "1px solid #000"
+          border: "1px solid #000",
+          maxWidth: "90%",
+          boxShadow: "4px 4px 0px rgba(0, 0, 0, 0.9)"
         }}
       >
         <Link

@@ -54,10 +54,11 @@ const StudyNavigation = memo(({ activeTab }) => {
           onClick={() => handleTabClick(item.path)}
           style={{
             padding: '0.75rem 1rem',
+            paddingLeft: '2.5rem', // 좌측 여백 추가
             textAlign: 'left',
             border: 'none',
             borderBottom: '1px solid #eee',
-            background: activeTab === item.id ? '#f5f5f5' : '#fff',
+            background: '#fff',
             cursor: 'pointer',
             fontSize: '1rem',
             transition: 'all 0.2s ease',
@@ -70,17 +71,6 @@ const StudyNavigation = memo(({ activeTab }) => {
             position: 'relative'
           }}
         >
-          {/* 활성화 표시 - 빨간색 점 대신 배경색과 텍스트 색상으로 표시 */}
-          {activeTab === item.id && (
-            <span style={{
-              position: 'absolute',
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: '3px',
-              backgroundColor: '#FF0000'
-            }} />
-          )}
           {item.label}
         </button>
       ))}
