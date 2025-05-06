@@ -110,21 +110,31 @@
 }
 
 .instructions-files {
-  margin-top: 15px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px dashed #eee;
 }
 
 .files-title {
   font-size: 15px;
   font-weight: 500;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.file-icon {
+  margin-right: 6px;
+  color: #666;
+  font-size: 18px;
 }
 
 /* 파일 목록 스타일 */
 .file-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .file-item {
@@ -134,12 +144,19 @@
   background-color: #f9f9f9;
   border: 1px solid #eee;
   border-radius: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+  transition: all 0.2s ease;
+}
+
+.file-item:hover {
+  border-color: #ddd;
+  background-color: #f5f5f5;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .file-preview {
-  width: 80px;
-  height: 80px;
+  width: 60px;
+  height: 60px;
   overflow: hidden;
   margin-right: 10px;
   border: 1px solid #eee;
@@ -160,32 +177,61 @@
 .file-info {
   flex-grow: 1;
   margin-right: 10px;
+  overflow: hidden;
 }
 
 .file-name {
   font-size: 14px;
   color: #333;
   word-break: break-all;
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .file-actions {
   display: flex;
-  gap: 5px;
+  gap: 8px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .preview-button, .download-button {
-  padding: 6px 10px;
-  background-color: #fff;
+  padding: 7px 12px;
+  background-color: #f0f0f0;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
+  color: #333;
+  font-weight: 500;
+  min-width: 70px;
+  text-align: center;
+  transition: all 0.2s ease;
 }
 
-.preview-button:hover, .download-button:hover {
-  background-color: #f3f3f3;
+.preview-button {
+  background-color: #e7f5ff;
+  color: #0c63e4;
+  border-color: #cce5ff;
+}
+
+.download-button {
+  background-color: #f8f9fa;
+  color: #333;
+  border-color: #ddd;
+}
+
+.preview-button:hover {
+  background-color: #d0e8ff;
+  border-color: #b8daff;
+}
+
+.download-button:hover {
+  background-color: #e9ecef;
+  border-color: #c6c7c8;
 }
 
 /* 학생 제출물 섹션 */
@@ -226,9 +272,9 @@
 }
 
 .submission-files-section {
-  margin-top: 15px;
-  border-top: 1px solid #eee;
+  margin-top: 20px;
   padding-top: 15px;
+  border-top: 1px dashed #eee;
 }
 
 /* 채점 섹션 */
