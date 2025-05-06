@@ -18,61 +18,113 @@ import RankingTab from "./tabs/RankingTab";
 import AttendanceContainer from "../../pages/study/attendance/AttendanceContainer";
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
 
-function StudyContent({ activeTab, studyData }) {
-  const { studyId, assignmentId } = useParams();
+// AssignmentContainer 컴포넌트 구현
+const AssignmentContainer = ({ onSubPageChange }) => {
+  const { studyId, assignmentId, submissionId } = useParams();
   const location = useLocation();
-  const [currentSubPage, setCurrentSubPage] = useState(null);
-
+  
+  // 현재 경로에 따라 어떤 컴포넌트를 렌더링할지 결정
+  const isCreatePage = location.pathname.endsWith('/create');
+  const isEditPage = location.pathname.includes('/edit');
+  const isSubmissionsPage = location.pathname.includes('/submissions');
+  const isSubmissionDetailPage = location.pathname.includes('/submission/');
+  const isDetailPage = assignmentId && !isEditPage && !isSubmissionsPage && !isSubmissionDetailPage;
+  
+  // 서브페이지 상태 관리
   useEffect(() => {
-    setCurrentSubPage(null);
-  }, [activeTab]);
-
-  const handleSubPageChange = (subPageName) => {
-    setCurrentSubPage(subPageName);
-  };
-
-  // 현재 경로에 따라 과제 관련 컴포넌트 결정
-  const renderAssignmentContent = () => {
-    const pathParts = location.pathname.split('/');
-    const isCreatePath = pathParts.includes('create');
-    const isSubmissionsPath = pathParts.includes('submissions');
-    const isEditPath = pathParts.includes('edit');
+    if (isCreatePage) {
+      onSubPageChange("추가");
+    } else if (isEditPage) {
+      onSubPageChange("수정");
+    } else if (isSubmissionsPage) {
+      onSubPageChange("제출목록");
+    } else if (isSubmissionDetailPage) {
+      onSubPageChange("제출상세");
+    } else if (isDetailPage) {
+      onSubPageChange("상세");
+    } else {
+      onSubPageChange(null);
+    }
     
-    console.log("[StudyContent] 현재 경로:", location.pathname);
-    console.log("[StudyContent] 경로 구성요소:", pathParts);
-    console.log("[StudyContent] assignmentId 파라미터:", assignmentId);
-    
-    // /studies/:studyId/assignment/create
-    if (isCreatePath) {
+    // 컴포넌트 언마운트 시 서브페이지 초기화
+    return () => {
+      onSubPageChange(null);
+    };
+  }, [isCreatePage, isEditPage, isSubmissionsPage, isSubmissionDetailPage, isDetailPage, onSubPageChange]);
+  
+  // 컨텐츠 렌더링
+  const renderContent = () => {
+    if (isCreatePage) {
       return <AssignmentCreate />;
     }
     
-    // /studies/:studyId/assignment/:assignmentId/edit
-    if (isEditPath) {
-      console.log("[StudyContent] 과제 수정 페이지 렌더링");
+    if (isEditPage) {
       return <AssignmentEdit />;
     }
     
-    // /studies/:studyId/assignment/:assignmentId/submissions/:submissionId
-    if (isSubmissionsPath && pathParts.length > 6) {
-      return <SubmissionDetail />;
-    }
-    
-    // /studies/:studyId/assignment/:assignmentId/submissions
-    if (isSubmissionsPath) {
+    if (isSubmissionsPage) {
       return <SubmissionList />;
     }
     
-    // /studies/:studyId/assignment/:assignmentId
-    if (assignmentId) {
-      console.log("[StudyContent] 과제 상세 페이지 렌더링, assignmentId:", assignmentId);
+    if (isSubmissionDetailPage) {
+      return <SubmissionDetail />;
+    }
+    
+    if (isDetailPage) {
       return <AssignmentDetail />;
     }
     
-    // /studies/:studyId/assignment
     return <AssignmentList />;
   };
+  
+  return (
+    <div style={{
+      width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        width: '100%',
+        position: 'relative',
+        padding: '0 1rem',
+        marginTop: '1rem'
+      }}>
+        <div style={{ flex: 1 }}>
+          {renderContent()}
+        </div>
+      </div>
+    </div>
+  );
+};
 
+AssignmentContainer.propTypes = {
+  onSubPageChange: PropTypes.func.isRequired
+};
+
+export default function StudyContent({ activeTab, studyData }) {
+  const [currentSubPage, setCurrentSubPage] = useState(null);
+  const { studyId } = useParams();
+  const location = useLocation();
+  
+  console.log("[StudyContent] 초기화, activeTab:", activeTab);
+  
+  useEffect(() => {
+    console.log("[StudyContent] 현재 위치:", location.pathname);
+  }, [location.pathname]);
+  
+  const handleSubPageChange = (subPage) => {
+    console.log("[StudyContent] 서브페이지 변경:", subPage);
+    setCurrentSubPage(subPage);
+  };
+  
+  // 과제 탭 컨텐츠 렌더링
+  const renderAssignmentContent = () => {
+    return <AssignmentContainer onSubPageChange={handleSubPageChange} />;
+  };
+  
   const renderContent = () => {
     console.log("[StudyContent] renderContent 호출, activeTab:", activeTab);
     
@@ -137,5 +189,3 @@ StudyContent.propTypes = {
   activeTab: PropTypes.string.isRequired,
   studyData: PropTypes.object,
 };
-
-export default StudyContent;

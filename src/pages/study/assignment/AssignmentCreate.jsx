@@ -5,7 +5,6 @@ import assignmentService from '../../../services/assignment';
 import { IoAttach } from 'react-icons/io5';
 import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
 import './AssignmentStyles.css';
-import StudySidebarContainer from '../../../components/common/sidebar/StudySidebarContainer';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -127,124 +126,121 @@ function AssignmentCreate() {
   };
   
   return (
-    <div style={{ display: 'flex', gap: '1rem' }}>
-      <StudySidebarContainer activeTab="과제" subPage="추가" />
-      <div className="container">
-        <div className="header">
-          <h1 className="title">과제 업로드</h1>
-          <button className="back-button" onClick={handleCancel}>목록으로 돌아가기</button>
+    <div className="container">
+      <div className="header">
+        <h1 className="title">과제 업로드</h1>
+        <button className="back-button" onClick={handleCancel}>목록으로 돌아가기</button>
+      </div>
+      
+      <form className="form" onSubmit={handleSubmit}>
+        {error && (
+          <div className="error-message">{error}</div>
+        )}
+        
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentTitle">과제 제목 *</label>
+          <input
+            className="input"
+            id="assignmentTitle"
+            name="assignmentTitle"
+            value={formData.assignmentTitle}
+            onChange={handleChange}
+            placeholder="과제 제목을 입력하세요"
+            required
+          />
         </div>
         
-        <form className="form" onSubmit={handleSubmit}>
-          {error && (
-            <div className="error-message">{error}</div>
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentContent">지시사항 *</label>
+          <textarea
+            className="textarea"
+            id="assignmentContent"
+            name="assignmentContent"
+            value={formData.assignmentContent}
+            onChange={handleChange}
+            placeholder="과제 내용과 지시사항을 입력하세요"
+            rows={6}
+            required
+          />
+          <div className="char-count">{formData.assignmentContent.length}/10000</div>
+        </div>
+        
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentDueDate">제출 기한 *</label>
+          <input
+            className="input"
+            id="assignmentDueDate"
+            name="assignmentDueDate"
+            type="datetime-local"
+            value={formData.assignmentDueDate}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentMaxPoint">최대 점수</label>
+          <input
+            className="input"
+            id="assignmentMaxPoint"
+            name="assignmentMaxPoint"
+            type="number"
+            min="0"
+            value={formData.assignmentMaxPoint}
+            onChange={handleChange}
+          />
+        </div>
+        
+        {/* 첨부 파일 영역 */}
+        <div className="form-group">
+          <label className="label">첨부 파일</label>
+          <input 
+            className="hidden-file-input"
+            type="file" 
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            multiple
+          />
+          
+          {/* 첨부파일 목록 */}
+          {attachedFiles.length > 0 && (
+            <div className="file-list">
+              {attachedFiles.map((file, index) => (
+                <div className="file-item" key={index}>
+                  {isImageFile(file) && (
+                    <div className="image-preview">
+                      <img src={getFilePreviewUrl(file)} alt={file.name} />
+                    </div>
+                  )}
+                  <div className="file-info">
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">({formatFileSize(file.size)})</span>
+                  </div>
+                  <button 
+                    className="remove-file-button" 
+                    onClick={() => handleRemoveFile(index)} 
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
           
-          <div className="form-group">
-            <label className="label" htmlFor="assignmentTitle">과제 제목 *</label>
-            <input
-              className="input"
-              id="assignmentTitle"
-              name="assignmentTitle"
-              value={formData.assignmentTitle}
-              onChange={handleChange}
-              placeholder="과제 제목을 입력하세요"
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="label" htmlFor="assignmentContent">지시사항 *</label>
-            <textarea
-              className="textarea"
-              id="assignmentContent"
-              name="assignmentContent"
-              value={formData.assignmentContent}
-              onChange={handleChange}
-              placeholder="과제 내용과 지시사항을 입력하세요"
-              rows={6}
-              required
-            />
-            <div className="char-count">{formData.assignmentContent.length}/10000</div>
-          </div>
-          
-          <div className="form-group">
-            <label className="label" htmlFor="assignmentDueDate">제출 기한 *</label>
-            <input
-              className="input"
-              id="assignmentDueDate"
-              name="assignmentDueDate"
-              type="datetime-local"
-              value={formData.assignmentDueDate}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label className="label" htmlFor="assignmentMaxPoint">최대 점수</label>
-            <input
-              className="input"
-              id="assignmentMaxPoint"
-              name="assignmentMaxPoint"
-              type="number"
-              min="0"
-              value={formData.assignmentMaxPoint}
-              onChange={handleChange}
-            />
-          </div>
-          
-          {/* 첨부 파일 영역 */}
-          <div className="form-group">
-            <label className="label">첨부 파일</label>
-            <input 
-              className="hidden-file-input"
-              type="file" 
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              multiple
-            />
-            
-            {/* 첨부파일 목록 */}
-            {attachedFiles.length > 0 && (
-              <div className="file-list">
-                {attachedFiles.map((file, index) => (
-                  <div className="file-item" key={index}>
-                    {isImageFile(file) && (
-                      <div className="image-preview">
-                        <img src={getFilePreviewUrl(file)} alt={file.name} />
-                      </div>
-                    )}
-                    <div className="file-info">
-                      <span className="file-name">{file.name}</span>
-                      <span className="file-size">({formatFileSize(file.size)})</span>
-                    </div>
-                    <button 
-                      className="remove-file-button" 
-                      onClick={() => handleRemoveFile(index)} 
-                      type="button"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            <button className="attach-button" type="button" onClick={handleAttachClick}>
-              <IoAttach size={18} />
-              파일 첨부
-            </button>
-          </div>
-          
-          <div className="button-group">
-            <button className="button cancel-button" type="button" onClick={handleCancel}>취소</button>
-            <button className="button submit-button" type="submit" disabled={isLoading}>
-              {isLoading ? '업로드 중...' : '업로드'}
-            </button>
-          </div>
-        </form>
-      </div>
+          <button className="attach-button" type="button" onClick={handleAttachClick}>
+            <IoAttach size={18} />
+            파일 첨부
+          </button>
+        </div>
+        
+        <div className="button-group">
+          <button className="button cancel-button" type="button" onClick={handleCancel}>취소</button>
+          <button className="button submit-button" type="submit" disabled={isLoading}>
+            {isLoading ? '업로드 중...' : '업로드'}
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
