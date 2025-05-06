@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import styled from 'styled-components';
 import { useTheme } from "../../../contexts/ThemeContext";
 import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
-import { FiEdit2, FiTrash2, FiMoreVertical } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMoreVertical, FiPlus } from 'react-icons/fi';
+import './AssignmentList.css';
 
 function AssignmentList() {
   const [assignments, setAssignments] = useState([]);
@@ -188,12 +188,12 @@ function AssignmentList() {
     if (categories.length === 0) return null;
     
     return categories.map(category => (
-      <CategorySection key={category}>
-        <CategoryTitle>{category}</CategoryTitle>
-        <AssignmentListContainer>
+      <div className="category-section" key={category}>
+        <h2 className="category-title">{category}</h2>
+        <div className="assignment-list-container">
           {categorizedAssignments[category].map(assignment => renderAssignmentItem(assignment, category))}
-        </AssignmentListContainer>
-      </CategorySection>
+        </div>
+      </div>
     ));
   };
   
@@ -201,80 +201,83 @@ function AssignmentList() {
   const renderParticipantAssignmentItem = (assignment, category) => {
     const { assignmentId, assignmentTitle, assignmentDueDate, submissionStatus, submissionScore, assignmentMaxPoint } = assignment;
     
-    // 제출 상태에 따른 색상 설정
-    let statusColor = "#6c757d"; // 기본 회색
-    if (submissionStatus === 'SUBMITTED') statusColor = "#ffc107"; // 제출 - 노란색
-    if (submissionStatus === 'SCORED') statusColor = "#28a745"; // 채점완료 - 녹색
-    if (category === '마감' && submissionStatus !== 'SCORED') statusColor = "#dc3545"; // 마감됨 - 빨간색
+    // 제출 상태에 따른 클래스 설정
+    let statusClass = '';
+    if (submissionStatus === 'SUBMITTED') statusClass = 'submitted';
+    if (submissionStatus === 'SCORED') statusClass = 'scored';
     
     return (
-      <AssignmentItem 
+      <div 
+        className="assignment-item" 
         key={assignmentId} 
         onClick={() => handleViewAssignment(assignmentId)}
-        status={submissionStatus}
-        statusColor={statusColor}
       >
-        <AssignmentInfo>
-          <AssignmentDate>마감: {formatDate(assignmentDueDate)}</AssignmentDate>
-          <AssignmentTitle>{assignmentTitle}</AssignmentTitle>
-          <AssignmentMetaRow>
-            <StatusBadge status={submissionStatus}>{getStatusText(submissionStatus)}</StatusBadge>
-            <ScoreDisplay>
+        <div className="assignment-info">
+          <div className="assignment-info-container">
+            <div className="assignment-date">마감: {formatDate(assignmentDueDate)}</div>
+            <h3 className="assignment-title">{assignmentTitle}</h3>
+          </div>
+          <div className="assignment-meta-row">
+            <span className={`status-tag ${submissionStatus.toLowerCase()}`}>{getStatusText(submissionStatus)}</span>
+            <div className="score-display">
               {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
-            </ScoreDisplay>
-          </AssignmentMetaRow>
-        </AssignmentInfo>
-      </AssignmentItem>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
   
   // 관리자 뷰에서 사용할 과제 항목 렌더링
   const renderManagerAssignmentItem = (assignment, category) => {
     const { assignmentId, assignmentTitle, assignmentDueDate, submissionStatus, submissionScore, assignmentMaxPoint } = assignment;
-    
-    // 관리자 뷰는 좌측 보더 색상 없음
-    
+        
     return (
-      <AssignmentItem 
+      <div 
+        className="assignment-item" 
         key={assignmentId} 
         onClick={() => handleViewAssignment(assignmentId)}
       >
-        <AssignmentInfo>
-          <AssignmentDate>마감: {formatDate(assignmentDueDate)}</AssignmentDate>
-          <AssignmentTitle>{assignmentTitle}</AssignmentTitle>
-          <AssignmentMetaRow>
-            <StatusBadge status={submissionStatus}>{getStatusText(submissionStatus)}</StatusBadge>
-            <ScoreDisplay>
+        <div className="assignment-info">
+          <div className="assignment-info-container">
+            <div className="assignment-date">마감: {formatDate(assignmentDueDate)}</div>
+            <h3 className="assignment-title">{assignmentTitle}</h3>
+          </div>
+          <div className="assignment-meta-row">
+            <span className={`status-tag ${category === '마감' ? 'not-submitted' : ''}`}>
+              {category}
+            </span>
+            <div className="score-display">
               {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
-            </ScoreDisplay>
-          </AssignmentMetaRow>
-        </AssignmentInfo>
+            </div>
+          </div>
+        </div>
         
-        <ActionsContainer>
-          <MoreButton onClick={(e) => togglePopup(e, assignmentId)}>
+        <div className="actions-container">
+          <button className="more-button" onClick={(e) => togglePopup(e, assignmentId)}>
             <FiMoreVertical size={18} />
-          </MoreButton>
+          </button>
           
           {activePopup === assignmentId && (
-            <PopupMenu ref={popupRef}>
-              <PopupMenuItem onClick={(e) => {
+            <div className="popup-menu" ref={popupRef}>
+              <div className="popup-menu-item" onClick={(e) => {
                 e.stopPropagation();
                 handleEditAssignment(assignmentId);
               }}>
                 <FiEdit2 size={16} color="#16191f"/>
                 <span>수정</span>
-              </PopupMenuItem>
-              <PopupMenuItem onClick={(e) => {
+              </div>
+              <div className="popup-menu-item" onClick={(e) => {
                 e.stopPropagation();
                 handleDeleteAssignment(assignmentId);
               }}>
                 <FiTrash2 size={16} color="#16191f"/>
                 <span>삭제</span>
-              </PopupMenuItem>
-            </PopupMenu>
+              </div>
+            </div>
           )}
-        </ActionsContainer>
-      </AssignmentItem>
+        </div>
+      </div>
     );
   };
   
@@ -285,264 +288,62 @@ function AssignmentList() {
       : renderParticipantAssignmentItem(assignment, category);
   };
   
+  // 과제 추가 섹션 렌더링
+  const renderAddAssignmentSection = () => {
+    if (!isManager) return null;
+    
+    return (
+      <div className="assignment-add-section">
+        <div>
+          <div className="assignment-add-title">새로운 과제 추가</div>
+          <div className="assignment-add-description">
+            학생들에게 제공할 새로운 과제를 추가해보세요.
+          </div>
+        </div>
+        <button className="add-button" onClick={handleCreateAssignment}>
+          <FiPlus size={18} />
+        </button>
+      </div>
+    );
+  };
+  
   return (
-    <Container>
-      <Header>
-        <Title>과제</Title>
+    <div className="assignment-container">
+      <div className="assignment-header">
+        <h1 className="assignment-title">과제</h1>
         {isManager && (
-          <CreateButtonWrapper>
-            <CreateButton onClick={handleCreateAssignment}>
+          <div className="create-button-wrapper">
+            <button className="create-button" onClick={handleCreateAssignment}>
               + 추가
-            </CreateButton>
-          </CreateButtonWrapper>
+            </button>
+          </div>
         )}
-      </Header>
+      </div>
       
       {/* 오류 메시지 표시 */}
       {error && (
-        <ErrorMessage>{error}</ErrorMessage>
+        <div className="error-message">{error}</div>
       )}
+      
+      {/* 과제 추가 섹션 */}
+      {renderAddAssignmentSection()}
       
       {/* 로딩 상태 표시 */}
       {isLoading ? (
-        <LoadingMessage>과제 정보를 불러오는 중...</LoadingMessage>
+        <div className="loading-message">과제 정보를 불러오는 중...</div>
       ) : assignments.length === 0 ? (
-        <EmptyMessage>
+        <div className="empty-message">
           {isManager 
             ? "새로운 과제를 추가해주세요."
             : "등록된 과제가 없습니다."}
-        </EmptyMessage>
+        </div>
       ) : (
-        <AssignmentsWrapper>
+        <div className="assignments-wrapper">
           {renderAssignmentsByCategory()}
-        </AssignmentsWrapper>
+        </div>
       )}
-    </Container>
+    </div>
   );
 }
-
-// 스타일 컴포넌트
-const Container = styled.div`
-  padding: 20px;
-  max-width: 1000px;
-  margin: 0 auto;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-`;
-
-const CreateButtonWrapper = styled.div`
-  display: flex;
-  align-items: center;
-`;
-
-const CreateButton = styled.button`
-  padding: 8px 16px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  
-  &:hover {
-    background-color: #c82333;
-  }
-`;
-
-const AssignmentsWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-`;
-
-const CategorySection = styled.section`
-  margin-bottom: 1.5rem;
-`;
-
-const CategoryTitle = styled.h2`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  color: #333;
-`;
-
-const AssignmentListContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-`;
-
-const AssignmentItem = styled.div`
-  padding: 1rem;
-  border: 1px solid #e9ecef;
-  border-radius: 8px;
-  background-color: white;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
-  
-  ${props => props.statusColor && `
-    border-left: 4px solid ${props.statusColor};
-  `}
-  
-  &:hover {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    background-color: #f8f9fa;
-  }
-`;
-
-const AssignmentInfo = styled.div`
-  flex: 1;
-`;
-
-const AssignmentDate = styled.div`
-  font-size: 14px;
-  color: #6c757d;
-  margin-bottom: 6px;
-`;
-
-const AssignmentTitle = styled.h3`
-  margin: 0 0 0.5rem 0;
-  font-size: 16px;
-  font-weight: 500;
-`;
-
-const AssignmentMetaRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const StatusBadge = styled.span`
-  display: inline-block;
-  padding: 2px 8px;
-  font-size: 12px;
-  border-radius: 12px;
-  font-weight: 500;
-  
-  ${props => {
-    switch(props.status) {
-      case 'SUBMITTED':
-        return `
-          background-color: #fff3cd;
-          color: #856404;
-        `;
-      case 'SCORED':
-        return `
-          background-color: #d4edda;
-          color: #155724;
-        `;
-      default:
-        return `
-          background-color: #f8f9fa;
-          color: #6c757d;
-        `;
-    }
-  }}
-`;
-
-const ScoreDisplay = styled.div`
-  background-color: #dc3545;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: bold;
-`;
-
-const ActionsContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  position: relative;
-`;
-
-const MoreButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6c757d;
-  
-  &:hover {
-    color: #000;
-  }
-`;
-
-const PopupMenu = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  width: 150px;
-  background-color: white;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  overflow: hidden;
-`;
-
-const PopupMenuItem = styled.div`
-  padding: 12px 16px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #f8f9fa;
-  }
-  
-  &:not(:last-child) {
-    border-bottom: 1px solid #e9ecef;
-  }
-  
-  span {
-    color: #16191f;
-    font-size: 14px;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #dc3545;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  background-color: #f8d7da;
-  border-radius: 4px;
-`;
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-`;
-
-const EmptyMessage = styled.div`
-  text-align: center;
-  padding: 2rem;
-  color: #666;
-  border: 1px dashed #ddd;
-  border-radius: 4px;
-  background-color: #f8f9fa;
-`;
 
 export default AssignmentList; 
