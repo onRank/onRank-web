@@ -219,11 +219,9 @@ function AssignmentList() {
           <AssignmentTitle>{assignmentTitle}</AssignmentTitle>
           <AssignmentMetaRow>
             <StatusBadge status={submissionStatus}>{getStatusText(submissionStatus)}</StatusBadge>
-            {submissionStatus === 'SCORED' && (
-              <ScoreDisplay>
-                {submissionScore}/{assignmentMaxPoint} pt
-              </ScoreDisplay>
-            )}
+            <ScoreDisplay>
+              {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
+            </ScoreDisplay>
           </AssignmentMetaRow>
         </AssignmentInfo>
       </AssignmentItem>
@@ -244,6 +242,12 @@ function AssignmentList() {
         <AssignmentInfo>
           <AssignmentDate>마감: {formatDate(assignmentDueDate)}</AssignmentDate>
           <AssignmentTitle>{assignmentTitle}</AssignmentTitle>
+          <AssignmentMetaRow>
+            <StatusBadge status={submissionStatus}>{getStatusText(submissionStatus)}</StatusBadge>
+            <ScoreDisplay>
+              {submissionScore !== null ? submissionScore : '--'}/{assignmentMaxPoint} pt
+            </ScoreDisplay>
+          </AssignmentMetaRow>
         </AssignmentInfo>
         
         <ActionsContainer>

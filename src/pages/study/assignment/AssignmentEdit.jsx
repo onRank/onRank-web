@@ -295,7 +295,6 @@ function AssignmentEdit() {
             name="assignmentMaxPoint"
             type="number"
             min="0"
-            max="100"
             value={formData.assignmentMaxPoint}
             onChange={handleChange}
           />
