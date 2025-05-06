@@ -30,6 +30,10 @@ const AssignmentDetail = () => {
 
   // 재제출 모드 상태
   const [isResubmitting, setIsResubmitting] = useState(false);
+  // 유지할 기존 파일 ID 목록
+  const [remainingFileIds, setRemainingFileIds] = useState([]);
+  // 기존 제출 파일 목록
+  const [existingFiles, setExistingFiles] = useState([]);
 
   // 업로드 진행 상태 추적
   const [uploadStatus, setUploadStatus] = useState([]);
@@ -121,40 +125,76 @@ const AssignmentDetail = () => {
       setError(null);
       setIsUploading(true);
 
-      // 파일명 배열 생성
-      const fileNames = files.map((file) => file.name);
-
-      const formattedData = {
-        submissionContent: submissionContent,
-        fileNames: fileNames,
-      };
-
-      console.log("[AssignmentDetail] 제출 데이터:", formattedData);
-      console.log("[AssignmentDetail] 첨부 파일:", files.map(f => `${f.name} (${formatFileSize(f.size)})`));
-
-      // 서버에 과제 제출 정보 전송
-      const response = await assignmentService.submitAssignment(
-        studyId,
-        assignmentId,
-        formattedData
-      );
+      // 파일 업로드 관련 데이터 준비
+      const newFiles = files; // 새로 추가한 파일들
       
-      console.log("[AssignmentDetail] 제출 응답:", response);
+      let response;
       
-      // 파일 업로드 처리 (createAssignment와 동일한 패턴)
-      if (files.length > 0 && response) {
-        console.log("[AssignmentDetail] 파일 업로드 시작, 파일 개수:", files.length);
+      if (isResubmitting) {
+        // 재제출 모드: PUT 요청, remainingFileIds + newFileNames 사용
+        console.log("[AssignmentDetail] 과제 재제출 준비");
+        
+        // 새로 추가한 파일 이름 목록 생성
+        const newFileNames = newFiles.map(file => file.name);
+        
+        // API 문서 형식에 맞게 데이터 구성
+        const resubmissionData = {
+          submissionContent: submissionContent,
+          remainingFileIds: remainingFileIds, // 사용자가 선택한 유지할 기존 파일 ID 목록
+          newFileNames: newFileNames // 새로 제출할 파일 이름 목록
+        };
+        
+        console.log("[AssignmentDetail] 재제출 데이터:", resubmissionData);
+        console.log("[AssignmentDetail] 첨부 파일:", newFiles.map(f => `${f.name} (${formatFileSize(f.size)})`));
+        console.log("[AssignmentDetail] 유지 파일 ID:", remainingFileIds);
+        
+        // 재제출 API 호출
+        response = await assignmentService.resubmitAssignment(
+          studyId,
+          assignmentId,
+          resubmissionData
+        );
+        
+        console.log("[AssignmentDetail] 재제출 응답:", response);
+      } else {
+        // 신규 제출 모드: POST 요청, fileNames 사용
+        console.log("[AssignmentDetail] 과제 신규 제출 준비");
+        
+        // 파일명 배열 생성
+        const fileNames = newFiles.map((file) => file.name);
+        
+        const formattedData = {
+          submissionContent: submissionContent,
+          fileNames: fileNames,
+        };
+        
+        console.log("[AssignmentDetail] 제출 데이터:", formattedData);
+        console.log("[AssignmentDetail] 첨부 파일:", newFiles.map(f => `${f.name} (${formatFileSize(f.size)})`));
+        
+        // 신규 제출 API 호출
+        response = await assignmentService.submitAssignment(
+          studyId,
+          assignmentId,
+          formattedData
+        );
+        
+        console.log("[AssignmentDetail] 제출 응답:", response);
+      }
+      
+      // 파일 업로드 처리 (기존 로직 유지)
+      if (newFiles.length > 0 && response) {
+        console.log("[AssignmentDetail] 파일 업로드 시작, 파일 개수:", newFiles.length);
         
         try {
           // 파일 업로드 상태 트래킹을 위한 초기 상태 설정
-          setUploadStatus(files.map(file => ({
+          setUploadStatus(newFiles.map(file => ({
             fileName: file.name,
             progress: 0,
             status: 'uploading'
           })));
           
           // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-          const uploadResults = await handleFileUploadWithS3(response, files, 'uploadUrl');
+          const uploadResults = await handleFileUploadWithS3(response, newFiles, 'uploadUrl');
           console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
           
           // 업로드 실패 발생 시 경고
@@ -166,7 +206,7 @@ const AssignmentDetail = () => {
           }
           
           // 모든 파일 업로드 성공 시 상태 업데이트
-          setUploadStatus(files.map(file => ({
+          setUploadStatus(newFiles.map(file => ({
             fileName: file.name,
             progress: 100,
             status: 'success'
@@ -178,12 +218,12 @@ const AssignmentDetail = () => {
         }
       }
 
-      alert("과제가 성공적으로 제출되었습니다.");
+      alert(isResubmitting ? "과제가 성공적으로 재제출되었습니다." : "과제가 성공적으로 제출되었습니다.");
       navigate(`/studies/${studyId}/assignment`);
     } catch (err) {
-      console.error("[AssignmentDetail] 과제 제출 실패:", err);
+      console.error(isResubmitting ? "[AssignmentDetail] 과제 재제출 실패:" : "[AssignmentDetail] 과제 제출 실패:", err);
       setError(
-        `과제 제출에 실패했습니다: ${
+        `과제 ${isResubmitting ? '재' : ''}제출에 실패했습니다: ${
           err.message || "알 수 없는 오류가 발생했습니다."
         }`
       );
@@ -200,9 +240,28 @@ const AssignmentDetail = () => {
   // 재제출 모드 활성화
   const handleResubmit = () => {
     setIsResubmitting(true);
+    
+    // 기존 제출 내용 불러오기
+    if (assignment && assignment.submissionContent) {
+      setSubmissionContent(assignment.submissionContent);
+      setCharCount(assignment.submissionContent.length);
+    } else {
+      setSubmissionContent("");
+      setCharCount(0);
+    }
+    
+    // 기존 제출 파일 정보 설정 (나중에 재제출시 remainingFileIds로 사용)
+    if (assignment && assignment.submissionFiles && assignment.submissionFiles.length > 0) {
+      // 기존 파일 정보 저장
+      setExistingFiles(assignment.submissionFiles);
+      // 모든 기존 파일 ID를 유지 목록에 추가
+      setRemainingFileIds(assignment.submissionFiles.map(file => file.fileId));
+    } else {
+      setExistingFiles([]);
+      setRemainingFileIds([]);
+    }
+    
     setFiles([]);
-    setSubmissionContent("");
-    setCharCount(0);
     setUploadStatus([]);
   };
 
@@ -210,9 +269,19 @@ const AssignmentDetail = () => {
   const handleCancelResubmit = () => {
     setIsResubmitting(false);
     setFiles([]);
+    setExistingFiles([]);
+    setRemainingFileIds([]);
     setSubmissionContent("");
     setCharCount(0);
     setUploadStatus([]);
+  };
+
+  // 기존 파일 제거 처리
+  const handleRemoveExistingFile = (fileId) => {
+    // remainingFileIds에서 해당 파일 ID 제거
+    setRemainingFileIds(prev => prev.filter(id => id !== fileId));
+    // UI에서도 제거 (선택적)
+    setExistingFiles(prev => prev.filter(file => file.fileId !== fileId));
   };
 
   // 파일 업로드 상태 확인
@@ -281,6 +350,63 @@ const AssignmentDetail = () => {
           {charCount}/{MAX_CHAR_COUNT}
         </CharCounter>
       </TextareaSection>
+
+      {/* 재제출 시 기존 파일 표시 */}
+      {isResubmitting && existingFiles.length > 0 && (
+        <FilesContainer>
+          <SectionSubtitle>기존 제출 파일</SectionSubtitle>
+          <FilesList>
+            {existingFiles.map((file) => {
+              // fileId가 remainingFileIds에 있는지 확인하여 체크 상태 결정
+              const isRemaining = remainingFileIds.includes(file.fileId);
+              
+              return (
+                <FileDownloadItem 
+                  key={file.fileId} 
+                  style={{ 
+                    opacity: isRemaining ? 1 : 0.5,
+                    backgroundColor: isRemaining ? '#f8f9fa' : '#f1f1f1' 
+                  }}
+                >
+                  <FileInfoRow>
+                    <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
+                    <FileDetails>
+                      <FileName>{file.fileName}</FileName>
+                    </FileDetails>
+                    {isImageFile(file.fileName) && file.fileUrl && (
+                      <PreviewButton 
+                        onClick={() => window.open(file.fileUrl, '_blank')}
+                        title="이미지 미리보기"
+                      >
+                        미리보기
+                      </PreviewButton>
+                    )}
+                    {/* 파일 유지/제거 토글 버튼 */}
+                    <ToggleButton
+                      onClick={() => {
+                        if (isRemaining) {
+                          handleRemoveExistingFile(file.fileId);
+                        } else {
+                          setRemainingFileIds(prev => [...prev, file.fileId]);
+                        }
+                      }}
+                      title={isRemaining ? "이 파일 제외하기" : "이 파일 유지하기"}
+                      isRemaining={isRemaining}
+                    >
+                      {isRemaining ? "유지" : "제외됨"}
+                    </ToggleButton>
+                  </FileInfoRow>
+                  {isImageFile(file.fileName) && file.fileUrl && isRemaining && (
+                    <ImagePreviewContainer>
+                      <ImagePreview src={file.fileUrl} alt={file.fileName} />
+                    </ImagePreviewContainer>
+                  )}
+                </FileDownloadItem>
+              );
+            })}
+          </FilesList>
+        </FilesContainer>
+      )}
 
       {/* 파일 첨부 영역 */}
       <AttachmentSection>
@@ -418,10 +544,11 @@ const AssignmentDetail = () => {
         <SubmitButton
           onClick={handleSubmit}
           disabled={
-            isLoading || (files.length === 0 && submissionContent.trim() === "")
+            isLoading || 
+            (files.length === 0 && submissionContent.trim() === "" && remainingFileIds.length === 0)
           }
         >
-          {isLoading ? "제출 중..." : "제출"}
+          {isLoading ? "제출 중..." : isResubmitting ? "다시 제출" : "제출"}
         </SubmitButton>
         <CancelButton
           onClick={isResubmitting ? handleCancelResubmit : handleBack}
@@ -1170,6 +1297,23 @@ const SubmissionContentText = styled.div`
   line-height: 1.6;
   color: #333;
   font-size: 14px;
+`;
+
+const ToggleButton = styled.button`
+  padding: 6px 12px;
+  background-color: ${props => props.isRemaining ? "#28a745" : "#dc3545"};
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+  margin-left: 8px;
+  
+  &:hover {
+    background-color: ${props => props.isRemaining ? "#218838" : "#c82333"};
+  }
 `;
 
 export default AssignmentDetail;

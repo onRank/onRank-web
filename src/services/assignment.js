@@ -433,6 +433,44 @@ const assignmentService = {
   },
 
   /**
+   * 과제 재제출
+   * @param {string} studyId - 스터디 ID
+   * @param {string} assignmentId - 과제 ID
+   * @param {Object} resubmissionData - 재제출 데이터
+   * @param {string} resubmissionData.submissionContent - 제출물 본문 내용
+   * @param {Array<number>} resubmissionData.remainingFileIds - 유지할 기존 파일 ID 목록
+   * @param {Array<string>} resubmissionData.newFileNames - 새로 제출할 파일 이름 목록
+   * @returns {Promise<Object>} - 재제출 결과 (uploadUrl 포함)
+   */
+  resubmitAssignment: async (studyId, assignmentId, resubmissionData) => {
+    try {
+      console.log(
+        `[AssignmentService] 과제 재제출 요청: 스터디 ${studyId}, 과제 ${assignmentId}`,
+        resubmissionData
+      );
+
+      // API 문서에 맞게 PUT 요청으로 변경
+      const response = await api.put(
+        `/studies/${studyId}/assignments/${assignmentId}/resubmit`,
+        resubmissionData,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("[AssignmentService] 과제 재제출 응답:", response.data);
+
+      // 스터디 컨텍스트 정보 업데이트
+      studyContextService.updateFromApiResponse(studyId, response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error("[AssignmentService] 과제 재제출 실패:", error);
+      throw error;
+    }
+  },
+
+  /**
    * 제출 목록 조회 (관리자용)
    * @param {string} studyId - 스터디 ID
    * @param {string} assignmentId - 과제 ID
