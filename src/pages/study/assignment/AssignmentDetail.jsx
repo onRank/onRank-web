@@ -353,59 +353,27 @@ const AssignmentDetail = () => {
 
       {/* 재제출 시 기존 파일 표시 */}
       {isResubmitting && existingFiles.length > 0 && (
-        <FilesContainer>
-          <SectionSubtitle>기존 제출 파일</SectionSubtitle>
-          <FilesList>
-            {existingFiles.map((file) => {
-              // fileId가 remainingFileIds에 있는지 확인하여 체크 상태 결정
-              const isRemaining = remainingFileIds.includes(file.fileId);
-              
-              return (
-                <FileDownloadItem 
-                  key={file.fileId} 
-                  style={{ 
-                    opacity: isRemaining ? 1 : 0.5,
-                    backgroundColor: isRemaining ? '#f8f9fa' : '#f1f1f1' 
-                  }}
-                >
-                  <FileInfoRow>
-                    <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                    <FileDetails>
-                      <FileName>{file.fileName}</FileName>
-                    </FileDetails>
-                    {isImageFile(file.fileName) && file.fileUrl && (
-                      <PreviewButton 
-                        onClick={() => window.open(file.fileUrl, '_blank')}
-                        title="이미지 미리보기"
-                      >
-                        미리보기
-                      </PreviewButton>
-                    )}
-                    {/* 파일 유지/제거 토글 버튼 */}
-                    <ToggleButton
-                      onClick={() => {
-                        if (isRemaining) {
-                          handleRemoveExistingFile(file.fileId);
-                        } else {
-                          setRemainingFileIds(prev => [...prev, file.fileId]);
-                        }
-                      }}
-                      title={isRemaining ? "이 파일 제외하기" : "이 파일 유지하기"}
-                      isRemaining={isRemaining}
-                    >
-                      {isRemaining ? "유지" : "제외됨"}
-                    </ToggleButton>
-                  </FileInfoRow>
-                  {isImageFile(file.fileName) && file.fileUrl && isRemaining && (
-                    <ImagePreviewContainer>
-                      <ImagePreview src={file.fileUrl} alt={file.fileName} />
-                    </ImagePreviewContainer>
-                  )}
-                </FileDownloadItem>
-              );
-            })}
-          </FilesList>
-        </FilesContainer>
+        <FileList>
+          {existingFiles.map((file) => (
+            <FileItem key={file.fileId}>
+              <FileInfoContainer>
+                {isImageFile(file.fileName) && file.fileUrl && (
+                  <ImagePreview>
+                    <img src={file.fileUrl} alt={file.fileName} />
+                  </ImagePreview>
+                )}
+                <FileInfo>
+                  <FileName>{file.fileName}</FileName>
+                </FileInfo>
+              </FileInfoContainer>
+              <DeleteButton
+                onClick={() => handleRemoveExistingFile(file.fileId)}
+              >
+                ✕
+              </DeleteButton>
+            </FileItem>
+          ))}
+        </FileList>
       )}
 
       {/* 파일 첨부 영역 */}
@@ -1314,6 +1282,12 @@ const ToggleButton = styled.button`
   &:hover {
     background-color: ${props => props.isRemaining ? "#218838" : "#c82333"};
   }
+`;
+
+const FileInfoContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
 `;
 
 export default AssignmentDetail;
