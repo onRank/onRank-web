@@ -236,7 +236,7 @@ function AssignmentEdit() {
   }
   
   return (
-    <>
+    <div style={{ display: 'flex', gap: '1rem' }}>
       <StudySidebarContainer activeTab="과제" subPage="수정" />
       <div className="container">
         <div className="header">
@@ -383,7 +383,7 @@ function AssignmentEdit() {
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }
 

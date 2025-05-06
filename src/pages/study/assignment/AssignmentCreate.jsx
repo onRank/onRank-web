@@ -127,7 +127,7 @@ function AssignmentCreate() {
   };
   
   return (
-    <>
+    <div style={{ display: 'flex', gap: '1rem' }}>
       <StudySidebarContainer activeTab="과제" subPage="추가" />
       <div className="container">
         <div className="header">
@@ -245,7 +245,7 @@ function AssignmentCreate() {
           </div>
         </form>
       </div>
-    </>
+    </div>
   );
 }
 
