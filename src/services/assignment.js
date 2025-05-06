@@ -504,14 +504,16 @@ const assignmentService = {
    * @param {string} assignmentId - 과제 ID
    * @param {string} submissionId - 제출 ID
    * @param {Object} gradeData - 채점 데이터
+   * @param {number} gradeData.submissionScore - 점수
+   * @param {string} gradeData.submissionComment - 코멘트 (선택)
    * @returns {Promise<Object>} - 채점 결과
    */
-  /*
-  gradeSubmission: async (studyId, assignmentId, submissionId, gradeData) => {
+  scoreSubmission: async (studyId, assignmentId, submissionId, gradeData) => {
     try {
       console.log(`[AssignmentService] 과제 채점 요청: 스터디 ${studyId}, 과제 ${assignmentId}, 제출 ${submissionId}`);
+      
       const response = await api.post(
-        `/studies/${studyId}/assignments/${assignmentId}/submissions/${submissionId}/grade`, 
+        `/studies/${studyId}/assignments/${assignmentId}/submissions/${submissionId}`,
         gradeData,
         { withCredentials: true }
       );
@@ -527,7 +529,6 @@ const assignmentService = {
       throw error;
     }
   }
-  */
 };
 
 export default assignmentService;

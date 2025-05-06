@@ -26,8 +26,8 @@ const AssignmentContainer = ({ onSubPageChange }) => {
   // 현재 경로에 따라 어떤 컴포넌트를 렌더링할지 결정
   const isCreatePage = location.pathname.endsWith('/create');
   const isEditPage = location.pathname.includes('/edit');
-  const isSubmissionsPage = location.pathname.includes('/submissions');
-  const isSubmissionDetailPage = location.pathname.includes('/submission/');
+  const isSubmissionsPage = location.pathname.includes('/submissions') && !submissionId;
+  const isSubmissionDetailPage = location.pathname.includes('/submissions/') && submissionId;
   const isDetailPage = assignmentId && !isEditPage && !isSubmissionsPage && !isSubmissionDetailPage;
   
   // 서브페이지 상태 관리
@@ -37,9 +37,9 @@ const AssignmentContainer = ({ onSubPageChange }) => {
     } else if (isEditPage) {
       onSubPageChange("수정");
     } else if (isSubmissionsPage) {
-      onSubPageChange("제출목록");
+      onSubPageChange("채점");
     } else if (isSubmissionDetailPage) {
-      onSubPageChange("제출상세");
+      onSubPageChange("채점");
     } else if (isDetailPage) {
       onSubPageChange("상세");
     } else {

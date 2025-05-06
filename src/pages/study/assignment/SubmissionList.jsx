@@ -95,7 +95,7 @@ const SubmissionList = () => {
     <div className="submission-container">
       <header className="submission-header">
         <button className="back-button" onClick={handleBack}>← 목록으로</button>
-        <h1 className="title">{assignment.assignmentTitle || '과제'}</h1>
+        <h1 className="title">{assignment.assignmentTitle || '과제'} - 채점</h1>
       </header>
       
       <div className="submission-list-wrapper">
