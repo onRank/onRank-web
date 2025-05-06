@@ -58,7 +58,7 @@ const StudyNavigation = memo(({ activeTab }) => {
             textAlign: 'left',
             border: 'none',
             outline: 'none', // 클릭 시 파란색 아웃라인 제거
-            borderBottom: '1px solid #eee',
+            borderBottom: 'none', // 회색선 제거
             background: '#fff',
             cursor: 'pointer',
             fontSize: '1rem',
