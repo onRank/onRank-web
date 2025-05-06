@@ -131,27 +131,31 @@
 }
 
 /* 파일 목록 스타일 */
-.file-list {
+.file-list, .files-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
+/* AssignmentDetail.jsx 스타일과 유사하게 변경 */
 .file-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
   background-color: #f9f9f9;
   border: 1px solid #eee;
   border-radius: 4px;
-  margin-bottom: 0;
-  transition: all 0.2s ease;
+  margin-bottom: 10px;
+  overflow: hidden;
 }
 
-.file-item:hover {
-  border-color: #ddd;
-  background-color: #f5f5f5;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+.file-info-row {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.file-icon {
+  margin-right: 10px;
+  font-size: 20px;
+  color: #666;
 }
 
 .file-preview {
@@ -174,7 +178,7 @@
   object-fit: cover;
 }
 
-.file-info {
+.file-details {
   flex-grow: 1;
   margin-right: 10px;
   overflow: hidden;
@@ -199,39 +203,48 @@
 
 .preview-button, .download-button {
   padding: 7px 12px;
-  background-color: #f0f0f0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
   font-size: 12px;
+  border-radius: 4px;
   cursor: pointer;
   white-space: nowrap;
-  color: #333;
   font-weight: 500;
   min-width: 70px;
   text-align: center;
-  transition: all 0.2s ease;
+  border: none;
 }
 
 .preview-button {
   background-color: #e7f5ff;
   color: #0c63e4;
-  border-color: #cce5ff;
 }
 
 .download-button {
-  background-color: #f8f9fa;
-  color: #333;
-  border-color: #ddd;
+  background-color: #f1f3f5;
+  color: #495057;
 }
 
 .preview-button:hover {
   background-color: #d0e8ff;
-  border-color: #b8daff;
 }
 
 .download-button:hover {
   background-color: #e9ecef;
-  border-color: #c6c7c8;
+}
+
+/* 이미지 미리보기 컨테이너 */
+.image-preview-container {
+  padding: 0;
+  text-align: center;
+  background-color: #f5f5f5;
+  border-top: 1px solid #eee;
+  max-height: 200px;
+  overflow: hidden;
+}
+
+.image-preview-thumbnail {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
 }
 
 /* 학생 제출물 섹션 */

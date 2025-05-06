@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import Button from '../../../components/common/Button';
-import { isImageFile, downloadFile, getFileExtension } from '../../../utils/fileUtils';
+import { isImageFile, downloadFile, getFileIcon } from '../../../utils/fileUtils';
 import './SubmissionDetail.css';
 import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 import { IoAttach } from 'react-icons/io5';
@@ -19,7 +19,7 @@ const SubmissionDetail = () => {
   const [score, setScore] = useState('');
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(true);
   const [scoreError, setScoreError] = useState('');
 
   // 컴포넌트 마운트 시 제출물 상세 정보 조회
@@ -186,7 +186,7 @@ const SubmissionDetail = () => {
     }
   };
   
-  // 파일 다운로드 처리 (fileUtils.js 사용)
+  // 파일 다운로드 처리 (AssignmentDetail.jsx와 동일하게 수정)
   const handleDownload = (url, fileName) => {
     if (!url) {
       console.error('파일 URL이 없습니다.');
@@ -196,54 +196,26 @@ const SubmissionDetail = () => {
     console.log(`파일 다운로드 시도: ${fileName} (${url})`);
     
     try {
-      // fileUtils.js의 downloadFile 함수 호출
+      // fileUtils.js의 downloadFile 함수 직접 호출
       downloadFile(url, fileName);
     } catch (error) {
       console.error('파일 다운로드 중 오류:', error);
-      alert('파일 다운로드에 실패했습니다.');
+      alert('파일 다운로드에 실패했습니다. 다시 시도해 주세요.');
+      
+      // 실패 시 직접 URL 열기 시도
+      window.open(url, '_blank');
     }
   };
   
-  // 이미지 미리보기 확대 처리
+  // 이미지 미리보기 확대 처리 (모든 브라우저에서 작동하도록 수정)
   const handlePreview = (url, fileName) => {
     if (!url) {
       console.error('파일 URL이 없습니다.');
       return;
     }
     
-    // 새 창에서 이미지 표시 (적절한 크기로 제한)
-    const win = window.open("", "_blank");
-    if (win) {
-      win.document.write(`
-        <html>
-          <head>
-            <title>${fileName} 미리보기</title>
-            <style>
-              body {
-                margin: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-                background-color: #f5f5f5;
-              }
-              img {
-                max-width: 90vw;
-                max-height: 90vh;
-                object-fit: contain;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-              }
-            </style>
-          </head>
-          <body>
-            <img src="${url}" alt="${fileName}" />
-          </body>
-        </html>
-      `);
-    } else {
-      // 팝업이 차단된 경우 기본 방식으로 열기
-      window.open(url, '_blank');
-    }
+    // 새 창에서 URL 직접 열기
+    window.open(url, '_blank');
   };
   
   // 취소 처리
@@ -270,6 +242,7 @@ const SubmissionDetail = () => {
     // 다양한 형태의 파일 객체 처리
     let fileUrl = '';
     let fileName = '';
+    let fileId = '';
     
     // File 객체인 경우
     if (file instanceof File) {
@@ -280,24 +253,28 @@ const SubmissionDetail = () => {
     else if (file.fileUrl && file.fileName) {
       fileUrl = file.fileUrl;
       fileName = file.fileName;
+      fileId = file.fileId;
     }
     // url과 name을 가진 객체
     else if (file.url && file.name) {
       fileUrl = file.url;
       fileName = file.name;
     }
-    // 중첩된 file 속성을 가진 객체 (예: {file: {fileUrl, fileName}})
-    else if (file.file && (file.file.fileUrl || file.file.url)) {
-      fileUrl = file.file.fileUrl || file.file.url;
-      fileName = file.file.fileName || file.file.name;
+    // file 속성 내에 객체가 있는 경우 (API 응답 구조에 맞게 처리)
+    else if (file.file && typeof file.file === 'object') {
+      if (file.file.fileUrl) fileUrl = file.file.fileUrl;
+      if (file.file.fileName) fileName = file.file.fileName;
+      if (file.file.fileId) fileId = file.file.fileId;
     }
-    // API에서 받은 형태 처리
+    // API에서 받은 다른 형태 처리
     else if (typeof file === 'object') {
-      if (file.fileId && file.fileName && file.fileUrl) {
-        fileUrl = file.fileUrl;
-        fileName = file.fileName;
-      }
+      // 다른 가능한 속성 조합 확인
+      if (file.fileId) fileId = file.fileId;
+      if (file.fileName) fileName = file.fileName;
+      if (file.fileUrl) fileUrl = file.fileUrl;
     }
+    
+    console.log(`파일 정보 (${index}):`, { fileUrl, fileName, fileId, originalFile: file });
     
     if (!fileUrl || !fileName) {
       console.error('파일 형식을 처리할 수 없음:', file);
@@ -309,36 +286,44 @@ const SubmissionDetail = () => {
     
     return (
       <div key={index} className="file-item">
-        {isImage && (
-          <div className="file-preview">
-            <img src={fileUrl} alt={fileName} />
-          </div>
-        )}
-        <div className="file-info">
-          <span className="file-name">{fileName}</span>
-        </div>
-        <div className="file-actions">
+        <div className="file-info-row">
+          <div className="file-icon">{getFileIcon(fileName)}</div>
           {isImage && (
+            <div className="file-preview">
+              <img src={fileUrl} alt={fileName} />
+            </div>
+          )}
+          <div className="file-details">
+            <div className="file-name">{fileName}</div>
+          </div>
+          <div className="file-actions">
+            {isImage && (
+              <button 
+                className="preview-button" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePreview(fileUrl, fileName);
+                }}
+              >
+                미리보기
+              </button>
+            )}
             <button 
-              className="preview-button" 
+              className="download-button"
               onClick={(e) => {
                 e.stopPropagation();
-                handlePreview(fileUrl, fileName);
+                handleDownload(fileUrl, fileName);
               }}
             >
-              미리보기
+              다운로드
             </button>
-          )}
-          <button 
-            className="download-button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDownload(fileUrl, fileName);
-            }}
-          >
-            다운로드
-          </button>
+          </div>
         </div>
+        {isImage && (
+          <div className="image-preview-container">
+            <img className="image-preview-thumbnail" src={fileUrl} alt={fileName} />
+          </div>
+        )}
       </div>
     );
   };
@@ -380,6 +365,7 @@ const SubmissionDetail = () => {
         {isInstructionsOpen && (
           <div className="instructions-content">
             <h3 className="instructions-title">{assignment.assignmentTitle}</h3>
+            
             {assignment.assignmentContent && (
               <div className="instructions-text">{assignment.assignmentContent}</div>
             )}
@@ -389,7 +375,7 @@ const SubmissionDetail = () => {
                 <h3 className="files-title">
                   <IoAttach className="file-icon" /> 첨부파일 ({assignment.assignmentFiles.length})
                 </h3>
-                <div className="file-list">
+                <div className="files-list">
                   {assignment.assignmentFiles.map((file, index) => renderFileItem(file, index))}
                 </div>
               </div>
@@ -417,7 +403,7 @@ const SubmissionDetail = () => {
               <h3 className="files-title">
                 <IoAttach className="file-icon" /> 첨부파일 ({submission.submissionFiles.length})
               </h3>
-              <div className="file-list">
+              <div className="files-list">
                 {submission.submissionFiles.map((file, index) => renderFileItem(file, index))}
               </div>
             </div>
