@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import styled from 'styled-components';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import { IoAttach } from 'react-icons/io5';
 import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
+import './AssignmentStyles.css';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -126,20 +126,21 @@ function AssignmentCreate() {
   };
   
   return (
-    <Container>
-      <Header>
-        <Title>과제 업로드</Title>
-        <BackButton onClick={handleCancel}>목록으로 돌아가기</BackButton>
-      </Header>
+    <div className="container">
+      <div className="header">
+        <h1 className="title">과제 업로드</h1>
+        <button className="back-button" onClick={handleCancel}>목록으로 돌아가기</button>
+      </div>
       
-      <Form onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit}>
         {error && (
-          <ErrorMessage>{error}</ErrorMessage>
+          <div className="error-message">{error}</div>
         )}
         
-        <FormGroup>
-          <Label htmlFor="assignmentTitle">과제 제목 *</Label>
-          <Input
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentTitle">과제 제목 *</label>
+          <input
+            className="input"
             id="assignmentTitle"
             name="assignmentTitle"
             value={formData.assignmentTitle}
@@ -147,11 +148,12 @@ function AssignmentCreate() {
             placeholder="과제 제목을 입력하세요"
             required
           />
-        </FormGroup>
+        </div>
         
-        <FormGroup>
-          <Label htmlFor="assignmentContent">지시사항 *</Label>
-          <TextArea
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentContent">지시사항 *</label>
+          <textarea
+            className="textarea"
             id="assignmentContent"
             name="assignmentContent"
             value={formData.assignmentContent}
@@ -160,12 +162,13 @@ function AssignmentCreate() {
             rows={6}
             required
           />
-          <CharCount>{formData.assignmentContent.length}/10000</CharCount>
-        </FormGroup>
+          <div className="char-count">{formData.assignmentContent.length}/10000</div>
+        </div>
         
-        <FormGroup>
-          <Label htmlFor="assignmentDueDate">제출 기한 *</Label>
-          <Input
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentDueDate">제출 기한 *</label>
+          <input
+            className="input"
             id="assignmentDueDate"
             name="assignmentDueDate"
             type="datetime-local"
@@ -173,11 +176,12 @@ function AssignmentCreate() {
             onChange={handleChange}
             required
           />
-        </FormGroup>
+        </div>
         
-        <FormGroup>
-          <Label htmlFor="assignmentMaxPoint">최대 점수</Label>
-          <Input
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentMaxPoint">최대 점수</label>
+          <input
+            className="input"
             id="assignmentMaxPoint"
             name="assignmentMaxPoint"
             type="number"
@@ -186,262 +190,60 @@ function AssignmentCreate() {
             value={formData.assignmentMaxPoint}
             onChange={handleChange}
           />
-        </FormGroup>
+        </div>
         
         {/* 첨부 파일 영역 */}
-        <FormGroup>
-          <Label>첨부 파일</Label>
-          <HiddenFileInput 
+        <div className="form-group">
+          <label className="label">첨부 파일</label>
+          <input 
+            className="hidden-file-input"
             type="file" 
             ref={fileInputRef}
             onChange={handleFileChange}
             multiple
           />
           
-          {/* 첨부된 파일 목록 */}
+          {/* 첨부파일 목록 */}
           {attachedFiles.length > 0 && (
-            <FileList>
+            <div className="file-list">
               {attachedFiles.map((file, index) => (
-                <FileItem key={index}>
+                <div className="file-item" key={index}>
                   {isImageFile(file) && (
-                    <ImagePreview>
-                      <img src={URL.createObjectURL(file)} alt={file.name} />
-                    </ImagePreview>
+                    <div className="image-preview">
+                      <img src={getFilePreviewUrl(file)} alt={file.name} />
+                    </div>
                   )}
-                  <FileInfo>
-                    <FileName>{file.name}</FileName>
-                    <FileSize>({formatFileSize(file.size)})</FileSize>
-                  </FileInfo>
-                  <RemoveFileButton onClick={() => handleRemoveFile(index)}>
-                    ×
-                  </RemoveFileButton>
-                </FileItem>
+                  <div className="file-info">
+                    <span className="file-name">{file.name}</span>
+                    <span className="file-size">({formatFileSize(file.size)})</span>
+                  </div>
+                  <button 
+                    className="remove-file-button" 
+                    onClick={() => handleRemoveFile(index)} 
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                </div>
               ))}
-            </FileList>
+            </div>
           )}
           
-          <AttachButton type="button" onClick={handleAttachClick}>
+          <button className="attach-button" type="button" onClick={handleAttachClick}>
             <IoAttach size={18} />
             파일 첨부
-          </AttachButton>
-        </FormGroup>
+          </button>
+        </div>
         
-        <ButtonGroup>
-          <CancelButton type="button" onClick={handleCancel}>취소</CancelButton>
-          <SubmitButton type="submit" disabled={isLoading}>
+        <div className="button-group">
+          <button className="button cancel-button" type="button" onClick={handleCancel}>취소</button>
+          <button className="button submit-button" type="submit" disabled={isLoading}>
             {isLoading ? '업로드 중...' : '업로드'}
-          </SubmitButton>
-        </ButtonGroup>
-      </Form>
-    </Container>
+          </button>
+        </div>
+      </form>
+    </div>
   );
 }
-
-// 스타일 컴포넌트
-const Container = styled.div`
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-  color: #000;
-`;
-
-const BackButton = styled.button`
-  padding: 8px 16px;
-  background-color: #f8f9fa;
-  color: #212529;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #e9ecef;
-  }
-`;
-
-const Form = styled.form`
-  background-color: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const FormGroup = styled.div`
-  margin-bottom: 20px;
-  position: relative;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #212529;
-`;
-
-const Input = styled.input`
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 16px;
-  resize: vertical;
-`;
-
-const CharCount = styled.div`
-  position: absolute;
-  right: 10px;
-  bottom: 10px;
-  font-size: 12px;
-  color: #6c757d;
-`;
-
-const ButtonGroup = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-top: 24px;
-`;
-
-const SubmitButton = styled.button`
-  padding: 12px 24px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  font-weight: bold;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #0056b3;
-  }
-  
-  &:disabled {
-    background-color: #cccccc;
-    cursor: not-allowed;
-  }
-`;
-
-const CancelButton = styled.button`
-  padding: 12px 24px;
-  background-color: #f8f9fa;
-  color: #212529;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #e9ecef;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  margin-bottom: 20px;
-  padding: 12px;
-  background-color: #f8d7da;
-  color: #dc3545;
-  border-radius: 4px;
-`;
-
-const HiddenFileInput = styled.input`
-  display: none;
-`;
-
-const AttachButton = styled.button`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background-color: #f8f9fa;
-  color: #212529;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  
-  &:hover {
-    background-color: #e9ecef;
-  }
-`;
-
-const FileList = styled.div`
-  margin-bottom: 12px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  padding: 8px;
-  background-color: #f8f9fa;
-`;
-
-const FileItem = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 6px 8px;
-  border-bottom: 1px solid #eee;
-  
-  &:last-child {
-    border-bottom: none;
-  }
-`;
-
-const FileInfo = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`;
-
-const FileName = styled.span`
-  font-size: 13px;
-  margin-right: 8px;
-  word-break: break-all;
-`;
-
-const FileSize = styled.span`
-  font-size: 12px;
-  color: #666;
-`;
-
-const RemoveFileButton = styled.button`
-  background: none;
-  border: none;
-  color: #dc3545;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 8px;
-  
-  &:hover {
-    color: #bd2130;
-  }
-`;
-
-const ImagePreview = styled.div`
-  width: 50px;
-  height: 50px;
-  margin-right: 10px;
-  border-radius: 4px;
-  overflow: hidden;
-  flex-shrink: 0;
-  
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-`;
 
 export default AssignmentCreate; 

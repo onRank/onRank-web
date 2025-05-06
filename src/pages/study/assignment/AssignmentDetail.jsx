@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import styled from "styled-components";
 import assignmentService from "../../../services/assignment";
 import {
   formatFileSize,
@@ -12,6 +11,7 @@ import {
   isImageFile,
   getFilePreviewUrl,
 } from "../../../utils/fileUtils";
+import './AssignmentStyles.css';
 
 const AssignmentDetail = () => {
   const { studyId, assignmentId } = useParams();
@@ -295,20 +295,20 @@ const AssignmentDetail = () => {
   };
 
   if (isLoading && !assignment) {
-    return <LoadingContainer>과제 정보를 불러오는 중...</LoadingContainer>;
+    return <div className="loading-message">과제 정보를 불러오는 중...</div>;
   }
 
   if (error && !assignment) {
     return (
-      <ErrorContainer>
+      <div className="error-container">
         <div>{error}</div>
-        <BackButton onClick={handleBack}>목록으로 돌아가기</BackButton>
-      </ErrorContainer>
+        <button className="back-button" onClick={handleBack}>목록으로 돌아가기</button>
+      </div>
     );
   }
 
   if (!assignment) {
-    return <ErrorContainer>과제 정보를 찾을 수 없습니다.</ErrorContainer>;
+    return <div className="error-container">과제 정보를 찾을 수 없습니다.</div>;
   }
 
   // 일자 포맷 함수
@@ -339,106 +339,114 @@ const AssignmentDetail = () => {
   const renderSubmissionForm = () => (
     <>
       {/* 제출물 입력 영역 */}
-      <TextareaSection>
-        <TextArea
+      <div className="textarea-section">
+        <textarea
+          className="textarea"
           placeholder="제출물 내용을 입력하세요."
           value={submissionContent}
           onChange={handleSubmissionContentChange}
           maxLength={MAX_CHAR_COUNT}
         />
-        <CharCounter>
+        <div className="char-count">
           {charCount}/{MAX_CHAR_COUNT}
-        </CharCounter>
-      </TextareaSection>
+        </div>
+      </div>
 
       {/* 재제출 시 기존 파일 표시 */}
       {isResubmitting && existingFiles.length > 0 && (
-        <FileList>
+        <div className="file-list">
           {existingFiles.map((file) => (
-            <FileItem key={file.fileId}>
-              <FileInfoContainer>
+            <div className="file-item" key={file.fileId}>
+              <div className="file-info-container">
                 {isImageFile(file.fileName) && file.fileUrl && (
-                  <ImagePreview>
+                  <div className="image-preview">
                     <img src={file.fileUrl} alt={file.fileName} />
-                  </ImagePreview>
+                  </div>
                 )}
-                <FileInfo>
-                  <FileName>{file.fileName}</FileName>
-                </FileInfo>
-              </FileInfoContainer>
-              <DeleteButton
+                <div className="file-info">
+                  <span className="file-name">{file.fileName}</span>
+                </div>
+              </div>
+              <button
+                className="remove-file-button"
                 onClick={() => handleRemoveExistingFile(file.fileId)}
+                type="button"
               >
                 ✕
-              </DeleteButton>
-            </FileItem>
+              </button>
+            </div>
           ))}
-        </FileList>
+        </div>
       )}
 
       {/* 파일 첨부 영역 */}
-      <AttachmentSection>
-        <SectionSubtitle>첨부파일</SectionSubtitle>
-        <FileUploadContainer>
+      <div className="attachment-section">
+        <h3 className="section-subtitle">첨부파일</h3>
+        <div className="file-upload-container">
           {files.length > 0 ? (
-            <FileList>
+            <div className="file-list">
               {files.map((file, index) => {
                 const fileStatus = getUploadStatusForFile(file.name);
                 return (
-                  <FileItem key={index} status={fileStatus.status}>
-                    <FileIcon>{getFileIcon(file.name)}</FileIcon>
-                    <FileInfo>
-                      <FileName>{file.name}</FileName>
-                      <FileInfoRow>
-                        <FileSize>{formatFileSize(file.size)}</FileSize>
+                  <div className="file-item" key={index} data-status={fileStatus.status}>
+                    <div className="file-icon">{getFileIcon(file.name)}</div>
+                    <div className="file-info">
+                      <div className="file-name">{file.name}</div>
+                      <div className="file-info-row">
+                        <span className="file-size">{formatFileSize(file.size)}</span>
                         {fileStatus.status === "uploading" &&
                           fileStatus.progress > 0 && (
-                            <FileUploadProgress>
-                              <FileProgressBar width={fileStatus.progress} />
-                            </FileUploadProgress>
+                            <div className="file-upload-progress">
+                              <div className="file-progress-bar" style={{width: `${fileStatus.progress}%`}}></div>
+                            </div>
                           )}
                         {fileStatus.status === "error" && (
-                          <FileErrorMessage>
+                          <div className="file-error-message">
                             {fileStatus.message}
-                          </FileErrorMessage>
+                          </div>
                         )}
-                      </FileInfoRow>
-                    </FileInfo>
-                    <DeleteButton
+                      </div>
+                    </div>
+                    <button
+                      className="remove-file-button"
                       onClick={() =>
                         setFiles(files.filter((_, i) => i !== index))
                       }
                       disabled={isUploading}
+                      type="button"
                     >
                       ✕
-                    </DeleteButton>
+                    </button>
                     {isImageFile(file) && (
-                      <PreviewIconButton
+                      <button
+                        className="preview-icon-button"
                         onClick={(e) => {
                           e.stopPropagation();
                           const previewUrl = URL.createObjectURL(file);
                           window.open(previewUrl);
                         }}
                         title="이미지 미리보기"
+                        type="button"
                       >
                         👁️
-                      </PreviewIconButton>
+                      </button>
                     )}
-                  </FileItem>
+                  </div>
                 );
               })}
-            </FileList>
+            </div>
           ) : (
-            <FileUploadBox>
-              <FileInputLabel>
-                <FileInput
+            <div className="file-upload-box">
+              <label className="file-input-label">
+                <input
+                  className="file-input"
                   type="file"
                   onChange={handleFileChange}
                   multiple
                   accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
                   disabled={isUploading}
                 />
-                <UploadIcon>
+                <div className="upload-icon">
                   <svg
                     width="24"
                     height="24"
@@ -466,20 +474,21 @@ const AssignmentDetail = () => {
                       strokeLinecap="round"
                     />
                   </svg>
-                </UploadIcon>
-                <UploadText>
+                </div>
+                <div className="upload-text">
                   파일을 클릭하여 추가하거나
                   <br />
                   여기에 드래그하세요
-                </UploadText>
-              </FileInputLabel>
-            </FileUploadBox>
+                </div>
+              </label>
+            </div>
           )}
 
           {files.length > 0 && (
-            <AddMoreFilesButton>
-              <FileInputLabel>
-                <FileInput
+            <div className="add-more-files-button">
+              <label className="file-input-label">
+                <input
+                  className="file-input"
                   type="file"
                   onChange={(e) => {
                     const newFiles = Array.from(e.target.files);
@@ -490,26 +499,27 @@ const AssignmentDetail = () => {
                   disabled={isUploading}
                 />
                 + 파일 추가
-              </FileInputLabel>
-            </AddMoreFilesButton>
+              </label>
+            </div>
           )}
-        </FileUploadContainer>
+        </div>
 
         {/* 전체 업로드 진행률 */}
         {isUploading && (
-          <ProgressContainer>
-            <ProgressBar width={uploadProgress} />
-            <ProgressText>{uploadProgress}% 업로드 중...</ProgressText>
-          </ProgressContainer>
+          <div className="progress-container">
+            <div className="progress-bar" style={{width: `${uploadProgress}%`}}></div>
+            <div className="progress-text">{uploadProgress}% 업로드 중...</div>
+          </div>
         )}
-      </AttachmentSection>
+      </div>
 
       {/* 에러 메시지 */}
-      {error && <ErrorMessage>{error}</ErrorMessage>}
+      {error && <div className="error-message">{error}</div>}
 
       {/* 버튼 영역 */}
-      <ButtonsRow>
-        <SubmitButton
+      <div className="buttons-row">
+        <button
+          className="submit-button"
           onClick={handleSubmit}
           disabled={
             isLoading || 
@@ -517,13 +527,14 @@ const AssignmentDetail = () => {
           }
         >
           {isLoading ? "제출 중..." : isResubmitting ? "다시 제출" : "제출"}
-        </SubmitButton>
-        <CancelButton
+        </button>
+        <button
+          className="cancel-button"
           onClick={isResubmitting ? handleCancelResubmit : handleBack}
         >
           취소
-        </CancelButton>
-      </ButtonsRow>
+        </button>
+      </div>
     </>
   );
 
@@ -544,750 +555,239 @@ const AssignmentDetail = () => {
   };
 
   return (
-    <Container>
-      <Header>
-        <BackButton onClick={handleBack}>← 목록으로</BackButton>
-        <Title>{assignment.assignmentTitle}</Title>
-        <MetaInfo>
-          <StatusAndDueDate>
-            <PageStatus>{getPageTitle()}</PageStatus>
-            <DueDate>마감: {formatDate(assignment.assignmentDueDate)}</DueDate>
-          </StatusAndDueDate>
+    <div className="container">
+      <div className="header">
+        <button className="back-button" onClick={handleBack}>← 목록으로</button>
+        <h1 className="title">{assignment.assignmentTitle}</h1>
+        <div className="meta-info">
+          <div className="status-and-due-date">
+            <div className="page-status">{getPageTitle()}</div>
+            <div className="due-date">마감: {formatDate(assignment.assignmentDueDate)}</div>
+          </div>
           {assignment.submissionStatus === "SCORED" ? (
-            <ScoreDisplay>
+            <div className="score-display">
               {assignment.submissionScore}/{assignment.assignmentMaxPoint} pt
-            </ScoreDisplay>
+            </div>
           ) : (
-            <PointDisplay>--/{assignment.assignmentMaxPoint} pt</PointDisplay>
+            <div className="point-display">--/{assignment.assignmentMaxPoint} pt</div>
           )}
-        </MetaInfo>
-      </Header>
+        </div>
+      </div>
 
-      <Content>
+      <div className="content">
         {/* 1. 지시사항 섹션 */}
-        <Section>
-          <SectionTitle>지시사항</SectionTitle>
-          <Description>{assignment.assignmentContent}</Description>
+        <div className="section">
+          <h2 className="section-title">지시사항</h2>
+          <p className="description">{assignment.assignmentContent}</p>
 
           {/* 첨부 파일 목록 (assignmentFiles) */}
           {assignment.assignmentFiles &&
             assignment.assignmentFiles.length > 0 && (
-              <FilesContainer>
-                <SectionSubtitle>첨부파일</SectionSubtitle>
-                <FilesList>
+              <div className="files-container">
+                <h3 className="section-subtitle">첨부파일</h3>
+                <div className="files-list">
                   {assignment.assignmentFiles.map((file, index) => (
-                    <FileDownloadItem key={index}>
-                      <FileInfoRow>
-                        <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                        <FileDetails>
-                          <FileName>{file.fileName}</FileName>
-                        </FileDetails>
+                    <div className="file-download-item" key={index}>
+                      <div className="file-info-row">
+                        <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                        <div className="file-details">
+                          <div className="file-name">{file.fileName}</div>
+                        </div>
                         {isImageFile(file.fileName) && file.fileUrl && (
-                          <PreviewButton 
+                          <button 
+                            className="preview-button"
                             onClick={() => window.open(file.fileUrl, '_blank')}
                             title="이미지 미리보기"
+                            type="button"
                           >
                             미리보기
-                          </PreviewButton>
+                          </button>
                         )}
-                        <DownloadButton
+                        <button
+                          className="download-button"
                           onClick={() =>
                             downloadFile(file.fileUrl, file.fileName)
                           }
+                          type="button"
                         >
                           다운로드
-                        </DownloadButton>
-                      </FileInfoRow>
+                        </button>
+                      </div>
                       {isImageFile(file.fileName) && file.fileUrl && (
-                        <ImagePreviewContainer>
-                          <ImagePreview src={file.fileUrl} alt={file.fileName} />
-                        </ImagePreviewContainer>
+                        <div className="image-preview-container">
+                          <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                        </div>
                       )}
-                    </FileDownloadItem>
+                    </div>
                   ))}
-                </FilesList>
-              </FilesContainer>
+                </div>
+              </div>
             )}
-        </Section>
+        </div>
 
         {/* 2. 제출물 섹션 - 상태에 따라 다른 UI */}
-        <Section>
+        <div className="section">
           {isResubmitting ? (
             <>
-              <SectionTitle>제출물</SectionTitle>
+              <h2 className="section-title">제출물</h2>
               {renderSubmissionForm()}
             </>
           ) : assignment.submissionStatus === "NOTSUBMITTED" ? (
             <>
-              <SectionTitle>제출물</SectionTitle>
+              <h2 className="section-title">제출물</h2>
               {renderSubmissionForm()}
             </>
           ) : assignment.submissionStatus === "SUBMITTED" ? (
             <>
-              <SectionTitle>제출물</SectionTitle>
-              <SubmissionRow>
-                <SubmissionLabel>
+              <h2 className="section-title">제출물</h2>
+              <div className="submission-row">
+                <div className="submission-label">
                   제출: {formatDate(assignment.submissionDate)}
-                </SubmissionLabel>
-              </SubmissionRow>
+                </div>
+              </div>
 
               {/* 제출 내용 표시 */}
               {assignment.submissionContent && (
-                <SubmissionContentSection>
-                  <SectionSubtitle>제출 내용</SectionSubtitle>
-                  <SubmissionContentText>
+                <div className="submission-content-section">
+                  <h3 className="section-subtitle">제출 내용</h3>
+                  <div className="submission-content-text">
                     {assignment.submissionContent}
-                  </SubmissionContentText>
-                </SubmissionContentSection>
+                  </div>
+                </div>
               )}
 
               {/* 제출 파일 표시 */}
               {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
-                <FilesContainer>
-                  <SectionSubtitle>제출 파일</SectionSubtitle>
-                  <FilesList>
+                <div className="files-container">
+                  <h3 className="section-subtitle">제출 파일</h3>
+                  <div className="files-list">
                     {assignment.submissionFiles.map((file, index) => (
-                      <FileDownloadItem key={index}>
-                        <FileInfoRow>
-                          <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                          <FileDetails>
-                            <FileName>{file.fileName}</FileName>
-                          </FileDetails>
+                      <div className="file-download-item" key={index}>
+                        <div className="file-info-row">
+                          <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                          <div className="file-details">
+                            <div className="file-name">{file.fileName}</div>
+                          </div>
                           {isImageFile(file.fileName) && file.fileUrl && (
-                            <PreviewButton 
+                            <button 
+                              className="preview-button"
                               onClick={() => window.open(file.fileUrl, '_blank')}
                               title="이미지 미리보기"
+                              type="button"
                             >
                               미리보기
-                            </PreviewButton>
+                            </button>
                           )}
-                          <DownloadButton
+                          <button
+                            className="download-button"
                             onClick={() =>
                               downloadFile(file.fileUrl, file.fileName)
                             }
+                            type="button"
                           >
                             다운로드
-                          </DownloadButton>
-                        </FileInfoRow>
+                          </button>
+                        </div>
                         {isImageFile(file.fileName) && file.fileUrl && (
-                          <ImagePreviewContainer>
-                            <ImagePreview src={file.fileUrl} alt={file.fileName} />
-                          </ImagePreviewContainer>
+                          <div className="image-preview-container">
+                            <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                          </div>
                         )}
-                      </FileDownloadItem>
+                      </div>
                     ))}
-                  </FilesList>
-                </FilesContainer>
+                  </div>
+                </div>
               )}
 
-              <ButtonsRow>
-                <ResubmitButton onClick={handleResubmit}>
+              <div className="buttons-row">
+                <button className="resubmit-button" onClick={handleResubmit}>
                   다시 제출
-                </ResubmitButton>
-              </ButtonsRow>
+                </button>
+              </div>
             </>
           ) : (
             assignment.submissionStatus === "SCORED" && (
               <>
-                <SectionTitle>제출물</SectionTitle>
-                <SubmissionRow>
-                  <SubmissionLabel>
+                <h2 className="section-title">제출물</h2>
+                <div className="submission-row">
+                  <div className="submission-label">
                     제출: {formatDate(assignment.submissionDate)}
-                  </SubmissionLabel>
-                </SubmissionRow>
+                  </div>
+                </div>
 
                 {/* 제출 내용 표시 */}
                 {assignment.submissionContent && (
-                  <SubmissionContentSection>
-                    <SectionSubtitle>제출 내용</SectionSubtitle>
-                    <SubmissionContentText>
+                  <div className="submission-content-section">
+                    <h3 className="section-subtitle">제출 내용</h3>
+                    <div className="submission-content-text">
                       {assignment.submissionContent}
-                    </SubmissionContentText>
-                  </SubmissionContentSection>
+                    </div>
+                  </div>
                 )}
 
                 {/* 제출 파일 표시 */}
                 {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
-                  <FilesContainer>
-                    <SectionSubtitle>제출 파일</SectionSubtitle>
-                    <FilesList>
+                  <div className="files-container">
+                    <h3 className="section-subtitle">제출 파일</h3>
+                    <div className="files-list">
                       {assignment.submissionFiles.map((file, index) => (
-                        <FileDownloadItem key={index}>
-                          <FileInfoRow>
-                            <FileIcon>{getFileIcon(file.fileName)}</FileIcon>
-                            <FileDetails>
-                              <FileName>{file.fileName}</FileName>
-                            </FileDetails>
+                        <div className="file-download-item" key={index}>
+                          <div className="file-info-row">
+                            <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                            <div className="file-details">
+                              <div className="file-name">{file.fileName}</div>
+                            </div>
                             {isImageFile(file.fileName) && file.fileUrl && (
-                              <PreviewButton 
+                              <button 
+                                className="preview-button"
                                 onClick={() => window.open(file.fileUrl, '_blank')}
                                 title="이미지 미리보기"
+                                type="button"
                               >
                                 미리보기
-                              </PreviewButton>
+                              </button>
                             )}
-                            <DownloadButton
+                            <button
+                              className="download-button"
                               onClick={() =>
                                 downloadFile(file.fileUrl, file.fileName)
                               }
+                              type="button"
                             >
                               다운로드
-                            </DownloadButton>
-                          </FileInfoRow>
+                            </button>
+                          </div>
                           {isImageFile(file.fileName) && file.fileUrl && (
-                            <ImagePreviewContainer>
-                              <ImagePreview src={file.fileUrl} alt={file.fileName} />
-                            </ImagePreviewContainer>
+                            <div className="image-preview-container">
+                              <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                            </div>
                           )}
-                        </FileDownloadItem>
+                        </div>
                       ))}
-                    </FilesList>
-                  </FilesContainer>
+                    </div>
+                  </div>
                 )}
 
                 {/* 피드백 섹션 */}
-                <FeedbackSection>
-                  <SectionSubtitle>코멘트</SectionSubtitle>
-                  <FeedbackContent>
+                <div className="feedback-section">
+                  <h3 className="section-subtitle">코멘트</h3>
+                  <div className="feedback-content">
                     {assignment.submissionComment || "코멘트가 없습니다."}
-                  </FeedbackContent>
-                </FeedbackSection>
+                  </div>
+                </div>
 
-                <ButtonsRow>
-                  <ResubmitButton onClick={handleResubmit}>
+                <div className="buttons-row">
+                  <button className="resubmit-button" onClick={handleResubmit}>
                     다시 제출
-                  </ResubmitButton>
-                </ButtonsRow>
+                  </button>
+                </div>
               </>
             )
           )}
-        </Section>
-      </Content>
-    </Container>
+        </div>
+      </div>
+    </div>
   );
 };
-
-// 스타일 컴포넌트
-const Container = styled.div`
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-`;
-
-const Header = styled.div`
-  margin-bottom: 32px;
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 8px;
-`;
-
-const MetaInfo = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-`;
-
-const StatusAndDueDate = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 16px;
-`;
-
-const PageStatus = styled.div`
-  font-size: 14px;
-  color: #666;
-`;
-
-const DueDate = styled.div`
-  color: #666;
-  font-size: 14px;
-`;
-
-const PointDisplay = styled.div`
-  font-weight: bold;
-  font-size: 16px;
-  color: #666;
-`;
-
-const Content = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-`;
-
-const Section = styled.div`
-  background-color: white;
-  padding: 24px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 16px;
-`;
-
-const SectionSubtitle = styled.h3`
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 12px;
-`;
-
-const Description = styled.p`
-  white-space: pre-wrap;
-  line-height: 1.6;
-  margin-bottom: 24px;
-`;
-
-const FilesContainer = styled.div`
-  margin-top: 16px;
-`;
-
-const FilesList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-`;
-
-const FileDownloadItem = styled.div`
-  padding: 12px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-`;
-
-const TextareaSection = styled.div`
-  position: relative;
-  margin-bottom: 20px;
-`;
-
-const TextArea = styled.textarea`
-  width: 100%;
-  min-height: 120px;
-  padding: 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  resize: vertical;
-  font-family: inherit;
-  line-height: 1.5;
-`;
-
-const CharCounter = styled.div`
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  font-size: 12px;
-  color: #666;
-  background-color: rgba(255, 255, 255, 0.8);
-  padding: 2px 6px;
-  border-radius: 4px;
-`;
-
-const AttachmentSection = styled.div`
-  margin-bottom: 20px;
-`;
-
-const FileUploadContainer = styled.div`
-  margin-top: 10px;
-`;
-
-const FileUploadBox = styled.div`
-  border: 2px dashed #ddd;
-  border-radius: 4px;
-  padding: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f8f9fa;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #adb5bd;
-    background-color: #f1f3f5;
-  }
-`;
-
-const FileInputLabel = styled.label`
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  color: #6c757d;
-`;
-
-const UploadIcon = styled.div`
-  margin-bottom: 10px;
-`;
-
-const UploadText = styled.div`
-  text-align: center;
-  line-height: 1.4;
-`;
-
-const FileInput = styled.input`
-  opacity: 0;
-  position: absolute;
-  width: 0;
-  height: 0;
-`;
-
-const FileList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`;
-
-const FileItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px;
-  background-color: #f8f9fa;
-  border: 1px solid #e9ecef;
-  border-radius: 4px;
-
-  ${(props) =>
-    props.status === "error" &&
-    `
-    border-color: #dc3545;
-    background-color: #f8d7da;
-  `}
-
-  ${(props) =>
-    props.status === "success" &&
-    `
-    border-color: #28a745;
-    background-color: #d4edda;
-  `}
-`;
-
-const FileIcon = styled.div`
-  font-size: 24px;
-`;
-
-const FileInfo = styled.div`
-  flex: 1;
-  overflow: hidden;
-`;
-
-const FileName = styled.div`
-  font-weight: 500;
-  word-break: break-all;
-`;
-
-const FileInfoRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const FileSize = styled.div`
-  font-size: 12px;
-  color: #6c757d;
-`;
-
-const FileUploadProgress = styled.div`
-  flex: 1;
-  height: 4px;
-  background-color: #e9ecef;
-  border-radius: 4px;
-  overflow: hidden;
-`;
-
-const FileProgressBar = styled.div`
-  height: 100%;
-  width: ${(props) => props.width}%;
-  background-color: #007bff;
-  transition: width 0.3s ease;
-`;
-
-const FileErrorMessage = styled.div`
-  font-size: 12px;
-  color: #dc3545;
-`;
-
-const DeleteButton = styled.button`
-  background: none;
-  border: none;
-  color: #dc3545;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 5px;
-
-  &:hover {
-    color: #bd2130;
-  }
-
-  &:disabled {
-    color: #dee2e6;
-    cursor: not-allowed;
-  }
-`;
-
-const AddMoreFilesButton = styled.div`
-  margin-top: 10px;
-  text-align: center;
-`;
-
-const ButtonsRow = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-`;
-
-const SubmitButton = styled.button`
-  padding: 8px 16px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-
-  &:hover {
-    background-color: #c82333;
-  }
-
-  &:disabled {
-    opacity: 0.65;
-    cursor: not-allowed;
-  }
-`;
-
-const ResubmitButton = styled.button`
-  padding: 8px 16px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-
-  &:hover {
-    background-color: #c82333;
-  }
-`;
-
-const CancelButton = styled.button`
-  padding: 8px 16px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #e9ecef;
-  }
-`;
-
-const ScoreDisplay = styled.div`
-  color: white;
-  font-size: 14px;
-  font-weight: bold;
-  background-color: #dc3545;
-  padding: 4px 8px;
-  border-radius: 4px;
-  display: inline-block;
-`;
-
-const ErrorContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  gap: 20px;
-  color: #dc3545;
-`;
-
-const LoadingContainer = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 300px;
-  color: #666;
-`;
-
-const BackButton = styled.button`
-  padding: 8px 16px;
-  background-color: #f8f9fa;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-bottom: 16px;
-
-  &:hover {
-    background-color: #e9ecef;
-  }
-`;
-
-const ErrorMessage = styled.div`
-  color: #dc3545;
-  margin-top: 8px;
-`;
-
-const ProgressContainer = styled.div`
-  margin-top: 16px;
-  width: 100%;
-  background-color: #f0f0f0;
-  border-radius: 4px;
-  position: relative;
-  height: 20px;
-  overflow: hidden;
-`;
-
-const ProgressBar = styled.div`
-  height: 100%;
-  width: ${(props) => props.width}%;
-  background-color: #007bff;
-  transition: width 0.3s ease;
-`;
-
-const ProgressText = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  color: #fff;
-  text-align: center;
-  line-height: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-`;
-
-const FileDetails = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-`;
-
-const DownloadButton = styled.button`
-  padding: 6px 12px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #218838;
-  }
-`;
-
-const SubmissionRow = styled.div`
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 16px;
-`;
-
-const SubmissionLabel = styled.div`
-  color: #6c757d;
-  font-size: 14px;
-`;
-
-const FeedbackSection = styled.div`
-  background-color: #f8f9fa;
-  padding: 16px;
-  border-radius: 4px;
-  margin-bottom: 20px;
-`;
-
-const FeedbackContent = styled.div`
-  white-space: pre-wrap;
-  line-height: 1.6;
-`;
-
-const ImagePreviewContainer = styled.div`
-  margin-top: 12px;
-  text-align: center;
-  max-height: 200px;
-  overflow: hidden;
-  border-radius: 4px;
-`;
-
-const ImagePreview = styled.img`
-  max-width: 100%;
-  max-height: 200px;
-  object-fit: contain;
-  border-radius: 4px;
-`;
-
-const PreviewButton = styled.button`
-  padding: 6px 12px;
-  background-color: #17a2b8;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  white-space: nowrap;
-  margin-right: 8px;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: #138496;
-  }
-`;
-
-const PreviewIconButton = styled.button`
-  background: none;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 8px;
-  
-  &:hover {
-    opacity: 0.7;
-  }
-`;
-
-const SubmissionContentSection = styled.div`
-  margin-bottom: 20px;
-  background-color: #f8f9fa;
-  padding: 16px;
-  border-radius: 4px;
-  border: 1px solid #e9ecef;
-`;
-
-const SubmissionContentText = styled.div`
-  white-space: pre-wrap;
-  line-height: 1.6;
-  color: #333;
-  font-size: 14px;
-`;
-
-const ToggleButton = styled.button`
-  padding: 6px 12px;
-  background-color: ${props => props.isRemaining ? "#28a745" : "#dc3545"};
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-  margin-left: 8px;
-  
-  &:hover {
-    background-color: ${props => props.isRemaining ? "#218838" : "#c82333"};
-  }
-`;
-
-const FileInfoContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
 
 export default AssignmentDetail;
