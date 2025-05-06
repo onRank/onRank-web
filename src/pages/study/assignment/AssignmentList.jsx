@@ -300,8 +300,8 @@ function AssignmentList() {
             학생들에게 제공할 새로운 과제를 추가해보세요.
           </div>
         </div>
-        <button className="add-button" onClick={handleCreateAssignment}>
-          <FiPlus size={18} />
+        <button className="create-button" onClick={handleCreateAssignment}>
+          + 추가
         </button>
       </div>
     );
@@ -311,13 +311,6 @@ function AssignmentList() {
     <div className="assignment-container">
       <div className="assignment-header">
         <h1 className="assignment-title">과제</h1>
-        {isManager && (
-          <div className="create-button-wrapper">
-            <button className="create-button" onClick={handleCreateAssignment}>
-              + 추가
-            </button>
-          </div>
-        )}
       </div>
       
       {/* 오류 메시지 표시 */}
