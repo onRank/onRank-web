@@ -221,6 +221,48 @@ const SubmissionDetail = () => {
     return `${year}.${month}.${day} ${hours}:${minutes}PM`;
   };
   
+  // 이미지 미리보기 확대 처리
+  const handlePreview = (url, fileName) => {
+    if (!url) {
+      console.error('파일 URL이 없습니다.');
+      return;
+    }
+    
+    // 새 창에서 이미지 표시 (적절한 크기로 제한)
+    const win = window.open("", "_blank");
+    if (win) {
+      win.document.write(`
+        <html>
+          <head>
+            <title>${fileName} 미리보기</title>
+            <style>
+              body {
+                margin: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background-color: #f5f5f5;
+              }
+              img {
+                max-width: 90vw;
+                max-height: 90vh;
+                object-fit: contain;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+              }
+            </style>
+          </head>
+          <body>
+            <img src="${url}" alt="${fileName}" />
+          </body>
+        </html>
+      `);
+    } else {
+      // 팝업이 차단된 경우 기본 방식으로 열기
+      window.open(url, '_blank');
+    }
+  };
+  
   if (isLoading) {
     return <div className="submission-loading">제출물 정보를 불러오는 중...</div>;
   }
@@ -280,7 +322,7 @@ const SubmissionDetail = () => {
                             className="preview-button" 
                             onClick={(e) => {
                               e.stopPropagation();
-                              window.open(file.fileUrl, '_blank');
+                              handlePreview(file.fileUrl, file.fileName);
                             }}
                           >
                             미리보기
@@ -339,7 +381,7 @@ const SubmissionDetail = () => {
                           className="preview-button" 
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(file.fileUrl, '_blank');
+                            handlePreview(file.fileUrl, file.fileName);
                           }}
                         >
                           미리보기

@@ -67,6 +67,13 @@
   border-bottom: 1px solid #eee;
 }
 
+.toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 .toggle-title {
   font-size: 16px;
   font-weight: 500;
@@ -74,15 +81,12 @@
   color: #333;
 }
 
-.toggle-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
+.toggle-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #666;
+  font-size: 20px;
 }
 
 .instructions-content {
@@ -114,6 +118,74 @@
   font-weight: 500;
   margin-bottom: 10px;
   color: #333;
+}
+
+/* 파일 목록 스타일 */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.file-preview {
+  width: 80px;
+  height: 80px;
+  overflow: hidden;
+  margin-right: 10px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background-color: #fff;
+}
+
+.file-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.file-info {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #333;
+  word-break: break-all;
+}
+
+.file-actions {
+  display: flex;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.preview-button, .download-button {
+  padding: 6px 10px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.preview-button:hover, .download-button:hover {
+  background-color: #f3f3f3;
 }
 
 /* 학생 제출물 섹션 */
@@ -159,82 +231,6 @@
   padding-top: 15px;
 }
 
-.submission-files-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.submission-file-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
-  border-radius: 4px;
-}
-
-.file-name {
-  font-size: 14px;
-  color: #333;
-}
-
-.file-actions {
-  display: flex;
-  gap: 5px;
-}
-
-.preview-button, .download-button {
-  padding: 6px 10px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.preview-button:hover, .download-button:hover {
-  background-color: #f3f3f3;
-}
-
-/* 이미지 미리보기 섹션 */
-.image-previews-section {
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  background-color: #fff;
-}
-
-.image-preview-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.image-title {
-  font-size: 14px;
-  font-weight: 500;
-  margin: 0 0 5px 0;
-  color: #333;
-}
-
-.image-preview {
-  display: flex;
-  justify-content: flex-start;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  padding: 10px;
-  overflow: hidden;
-  background-color: #f9f9f9;
-}
-
-.image-preview img {
-  max-width: 100%;
-  max-height: 300px;
-  object-fit: contain;
-}
-
 /* 채점 섹션 */
 .grading-section {
   padding: 20px;
@@ -277,6 +273,12 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
+}
+
+.score-error {
+  color: #dc3545;
+  font-size: 12px;
+  margin-top: 5px;
 }
 
 .comment-input-section textarea {
