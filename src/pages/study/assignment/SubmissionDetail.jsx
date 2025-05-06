@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import Button from '../../../components/common/Button';
+import { isImageFile, downloadFile } from '../../../utils/fileUtils';
 import './SubmissionDetail.css';
+import { IoChevronDown, IoChevronUp } from 'react-icons/io5';
 
 const SubmissionDetail = () => {
   const { studyId, assignmentId, submissionId } = useParams();
@@ -16,6 +18,7 @@ const SubmissionDetail = () => {
   const [score, setScore] = useState('');
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(false);
 
   // 컴포넌트 마운트 시 제출물 상세 정보 조회
   useEffect(() => {
@@ -154,7 +157,18 @@ const SubmissionDetail = () => {
   
   // 파일 다운로드 처리
   const handleDownload = (url, fileName) => {
-    window.open(url, '_blank');
+    if (!url) {
+      console.error('파일 URL이 없습니다.');
+      return;
+    }
+    
+    try {
+      downloadFile(url, fileName);
+    } catch (error) {
+      console.error('파일 다운로드 중 오류:', error);
+      // 직접 URL 열기 시도
+      window.open(url, '_blank');
+    }
   };
   
   // 취소 처리
@@ -196,6 +210,56 @@ const SubmissionDetail = () => {
         <p className="submission-time">제출: {formatDate(submission.submissionCreatedAt)}</p>
       </header>
       
+      {/* 과제 지시사항 토글 섹션 */}
+      {assignment.assignmentContent && (
+        <div className="instructions-section">
+          <div 
+            className="instructions-toggle" 
+            onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}
+          >
+            <h2 className="toggle-title">지시사항</h2>
+            <button className="toggle-button">
+              {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
+            </button>
+          </div>
+          
+          {isInstructionsOpen && (
+            <div className="instructions-content">
+              <div className="instructions-text">{assignment.assignmentContent}</div>
+              
+              {assignment.assignmentFiles && assignment.assignmentFiles.length > 0 && (
+                <div className="instructions-files">
+                  <h3 className="files-title">첨부파일</h3>
+                  <div className="attachment-files-list">
+                    {assignment.assignmentFiles.map((file, index) => (
+                      <div key={index} className="attachment-file-item">
+                        <span className="file-name">{file.fileName}</span>
+                        <div className="file-actions">
+                          {isImageFile(file.fileName) && (
+                            <button 
+                              className="preview-button" 
+                              onClick={() => window.open(file.fileUrl, '_blank')}
+                            >
+                              미리보기
+                            </button>
+                          )}
+                          <button 
+                            className="download-button"
+                            onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                          >
+                            다운로드
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+      
       <div className="submission-content-section">
         {submission.submissionContent && (
           <div className="submission-content-box">
@@ -212,12 +276,14 @@ const SubmissionDetail = () => {
                 <div key={index} className="attachment-file-item">
                   <span className="file-name">{file.fileName}</span>
                   <div className="file-actions">
-                    <button 
-                      className="preview-button" 
-                      onClick={() => window.open(file.fileUrl, '_blank')}
-                    >
-                      미리보기
-                    </button>
+                    {isImageFile(file.fileName) && (
+                      <button 
+                        className="preview-button" 
+                        onClick={() => window.open(file.fileUrl, '_blank')}
+                      >
+                        미리보기
+                      </button>
+                    )}
                     <button 
                       className="download-button"
                       onClick={() => handleDownload(file.fileUrl, file.fileName)}
@@ -228,6 +294,19 @@ const SubmissionDetail = () => {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+        
+        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
+          <div className="image-previews-section">
+            {submission.submissionFiles.filter(file => isImageFile(file.fileName)).map((file, index) => (
+              <div key={index} className="image-preview-container">
+                <h3 className="image-title">{file.fileName}</h3>
+                <div className="image-preview">
+                  <img src={file.fileUrl} alt={file.fileName} />
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>
