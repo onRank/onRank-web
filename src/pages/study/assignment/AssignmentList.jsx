@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useTheme } from "../../../contexts/ThemeContext";
 import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
-import { FiEdit2, FiTrash2, FiMoreVertical, FiPlus } from 'react-icons/fi';
+import { FiEdit2, FiTrash2, FiMoreVertical, FiPlus, FiCheckSquare } from 'react-icons/fi';
 import './AssignmentList.css';
 
 function AssignmentList() {
@@ -57,6 +57,16 @@ function AssignmentList() {
     }
     console.log(`[AssignmentList] 과제 수정 페이지로 이동: studyId=${studyId}, assignmentId=${assignmentId}`);
     navigate(`/studies/${studyId}/assignment/${assignmentId}/edit`);
+    setActivePopup(null);
+  };
+  
+  // 과제 채점 페이지로 이동
+  const handleGradeAssignment = (assignmentId, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    console.log(`[AssignmentList] 과제 채점 페이지로 이동: studyId=${studyId}, assignmentId=${assignmentId}`);
+    navigate(`/studies/${studyId}/assignment/${assignmentId}/submissions`);
     setActivePopup(null);
   };
   
@@ -233,7 +243,14 @@ function AssignmentList() {
             <div className="popup-menu" ref={popupRef}>
               <div className="popup-menu-item" onClick={(e) => {
                 e.stopPropagation();
-                handleEditAssignment(assignmentId);
+                handleGradeAssignment(assignmentId, e);
+              }}>
+                <FiCheckSquare size={16} color="#16191f"/>
+                <span>채점</span>
+              </div>
+              <div className="popup-menu-item" onClick={(e) => {
+                e.stopPropagation();
+                handleEditAssignment(assignmentId, e);
               }}>
                 <FiEdit2 size={16} color="#16191f"/>
                 <span>수정</span>

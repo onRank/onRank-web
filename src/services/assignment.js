@@ -471,31 +471,32 @@ const assignmentService = {
   },
 
   /**
-   * 제출 목록 조회 (관리자용)
+   * 과제 제출물 목록 조회
    * @param {string} studyId - 스터디 ID
    * @param {string} assignmentId - 과제 ID
-   * @returns {Promise<Array>} - 제출 목록
+   * @returns {Promise<Object>} - 제출물 목록 및 컨텍스트 정보
    */
-  /*
   getSubmissions: async (studyId, assignmentId) => {
     try {
-      console.log(`[AssignmentService] 제출 목록 조회 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
-      const response = await api.get(`/studies/${studyId}/assignments/${assignmentId}/submissions`, {
-        withCredentials: true
-      });
-      
-      console.log("[AssignmentService] 제출 목록 조회 성공:", response.data);
-      
+      console.log(`[AssignmentService] 과제 제출물 목록 조회 요청: 스터디 ${studyId}, 과제 ${assignmentId}`);
+      const response = await api.get(
+        `/studies/${studyId}/assignments/${assignmentId}/submissions`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("[AssignmentService] 과제 제출물 목록 조회 성공:", response.data);
+
       // 스터디 컨텍스트 정보 업데이트
       studyContextService.updateFromApiResponse(studyId, response.data);
-      
+
       return response.data;
     } catch (error) {
-      console.error('[AssignmentService] 제출 목록 조회 실패:', error);
+      console.error("[AssignmentService] 과제 제출물 목록 조회 실패:", error);
       throw error;
     }
   },
-  */
 
   /**
    * 과제 채점
