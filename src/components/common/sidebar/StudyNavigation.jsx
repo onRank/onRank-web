@@ -45,9 +45,7 @@ const StudyNavigation = memo(({ activeTab }) => {
     <div style={{
       display: 'flex',
       flexDirection: 'column',
-      borderRadius: '0 0 4px 4px',
       overflow: 'hidden',
-      borderTop: `1px solid ${colors.border}`,
       flex: '0 0 auto' // 크기 유지
     }}>
       {visibleMenuItems.map((item) => (
@@ -58,29 +56,29 @@ const StudyNavigation = memo(({ activeTab }) => {
             padding: '0.75rem 1rem',
             textAlign: 'left',
             border: 'none',
-            borderBottom: `1px solid ${colors.border}`,
-            background: activeTab === item.id ? colors.hoverBackground : colors.cardBackground,
+            borderBottom: '1px solid #eee',
+            background: activeTab === item.id ? '#f5f5f5' : '#fff',
             cursor: 'pointer',
-            fontSize: '0.95rem',
+            fontSize: '1rem',
             transition: 'all 0.2s ease',
-            color: activeTab === item.id ? colors.primary : colors.textPrimary,
+            color: activeTab === item.id ? '#FF0000' : '#333',
             fontWeight: activeTab === item.id ? 'bold' : 'normal',
-            position: 'relative',
-            paddingLeft: '2rem',
-            height: '48px' // 모든 버튼에 동일한 높이 적용
+            height: '48px', // 모든 버튼에 동일한 높이 적용
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            position: 'relative'
           }}
         >
-          {/* 활성화 표시 */}
+          {/* 활성화 표시 - 빨간색 점 대신 배경색과 텍스트 색상으로 표시 */}
           {activeTab === item.id && (
             <span style={{
               position: 'absolute',
-              left: '0.75rem',
-              top: '50%',
-              transform: 'translateY(-50%)',
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              backgroundColor: colors.primary
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: '3px',
+              backgroundColor: '#FF0000'
             }} />
           )}
           {item.label}

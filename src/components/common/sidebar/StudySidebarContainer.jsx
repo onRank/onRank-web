@@ -6,7 +6,7 @@ import useStudyRole from "../../../hooks/useStudyRole";
 import StudyInfoHeader from "./StudyInfoHeader";
 import StudyNavigation from "./StudyNavigation";
 import studyContextService from "../../../services/studyContext";
-import { IoHomeOutline, IoChevronForward } from "react-icons/io5";
+import { IoHome, IoChevronForward } from "react-icons/io5";
 
 // 스터디 사이드바 컨테이너 컴포넌트
 const StudySidebarContainer = memo(({ activeTab, subPage }) => {
@@ -104,28 +104,31 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "0.75rem 1rem",
-          margin: "0.5rem",
+          padding: "1rem",
+          margin: "0.5rem 0",
+          backgroundColor: "#fff",
+          borderRadius: "8px",
+          border: "1px solid #000"
         }}
       >
         <Link
           to={`/studies/${studyId}`}
-          style={{ color: "#4A5568", display: "flex", alignItems: "center" }}
+          style={{ color: "#333", display: "flex", alignItems: "center" }}
         >
-          <IoHomeOutline size={18} />
+          <IoHome size={20} />
         </Link>
 
         <IoChevronForward
           size={16}
-          style={{ margin: "0 0.5rem", color: "#718096" }}
+          style={{ margin: "0 0.75rem", color: "#000" }}
         />
 
         {activeTab && (
           <Link
             to={`/studies/${studyId}/${getPathFromTab(activeTab)}`}
             style={{
-              color: subPage ? "#4A5568" : "#FF0000",
-              fontWeight: "500",
+              color: subPage ? "#333" : "#FF0000",
+              fontWeight: subPage ? "normal" : "bold",
               textDecoration: "none",
             }}
           >
@@ -137,9 +140,9 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
           <>
             <IoChevronForward
               size={16}
-              style={{ margin: "0 0.5rem", color: "#718096" }}
+              style={{ margin: "0 0.75rem", color: "#000" }}
             />
-            <span style={{ color: "#FF0000", fontWeight: "500" }}>
+            <span style={{ color: "#FF0000", fontWeight: "bold" }}>
               {subPage}
             </span>
           </>
@@ -166,12 +169,12 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     <div
       style={{
         width: "240px",
-        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.08)",
+        boxShadow: "0 1px 3px rgba(0, 0, 0, 0.12)",
         borderRadius: "8px",
         overflow: "hidden",
         backgroundColor: colors.cardBackground,
         flexShrink: 0,
-        border: `1px solid ${colors.border}`,
+        border: "1px solid #000",
         display: "flex",
         flexDirection: "column",
         margin: "0.5rem 0",
