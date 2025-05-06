@@ -74,7 +74,12 @@ const SubmissionList = () => {
   };
   
   // 제출 상태를 한글로 변환하는 함수
-  const getStatusText = (status) => {
+  const getStatusText = (status, score) => {
+    // 점수가 있으면 채점완료 상태로 간주
+    if (score) {
+      return '채점완료';
+    }
+    
     switch(status) {
       case 'SUBMITTED': return '제출완료';
       case 'SCORED': return '채점완료';
@@ -125,11 +130,11 @@ const SubmissionList = () => {
                 
                 <div className="submission-right">
                   <div className="status-text">
-                    {getStatusText(submission.submissionStatus)}
+                    {getStatusText(submission.submissionStatus, submission.submissionScore)}
                   </div>
                   
                   <div className="submission-score">
-                    {submission.submissionStatus === 'SCORED' ? (
+                    {submission.submissionScore ? (
                       <div className="score-badge red">{submission.submissionScore}/{assignment.assignmentMaxPoint} pt</div>
                     ) : (
                       <div className="score-badge gray">---/{assignment.assignmentMaxPoint} pt</div>

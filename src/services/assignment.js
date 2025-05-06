@@ -528,6 +528,35 @@ const assignmentService = {
       console.error('[AssignmentService] 과제 채점 실패:', error);
       throw error;
     }
+  },
+
+  /**
+   * 제출물 상세 조회
+   * @param {string} studyId - 스터디 ID
+   * @param {string} assignmentId - 과제 ID
+   * @param {string} submissionId - 제출물 ID
+   * @returns {Promise<Object>} - 제출물 상세 정보
+   */
+  getSubmissionById: async (studyId, assignmentId, submissionId) => {
+    try {
+      console.log(`[AssignmentService] 제출물 상세 조회 요청: 스터디 ${studyId}, 과제 ${assignmentId}, 제출물 ${submissionId}`);
+      const response = await api.get(
+        `/studies/${studyId}/assignments/${assignmentId}/submissions/${submissionId}`,
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log("[AssignmentService] 제출물 상세 조회 성공:", response.data);
+
+      // 스터디 컨텍스트 정보 업데이트
+      studyContextService.updateFromApiResponse(studyId, response.data);
+
+      return response.data;
+    } catch (error) {
+      console.error("[AssignmentService] 제출물 상세 조회 실패:", error);
+      throw error;
+    }
   }
 };
 

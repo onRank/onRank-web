@@ -29,27 +29,88 @@ const SubmissionDetail = () => {
     const fetchSubmissionDetail = async () => {
       try {
         setIsLoading(true);
-        // API 호출을 통해 제출물 상세 정보 조회
-        // TODO: 실제 API 구현 시 변경 필요
-        const response = await assignmentService.getSubmissions(studyId, assignmentId);
         
-        if (response && response.data) {
-          const foundSubmission = response.data.find(s => s.submissionId === parseInt(submissionId));
-          if (foundSubmission) {
-            setSubmission(foundSubmission);
-            setScore(foundSubmission.submissionScore || '');
-            setComment(foundSubmission.submissionComment || '');
-          } else {
-            setError("제출물을 찾을 수 없습니다.");
+        // 제출물 상세 정보 가져오기 (새로운 API 메소드 사용)
+        try {
+          const submissionResponse = await assignmentService.getSubmissionById(studyId, assignmentId, submissionId);
+          if (submissionResponse && submissionResponse.data) {
+            const submissionData = submissionResponse.data;
+            console.log("[SubmissionDetail] 제출물 상세 조회 성공:", submissionData);
+            
+            // 과제 정보 설정
+            setAssignment({
+              assignmentId: submissionData.assignmentId,
+              assignmentTitle: submissionData.assignmentTitle,
+              assignmentMaxPoint: submissionData.assignmentMaxPoint,
+              assignmentContent: submissionData.assignmentContent,
+              assignmentFiles: submissionData.assignmentFiles || []
+            });
+            
+            // 제출물 정보 설정
+            setSubmission({
+              submissionId: parseInt(submissionId),
+              memberId: submissionData.memberId,
+              memberName: submissionData.memberName || "사용자",
+              memberEmail: submissionData.memberEmail || "",
+              submissionCreatedAt: submissionData.submissionCreatedAt,
+              submissionContent: submissionData.submissionContent,
+              submissionFiles: submissionData.submissionFiles || [],
+              submissionScore: submissionData.submissionScore,
+              submissionComment: submissionData.submissionComment || "",
+              submissionStatus: submissionData.submissionStatus
+            });
+            
+            // 기존 채점 정보가 있으면 설정
+            setScore(submissionData.submissionScore || '');
+            setComment(submissionData.submissionComment || '');
+            return;
           }
+        } catch (submissionError) {
+          console.warn("[SubmissionDetail] 제출물 상세 조회 API 실패, 대체 방법 시도:", submissionError);
         }
         
-        // 과제 정보 가져오기
+        // 제출물 상세 API 실패 시, 대체 방법으로 데이터 조회
+        // 1. 과제 상세 정보 가져오기
         const assignmentResponse = await assignmentService.getAssignmentById(studyId, assignmentId);
         if (assignmentResponse && assignmentResponse.data) {
           setAssignment(assignmentResponse.data);
+          
+          // 제출물 정보가 포함되어 있는 경우
+          if (assignmentResponse.data.submissionContent !== undefined) {
+            const assignmentData = assignmentResponse.data;
+            
+            // 제출물 정보 설정
+            setSubmission({
+              submissionId: parseInt(submissionId),
+              memberId: assignmentData.memberId,
+              memberName: assignmentData.memberName || "사용자",
+              memberEmail: assignmentData.memberEmail || "",
+              submissionCreatedAt: assignmentData.submissionCreatedAt,
+              submissionContent: assignmentData.submissionContent,
+              submissionFiles: assignmentData.submissionFiles || [],
+              submissionScore: assignmentData.submissionScore,
+              submissionComment: assignmentData.submissionComment || "",
+              submissionStatus: assignmentData.submissionStatus
+            });
+            
+            // 기존 채점 정보가 있으면 설정
+            setScore(assignmentData.submissionScore || '');
+            setComment(assignmentData.submissionComment || '');
+          } else {
+            // API가 제출물 정보를 제공하지 않는 경우, 제출물 목록에서 찾기
+            const submissionsResponse = await assignmentService.getSubmissions(studyId, assignmentId);
+            if (submissionsResponse && submissionsResponse.data) {
+              const foundSubmission = submissionsResponse.data.find(s => s.submissionId === parseInt(submissionId));
+              if (foundSubmission) {
+                setSubmission(foundSubmission);
+                setScore(foundSubmission.submissionScore || '');
+                setComment(foundSubmission.submissionComment || '');
+              } else {
+                setError("제출물을 찾을 수 없습니다.");
+              }
+            }
+          }
         }
-        
       } catch (err) {
         console.error("[SubmissionDetail] 제출물 상세 조회 실패:", err);
         setError("제출물 상세 정보를 불러오는데 실패했습니다.");
@@ -89,6 +150,11 @@ const SubmissionDetail = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+  
+  // 파일 다운로드 처리
+  const handleDownload = (url, fileName) => {
+    window.open(url, '_blank');
   };
   
   // 취소 처리
@@ -138,16 +204,26 @@ const SubmissionDetail = () => {
           </div>
         )}
         
-        {submission.attachmentFiles && submission.attachmentFiles.length > 0 && (
+        {submission.submissionFiles && submission.submissionFiles.length > 0 && (
           <div className="attachment-files-section">
             <h2 className="section-title">첨부파일</h2>
             <div className="attachment-files-list">
-              {submission.attachmentFiles.map((file, index) => (
+              {submission.submissionFiles.map((file, index) => (
                 <div key={index} className="attachment-file-item">
                   <span className="file-name">{file.fileName}</span>
                   <div className="file-actions">
-                    <button className="preview-button">미리보기</button>
-                    <button className="download-button">다운로드</button>
+                    <button 
+                      className="preview-button" 
+                      onClick={() => window.open(file.fileUrl, '_blank')}
+                    >
+                      미리보기
+                    </button>
+                    <button 
+                      className="download-button"
+                      onClick={() => handleDownload(file.fileUrl, file.fileName)}
+                    >
+                      다운로드
+                    </button>
                   </div>
                 </div>
               ))}
