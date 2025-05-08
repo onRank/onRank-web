@@ -101,33 +101,31 @@ function DefaultContent({ studyData }) {
   return (
     <div style={styles.wrapper}>
       <div style={styles.main}>
-        <div style={styles.content}>
-          <div style={styles.grid}>
-            {/* ① PointContainer */}
-            <div style={styles.topLeft}>
-              {points.map((p, i) => (
-                <PointContainer
-                  key={i}
-                  title={p.title}
-                  icon={p.icon}
-                  point={p.point}
-                />
-              ))}
-            </div>
-
-            {/* ② MyRank */}
-            <div style={styles.topRight}>
-              <MyRank {...myRank} />
-            </div>
-
-            {/* ③ Ranking */}
-            <div style={styles.bottomLeft}>
-              <Ranking rankingData={rankingData} />
-            </div>
-
-            {/* ④ RankingList */}
-            <RankingList rankingList={rankingList} />
+        <div style={styles.grid}>
+          {/* ① PointContainer */}
+          <div style={styles.topLeft}>
+            {points.map((p, i) => (
+              <PointContainer
+                key={i}
+                title={p.title}
+                icon={p.icon}
+                point={p.point}
+              />
+            ))}
           </div>
+
+          {/* ② MyRank */}
+          <div style={styles.topRight}>
+            <MyRank {...myRank} />
+          </div>
+
+          {/* ③ Ranking */}
+          <div style={styles.bottomLeft}>
+            <Ranking rankingData={rankingData} />
+          </div>
+
+          {/* ④ RankingList */}
+          <RankingList rankingList={rankingList} />
         </div>
       </div>
     </div>
