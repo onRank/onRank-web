@@ -56,7 +56,7 @@ function DefaultContent({ studyData }) {
     wrapper: {
       minHeight: "100vh",
       fontFamily: "sans-serif",
-      backgroundColor: "#ffffff",
+      backgroundColor: "none",
       display: "flex",
       flexDirection: "column",
     },
@@ -64,10 +64,12 @@ function DefaultContent({ studyData }) {
       display: "flex",
       flex: 1,
     },
-    sidebar: {
-      width: "200px",
-      padding: "16px",
-      borderRight: "1px solid #e5e5e5",
+    content: {
+      flex: 1,
+      background: "none",
+      minHeight: "100vh",
+      padding: "40px 60px",
+      boxSizing: "border-box",
     },
     content: {
       flex: 1,
