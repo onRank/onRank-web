@@ -602,7 +602,7 @@ const handleFileUploadPost = async (responseData, files) => {
       uploadUrls = responseData.presignedUrls;
       console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
     } else if (responseData.data && Array.isArray(responseData.data)) {
-      uploadUrls = responseData.data.map((file) => file.fileUrl);
+      uploadUrls = responseData.data.map((file) => file.uploadUrl);
       console.log(
         "[FileUpload] data 배열에서 fileUrl 추출:",
         uploadUrls.length

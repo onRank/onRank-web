@@ -43,7 +43,7 @@ function LoginPage() {
       <GoogleLoginButton />
 
       <div style={styles.message}>
-        기업하시면 저희 서비스 약관 및 개인정보 보호정책에 동의하게 됩니다.
+        가입하시면 저희 서비스 약관 및 개인정보 보호정책에 동의하게 됩니다.
       </div>
     </div>
   );

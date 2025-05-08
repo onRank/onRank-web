@@ -18,8 +18,13 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState(propActiveTab || "");
   const [studyData, setStudyData] = useState({
-    title: "로딩 중...",
-    description: "스터디 정보를 불러오는 중입니다.",
+    studyId: null,
+    memberId: null,
+    memberSubmissionPoint: 0,
+    memberPresentPoint: 0,
+    memberLatePoint: 0,
+    memberAbsentPoint: 0,
+    memberPointList: [],
   });
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -121,6 +126,62 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
     return <LoadingSpinner />;
   }
 
+  const points = [
+    {
+      title: "과제",
+      icon: "📝",
+      point: studyData.memberSubmissionPoint || 0,
+    },
+    {
+      title: "출석",
+      icon: "✅",
+      point: studyData.memberPresentPoint || 0,
+    },
+    {
+      title: "지각",
+      icon: "⏰",
+      point: studyData.memberLatePoint || 0,
+    },
+    {
+      title: "결석",
+      icon: "❌",
+      point: studyData.memberAbsentPoint || 0,
+    },
+  ];
+
+  // totalPoint 기준으로 정렬된 랭킹 리스트
+  const sortedRankingList = [...(studyData.memberPointList || [])].sort(
+    (a, b) => b.totalPoint - a.totalPoint
+  );
+
+  // 내 랭킹 정보 계산
+  const myRank = {
+    rank:
+      sortedRankingList.findIndex(
+        (member) => member.memberId === studyData.memberId
+      ) + 1 || 0,
+    name:
+      sortedRankingList.find((member) => member.memberId === studyData.memberId)
+        ?.studentName || "나",
+    point:
+      sortedRankingList.find((member) => member.memberId === studyData.memberId)
+        ?.totalPoint || 0,
+  };
+
+  // 상위 3명의 랭킹 데이터
+  const rankingData = sortedRankingList.slice(0, 3).map((member, index) => ({
+    rank: index + 1,
+    name: member.studentName,
+    point: member.totalPoint,
+  }));
+
+  // 전체 랭킹 리스트
+  const rankingList = sortedRankingList.map((member, index) => ({
+    rank: index + 1,
+    name: member.studentName,
+    point: member.totalPoint,
+  }));
+
   const styles = {
     wrapper: {
       minHeight: "100vh",
@@ -168,32 +229,38 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
   };
 
   return (
-    <div
-      style={{
-        width: "100%",
-        maxWidth: "100%",
-        overflowX: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {/* 경로 표시 - 제거 */}
+    <div style={styles.wrapper}>
+      <div style={styles.main}>
+        <div style={styles.content}>
+          <div style={styles.grid}>
+            {/* ① PointContainer */}
+            <div style={styles.topLeft}>
+              {points.map((p, i) => (
+                <PointContainer
+                  key={i}
+                  title={p.title}
+                  icon={p.icon}
+                  point={p.point}
+                />
+              ))}
+            </div>
 
-      {/* 오류 메시지 표시 - 숨김 처리 */}
-      {error && false && <ErrorMessage message={error} />}
+            {/* ② MyRank */}
+            <div style={styles.topRight}>
+              <MyRank {...myRank} />
+            </div>
 
-      {/* 메인 컨텐츠 */}
-      <div
-        style={{
-          display: "flex",
-          gap: "2rem",
-          width: "100%",
-          maxWidth: "1200px",
-          position: "relative",
-          padding: "0 1rem",
-        }}
-      >
+            {/* ③ Ranking */}
+            <div style={styles.bottomLeft}>
+              <Ranking rankingData={rankingData} />
+            </div>
+
+            {/* ④ RankingList */}
+            <div style={styles.bottomRight}>
+              <RankingList rankingList={rankingList} />
+            </div>
+          </div>
+        </div>
         <StudyContent activeTab={activeTab} studyData={studyData} />
       </div>
     </div>
