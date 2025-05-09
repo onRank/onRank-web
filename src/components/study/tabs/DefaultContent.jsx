@@ -5,7 +5,10 @@ import Ranking from "../ranking/Ranking";
 import RankingList from "../ranking/RankingList";
 import MyRank from "../ranking/MyRank";
 
+// 데이터값 안들어가는거 고치기
 function DefaultContent({ studyData }) {
+  const data = studyData.data || studyData;
+
   const points = [
     {
       title: "과제",
@@ -20,7 +23,7 @@ function DefaultContent({ studyData }) {
   ];
 
   // totalPoint 기준으로 정렬된 랭킹 리스트
-  const sortedRankingList = [...(studyData.memberPointList || [])].sort(
+  const sortedRankingList = [...(data.memberPointList || [])].sort(
     (a, b) => b.totalPoint - a.totalPoint
   );
 
@@ -28,13 +31,13 @@ function DefaultContent({ studyData }) {
   const myRank = {
     rank:
       sortedRankingList.findIndex(
-        (member) => member.memberId === studyData.memberId
+        (member) => member.memberId === data.memberId
       ) + 1 || 0,
     name:
-      sortedRankingList.find((member) => member.memberId === studyData.memberId)
-        ?.studentName || "나",
+      sortedRankingList.find((member) => member.memberId === data.memberId)
+        ?.studentName || "사용자 정보 없음",
     point:
-      sortedRankingList.find((member) => member.memberId === studyData.memberId)
+      sortedRankingList.find((member) => member.memberId === data.memberId)
         ?.totalPoint || 0,
   };
 
@@ -63,13 +66,6 @@ function DefaultContent({ studyData }) {
     main: {
       display: "flex",
       flex: 1,
-    },
-    content: {
-      flex: 1,
-      background: "none",
-      minHeight: "100vh",
-      padding: "40px 60px",
-      boxSizing: "border-box",
     },
     content: {
       flex: 1,
@@ -137,21 +133,42 @@ function DefaultContent({ studyData }) {
 }
 
 DefaultContent.propTypes = {
-  studyData: PropTypes.shape({
-    studyId: PropTypes.number,
-    memberId: PropTypes.number,
-    memberSubmissionPoint: PropTypes.number,
-    memberPresentPoint: PropTypes.number,
-    memberLatePoint: PropTypes.number,
-    memberAbsentPoint: PropTypes.number,
-    memberPointList: PropTypes.arrayOf(
-      PropTypes.shape({
-        studentName: PropTypes.string,
+  studyData: PropTypes.oneOfType([
+    // data 객체 안에 있는 경우
+    PropTypes.shape({
+      data: PropTypes.shape({
+        studyId: PropTypes.number,
         memberId: PropTypes.number,
-        totalPoint: PropTypes.number,
-      })
-    ),
-  }),
+        memberSubmissionPoint: PropTypes.number,
+        memberPresentPoint: PropTypes.number,
+        memberLatePoint: PropTypes.number,
+        memberAbsentPoint: PropTypes.number,
+        memberPointList: PropTypes.arrayOf(
+          PropTypes.shape({
+            studentName: PropTypes.string,
+            memberId: PropTypes.number,
+            totalPoint: PropTypes.number,
+          })
+        ),
+      }),
+    }),
+    // 직접 데이터가 있는 경우
+    PropTypes.shape({
+      studyId: PropTypes.number,
+      memberId: PropTypes.number,
+      memberSubmissionPoint: PropTypes.number,
+      memberPresentPoint: PropTypes.number,
+      memberLatePoint: PropTypes.number,
+      memberAbsentPoint: PropTypes.number,
+      memberPointList: PropTypes.arrayOf(
+        PropTypes.shape({
+          studentName: PropTypes.string,
+          memberId: PropTypes.number,
+          totalPoint: PropTypes.number,
+        })
+      ),
+    }),
+  ]),
 };
 
 export default DefaultContent;
