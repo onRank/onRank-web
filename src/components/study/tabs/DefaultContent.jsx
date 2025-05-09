@@ -13,12 +13,12 @@ function DefaultContent({ studyData }) {
     {
       title: "과제",
       icon: "📝",
-      point: studyData.memberSubmissionPoint || 0,
+      point: data.memberSubmissionPoint || 0,
     },
     {
       title: "출석",
       icon: "✅",
-      point: studyData.memberPresentPoint || 0,
+      point: data.memberPresentPoint || 0,
     },
   ];
 
@@ -71,7 +71,7 @@ function DefaultContent({ studyData }) {
       flex: 1,
       background: "none",
       minHeight: "100vh",
-      padding: "40px 60px",
+      padding: "40px 0px",
       boxSizing: "border-box",
     },
     grid: {

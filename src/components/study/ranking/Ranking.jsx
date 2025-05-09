@@ -16,6 +16,7 @@ function Ranking({ rankingData }) {
       justifyContent: "center",
       alignItems: "flex-end",
       gap: "16px",
+      minHeight: "330px",
     },
     card1: {
       backgroundColor: "#d94135",
