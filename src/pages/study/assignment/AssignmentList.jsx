@@ -5,6 +5,7 @@ import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
 import { FiEdit2, FiTrash2, FiMoreVertical, FiPlus, FiCheckSquare } from 'react-icons/fi';
 import Button from "../../../components/common/Button";
+import ScoreDisplay from "../../../components/common/ScoreDisplay";
 import './AssignmentList.css';
 
 function AssignmentList() {
@@ -232,9 +233,10 @@ function AssignmentList() {
         
         <div className="actions-container">
           <div className="score-display-wrapper">
-            <div className={`score-display ${!submissionScore ? 'not-scored' : ''}`}>
-              {submissionScore !== null ? submissionScore : '---'}/{assignmentMaxPoint} pt
-            </div>
+            <ScoreDisplay 
+              score={submissionScore}
+              maxPoint={assignmentMaxPoint}
+            />
           </div>
           <button className="more-button" onClick={(e) => togglePopup(e, assignmentId)}>
             <FiMoreVertical size={18} />
@@ -294,9 +296,10 @@ function AssignmentList() {
         
         <div className="actions-container">
           <div className="score-display-wrapper">
-            <div className={`score-display ${!submissionScore ? 'not-scored' : ''}`}>
-              {submissionScore !== null ? submissionScore : '---'}/{assignmentMaxPoint} pt
-            </div>
+            <ScoreDisplay 
+              score={submissionScore}
+              maxPoint={assignmentMaxPoint}
+            />
           </div>
         </div>
       </div>

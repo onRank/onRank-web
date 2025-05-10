@@ -190,4 +190,9 @@
 
 .close-button:hover {
   background-color: #e9ecef;
+}
+
+/* ScoreDisplay 컴포넌트에 대한 추가 스타일 */
+.submission-score-display {
+  min-width: 100px;
 } 

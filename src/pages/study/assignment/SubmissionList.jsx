@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import Button from '../../../components/common/Button';
+import ScoreDisplay from '../../../components/common/ScoreDisplay';
 import './SubmissionList.css';
 
 const SubmissionList = () => {
@@ -134,11 +135,11 @@ const SubmissionList = () => {
                   </div>
                   
                   <div className="submission-score">
-                    {submission.submissionScore ? (
-                      <div className="score-badge red">{submission.submissionScore}/{assignment.assignmentMaxPoint} pt</div>
-                    ) : (
-                      <div className="score-badge gray">---/{assignment.assignmentMaxPoint} pt</div>
-                    )}
+                    <ScoreDisplay 
+                      score={submission.submissionScore}
+                      maxPoint={assignment.assignmentMaxPoint}
+                      className="submission-score-display"
+                    />
                   </div>
                 </div>
               </div>

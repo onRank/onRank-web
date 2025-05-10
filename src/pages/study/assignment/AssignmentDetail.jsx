@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import assignmentService from "../../../services/assignment";
 import Button from "../../../components/common/Button";
+import ScoreDisplay from "../../../components/common/ScoreDisplay";
 import {
   formatFileSize,
   getFileIcon,
@@ -557,19 +558,17 @@ const AssignmentDetail = () => {
       <div className="header">
         <button className="back-button" onClick={handleBack}>← 목록으로</button>
         <h1 className="title">{assignment.assignmentTitle}</h1>
-        <div className="meta-info">
-          <div className="status-and-due-date">
-            <div className="page-status">{getPageTitle()}</div>
-            <div className="due-date">마감: {formatDate(assignment.assignmentDueDate)}</div>
-          </div>
-          {assignment.submissionStatus === "SCORED" ? (
-            <div className="score-display">
-              {assignment.submissionScore}/{assignment.assignmentMaxPoint} pt
-            </div>
-          ) : (
-            <div className="point-display">--/{assignment.assignmentMaxPoint} pt</div>
-          )}
+      </div>
+      
+      <div className="assignment-info-header">
+        <div className="assignment-status-section">
+          <div className="page-status">{getPageTitle()}</div>
+          <div className="due-date">마감: {formatDate(assignment.assignmentDueDate)}</div>
         </div>
+        <ScoreDisplay 
+          score={assignment.submissionStatus === "SCORED" ? assignment.submissionScore : null}
+          maxPoint={assignment.assignmentMaxPoint}
+        />
       </div>
 
       <div className="content">
@@ -797,6 +796,7 @@ const AssignmentDetail = () => {
                   <Button 
                     variant="back" 
                     onClick={handleBack}
+                    label="닫기"
                   />
                 </div>
               </>
