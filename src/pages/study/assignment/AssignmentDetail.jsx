@@ -708,7 +708,7 @@ const AssignmentDetail = () => {
 
               <div className="buttons-row">
                 <Button 
-                  variant="submit" 
+                  variant="reSubmit" 
                   onClick={handleResubmit}
                   label="다시 제출"
                 />
@@ -789,7 +789,7 @@ const AssignmentDetail = () => {
 
                 <div className="buttons-row">
                   <Button 
-                    variant="submit" 
+                    variant="reSubmit" 
                     onClick={handleResubmit}
                     label="다시 제출"
                   />
