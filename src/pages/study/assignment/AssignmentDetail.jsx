@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import assignmentService from "../../../services/assignment";
+import Button from "../../../components/common/Button";
 import {
   formatFileSize,
   getFileIcon,
@@ -518,22 +519,19 @@ const AssignmentDetail = () => {
 
       {/* 버튼 영역 */}
       <div className="buttons-row">
-        <button
-          className="submit-button"
+        <Button
+          variant="submit"
           onClick={handleSubmit}
           disabled={
             isLoading || 
             (files.length === 0 && submissionContent.trim() === "" && remainingFileIds.length === 0)
           }
-        >
-          {isLoading ? "제출 중..." : isResubmitting ? "다시 제출" : "제출"}
-        </button>
-        <button
-          className="cancel-button"
+          label={isResubmitting ? "다시 제출" : "제출"}
+        />
+        <Button
+          variant="back"
           onClick={isResubmitting ? handleCancelResubmit : handleBack}
-        >
-          취소
-        </button>
+        />
       </div>
     </>
   );
@@ -700,9 +698,11 @@ const AssignmentDetail = () => {
               )}
 
               <div className="buttons-row">
-                <button className="resubmit-button" onClick={handleResubmit}>
-                  다시 제출
-                </button>
+                <Button 
+                  variant="submit" 
+                  onClick={handleResubmit}
+                  label="다시 제출"
+                />
               </div>
             </>
           ) : (
@@ -777,9 +777,11 @@ const AssignmentDetail = () => {
                 </div>
 
                 <div className="buttons-row">
-                  <button className="resubmit-button" onClick={handleResubmit}>
-                    다시 제출
-                  </button>
+                  <Button 
+                    variant="submit" 
+                    onClick={handleResubmit}
+                    label="다시 제출"
+                  />
                 </div>
               </>
             )

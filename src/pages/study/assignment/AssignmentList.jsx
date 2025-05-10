@@ -4,6 +4,7 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
 import { FiEdit2, FiTrash2, FiMoreVertical, FiPlus, FiCheckSquare } from 'react-icons/fi';
+import Button from "../../../components/common/Button";
 import './AssignmentList.css';
 
 function AssignmentList() {
@@ -321,9 +322,7 @@ function AssignmentList() {
              새로운 과제를 추가해주세요.
           </div>
         </div>
-        <button className="create-button" onClick={handleCreateAssignment}>
-          + 추가
-        </button>
+        <Button variant="add" onClick={handleCreateAssignment} />
       </div>
     );
   };

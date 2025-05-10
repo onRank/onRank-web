@@ -4,6 +4,7 @@ import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import { IoAttach } from 'react-icons/io5';
 import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
+import Button from '../../../components/common/Button';
 import './AssignmentStyles.css';
 
 function AssignmentCreate() {
@@ -167,15 +168,23 @@ function AssignmentCreate() {
         
         <div className="form-group">
           <label className="label" htmlFor="assignmentDueDate">제출 기한 *</label>
-          <input
-            className="input"
-            id="assignmentDueDate"
-            name="assignmentDueDate"
-            type="datetime-local"
-            value={formData.assignmentDueDate}
-            onChange={handleChange}
-            required
-          />
+          <div 
+            className="date-picker-wrapper"
+            onClick={() => {
+              document.getElementById('assignmentDueDate').focus();
+              document.getElementById('assignmentDueDate').showPicker();
+            }}
+          >
+            <input
+              className="input"
+              id="assignmentDueDate"
+              name="assignmentDueDate"
+              type="datetime-local"
+              value={formData.assignmentDueDate}
+              onChange={handleChange}
+              required
+            />
+          </div>
         </div>
         
         <div className="form-group">
@@ -235,10 +244,12 @@ function AssignmentCreate() {
         </div>
         
         <div className="button-group">
-          <button className="button cancel-button" type="button" onClick={handleCancel}>취소</button>
-          <button className="button submit-button" type="submit" disabled={isLoading}>
-            {isLoading ? '업로드 중...' : '업로드'}
-          </button>
+          <Button variant="back" onClick={handleCancel} />
+          <Button 
+            variant="upload" 
+            onClick={handleSubmit}
+            disabled={isLoading}
+          />
         </div>
       </form>
     </div>

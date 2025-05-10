@@ -136,8 +136,9 @@ const SubmissionDetail = () => {
     setScore(value);
     
     // 최대 포인트 검증
-    if (assignment && parseInt(value) > assignment.assignmentMaxPoint) {
-      setScoreError(`최대 ${assignment.assignmentMaxPoint}점까지 입력 가능합니다.`);
+    const maxPoint = assignment?.assignmentMaxPoint || 100;
+    if (parseInt(value) > maxPoint) {
+      setScoreError(`최대 ${maxPoint}점까지 입력 가능합니다.`);
     } else if (parseInt(value) < 0) {
       setScoreError('0점 이상 입력해주세요.');
     } else {
@@ -153,8 +154,9 @@ const SubmissionDetail = () => {
     }
 
     // 최대 포인트 체크
-    if (assignment && parseInt(score) > assignment.assignmentMaxPoint) {
-      alert(`최대 ${assignment.assignmentMaxPoint}점까지 입력 가능합니다.`);
+    const maxPoint = assignment?.assignmentMaxPoint || 100;
+    if (parseInt(score) > maxPoint) {
+      alert(`최대 ${maxPoint}점까지 입력 가능합니다.`);
       return;
     }
 
@@ -425,10 +427,10 @@ const SubmissionDetail = () => {
             id="score-input"
             type="number"
             min="0"
-            max={assignment.assignmentMaxPoint}
+            max={assignment.assignmentMaxPoint || 100}
             value={score}
             onChange={handleScoreChange}
-            placeholder={`0-${assignment.assignmentMaxPoint}`}
+            placeholder={`0-${assignment.assignmentMaxPoint || 100}`}
           />
           {scoreError && <div className="score-error">{scoreError}</div>}
         </div>
