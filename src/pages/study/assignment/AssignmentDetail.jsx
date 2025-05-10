@@ -697,6 +697,16 @@ const AssignmentDetail = () => {
                 </div>
               )}
 
+              {/* 코멘트 섹션 (있을 경우에만 표시) */}
+              {assignment.submissionComment && (
+                <div className="feedback-section">
+                  <h3 className="section-subtitle">코멘트</h3>
+                  <div className="feedback-content">
+                    {assignment.submissionComment}
+                  </div>
+                </div>
+              )}
+
               <div className="buttons-row">
                 <Button 
                   variant="submit" 
@@ -768,19 +778,25 @@ const AssignmentDetail = () => {
                   </div>
                 )}
 
-                {/* 피드백 섹션 */}
-                <div className="feedback-section">
-                  <h3 className="section-subtitle">코멘트</h3>
-                  <div className="feedback-content">
-                    {assignment.submissionComment || "코멘트가 없습니다."}
+                {/* 코멘트 섹션 (있을 경우에만 표시) */}
+                {assignment.submissionComment && (
+                  <div className="feedback-section">
+                    <h3 className="section-subtitle">코멘트</h3>
+                    <div className="feedback-content">
+                      {assignment.submissionComment}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="buttons-row">
                   <Button 
                     variant="submit" 
                     onClick={handleResubmit}
                     label="다시 제출"
+                  />
+                  <Button 
+                    variant="back" 
+                    onClick={handleBack}
                   />
                 </div>
               </>
