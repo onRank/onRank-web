@@ -325,6 +325,13 @@ function ScheduleContainer({ onSubPageChange }) {
         marginTop: '1rem'
       }}>
         <div style={{ flex: 1 }}>
+          <h1 style={{ 
+            fontSize: '24px',
+            fontWeight: 'bold',
+            marginBottom: '20px'
+          }}>
+            일정
+          </h1>
           {renderContent()}
         </div>
       </div>
