@@ -112,7 +112,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     fontWeight: "bold",
     cursor: "pointer",
     outline: "none",
-    width: "100px",
+    width: "75px",
     height: "40px",
     display: "flex",
     justifyContent: "center",
@@ -178,8 +178,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseLeave}
       style={buttonStyle}
-      {...restProps}
-    >
+      {...restProps}>
       {label || defaultLabels[variant] || "확인"}
     </button>
   );
