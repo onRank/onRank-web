@@ -4,7 +4,9 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import { useTheme } from '../../../contexts/ThemeContext';
 import useStudyRole from '../../../hooks/useStudyRole';
 import TimeSelector from '../../../components/common/TimeSelector';
+import Button from '../../../components/common/Button';
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
+import './ScheduleDetailView.css';
 
 const ScheduleDetailView = ({ 
   schedule, 
@@ -55,14 +57,14 @@ const ScheduleDetailView = ({
   }, [schedule]);
   
   // 폼 유효성 검증
-  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '' && scheduleTime !== '';
+  const isFormValid = scheduleTitle.trim() !== '' && scheduleDate !== '' && scheduleTime !== '' && scheduleContent.trim() !== '';
 
   // 일정 수정 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      setError('제목, 날짜, 시간은 필수입니다.');
+      setError('제목, 날짜, 시간, 내용은 필수입니다.');
       return;
     }
     
@@ -92,6 +94,14 @@ const ScheduleDetailView = ({
     }
   };
   
+  // 내용 변경 핸들러 - 최대 10000자 제한
+  const handleContentChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 10000) {
+      setScheduleContent(value);
+    }
+  };
+
   // 일정 삭제
   const handleDelete = async () => {
     if (window.confirm('정말로 이 일정을 삭제하시겠습니까?')) {
@@ -113,46 +123,26 @@ const ScheduleDetailView = ({
   }
 
   return (
-    <div style={{ width: '100%' }}>
+    <div className="schedule-detail-container">
       {/* 헤더 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '2rem'
-      }}>
+      <div className="schedule-detail-header">
         <button
           onClick={onBack}
-          style={{
-            background: 'none',
-            border: 'none',
-            padding: '0.5rem',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            color: colors.text
-          }}
+          className="back-button"
+          style={{ color: colors.text }}
         >
           <IoChevronBackOutline size={24} />
         </button>
-        <h2 style={{
-          margin: 0,
-          marginLeft: '0.5rem',
-          fontSize: '1.5rem',
-          fontWeight: 'bold',
-          color: colors.text
-        }}>
-          일정 상세
+        <h2 className="schedule-detail-title" style={{ color: colors.text }}>
+          일정 수정
         </h2>
       </div>
 
       {/* 에러 메시지 */}
       {error && (
-        <div style={{
-          padding: '1rem',
+        <div className="schedule-error" style={{
           backgroundColor: `${colors.error}20`,
-          color: colors.error,
-          borderRadius: '4px',
-          marginBottom: '1rem'
+          color: colors.error
         }}>
           {error}
         </div>
@@ -160,27 +150,19 @@ const ScheduleDetailView = ({
 
       {/* 일정 수정 폼 - 관리자 권한이 있을 때만 수정 가능하게 */}
       <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '0.5rem',
-            color: colors.text,
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}>
-            제목 <span style={{ color: '#FF0000' }}>*</span>
+        <div className="field-container">
+          <label className="field-label">
+            <span className="required-mark">*</span>
+            제목
           </label>
           <input
             type="text"
             value={scheduleTitle}
             onChange={(e) => setScheduleTitle(e.target.value)}
             disabled={!isManager || isSubmitting}
+            className="form-input"
             style={{
-              width: '100%',
-              padding: '0.75rem',
               border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '14px',
               backgroundColor: isManager ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
@@ -189,27 +171,19 @@ const ScheduleDetailView = ({
           />
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '0.5rem',
-            color: colors.text,
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}>
-            날짜 <span style={{ color: '#FF0000' }}>*</span>
+        <div className="field-container">
+          <label className="field-label">
+            <span className="required-mark">*</span>
+            날짜
           </label>
           <input
             type="date"
             value={scheduleDate}
             onChange={(e) => setScheduleDate(e.target.value)}
             disabled={!isManager || isSubmitting}
+            className="form-input"
             style={{
-              width: '100%',
-              padding: '0.75rem',
               border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '14px',
               backgroundColor: isManager ? colors.background : colors.hoverBackground,
               color: colors.text
             }}
@@ -217,15 +191,10 @@ const ScheduleDetailView = ({
           />
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '0.5rem',
-            color: colors.text,
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}>
-            시간 <span style={{ color: '#FF0000' }}>*</span>
+        <div className="field-container">
+          <label className="field-label">
+            <span className="required-mark">*</span>
+            시간
           </label>
           <TimeSelector
             value={scheduleTime}
@@ -234,77 +203,54 @@ const ScheduleDetailView = ({
           />
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{
-            display: 'block',
-            marginBottom: '0.5rem',
-            color: colors.text,
-            fontSize: '14px',
-            fontWeight: 'bold'
-          }}>
+        <div className="field-container">
+          <label className="field-label">
+            <span className="required-mark">*</span>
             내용
           </label>
-          <textarea
-            value={scheduleContent}
-            onChange={(e) => setScheduleContent(e.target.value)}
-            disabled={!isManager || isSubmitting}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '14px',
-              minHeight: '150px',
-              resize: 'vertical',
-              backgroundColor: isManager ? colors.background : colors.hoverBackground,
-              color: colors.text
-            }}
-            placeholder="일정 내용을 입력하세요"
-            readOnly={!isManager}
-          />
+          <div className="textarea-container">
+            <textarea
+              value={scheduleContent}
+              onChange={handleContentChange}
+              disabled={!isManager || isSubmitting}
+              className="form-input"
+              style={{
+                border: `1px solid ${colors.border}`,
+                backgroundColor: isManager ? colors.background : colors.hoverBackground,
+                color: colors.text,
+                minHeight: '200px',
+                resize: 'vertical'
+              }}
+              placeholder="일정 내용을 입력하세요"
+              readOnly={!isManager}
+              maxLength={10000}
+            />
+            <div className="char-counter" style={{ color: colors.textSecondary }}>
+              {scheduleContent.length}/10000
+            </div>
+          </div>
         </div>
 
         {/* 관리자만 버튼 표시 */}
         {isManager && (
-          <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            justifyContent: 'flex-end',
-            marginTop: '2rem'
-          }}>
-            <button
-              type="button"
-              onClick={onBack}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#F2F2F2',
-                color: '#333333',
-                border: '1px solid #DDDDDD',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              닫기
-            </button>
-            <button
-              type="submit"
+          <div className="button-container">
+            <Button 
+              variant="store" 
+              onClick={handleSubmit}
               disabled={!isFormValid || isSubmitting}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: '#FF0000',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                opacity: (!isFormValid || isSubmitting) ? 0.7 : 1
+              style={{ 
+                width: '84px', 
+                height: '40px',
+                opacity: isFormValid && !isSubmitting ? 1 : 0.5,
+                cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
               }}
-            >
-              {isSubmitting ? '저장 중...' : '저장'}
-            </button>
+            />
+            <Button 
+              variant="back" 
+              label="닫기" 
+              onClick={onBack}
+              style={{ width: '84px', height: '40px' }}
+            />
           </div>
         )}
       </form>

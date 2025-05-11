@@ -9,6 +9,8 @@ import {
   formatDateTime,
 } from "../../../utils/dateUtils";
 import Button from "../../../components/common/Button";
+import ScheduleMenu from "../../../components/study/schedule/ScheduleMenu";
+import "./ScheduleListPage.css";
 
 function ScheduleListPage({
   schedules,
@@ -35,6 +37,16 @@ function ScheduleListPage({
     if (onAddSchedule) {
       onAddSchedule();
     }
+  };
+
+  // 일정 수정 페이지로 이동
+  const handleNavigateToEditSchedule = (schedule) => {
+    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}/edit`, { 
+      state: { 
+        schedule, 
+        breadcrumb: "일정 > 수정"
+      } 
+    });
   };
 
   // 일정 수정 팝업 열기
@@ -100,16 +112,11 @@ function ScheduleListPage({
   };
 
   // 일정 삭제 처리
-  const handleDeleteSchedule = async (scheduleId, event) => {
-    // 이벤트 버블링 방지
-    event.stopPropagation();
-
-    if (window.confirm("정말로 이 일정을 삭제하시겠습니까?")) {
-      try {
-        await onDeleteSchedule(scheduleId);
-      } catch (error) {
-        console.error("[ScheduleListPage] 일정 삭제 실패:", error);
-      }
+  const handleDeleteSchedule = async (scheduleId) => {
+    try {
+      await onDeleteSchedule(scheduleId);
+    } catch (error) {
+      console.error("[ScheduleListPage] 일정 삭제 실패:", error);
     }
   };
 
@@ -141,37 +148,18 @@ function ScheduleListPage({
   const schedulesWithRounds = sortedSchedules();
 
   return (
-    <div
-      style={{
-        width: "100%",
-      }}
-    >
+    <div className="schedule-list-container">
       {/* 일정 추가 안내 - 관리자 권한이 있을 때만 표시 */}
       {isManager && (
-        <div
-          style={{
-            border: `1px solid ${colors.border}`,
-            borderRadius: "4px",
-            padding: "1.5rem",
-            marginBottom: "2rem",
-            backgroundColor: colors.cardBackground,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-          }}
+        <div 
+          className="schedule-add-box"
+          style={{ backgroundColor: colors.cardBackground }}
         >
-          <div style={{ textAlign: "left" }}>
-            <div
-              style={{
-                fontWeight: "bold",
-                marginBottom: "0.5rem",
-                color: colors.text,
-              }}
-            >
+          <div>
+            <div className="schedule-add-title" style={{ color: colors.text }}>
               일정 추가
             </div>
-            <div style={{ color: colors.textSecondary, fontSize: "14px" }}>
+            <div className="schedule-add-description" style={{ color: colors.textSecondary }}>
               다가올 일정을 추가해주세요.
             </div>
           </div>
@@ -182,14 +170,10 @@ function ScheduleListPage({
       {/* 오류 메시지 표시 */}
       {error && (
         <div
+          className="schedule-error"
           style={{
-            marginBottom: "1rem",
-            padding: "0.75rem",
-            backgroundColor: `${colors.error}20`, // 20% 투명도
+            backgroundColor: `${colors.error}20`,
             color: colors.error,
-            borderRadius: "4px",
-            fontSize: "14px",
-            width: "100%",
           }}
         >
           {error}
@@ -199,12 +183,8 @@ function ScheduleListPage({
       {/* 로딩 상태 표시 */}
       {isLoading && (
         <div
-          style={{
-            padding: "2rem",
-            textAlign: "center",
-            color: colors.textSecondary,
-            width: "100%",
-          }}
+          className="schedule-loading"
+          style={{ color: colors.textSecondary }}
         >
           일정을 불러오는 중입니다...
         </div>
@@ -213,13 +193,10 @@ function ScheduleListPage({
       {/* 일정 타임라인 */}
       {!isLoading && schedulesWithRounds.length === 0 ? (
         <div
+          className="schedule-empty"
           style={{
-            padding: "2rem",
-            textAlign: "center",
             color: colors.textSecondary,
             border: `1px dashed ${colors.border}`,
-            borderRadius: "4px",
-            width: "100%",
             backgroundColor: colors.cardBackground,
           }}
         >
@@ -227,157 +204,76 @@ function ScheduleListPage({
           {isManager && "일정 추가 버튼을 눌러 새 일정을 추가해보세요."}
         </div>
       ) : (
-        <div
-          style={{
-            width: "100%",
-            position: "relative",
-          }}
-        >
+        <div className="timeline-container">
           {/* 타임라인 세로선 */}
           <div
-            style={{
-              position: "absolute",
-              left: "12px",
-              top: "0",
-              bottom: "0",
-              width: "2px",
-              backgroundColor: colors.border,
-            }}
+            className="timeline-line"
+            style={{ backgroundColor: colors.border }}
           ></div>
 
           {/* 일정 아이템 목록 */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "1.5rem",
-              paddingLeft: "30px",
-              width: "100%",
-            }}
-          >
+          <div className="schedule-items">
             {schedulesWithRounds.map((schedule) => (
-              <div
-                key={schedule.scheduleId}
-                onClick={
-                  isManager ? () => onViewScheduleDetail(schedule) : undefined
-                }
-                style={{
-                  position: "relative",
-                  border: `1px solid ${colors.border}`,
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  cursor: isManager ? "pointer" : "default",
-                  backgroundColor: colors.cardBackground,
-                  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
-                  transition: isManager
-                    ? "transform 0.2s, box-shadow 0.2s"
-                    : "none",
-                  width: "100%",
-                }}
-                onMouseEnter={(e) => {
-                  if (isManager) {
-                    e.currentTarget.style.transform = "translateY(-2px)";
-                    e.currentTarget.style.boxShadow =
-                      "0 4px 6px rgba(0, 0, 0, 0.1)";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (isManager) {
-                    e.currentTarget.style.transform = "translateY(0)";
-                    e.currentTarget.style.boxShadow =
-                      "0 1px 3px rgba(0, 0, 0, 0.1)";
-                  }
-                }}
-              >
-                {/* 타임라인 원 */}
-                <div
-                  style={{
-                    position: "absolute",
-                    left: "-38px",
-                    top: "50%",
-                    transform: "translateY(-50%)",
-                    width: "24px",
-                    height: "24px",
-                    borderRadius: "50%",
-                    backgroundColor: colors.primary,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "white",
-                    fontSize: "12px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {schedule.round}
+              <div key={schedule.scheduleId}>
+                {/* 회차 및 제목 정보 (박스 위) */}
+                <div>
+                  <h3 className="schedule-title" style={{ color: colors.textPrimary }}>
+                    제목
+                  </h3>
+                  <p style={{ fontSize: '14px', marginBottom: '4px' }}>
+                    {schedule.round}회차(일시: {formatDateTime(schedule.scheduleStartingAt)})
+                  </p>
                 </div>
-
-                {/* 일정 제목과 날짜 */}
+                
+                {/* 일정 내용 박스 */}
                 <div
+                  className="schedule-item"
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
+                    backgroundColor: colors.cardBackground,
+                    border: '1px solid black',
                   }}
                 >
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: "bold",
-                        marginBottom: "0.5rem",
-                        color: colors.textPrimary,
-                      }}
-                    >
-                      {schedule.scheduleTitle}
-                    </div>
-                    <div
-                      style={{ color: colors.textSecondary, fontSize: "14px" }}
-                    >
-                      {schedule.formattedDateTime || schedule.formattedDate}
-                    </div>
+                  {/* 타임라인 원 */}
+                  <div
+                    className="timeline-dot"
+                    style={{ backgroundColor: colors.primary }}
+                  >
+                    {schedule.round}
                   </div>
 
-                  {/* 삭제 버튼 - 관리자만 표시 */}
-                  {isManager && (
-                    <button
-                      onClick={(e) =>
-                        handleDeleteSchedule(schedule.scheduleId, e)
-                      }
+                  {/* 일정 제목과 메뉴 */}
+                  <div className="schedule-header">
+                    <div className="schedule-info">
+                      <div
+                        className="schedule-title"
+                        style={{ color: colors.textPrimary }}
+                      >
+                        {schedule.scheduleTitle}
+                      </div>
+                    </div>
+
+                    {/* 메뉴 아이콘 - 관리자만 표시 */}
+                    {isManager && (
+                      <ScheduleMenu
+                        onEdit={() => handleNavigateToEditSchedule(schedule)}
+                        onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
+                      />
+                    )}
+                  </div>
+
+                  {/* 일정 내용 */}
+                  {schedule.scheduleContent && (
+                    <div
+                      className="schedule-content"
                       style={{
-                        background: "none",
-                        border: "none",
-                        color: colors.error,
-                        cursor: "pointer",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = `${colors.error}10`; // 10% 투명도
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
+                        backgroundColor: colors.surfaceHover,
+                        color: colors.text,
                       }}
                     >
-                      삭제
-                    </button>
+                      {schedule.scheduleContent}
+                    </div>
                   )}
                 </div>
-
-                {/* 일정 내용 */}
-                {schedule.scheduleContent && (
-                  <div
-                    style={{
-                      marginTop: "1rem",
-                      padding: "0.75rem",
-                      backgroundColor: colors.surfaceHover,
-                      borderRadius: "4px",
-                      fontSize: "14px",
-                      color: colors.text,
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {schedule.scheduleContent}
-                  </div>
-                )}
               </div>
             ))}
           </div>

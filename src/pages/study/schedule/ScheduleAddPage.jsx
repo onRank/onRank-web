@@ -211,12 +211,6 @@ function ScheduleAddPage({ onCancel }) {
 
         <div className="button-container">
           <Button 
-            variant="back" 
-            label="취소" 
-            onClick={handleCancel}
-            style={{ width: '84px', height: '40px' }}
-          />
-          <Button 
             variant="upload" 
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
@@ -226,6 +220,12 @@ function ScheduleAddPage({ onCancel }) {
               opacity: isFormValid && !isSubmitting ? 1 : 0.5,
               cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
             }}
+          />
+          <Button 
+            variant="back" 
+            label="취소" 
+            onClick={handleCancel}
+            style={{ width: '84px', height: '40px' }}
           />
         </div>
       </div>

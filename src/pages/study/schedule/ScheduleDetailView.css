@@ -1,0 +1,74 @@
+/* ScheduleDetailView.css */
+.schedule-detail-container {
+  width: 100%;
+}
+
+.schedule-detail-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.schedule-detail-title {
+  margin: 0;
+  margin-left: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.schedule-error {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.field-container {
+  margin-bottom: 2rem;
+}
+
+.field-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.required-mark {
+  color: #ee0418;
+  margin-right: 0.25rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.textarea-container {
+  position: relative;
+}
+
+.char-counter {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 12px;
+  margin-top: 0.5rem;
+}
+
+.button-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+} 
