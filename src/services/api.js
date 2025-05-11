@@ -17,87 +17,83 @@ export const api = axios.create({
 // 요청 인터셉터 설정
 api.interceptors.request.use(
   (config) => {
-    // URL이 유효하지 않거나 상대 경로인 경우 바로 반환
-    if (!config.url || !config.url.includes('://')) {
-      // 상대 경로 요청은 그대로 진행
-      console.log(
-        `[API Request Debug] ${config.method?.toUpperCase() || 'GET'} ${config.url || '(no URL)'}`,
-        "상대 경로 요청"
-      );
-      
-      // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
-      const token = tokenUtils.getToken();
-      if (token) {
-        config.headers.Authorization = token;
-      }
-      
-      return config;
-    }
-    
     // 모든 요청 로깅 추가
     console.log(
-      `[API Request Debug] ${config.method?.toUpperCase() || 'GET'} ${config.url}`,
+      `[API Request Debug] ${config.method?.toUpperCase() || 'GET'} ${config.url || '(no URL)'}`,
       {
         headers: config.headers,
         data: config.data,
       }
     );
 
-    // S3나 외부 도메인 요청 확인
-    const isExternalRequest = 
-      config.url.includes('amazonaws.com') || 
-      config.url.includes('s3.') ||
-      config.url.includes('cloudfront.net');
+    // S3/CloudFront URL인지 확인
+    const isExternalUrl = 
+      config.url && (
+        config.url.includes('amazonaws.com') || 
+        config.url.includes('s3.') ||
+        config.url.includes('cloudfront.net')
+      );
     
-    if (isExternalRequest) {
-      console.log("[API Interceptor] 외부 URL 감지, 직접 fetch 사용으로 전환");
+    // S3나 외부 도메인 요청에 대한 처리
+    if (isExternalUrl) {
+      console.log("[API Interceptor] S3/CloudFront URL 감지, 인증 정보 제거");
       
-      // 외부 URL은 axios 대신 fetch를 사용하도록 설정
-      // 동일한 인스턴스에서 이 요청을 처리하면 안됨을 표시
-      config.adapter = async (config) => {
-        try {
-          console.log("[API Interceptor] fetch로 외부 URL 요청:", config.url);
-          
-          // fetch 요청 설정
-          const response = await fetch(config.url, {
-            method: config.method.toUpperCase(),
-            mode: 'cors',
-            credentials: 'omit', // 인증 정보 전송 안함
-            headers: {
-              'Accept': '*/*',
-            },
-          });
-          
-          // fetch의 응답을 axios 호환 형식으로 변환
-          const data = await response.blob();
-          
-          return {
-            data,
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries([...response.headers.entries()]),
-            config,
-          };
-        } catch (error) {
-          console.error("[API Interceptor] fetch 요청 실패:", error);
-          throw error;
-        }
+      // S3/CloudFront 요청을 위한 설정
+      config.withCredentials = false;
+      
+      // 인증 헤더 제거 (인증 관련 모든 헤더)
+      delete config.headers.Authorization;
+      delete config.headers['X-Requested-With'];
+      
+      // 여기서 주요 변경 사항: ImageUploadToS3 함수를 참고하여 
+      // S3 요청에 필요한 최소한의 헤더만 설정
+      const simplifiedHeaders = {
+        'Accept': '*/*',
       };
+      
+      // Content-Type이 존재하면 유지 (S3 업로드에 중요)
+      if (config.headers['Content-Type']) {
+        simplifiedHeaders['Content-Type'] = config.headers['Content-Type'];
+      }
+      
+      // CORS 헤더 설정
+      simplifiedHeaders['Access-Control-Allow-Origin'] = '*';
+      simplifiedHeaders['Access-Control-Allow-Methods'] = 'GET, PUT, POST, DELETE, OPTIONS';
+      simplifiedHeaders['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept';
+      
+      // 헤더 재설정
+      config.headers = simplifiedHeaders;
+      
+      console.log("[API Interceptor] S3 요청 최종 헤더:", config.headers);
       
       return config;
     }
     
-    // 알림 관련 요청은 항상 withCredentials 설정
-    if (config.url.includes('/notifications')) {
-      console.log("[API Interceptor] 알림 API 요청 감지, withCredentials 설정");
-      config.withCredentials = true;
-    }
+    // 상대 경로 요청 처리 (내부 API 호출)
+    if (!config.url || !config.url.includes('://')) {
+      // 알림 관련 요청은 항상 withCredentials 설정
+      if (config.url && config.url.includes('/notifications')) {
+        console.log("[API Interceptor] 알림 API 요청 감지, withCredentials 설정");
+        config.withCredentials = true;
+        
+        // withCredentials를 사용할 때는 credentials: 'include' 설정도 추가
+        config.credentials = 'include';
+        
+        // 알림 API 요청에 인증 및 CORS 헤더 설정
+        config.headers['Access-Control-Allow-Origin'] = '*';
+        config.headers['Access-Control-Allow-Methods'] = 'GET, PUT, POST, PATCH, DELETE, OPTIONS';
+        config.headers['Access-Control-Allow-Headers'] = 'Origin, X-Requested-With, Content-Type, Accept, Authorization';
+      }
 
-    // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
-    const token = tokenUtils.getToken();
-    if (token) {
-      config.headers.Authorization = token;
+      // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
+      const token = tokenUtils.getToken();
+      if (token) {
+        config.headers.Authorization = token.startsWith("Bearer ") 
+          ? token 
+          : `Bearer ${token}`;
+      }
     }
+    
     return config;
   },
   (error) => {
