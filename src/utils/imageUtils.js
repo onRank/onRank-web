@@ -32,8 +32,29 @@ export const DEFAULT_IMAGE_SVG = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20widt
  * @param {string} imageInfo - 로그에 표시할 이미지 정보
  */
 export const handleImageError = (e, imageInfo = '') => {
+  // 이미 기본 이미지로 대체된 경우 무한 루프를 방지
+  if (e.target.src === DEFAULT_IMAGE_SVG) {
+    console.log(`[이미지 로딩] 이미 기본 이미지 사용 중`);
+    return;
+  }
+  
+  // S3 URL인지 확인
+  const isS3Url = imageInfo && (
+    imageInfo.includes('amazonaws.com') || 
+    imageInfo.includes('s3.') || 
+    imageInfo.includes('.s3.')
+  );
+  
+  if (isS3Url) {
+    console.log(`[이미지 로딩 실패] S3 이미지 로드 실패, CORS 문제일 수 있음: ${imageInfo}`);
+  } else {
+    console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
+  }
+  
+  // src 속성을 기본 이미지로 변경
   e.target.src = DEFAULT_IMAGE_SVG;
-  console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
+  // 추가 오류 방지
+  e.target.onerror = null;
 }; 
 
 /**

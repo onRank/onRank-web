@@ -27,14 +27,18 @@ api.interceptors.request.use(
     );
 
     // S3나 외부 도메인 요청에 대한 credentials 설정 제거
-    if (config.url.includes('amazonaws.com') || config.url.includes('s3.')) {
+    if (config.url && (config.url.includes('amazonaws.com') || config.url.includes('s3.'))) {
+      console.log("[API Interceptor] S3 URL 감지, 인증 정보 제거");
       config.withCredentials = false;
       // 인증 헤더 제거
       delete config.headers.Authorization;
+      // CORS 요청을 위한 추가 설정
+      config.headers['Access-Control-Allow-Origin'] = '*';
     }
     
     // 알림 관련 요청은 항상 withCredentials 설정
-    if (config.url.includes('/notifications')) {
+    if (config.url && config.url.includes('/notifications')) {
+      console.log("[API Interceptor] 알림 API 요청 감지, withCredentials 설정");
       config.withCredentials = true;
     }
 
