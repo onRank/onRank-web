@@ -527,6 +527,7 @@ function AppContent() {
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />
+                    <Route path="schedules/:scheduleId" element={<StudyDetailPage />} />
                     <Route
                       path="assignment"
                       element={<StudyDetailPage activeTab="과제" />}

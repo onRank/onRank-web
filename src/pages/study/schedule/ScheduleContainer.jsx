@@ -14,17 +14,59 @@ function ScheduleContainer({ onSubPageChange }) {
   const [error, setError] = useState(null);
   const [showScheduleDetail, setShowScheduleDetail] = useState(false);
   const [selectedSchedule, setSelectedSchedule] = useState(null);
-  const { studyId } = useParams();
+  const { studyId, scheduleId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   
   // useStudyRole 훅 사용
   const { memberRole, updateMemberRole, updateMemberRoleFromResponse } = useStudyRole();
   
-  console.log("[ScheduleContainer] 초기화, studyId:", studyId, "memberRole:", memberRole);
+  console.log("[ScheduleContainer] 초기화, studyId:", studyId, "memberRole:", memberRole, "scheduleId:", scheduleId);
   
   // 현재 경로를 확인하여 어떤 컴포넌트를 표시할지 결정
   const isAddPage = location.pathname.endsWith('/add');
+  
+  // scheduleId가 URL에 있는 경우 해당 일정 상세 정보 조회
+  useEffect(() => {
+    const fetchScheduleDetail = async () => {
+      if (scheduleId) {
+        try {
+          setIsLoading(true);
+          setError(null);
+          
+          // 일정 목록이 비어있으면 먼저 목록 가져오기
+          let scheduleList = schedules;
+          if (schedules.length === 0) {
+            const response = await studyService.getSchedules(studyId);
+            scheduleList = response?.data || [];
+            setSchedules(scheduleList);
+          }
+          
+          // scheduleId로 일정 찾기
+          const schedule = scheduleList.find(s => s.scheduleId === parseInt(scheduleId));
+          
+          if (schedule) {
+            console.log("[ScheduleContainer] 선택된 일정:", schedule);
+            setSelectedSchedule(schedule);
+            setShowScheduleDetail(true);
+            onSubPageChange("상세");
+          } else {
+            console.log("[ScheduleContainer] 일정을 찾을 수 없음:", scheduleId);
+            setError("해당 일정을 찾을 수 없습니다.");
+          }
+        } catch (error) {
+          console.error("[ScheduleContainer] 일정 상세 조회 실패:", error);
+          setError("일정 정보를 불러오는 중 오류가 발생했습니다.");
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+    
+    if (scheduleId) {
+      fetchScheduleDetail();
+    }
+  }, [scheduleId, studyId, schedules, onSubPageChange]);
   
   // 일정 목록 조회
   useEffect(() => {
@@ -59,10 +101,10 @@ function ScheduleContainer({ onSubPageChange }) {
       }
     };
 
-    if (!isAddPage) {
+    if (!isAddPage && !scheduleId) {
       fetchSchedules();
     }
-  }, [studyId, isAddPage, updateMemberRole, updateMemberRoleFromResponse]);
+  }, [studyId, isAddPage, updateMemberRole, updateMemberRoleFromResponse, scheduleId]);
 
   // subPage 상태 관리 및 콜백 호출
   useEffect(() => {
@@ -207,12 +249,18 @@ function ScheduleContainer({ onSubPageChange }) {
   const handleViewScheduleDetail = (schedule) => {
     setSelectedSchedule(schedule);
     setShowScheduleDetail(true);
+    
+    // 상세 페이지로 이동
+    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`, {
+      state: { schedule }
+    });
   };
   
   // 일정 목록 보기로 돌아가기
   const handleBackToScheduleList = () => {
     setShowScheduleDetail(false);
     setSelectedSchedule(null);
+    navigate(`/studies/${studyId}/schedules`);
   };
   
   // 일정 추가 페이지로 이동
@@ -231,7 +279,7 @@ function ScheduleContainer({ onSubPageChange }) {
       return <ScheduleAddPage onCancel={handleNavigateToListPage} />;
     }
     
-    if (showScheduleDetail) {
+    if (showScheduleDetail || scheduleId) {
       return (
         <ScheduleDetailView
           schedule={selectedSchedule}
