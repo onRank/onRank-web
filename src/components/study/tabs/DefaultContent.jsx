@@ -18,6 +18,11 @@ function DefaultContent({ studyData }) {
       title: "출석",
       icon: "✅",
       point: data.memberPresentPoint || 0,
+      details: {
+        출석: data.memberPresentPoint || 0,
+        지각: data.memberLatePoint || 0,
+        결석: data.memberAbsentPoint || 0,
+      },
     },
   ];
 
@@ -108,6 +113,7 @@ function DefaultContent({ studyData }) {
                   title={p.title}
                   icon={p.icon}
                   point={p.point}
+                  details={p.details}
                 />
               ))}
             </div>

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 
 function PointContainer({ title, icon, point, details }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
+  const containerRef = React.useRef(null);
 
   const styles = {
     container: {
@@ -15,9 +18,11 @@ function PointContainer({ title, icon, point, details }) {
       justifyContent: "space-between",
       position: "relative",
       transition: "all 0.2s ease",
-      cursor: "pointer",
+      cursor: "default",
       ...(isHovered && {
         backgroundColor: "#f5f5f5",
+        transform: "translateY(-2px)",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
       }),
     },
     topRow: {
@@ -38,29 +43,26 @@ function PointContainer({ title, icon, point, details }) {
     },
     title: {
       fontWeight: "bold",
-      fontSize: "22px",
+      fontSize: "20px",
     },
     pointText: {
-      fontSize: "15px",
+      fontSize: "14px",
       color: "#f4a623",
       fontWeight: "bold",
-      display: "flex",
-      justifyContent: "flex-end",
     },
     popup: {
-      position: "absolute",
-      top: "100%",
-      left: "50%",
-      transform: "translateX(-50%)",
+      position: "fixed",
+      top: popupPos.top,
+      left: popupPos.left,
       backgroundColor: "rgba(0, 0, 0, 0.8)",
       color: "white",
       padding: "12px",
       borderRadius: "8px",
       fontSize: "14px",
-      zIndex: 1000,
+      zIndex: 99999,
       minWidth: "200px",
-      display: isHovered ? "block" : "none",
       marginTop: "8px",
+      pointerEvents: "none",
     },
     detailItem: {
       display: "flex",
@@ -70,28 +72,56 @@ function PointContainer({ title, icon, point, details }) {
         marginBottom: 0,
       },
     },
+    detailLabel: {
+      color: "#666",
+    },
+    detailValue: {
+      color: "#f4a623",
+      fontWeight: "bold",
+    },
+  };
+
+  const handleMouseEnter = () => {
+    setIsHovered(true);
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setPopupPos({
+        top: rect.bottom + 8,
+        left: rect.left + rect.width / 2 - 100,
+      });
+    }
+  };
+
+  const handleMouseLeave = () => {
+    setIsHovered(false);
   };
 
   return (
     <div
+      ref={containerRef}
       style={styles.container}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}>
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}>
       <div style={styles.topRow}>
         <div style={styles.iconCircle}>{icon}</div>
         <div style={styles.title}>{title}</div>
       </div>
       <div style={styles.pointText}>총 {point.toLocaleString()} pt</div>
-      {details && (
-        <div style={styles.popup}>
-          {Object.entries(details).map(([key, value]) => (
-            <div key={key} style={styles.detailItem}>
-              <span>{key}</span>
-              <span>{value.toLocaleString()} pt</span>
-            </div>
-          ))}
-        </div>
-      )}
+      {details &&
+        isHovered &&
+        ReactDOM.createPortal(
+          <div style={styles.popup}>
+            {Object.entries(details).map(([key, value]) => (
+              <div key={key} style={styles.detailItem}>
+                <span style={styles.detailLabel}>{key}</span>
+                <span style={styles.detailValue}>
+                  {value.toLocaleString()} pt
+                </span>
+              </div>
+            ))}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

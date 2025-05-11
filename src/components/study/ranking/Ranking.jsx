@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { GiLaurelsTrophy } from "react-icons/gi";
+import { IoMedalOutline } from "react-icons/io5";
 
 function Ranking({ rankingData }) {
   const [animate, setAnimate] = useState(false);
@@ -19,7 +21,7 @@ function Ranking({ rankingData }) {
       minHeight: "330px",
     },
     card1: {
-      backgroundColor: "#d94135",
+      backgroundColor: "#EE0418",
       borderRadius: "12px",
       padding: "16px",
       minWidth: "120px",
@@ -33,7 +35,7 @@ function Ranking({ rankingData }) {
       overflow: "hidden",
     },
     card2: {
-      backgroundColor: "#d94135",
+      backgroundColor: "#EE0418",
       borderRadius: "12px",
       padding: "16px",
       minWidth: "100px",
@@ -47,7 +49,7 @@ function Ranking({ rankingData }) {
       overflow: "hidden",
     },
     card3: {
-      backgroundColor: "#d94135",
+      backgroundColor: "#EE0418",
       borderRadius: "12px",
       padding: "16px",
       minWidth: "90px",
@@ -77,17 +79,19 @@ function Ranking({ rankingData }) {
       fontWeight: "bold",
       fontSize: "16px",
       marginBottom: "4px",
+      textShadow: "0 4px 7px rgba(0, 0, 0, 0.5)",
     },
     point: {
       fontSize: "14px",
       fontWeight: "bold",
+      textShadow: "0 4px 7px rgba(0, 0, 0, 0.5)",
     },
   };
 
   const renderIcon = (rank) => {
-    if (rank === 1) return "🏆";
-    if (rank === 2) return "🥈";
-    if (rank === 3) return "🥉";
+    if (rank === 1) return <GiLaurelsTrophy size={120} />;
+    if (rank === 2) return <IoMedalOutline size={90} />;
+    if (rank === 3) return <IoMedalOutline size={90} />;
     return "🎖️";
   };
 
@@ -107,7 +111,7 @@ function Ranking({ rankingData }) {
 
   return (
     <div style={styles.container}>
-      {(rankingData || []).map((person, index) => 
+      {(rankingData || []).map((person, index) =>
         person ? (
           <div key={index} style={getCardStyle(person.rank)}>
             <div style={styles.icon}>{renderIcon(person.rank)}</div>
