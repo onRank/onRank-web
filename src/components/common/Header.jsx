@@ -2,20 +2,15 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { authService } from "../../services/api";
 import { useAuth } from "../../contexts/AuthContext";
-import NotificationPopover from "./NotificationPopover";
+import NotificationIcon from "../notification/NotificationIcon";
 import { useTheme } from "../../contexts/ThemeContext";
 import Button from "./Button";
 
 const Header = () => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const { isDarkMode, toggleTheme } = useTheme();
   const { setUser } = useAuth();
-
-  const handleNotificationToggle = () => {
-    setIsNotificationOpen(!isNotificationOpen);
-  };
 
   const handleHomeClick = () => {
     navigate("/studies");
@@ -155,21 +150,8 @@ const Header = () => {
           gap: "1rem",
         }}
       >
-        {/* 알림 아이콘 */}
-        <div onClick={handleNotificationToggle} style={{ cursor: "pointer" }}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.36 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.63 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z"
-              fill="black"
-            />
-          </svg>
-        </div>
+        {/* 알림 아이콘 - 새 컴포넌트로 교체 */}
+        <NotificationIcon />
 
         {/* 로그아웃 버튼 */}
         <Button onClick={handleLogout} variant="logout" />
