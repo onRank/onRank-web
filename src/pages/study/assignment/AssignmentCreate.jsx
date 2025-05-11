@@ -127,11 +127,8 @@ function AssignmentCreate() {
   };
   
   return (
-    <div className="container">
-      <div className="header">
-        <h1 className="title">과제 업로드</h1>
-        <button className="back-button" onClick={handleCancel}>목록으로 돌아가기</button>
-      </div>
+    <>
+      <h1 className="page-title">과제 추가</h1>
       
       <form className="form" onSubmit={handleSubmit}>
         {error && (
@@ -139,7 +136,9 @@ function AssignmentCreate() {
         )}
         
         <div className="form-group">
-          <label className="label" htmlFor="assignmentTitle">과제 제목 *</label>
+          <label className="label" htmlFor="assignmentTitle">
+            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
+          </label>
           <input
             className="input"
             id="assignmentTitle"
@@ -152,7 +151,12 @@ function AssignmentCreate() {
         </div>
         
         <div className="form-group">
-          <label className="label" htmlFor="assignmentContent">지시사항 *</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label className="label" htmlFor="assignmentContent">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
+            </label>
+            <div className="char-count">{formData.assignmentContent.length}/10000</div>
+          </div>
           <textarea
             className="textarea"
             id="assignmentContent"
@@ -163,11 +167,12 @@ function AssignmentCreate() {
             rows={6}
             required
           />
-          <div className="char-count">{formData.assignmentContent.length}/10000</div>
         </div>
         
         <div className="form-group">
-          <label className="label" htmlFor="assignmentDueDate">제출 기한 *</label>
+          <label className="label" htmlFor="assignmentDueDate">
+            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>마감기한
+          </label>
           <div 
             className="date-picker-wrapper"
             onClick={() => {
@@ -188,7 +193,9 @@ function AssignmentCreate() {
         </div>
         
         <div className="form-group">
-          <label className="label" htmlFor="assignmentMaxPoint">최대 점수</label>
+          <label className="label" htmlFor="assignmentMaxPoint">
+            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 포인트
+          </label>
           <input
             className="input"
             id="assignmentMaxPoint"
@@ -202,7 +209,7 @@ function AssignmentCreate() {
         
         {/* 첨부 파일 영역 */}
         <div className="form-group">
-          <label className="label">첨부 파일</label>
+          <label className="label">첨부파일 추가</label>
           <input 
             className="hidden-file-input"
             type="file" 
@@ -239,20 +246,35 @@ function AssignmentCreate() {
           
           <button className="attach-button" type="button" onClick={handleAttachClick}>
             <IoAttach size={18} />
-            파일 첨부
+            파일을 끌어서 놓거나
+            클릭하여 추가하세요
           </button>
         </div>
         
         <div className="button-group">
-          <Button variant="back" onClick={handleCancel} />
-          <Button 
+        <Button 
             variant="upload" 
             onClick={handleSubmit}
             disabled={isLoading}
+            style={{ 
+              width: '60px', 
+              height: '32px',
+              fontSize: '12px'
+            }}
           />
+          <Button 
+            variant="back" 
+            onClick={handleCancel}
+            style={{ 
+              width: '60px', 
+              height: '32px',
+              fontSize: '12px'
+            }}
+          />
+          
         </div>
       </form>
-    </div>
+    </>
   );
 }
 
