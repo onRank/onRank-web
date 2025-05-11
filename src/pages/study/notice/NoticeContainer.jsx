@@ -218,21 +218,25 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
     // 기본 리스트 뷰
     return (
-      <div className="notice-content-area">
+      <div className="notice-container">
         <h1 className="page-title">공지사항</h1>
 
         {isManager && (
-          <div className="add-section-box notice-section-box">
+          <div className="notice-add-box">
             <div>
-              <div className="add-section-title notice-section-title">공지사항 추가</div>
-              <div className="add-section-description notice-section-description">새로운 공지사항을 추가해주세요.</div>
+              <div className="notice-add-title">공지사항 추가</div>
+              <div className="notice-add-description">새로운 공지사항을 추가해주세요.</div>
             </div>
             <Button variant="add" onClick={handleCreateNotice} />
           </div>
         )}
 
-        {notices && notices.length === 0 ? (
-          <div className="empty-message notice-empty">
+        {isLoading ? (
+          <div className="notice-loading">로딩중...</div>
+        ) : error ? (
+          <div className="notice-error">{error}</div>
+        ) : notices && notices.length === 0 ? (
+          <div className="notice-empty">
             등록된 공지사항이 없습니다.
           </div>
         ) : (
