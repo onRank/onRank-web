@@ -52,6 +52,11 @@ function ScheduleListPage({
         breadcrumb: "일정 > 수정"
       } 
     });
+    
+    // 상세 보기 호출
+    if (onViewScheduleDetail) {
+      onViewScheduleDetail(schedule);
+    }
   };
 
   // 일정 수정 팝업 열기
@@ -215,11 +220,11 @@ function ScheduleListPage({
           {/* 일정 아이템 목록 */}
           <div className="schedule-items">
             {schedulesWithRounds.map((schedule) => (
-              <div key={schedule.scheduleId}>
+              <div key={schedule.scheduleId} className="schedule-item-wrapper">
                 {/* 회차 및 제목 정보 (박스 위) */}
-                <div>
+                <div className="schedule-item-header">
                   <h3 className="schedule-title" style={{ color: colors.textPrimary }}>
-                    제목
+                    {schedule.scheduleTitle}
                   </h3>
                   <p style={{ fontSize: '14px', marginBottom: '4px' }}>
                     {schedule.round}회차(일시: {formatDateTime(schedule.scheduleStartingAt)})
@@ -235,8 +240,6 @@ function ScheduleListPage({
                     borderRadius: '8px',
                   }}
                 >
-                  {/* 타임라인 원 제거 */}
-
                   {/* 일정 제목과 메뉴 */}
                   <div className="schedule-header">
                     <div className="schedule-info-wrapper">
