@@ -7,6 +7,7 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
   const [isBottomPosition, setIsBottomPosition] = useState(false);
+  const [isRightPosition, setIsRightPosition] = useState(false);
 
   const toggleMenu = () => {
     // Check position before opening menu
@@ -16,14 +17,25 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     setIsOpen(!isOpen);
   };
 
-  // Check if the menu is near the bottom of the page
+  // Check if the menu is near the bottom or right edge of the page
   const checkPosition = () => {
     if (menuRef.current) {
       const rect = menuRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
+      const viewportWidth = window.innerWidth;
       
       // If less than 150px from bottom of viewport, position menu above
       setIsBottomPosition(viewportHeight - rect.bottom < 150);
+      
+      // If less than 160px from right edge of viewport, position menu to the left
+      setIsRightPosition(viewportWidth - rect.right < 160);
+      
+      console.log('Menu position check:', {
+        bottom: viewportHeight - rect.bottom,
+        right: viewportWidth - rect.right,
+        isBottomPosition: viewportHeight - rect.bottom < 150,
+        isRightPosition: viewportWidth - rect.right < 160
+      });
     }
   };
 
@@ -58,6 +70,16 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     };
   }, []);
 
+  // Check position on window resize
+  useEffect(() => {
+    if (isOpen) {
+      window.addEventListener('resize', checkPosition);
+      return () => {
+        window.removeEventListener('resize', checkPosition);
+      };
+    }
+  }, [isOpen]);
+
   // Updated styles for better positioning and appearance
   const menuIconStyle = {
     display: 'flex',
@@ -72,11 +94,22 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     height: '100%'
   };
 
+  // Determine the position of the dropdown menu
+  const getDropdownPosition = () => {
+    if (isBottomPosition && isRightPosition) {
+      return { bottom: '100%', right: 'auto', left: '0' };
+    } else if (isBottomPosition) {
+      return { bottom: '100%', right: '0' };
+    } else if (isRightPosition) {
+      return { top: '100%', right: 'auto', left: '0' };
+    } else {
+      return { top: '100%', right: '0' };
+    }
+  };
+
   const dropdownMenuStyle = {
     position: 'absolute',
-    ...(isBottomPosition 
-      ? { bottom: '100%', right: 0 } 
-      : { top: '100%', right: 0 }),
+    ...getDropdownPosition(),
     backgroundColor: 'white',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     borderRadius: '4px',
