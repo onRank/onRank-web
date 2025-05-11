@@ -1,164 +1,228 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
-import { useTheme } from '../../contexts/ThemeContext'
-import LoadingSpinner from '../../components/common/LoadingSpinner'
-import ErrorMessage from '../../components/common/ErrorMessage'
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import ErrorMessage from "../../components/common/ErrorMessage";
+import { FaUserPen } from "react-icons/fa6";
+import MyPageCard from "../../components/user/MyPageCard";
+import { mypageService } from "../../services/mypage";
+
+const styles = {
+  wrapper: {
+    minHeight: "100vh",
+    background: "#fff",
+  },
+  container: {
+    maxWidth: 1200,
+    margin: "0 auto",
+    padding: "30px 170px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    position: "relative",
+  },
+  titleRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 10,
+    margin: 20,
+    width: "100%",
+  },
+  titleIcon: {
+    fontSize: 32,
+  },
+  titleText: {
+    fontWeight: 700,
+    fontSize: 28,
+  },
+  mainContent: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    minHeight: 200,
+    position: "relative",
+  },
+  subContent: {
+    display: "flex",
+    width: "100%",
+    justifyContent: "flex-start",
+    minHeight: 200,
+    position: "relative",
+  },
+  profileWrapper: {
+    margin: "0 auto",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    minWidth: 320,
+  },
+  profileInfo: {
+    textAlign: "center",
+    marginBottom: 12,
+  },
+  profileName: {
+    fontWeight: 600,
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  profileId: {
+    color: "#888",
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  profileSchool: {
+    fontWeight: 400,
+    fontSize: 18,
+    marginBottom: 4,
+  },
+  profileSchoolId: {
+    color: "#888",
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  editButton: {
+    marginTop: 10,
+    border: "1.5px solid #222",
+    borderRadius: 8,
+    padding: "4px 16px",
+    background: "#fff",
+    fontWeight: 500,
+    cursor: "pointer",
+  },
+  subContentTitle: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-start",
+    gap: 10,
+    margin: 10,
+    width: "100%",
+  },
+  subContentText: {
+    fontWeight: 700,
+    fontSize: 24,
+  },
+  cardList: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    width: "100%",
+  },
+};
 
 function MyPage() {
-  const navigate = useNavigate()
-  const { user, refreshUserInfo, isDetailedUserInfo } = useAuth()
-  const { colors } = useTheme()
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const navigate = useNavigate();
+  const { user, refreshUserInfo, isDetailedUserInfo } = useAuth();
+  const { colors } = useTheme();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [myPageData, setMyPageData] = useState(null);
 
-  // 페이지 로드 시 사용자 상세 정보 조회
+  useEffect(() => {
+    const fetchMyPage = async () => {
+      try {
+        const response = await mypageService.getMyPage();
+        setMyPageData(response);
+      } catch (error) {
+        setError("마이페이지 정보를 불러오는데 실패했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyPage();
+  }, []);
+
   useEffect(() => {
     const loadUserDetails = async () => {
-      // 이미 상세 정보가 있으면 다시 조회하지 않음
       if (isDetailedUserInfo) {
-        setLoading(false)
-        return
+        setLoading(false);
+        return;
       }
-
       try {
-        console.log('[MyPage] 사용자 상세 정보 조회 시작')
-        setLoading(true)
-        await refreshUserInfo()
-        console.log('[MyPage] 사용자 상세 정보 조회 완료')
+        setLoading(true);
+        await refreshUserInfo();
       } catch (error) {
-        console.error('[MyPage] 사용자 정보 조회 실패:', error)
-        setError('사용자 정보를 불러오는데 실패했습니다.')
-        
-        // 인증 오류인 경우 로그인 페이지로 이동
+        setError("사용자 정보를 불러오는데 실패했습니다.");
         if (error.response?.status === 401) {
           setTimeout(() => {
-            navigate('/')
-          }, 2000)
+            navigate("/");
+          }, 2000);
         }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
+    loadUserDetails();
+  }, [refreshUserInfo, isDetailedUserInfo, navigate]);
 
-    loadUserDetails()
-  }, [refreshUserInfo, isDetailedUserInfo, navigate])
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+  if (!myPageData)
+    return <ErrorMessage message="마이페이지 정보를 불러올 수 없습니다." />;
 
-  if (loading) {
-    return <LoadingSpinner />
-  }
-
-  if (error) {
-    return <ErrorMessage message={error} />
-  }
-
-  if (!user) {
-    return <ErrorMessage message="사용자 정보가 없습니다." />
-  }
+  // 진행중인 스터디만, studyId 오름차순 정렬
+  const studyList = (myPageData.studyList || [])
+    .filter((study) => study.studyStatus === "ACTIVE")
+    .sort((a, b) => a.studyId - b.studyId);
 
   return (
-    <div style={{
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: '2rem'
-    }}>
-      <h1 style={{
-        fontSize: '24px',
-        fontWeight: 'bold',
-        marginBottom: '2rem',
-        color: colors.text
-      }}>
-        내 프로필
-      </h1>
-
-      <div style={{
-        background: colors.cardBackground,
-        borderRadius: '8px',
-        padding: '2rem',
-        boxShadow: `0 2px 4px ${colors.shadowColor}`,
-        border: `1px solid ${colors.border}`
-      }}>
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h2 style={{ 
-            fontSize: '18px', 
-            fontWeight: 'bold',
-            marginBottom: '0.5rem',
-            color: colors.text
-          }}>
-            기본 정보
-          </h2>
-          <div style={{ 
-            display: 'grid',
-            gridTemplateColumns: '120px 1fr',
-            gap: '0.5rem',
-            fontSize: '16px'
-          }}>
-            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>이름:</div>
-            <div style={{ color: colors.text }}>{user.studentName || user.nickname || '정보 없음'}</div>
-            
-            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>이메일:</div>
-            <div style={{ color: colors.text }}>{user.email || '정보 없음'}</div>
-            
-            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>학교:</div>
-            <div style={{ color: colors.text }}>{user.studentSchool || '정보 없음'}</div>
-            
-            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>학과:</div>
-            <div style={{ color: colors.text }}>{user.studentDepartment || user.department || '정보 없음'}</div>
-            
-            <div style={{ fontWeight: 'bold', color: colors.textSecondary }}>전화번호:</div>
-            <div style={{ color: colors.text }}>{user.studentPhoneNumber || '정보 없음'}</div>
+    <div style={styles.wrapper}>
+      {/* <Header /> */}
+      <div style={styles.container}>
+        {/* 상단 중앙 타이틀 */}
+        <div style={styles.titleRow}>
+          <span style={styles.titleIcon}>
+            <FaUserPen
+              style={{
+                width: 41,
+                height: 33,
+                display: "block",
+                alignContent: "center",
+              }}
+            />
+          </span>
+          <span style={styles.titleText}>마이페이지</span>
+        </div>
+        {/* 메인 컨텐츠 */}
+        <div style={styles.mainContent}>
+          {/* 가운데 프로필 */}
+          <div style={styles.profileWrapper}>
+            <div style={styles.profileInfo}>
+              <div style={styles.profileName}>{myPageData.studentName}</div>
+              <div style={styles.profileId}>
+                {myPageData.studentPhoneNumber}
+                <br />
+                {myPageData.studentEmail}
+              </div>
+              <div style={styles.profileSchool}>{myPageData.studentSchool}</div>
+              <div style={styles.profileSchoolId}>
+                {myPageData.studentDepartment}
+              </div>
+              <button style={styles.editButton}>수정하기</button>
+            </div>
           </div>
         </div>
-
-        {!isDetailedUserInfo && (
-          <div style={{
-            background: colors.warning + '20', // 투명도 추가
-            color: colors.warning,
-            padding: '0.75rem',
-            borderRadius: '4px',
-            marginTop: '1rem',
-            fontSize: '14px',
-            border: `1px solid ${colors.warning}`
-          }}>
-            일부 사용자 정보만 표시되고 있습니다. 전체 정보를 보려면 페이지를 새로고침 해주세요.
+        {/* 하단 컨텐츠 */}
+        <div style={styles.subContentTitle}>
+          <div style={styles.subContentText}>스터디</div>
+        </div>
+        <div style={styles.subContent}>
+          <div style={styles.cardList}>
+            {studyList.map((study, idx) => (
+              <MyPageCard
+                key={idx}
+                icon={study.file?.fileUrl}
+                name={study.studyName}
+                onClick={() => navigate(`/study/${study.studyId}`)}
+              />
+            ))}
           </div>
-        )}
-
-        <div style={{ marginTop: '2rem' }}>
-          <button
-            onClick={() => navigate('/studies')}
-            style={{
-              background: colors.buttonBackground,
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              padding: '0.5rem 1rem',
-              fontSize: '14px',
-              cursor: 'pointer',
-              marginRight: '0.5rem'
-            }}
-          >
-            스터디 목록으로 돌아가기
-          </button>
-          
-          <button
-            onClick={() => refreshUserInfo()}
-            style={{
-              background: colors.primary,
-              color: colors.buttonText,
-              border: 'none',
-              borderRadius: '4px',
-              padding: '0.5rem 1rem',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
-          >
-            정보 새로고침
-          </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-export default MyPage 
+export default MyPage;
