@@ -6,9 +6,25 @@ import { FiEdit, FiTrash2 } from 'react-icons/fi';
 const ScheduleMenu = ({ onEdit, onDelete }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const [isBottomPosition, setIsBottomPosition] = useState(false);
 
   const toggleMenu = () => {
+    // Check position before opening menu
+    if (!isOpen) {
+      checkPosition();
+    }
     setIsOpen(!isOpen);
+  };
+
+  // Check if the menu is near the bottom of the page
+  const checkPosition = () => {
+    if (menuRef.current) {
+      const rect = menuRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      
+      // If less than 150px from bottom of viewport, position menu above
+      setIsBottomPosition(viewportHeight - rect.bottom < 150);
+    }
   };
 
   const handleEdit = () => {
@@ -58,8 +74,9 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
 
   const dropdownMenuStyle = {
     position: 'absolute',
-    right: 0,
-    top: '100%',
+    ...(isBottomPosition 
+      ? { bottom: '100%', right: 0 } 
+      : { top: '100%', right: 0 }),
     backgroundColor: 'white',
     boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
     borderRadius: '4px',
