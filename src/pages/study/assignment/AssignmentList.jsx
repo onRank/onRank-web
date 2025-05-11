@@ -340,35 +340,49 @@ function AssignmentList() {
   };
   
   return (
-    <div className="assignment-container">
-      <div className="assignment-header">
-        <h1 className="page-title">
-          과제
-        </h1>
+    <div style={{
+      width: '100%',
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        width: '100%',
+        position: 'relative',
+        padding: '0 1rem',
+        marginTop: '1rem'
+      }}>
+        <div style={{ flex: 1 }}>
+          <h1 className="page-title">
+            과제
+          </h1>
+          
+          {/* 오류 메시지 표시 */}
+          {error && (
+            <div className="error-message">{error}</div>
+          )}
+          
+          {/* 과제 추가 섹션 */}
+          {renderAddAssignmentSection()}
+          
+          {/* 로딩 상태 표시 */}
+          {isLoading ? (
+            <div className="loading-message">과제 정보를 불러오는 중...</div>
+          ) : assignments.length === 0 ? (
+            <div className="empty-message">
+              {isManager 
+                ? "새로운 과제를 추가해주세요."
+                : "등록된 과제가 없습니다."}
+            </div>
+          ) : (
+            <div className="assignments-wrapper">
+              {renderAssignmentsByCategory()}
+            </div>
+          )}
+        </div>
       </div>
-      
-      {/* 오류 메시지 표시 */}
-      {error && (
-        <div className="error-message">{error}</div>
-      )}
-      
-      {/* 과제 추가 섹션 */}
-      {renderAddAssignmentSection()}
-      
-      {/* 로딩 상태 표시 */}
-      {isLoading ? (
-        <div className="loading-message">과제 정보를 불러오는 중...</div>
-      ) : assignments.length === 0 ? (
-        <div className="empty-message">
-          {isManager 
-            ? "새로운 과제를 추가해주세요."
-            : "등록된 과제가 없습니다."}
-        </div>
-      ) : (
-        <div className="assignments-wrapper">
-          {renderAssignmentsByCategory()}
-        </div>
-      )}
     </div>
   );
 }
