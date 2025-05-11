@@ -7,6 +7,8 @@ import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
 import useStudyRole from "../../../hooks/useStudyRole";
+import Button from "../../../components/common/Button";
+import '../../../styles/notice.css';
 
 // 실제 컨텐츠를 처리하는 내부 컨테이너
 const NoticeInnerContainer = ({ onSubPageChange }) => {
@@ -216,35 +218,21 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
     // 기본 리스트 뷰
     return (
-      <div>
-        <div className="notice-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <h1 className="page-title">공지사항</h1>
-          {isManager && (
-            <button
-              onClick={handleCreateNotice}
-              className="notice-add-button"
-              style={{
-                backgroundColor: '#FF0000',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '0.5rem 1rem',
-                fontWeight: 'bold',
-                cursor: 'pointer'
-              }}
-            >
-              공지사항 추가
-            </button>
-          )}
-        </div>
+      <div className="notice-content-area">
+        <h1 className="page-title">공지사항</h1>
+
+        {isManager && (
+          <div className="add-section-box notice-section-box">
+            <div>
+              <div className="add-section-title notice-section-title">공지사항 추가</div>
+              <div className="add-section-description notice-section-description">새로운 공지사항을 추가해주세요.</div>
+            </div>
+            <Button variant="add" onClick={handleCreateNotice} />
+          </div>
+        )}
+
         {notices && notices.length === 0 ? (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '2rem',
-            backgroundColor: '#f8f9fa',
-            borderRadius: '8px',
-            marginTop: '1rem'
-          }}>
+          <div className="empty-message notice-empty">
             등록된 공지사항이 없습니다.
           </div>
         ) : (
@@ -261,14 +249,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   };
 
   return (
-    <div 
-      style={{
-        width: '100%',
-        maxWidth: '100%',
-        padding: '0',
-        marginTop: '1rem'
-      }}
-    >
+    <div className="notice-container">
       {renderContent()}
     </div>
   );

@@ -12,6 +12,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
 
   // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
+  
   // 메뉴 영역 외 클릭 시 메뉴 닫기
   useEffect(() => {
     function handleClickOutside(event) {
@@ -24,91 +25,6 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [menuRef]);
-
-  const styles = {
-    noticeCard: {
-      backgroundColor: "#ffffff",
-      padding: "14px 16px",
-      borderRadius: "10px",
-      marginBottom: "12px",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      border: "1px solid #eee",
-      boxShadow: "0 1px 4px rgba(0, 0, 0, 0.05)",
-      transition: "box-shadow 0.2s ease, transform 0.2s ease",
-      cursor: "pointer",
-    },
-    noticeContentBlock: {
-      display: "flex",
-      flexDirection: "column",
-      flex: 1,
-      overflow: "hidden",
-    },
-    noticeDate: {
-      color: "#999",
-      fontSize: "12px",
-      marginBottom: "6px",
-    },
-    noticeTitle: {
-      fontSize: "16px",
-      fontWeight: "600",
-      color: "#333",
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-    },
-    menuContainer: {
-      position: "relative",
-      marginLeft: "12px",
-    },
-    menuButton: {
-      background: "transparent",
-      border: "none",
-      fontSize: "18px",
-      cursor: "pointer",
-      color: "#666",
-      padding: "4px 8px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    menuDropdown: {
-      position: "absolute",
-      right: 0,
-      top: "100%",
-      backgroundColor: "#fff",
-      border: "1px solid #eee",
-      borderRadius: "6px",
-      boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-      zIndex: 10,
-      minWidth: "120px",
-      display: menuOpen ? "block" : "none",
-    },
-    menuItem: {
-      padding: "8px 16px",
-      fontSize: "14px",
-      color: "#333",
-      cursor: "pointer",
-      whiteSpace: "nowrap",
-    },
-    menuItemDanger: {
-      padding: "8px 16px",
-      fontSize: "14px",
-      color: "#dc3545",
-      cursor: "pointer",
-      whiteSpace: "nowrap",
-    },
-  };
-
-  // hover 효과를 위한 이벤트 핸들러
-  const handleMouseEnter = (e) => {
-    e.currentTarget.style.backgroundColor = `var(--hoverBackground)`;
-  };
-
-  const handleMouseLeave = (e) => {
-    e.currentTarget.style.backgroundColor = `var(--cardBackground)`;
-  };
 
   // 토글 메뉴 클릭 처리
   const handleMenuClick = (e) => {
@@ -135,21 +51,19 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   return (
     <div
       onClick={onClick}
-      style={styles.noticeCard}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+      className="notice-item"
     >
-      <div style={styles.noticeContentBlock}>
-        <div style={styles.noticeDate}>
+      <div className="notice-content-block">
+        <div className="notice-date">
           게시: {formatDateYMD(notice.noticeCreatedAt)}
         </div>
-        <h2 style={styles.noticeTitle}>{notice.noticeTitle}</h2>
+        <h2 className="notice-title">{notice.noticeTitle}</h2>
       </div>
 
       {isManager && (
-        <div style={styles.menuContainer} ref={menuRef}>
+        <div className="notice-menu-container" ref={menuRef}>
           <button
-            style={styles.menuButton}
+            className="notice-menu-button"
             onClick={handleMenuClick}
             aria-label="메뉴 열기"
           >
@@ -157,11 +71,11 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
           </button>
 
           {/* 드롭다운 메뉴 */}
-          <div style={styles.menuDropdown}>
-            <div style={styles.menuItem} onClick={handleEdit}>
+          <div className="notice-menu-dropdown" style={{ display: menuOpen ? "block" : "none" }}>
+            <div className="notice-menu-item" onClick={handleEdit}>
               수정
             </div>
-            <div style={styles.menuItemDanger} onClick={handleDelete}>
+            <div className="notice-menu-item-danger" onClick={handleDelete}>
               삭제
             </div>
           </div>
