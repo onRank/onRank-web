@@ -80,7 +80,7 @@ const NotificationList = ({ onClose }) => {
   // 카테고리 이름 변환
   const getCategoryName = (category) => {
     const categoryMap = {
-      'NOTICE': '알림',
+      'NOTICE': '공지',
       'SCHEDULE': '일정',
       'ASSIGNMENT': '과제',
       'ATTENDANCE': '출석',
@@ -91,15 +91,24 @@ const NotificationList = ({ onClose }) => {
     return categoryMap[category] || category;
   };
 
-  // 날짜 표시 함수
+  // 날짜 표시 함수 - 24시간 이내 생성된 알림은 'XX시간 XX분 전' 형식으로 표시
   const formatDate = (dateString) => {
     const now = new Date();
     const notificationDate = new Date(dateString);
     const diffTime = Math.abs(now - notificationDate);
     const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    const diffHours = Math.floor(diffMinutes / 60);
+    const diffDays = Math.floor(diffHours / 24);
     
-    if (diffMinutes < 60) {
-      return `${diffMinutes}분 전`;
+    if (diffDays < 1) {
+      if (diffHours < 1) {
+        return `${diffMinutes}분 전`;
+      } else {
+        const remainingMinutes = diffMinutes % 60;
+        return remainingMinutes > 0 
+          ? `${diffHours}시간 ${remainingMinutes}분 전` 
+          : `${diffHours}시간 전`;
+      }
     } else {
       return notificationDate.toLocaleDateString('ko-KR', {
         year: 'numeric',
@@ -137,6 +146,8 @@ const NotificationList = ({ onClose }) => {
                   alt={notification.studyName || '스터디 이미지'} 
                   onError={(e) => handleImageError(e, notification.studyImageUrl)}
                   crossOrigin="anonymous"
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
                 />
               </div>
             )}

@@ -27,13 +27,38 @@ api.interceptors.request.use(
     );
 
     // S3나 외부 도메인 요청에 대한 credentials 설정 제거
-    if (config.url && (config.url.includes('amazonaws.com') || config.url.includes('s3.'))) {
-      console.log("[API Interceptor] S3 URL 감지, 인증 정보 제거");
+    if (config.url && (
+      config.url.includes('amazonaws.com') || 
+      config.url.includes('s3.') ||
+      config.url.includes('cloudfront.net')
+    )) {
+      console.log("[API Interceptor] S3/CloudFront URL 감지, 인증 정보 및 커스텀 헤더 제거");
+      
+      // S3/CloudFront 요청에 필요한 설정
       config.withCredentials = false;
-      // 인증 헤더 제거
+      
+      // 인증 헤더 제거 (인증 관련 모든 헤더)
       delete config.headers.Authorization;
-      // CORS 요청을 위한 추가 설정
-      config.headers['Access-Control-Allow-Origin'] = '*';
+      delete config.headers['X-Requested-With'];
+      
+      // 기본 헤더만 유지하고 나머지 제거
+      const simplifiedHeaders = {
+        'Accept': '*/*',
+        'Access-Control-Allow-Origin': '*'
+      };
+      
+      // Content-Type은 유지 (있는 경우)
+      if (config.headers['Content-Type']) {
+        simplifiedHeaders['Content-Type'] = config.headers['Content-Type'];
+      }
+      
+      // 헤더 재설정
+      config.headers = simplifiedHeaders;
+      
+      // 브라우저가 CORS 관련 결정을 처리하도록 모드 설정
+      config.mode = 'cors';
+      
+      console.log("[API Interceptor] S3 요청 최종 헤더:", config.headers);
     }
     
     // 알림 관련 요청은 항상 withCredentials 설정

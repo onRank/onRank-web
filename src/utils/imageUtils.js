@@ -26,6 +26,23 @@ export const getBackgroundImageStyle = (imageUrl) => {
 export const DEFAULT_IMAGE_SVG = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22300%22%20height%3D%22150%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22300%22%20height%3D%22150%22%20fill%3D%22%23CCCCCC%22%2F%3E%3Ctext%20x%3D%22150%22%20y%3D%2275%22%20font-size%3D%2220%22%20text-anchor%3D%22middle%22%20alignment-baseline%3D%22middle%22%20fill%3D%22%23333333%22%3E%EC%8A%A4%ED%84%B0%EB%94%94%20%EC%9D%B4%EB%AF%B8%EC%A7%80%3C%2Ftext%3E%3C%2Fsvg%3E';
 
 /**
+ * S3 URL인지 확인하는 유틸리티 함수
+ * 
+ * @param {string} url - 확인할 URL
+ * @returns {boolean} S3 URL 여부
+ */
+export const isS3Url = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  
+  return (
+    url.includes('amazonaws.com') || 
+    url.includes('s3.') || 
+    url.includes('.s3.') ||
+    url.includes('cloudfront.net')
+  );
+};
+
+/**
  * 이미지 로드 오류 시 기본 이미지로 대체하는 이벤트 핸들러
  * 
  * @param {React.SyntheticEvent} e - 이벤트 객체
@@ -39,14 +56,40 @@ export const handleImageError = (e, imageInfo = '') => {
   }
   
   // S3 URL인지 확인
-  const isS3Url = imageInfo && (
-    imageInfo.includes('amazonaws.com') || 
-    imageInfo.includes('s3.') || 
-    imageInfo.includes('.s3.')
-  );
+  const isFromS3 = isS3Url(imageInfo);
   
-  if (isS3Url) {
+  if (isFromS3) {
     console.log(`[이미지 로딩 실패] S3 이미지 로드 실패, CORS 문제일 수 있음: ${imageInfo}`);
+    
+    // CORS 문제 원인 추적용 로깅
+    console.log(`[이미지 디버그] URL 구조: ${new URL(imageInfo).hostname}`);
+    console.log(`[이미지 디버그] 현재 crossOrigin 설정: ${e.target.crossOrigin}`);
+    
+    // 마지막 시도로 다른 방식의 S3 URL 접근 시도 (필요시 제거)
+    try {
+      // CORS 에러가 발생한 경우, 마지막 시도로 다시 이미지를 로드
+      // crossOrigin 속성을 강제로 설정하고 캐시 방지를 위한 쿼리 파라미터 추가
+      // (이 방법이 효과가 없으면 기본 이미지로 대체됨)
+      if (!e.target.dataset.retried) {
+        e.target.dataset.retried = "true";
+        e.target.crossOrigin = "anonymous";
+        
+        // 캐시 방지를 위한 랜덤 쿼리 파라미터 추가
+        const cacheBuster = `?cb=${new Date().getTime()}`;
+        const originalSrc = e.target.src;
+        
+        // URL에 이미 쿼리 파라미터가 있는지 확인하고 적절히 추가
+        const newSrc = originalSrc.includes('?') 
+          ? `${originalSrc}&cb=${new Date().getTime()}`
+          : `${originalSrc}${cacheBuster}`;
+          
+        console.log(`[이미지 로딩] 마지막 시도 - 소스 변경: ${newSrc}`);
+        e.target.src = newSrc;
+        return; // 추가 처리하지 않고 종료
+      }
+    } catch (retryError) {
+      console.log(`[이미지 로딩] 마지막 시도 실패:`, retryError);
+    }
   } else {
     console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
   }
