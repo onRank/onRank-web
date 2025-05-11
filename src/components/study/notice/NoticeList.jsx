@@ -1,14 +1,27 @@
 import PropTypes from "prop-types";
 import NoticeListItem from "./NoticeListItem";
 import { useTheme } from "../../../contexts/ThemeContext";
+import useStudyRole from "../../../hooks/useStudyRole";
 
-function NoticeList({ notices, onNoticeClick, onEdit, onDelete, isLoading }) {
+function NoticeList({ notices, onNoticeClick, onEdit, onDelete, isLoading, onCreateClick }) {
   const { colors } = useTheme();
+  const { isManager } = useStudyRole();
 
   if (isLoading) return <div>로딩중...</div>;
 
   return (
     <div>
+      {isManager && (
+        <div className="mb-4 flex justify-end">
+          <button
+            onClick={onCreateClick}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            공지사항 추가
+          </button>
+        </div>
+      )}
+      
       <div className="bg-white border rounded-lg overflow-hidden">
         {notices.length === 0 ? (
           <div className="p-6 text-center text-gray-500">
@@ -52,6 +65,7 @@ NoticeList.propTypes = {
   onNoticeClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
+  onCreateClick: PropTypes.func,
   isLoading: PropTypes.bool,
 };
 

@@ -42,6 +42,7 @@ import {
 import ScheduleAddPage from "./pages/study/schedule/ScheduleAddPage";
 import { AttendanceDetailPage } from "./pages/study/attendance";
 import ManagementContainer from "./pages/study/management/ManagementContainer";
+import NoticeContainer from "./pages/study/notice/NoticeContainer";
 import "./App.css";
 
 // 레이아웃 상수
@@ -504,26 +505,15 @@ function AppContent() {
                     <Route index element={<StudyDetailPage />} />
                     <Route
                       path="notices"
-                      element={
-                        <NoticeProvider>
-                          <NoticeContextRenderer
-                            managerComponent={NoticeManagerPage}
-                            userComponent={NoticeUserPage}
-                          />
-                        </NoticeProvider>
-                      }
+                      element={<StudyDetailPage activeTab="공지사항" />}
                     />
-                    <Route path="notices/add" element={<NoticeFormPage />} />
+                    <Route
+                      path="notices/add"
+                      element={<StudyDetailPage activeTab="공지사항" />}
+                    />
                     <Route
                       path="notices/:noticeId"
-                      element={
-                        <NoticeProvider>
-                          <NoticeContextRenderer
-                            managerComponent={NoticeDetailManagerPage}
-                            userComponent={NoticeDetailUserPage}
-                          />
-                        </NoticeProvider>
-                      }
+                      element={<StudyDetailPage activeTab="공지사항" />}
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />

@@ -39,8 +39,11 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   // URL 상태 확인
   useEffect(() => {
     const path = location.pathname;
-    const isCreatePage = path.includes('/notices/new');
+    // Check if the URL ends with /add or contains /new for create page
+    const isCreatePage = path.endsWith('/notices/add') || path.includes('/notices/new');
+    // Check if the URL contains /edit/ for edit page
     const isEditPage = path.includes('/notices/edit/');
+    // Check if the URL has a noticeId but is not edit or create page
     const isDetailPage = noticeId && !isEditPage && !isCreatePage;
 
     setIsNewForm(isCreatePage);
@@ -96,7 +99,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 공지사항 추가 페이지로 이동
   const handleCreateNotice = () => {
-    navigate(`/studies/${studyId}/notices/new`, { 
+    navigate(`/studies/${studyId}/notices/add`, { 
       replace: true 
     });
   };
@@ -202,6 +205,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         onNoticeClick={handleNoticeClick}
         onEdit={isManager ? handleEditNotice : undefined}
         onDelete={isManager ? handleDeleteNotice : undefined}
+        onCreateClick={isManager ? handleCreateNotice : undefined}
         isLoading={isLoading}
       />
     );
