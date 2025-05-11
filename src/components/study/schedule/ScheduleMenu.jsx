@@ -52,7 +52,8 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     background: 'transparent',
     cursor: 'pointer',
     border: 'none',
-    marginLeft: '8px'
+    margin: '0',
+    height: '100%'
   };
 
   const dropdownMenuStyle = {
@@ -65,7 +66,8 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     padding: '8px 0',
     zIndex: 1000,
     minWidth: '150px',
-    overflow: 'visible'
+    maxHeight: 'none',
+    overflowY: 'visible'
   };
 
   return (
@@ -78,7 +80,7 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
       height: '100%'
     }}>
       <button className="menu-icon" onClick={toggleMenu} style={menuIconStyle}>
-        <BsThreeDotsVertical size={24} color="#333" />
+        <BsThreeDotsVertical size={28} color="#333" />
       </button>
       
       {isOpen && (
