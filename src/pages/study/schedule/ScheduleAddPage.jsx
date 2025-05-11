@@ -4,7 +4,9 @@ import { studyService } from '../../../services/api';
 import { tokenUtils } from '../../../utils/tokenUtils';
 import { useTheme } from '../../../contexts/ThemeContext';
 import TimeSelector from '../../../components/common/TimeSelector';
+import Button from '../../../components/common/Button';
 import PropTypes from 'prop-types';
+import './ScheduleAddPage.css';
 
 function ScheduleAddPage({ onCancel }) {
   const { studyId } = useParams();
@@ -57,15 +59,15 @@ function ScheduleAddPage({ onCancel }) {
     };
   }, [studyId]);
   
-  // 폼 유효성 검증 - 제목, 날짜, 시간 모두 필수
-  const isFormValid = title.trim() !== '' && date !== '' && time !== '';
+  // 폼 유효성 검증 - 제목, 날짜, 시간, 내용 모두 필수
+  const isFormValid = title.trim() !== '' && date !== '' && time !== '' && content.trim() !== '';
 
   // 일정 추가 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!isFormValid) {
-      setError('제목, 날짜, 시간은 필수입니다.');
+      setError('제목, 날짜, 시간, 내용은 필수입니다.');
       return;
     }
     
@@ -99,42 +101,42 @@ function ScheduleAddPage({ onCancel }) {
     if (onCancel) onCancel();
   };
 
+  const handleContentChange = (e) => {
+    const value = e.target.value;
+    if (value.length <= 10000) {
+      setContent(value);
+    }
+  };
+
   return (
-    <div style={{ width: '100%' }}>
-      <h2 style={{ color: colors.textPrimary }}>일정 추가</h2>
-      <div style={{
+    <div className="schedule-add-container">
+      <h2 className="schedule-add-title" style={{ color: colors.textPrimary }}>일정</h2>
+      <div className="schedule-add-form" style={{
         backgroundColor: colors.cardBackground,
-        borderRadius: '8px',
-        padding: '2rem',
-        maxWidth: '800px',
-        margin: '2rem auto',
         border: `1px solid ${colors.border}`
       }}>
         {error && (
-          <div style={{
-            padding: '1rem',
+          <div className="schedule-error" style={{
             backgroundColor: `${colors.error}20`,
-            color: colors.error,
-            borderRadius: '4px',
-            marginBottom: '1rem'
+            color: colors.error
           }}>
             {error}
           </div>
         )}
         
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ color: colors.textPrimary }}>제목</h3>
+        <div className="field-container">
+          <h3 className="field-title" style={{ color: colors.textPrimary }}>
+            <span className="required-mark">*</span>
+            제목
+          </h3>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="일정 제목을 입력하세요"
+            placeholder="일정 제목을 입력하세요."
+            className="form-input"
             style={{
-              width: '100%',
-              padding: '0.75rem',
               border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '16px',
               backgroundColor: colors.inputBackground,
               color: colors.textPrimary
             }}
@@ -142,14 +144,13 @@ function ScheduleAddPage({ onCancel }) {
           />
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ color: colors.textPrimary }}>날짜 <span style={{ color: colors.primary }}>*</span></h3>
+        <div className="field-container">
+          <h3 className="field-title" style={{ color: colors.textPrimary }}>
+            <span className="required-mark">*</span>
+            날짜
+          </h3>
           <div 
-            style={{ 
-              position: 'relative', 
-              width: '100%',
-              cursor: 'pointer'
-            }}
+            className="date-picker-container"
             onClick={() => document.getElementById('date-input').showPicker()}
           >
             <input
@@ -157,12 +158,9 @@ function ScheduleAddPage({ onCancel }) {
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              className="form-input"
               style={{
-                width: '100%',
-                padding: '0.75rem',
                 border: `1px solid ${colors.border}`,
-                borderRadius: '4px',
-                fontSize: '16px',
                 backgroundColor: colors.inputBackground,
                 color: colors.textPrimary,
                 cursor: 'pointer'
@@ -172,8 +170,11 @@ function ScheduleAddPage({ onCancel }) {
           </div>
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ color: colors.textPrimary }}>시간 <span style={{ color: colors.primary }}>*</span></h3>
+        <div className="field-container">
+          <h3 className="field-title" style={{ color: colors.textPrimary }}>
+            <span className="required-mark">*</span>
+            시간
+          </h3>
           <TimeSelector 
             value={time}
             onChange={setTime}
@@ -181,58 +182,51 @@ function ScheduleAddPage({ onCancel }) {
           />
         </div>
 
-        <div style={{ marginBottom: '2rem' }}>
-          <h3 style={{ color: colors.textPrimary }}>내용을 입력해주세요</h3>
-          <textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="일정에 대한 설명을 입력하세요"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              fontSize: '16px',
-              minHeight: '200px',
-              resize: 'vertical',
-              backgroundColor: colors.inputBackground,
-              color: colors.textPrimary
-            }}
-          />
+        <div className="field-container">
+          <h3 className="field-title" style={{ color: colors.textPrimary }}>
+            <span className="required-mark">*</span>
+            내용
+          </h3>
+          <div className="textarea-container">
+            <textarea
+              value={content}
+              onChange={handleContentChange}
+              placeholder="일정에 대한 설명을 입력하세요."
+              className="form-input"
+              style={{
+                border: `1px solid ${colors.border}`,
+                backgroundColor: colors.inputBackground,
+                color: colors.textPrimary,
+                minHeight: '200px',
+                resize: 'vertical'
+              }}
+              maxLength={10000}
+              required
+            />
+            <div className="char-counter" style={{ color: colors.textSecondary }}>
+              {content.length}/10000
+            </div>
+          </div>
         </div>
 
-        <div style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          gap: '1rem'
-        }}>
-          <button
+        <div className="button-container">
+          <Button 
+            variant="back" 
+            label="취소" 
             onClick={handleCancel}
-            style={{
-              padding: '0.75rem 2rem',
-              border: `1px solid ${colors.border}`,
-              borderRadius: '4px',
-              backgroundColor: colors.buttonBackground,
-              color: colors.buttonText,
-              cursor: 'pointer'
-            }}
-          >
-            취소
-          </button>
-          <button
+            style={{ width: '84px', height: '40px' }}
+          />
+          <Button 
+            variant="upload" 
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
-            style={{
-              padding: '0.75rem 2rem',
-              backgroundColor: isFormValid && !isSubmitting ? colors.primary : '#CCCCCC',
-              color: '#FFFFFF',
-              border: 'none',
-              borderRadius: '4px',
+            style={{ 
+              width: '84px', 
+              height: '40px',
+              opacity: isFormValid && !isSubmitting ? 1 : 0.5,
               cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
             }}
-          >
-            작성
-          </button>
+          />
         </div>
       </div>
     </div>
