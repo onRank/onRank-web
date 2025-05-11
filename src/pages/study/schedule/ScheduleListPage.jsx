@@ -145,7 +145,7 @@ function ScheduleListPage({
               style={{ 
                 fontWeight: 'bold', 
                 marginBottom: '0.2rem', 
-                fontSize: '11px',
+                fontSize: '15px',
                 color: colors.text 
               }}
             >
@@ -153,7 +153,7 @@ function ScheduleListPage({
             </div>
             <div 
               style={{ 
-                fontSize: '10px', 
+                fontSize: '13px', 
                 color: colors.textSecondary 
               }}
             >
