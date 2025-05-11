@@ -1,7 +1,7 @@
 import { api } from './api';
 
 const notificationService = {
-  // 알림 목록 조회
+  // 알림 목록 조회 - GET /notifications
   getNotifications: async () => {
     try {
       const response = await api.get('/notifications');
@@ -12,7 +12,7 @@ const notificationService = {
     }
   },
 
-  // 알림 읽음 처리
+  // 알림 읽음 처리 - PATCH /notifications/{notificationId}/read
   markAsRead: async (notificationId) => {
     try {
       const response = await api.patch(`/notifications/${notificationId}/read`);

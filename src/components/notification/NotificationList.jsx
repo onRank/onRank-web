@@ -5,9 +5,16 @@ import './NotificationStyles.css';
 
 /**
  * 알림 목록 컴포넌트
- * - 초기 로딩 시 + 5분 간격으로 알림 목록 조회
- * - 읽지 않은 알림은 강조 표시
- * - 알림 클릭 시 읽음 처리 후 관련 URL로 이동
+ * API 스키마:
+ * - notificationId: 알림 ID (int64)
+ * - notificationCategory: 알림 카테고리 (string, ex: "NOTICE")
+ * - studyName: 스터디 이름 (string)
+ * - studyImageUrl: 스터디 이미지 URL (string)
+ * - notificationTitle: 알림 제목 (string)
+ * - notificationContent: 알림 내용 (string)
+ * - relatedUrl: 관련 URL (string)
+ * - read: 읽음 여부 (boolean)
+ * - notificationCreatedAt: 생성 시각 (date-time)
  */
 const NotificationList = ({ onClose }) => {
   const [notifications, setNotifications] = useState([]);
@@ -59,8 +66,6 @@ const NotificationList = ({ onClose }) => {
         await notificationService.markAsRead(notification.notificationId);
       } catch (err) {
         console.error('알림 읽음 처리 실패:', err);
-        // 실패 시 원상복구 (선택적)
-        // setNotifications(notifications);
       }
     }
     
@@ -71,27 +76,28 @@ const NotificationList = ({ onClose }) => {
     }
   };
 
-  // 날짜 포맷 함수
+  // 날짜 표시 함수
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('ko-KR', {
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const now = new Date();
+    const notificationDate = new Date(dateString);
+    const diffTime = Math.abs(now - notificationDate);
+    const diffMinutes = Math.floor(diffTime / (1000 * 60));
+    
+    if (diffMinutes < 60) {
+      return `${diffMinutes}분 전`;
+    } else {
+      return notificationDate.toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric'
+      });
+    }
   };
 
   return (
     <div className="notification-list-container">
       <div className="notification-header">
         <h3>알림</h3>
-        {notifications.length > 0 && (
-          <div className="notification-count">
-            읽지 않은 알림: <span>{notifications.filter(n => !n.read).length}</span>
-          </div>
-        )}
       </div>
 
       {loading && <div className="notification-loading">알림을 불러오는 중...</div>}
@@ -109,18 +115,32 @@ const NotificationList = ({ onClose }) => {
             className={`notification-item ${!notification.read ? 'unread' : ''}`}
             onClick={() => handleNotificationClick(notification)}
           >
+            {notification.studyImageUrl && (
+              <div className="notification-image">
+                <img 
+                  src={notification.studyImageUrl} 
+                  alt={notification.studyName || '스터디 이미지'} 
+                />
+              </div>
+            )}
             <div className="notification-content">
+              <div className="notification-study-name">
+                {notification.studyName}
+              </div>
               <div className="notification-title">
-                [{notification.notificationCategory}] {notification.notificationTitle}
+                {notification.notificationCategory === 'NOTICE' 
+                  ? '[알림] ' 
+                  : notification.notificationCategory 
+                    ? `[${notification.notificationCategory}] `
+                    : ''
+                }
+                {notification.notificationTitle}
               </div>
-              <div className="notification-message">
-                {notification.notificationMessage}
+              <div className="notification-body">
+                {notification.notificationContent}
               </div>
-              <div className="notification-meta">
-                <span className="notification-study">{notification.studyName}</span>
-                <span className="notification-date">
-                  {formatDate(notification.notificationCreatedAt)}
-                </span>
+              <div className="notification-time">
+                {formatDate(notification.notificationCreatedAt)}
               </div>
             </div>
           </li>
