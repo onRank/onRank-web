@@ -5,7 +5,7 @@ function MyRank({ rank, name, point }) {
     container: {
       display: "flex",
       alignItems: "center",
-      border: "1px solid #ccc",
+      border: "1px solid #656565",
       borderRadius: "8px",
       overflow: "hidden",
       backgroundColor: "#fff",
@@ -13,7 +13,7 @@ function MyRank({ rank, name, point }) {
       width: "100%",
     },
     rankBox: {
-      backgroundColor: "#f4c28c",
+      backgroundColor: "#F9A955",
       color: "#000",
       fontWeight: "bold",
       width: "70px",

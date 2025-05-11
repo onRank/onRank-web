@@ -5,7 +5,6 @@ import Ranking from "../ranking/Ranking";
 import RankingList from "../ranking/RankingList";
 import MyRank from "../ranking/MyRank";
 
-// 데이터값 안들어가는거 고치기
 function DefaultContent({ studyData }) {
   const data = studyData.data || studyData;
 
@@ -42,11 +41,21 @@ function DefaultContent({ studyData }) {
   };
 
   // 상위 3명의 랭킹 데이터
-  const rankingData = sortedRankingList.slice(0, 3).map((member, index) => ({
-    rank: index + 1,
-    name: member.studentName,
-    point: member.totalPoint,
-  }));
+  const rankingData = sortedRankingList
+    .slice(0, 3)
+    .map((member, index) => {
+      let displayRank;
+      if (index === 0) displayRank = 2;
+      else if (index === 1) displayRank = 1;
+      else displayRank = 3;
+
+      return {
+        rank: displayRank,
+        name: member.studentName,
+        point: member.totalPoint,
+      };
+    })
+    .sort((a, b) => a.rank - b.rank);
 
   // 전체 랭킹 리스트
   const rankingList = sortedRankingList.map((member, index) => ({
