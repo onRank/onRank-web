@@ -64,16 +64,23 @@ const NotificationList = ({ onClose }) => {
       
       // 서버에 읽음 상태 업데이트 요청
       try {
+        console.log(`알림 읽음 처리 요청: ${notification.notificationId}`);
         await notificationService.markAsRead(notification.notificationId);
+        console.log(`알림 읽음 처리 성공: ${notification.notificationId}`);
       } catch (err) {
         console.error('알림 읽음 처리 실패:', err);
+        // 에러가 있어도 UI는 이미 업데이트되었으므로 사용자 경험에 영향 없음
+        // 로컬 UI 상태만 유지하고 계속 진행
       }
     }
     
     // 알림 관련 URL로 이동
     if (notification.relatedUrl) {
+      console.log(`알림 관련 URL로 이동: ${notification.relatedUrl}`);
       onClose(); // 알림 목록 닫기
       navigate(notification.relatedUrl);
+    } else {
+      console.log('이동할 relatedUrl이 없는 알림입니다.');
     }
   };
 

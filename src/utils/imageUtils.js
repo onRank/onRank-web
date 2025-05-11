@@ -61,35 +61,15 @@ export const handleImageError = (e, imageInfo = '') => {
   if (isFromS3) {
     console.log(`[이미지 로딩 실패] S3 이미지 로드 실패, CORS 문제일 수 있음: ${imageInfo}`);
     
-    // CORS 문제 원인 추적용 로깅
-    console.log(`[이미지 디버그] URL 구조: ${new URL(imageInfo).hostname}`);
-    console.log(`[이미지 디버그] 현재 crossOrigin 설정: ${e.target.crossOrigin}`);
-    
-    // 마지막 시도로 다른 방식의 S3 URL 접근 시도 (필요시 제거)
+    // CORS 문제 원인 로깅을 유지 (디버깅용)
     try {
-      // CORS 에러가 발생한 경우, 마지막 시도로 다시 이미지를 로드
-      // crossOrigin 속성을 강제로 설정하고 캐시 방지를 위한 쿼리 파라미터 추가
-      // (이 방법이 효과가 없으면 기본 이미지로 대체됨)
-      if (!e.target.dataset.retried) {
-        e.target.dataset.retried = "true";
-        e.target.crossOrigin = "anonymous";
-        
-        // 캐시 방지를 위한 랜덤 쿼리 파라미터 추가
-        const cacheBuster = `?cb=${new Date().getTime()}`;
-        const originalSrc = e.target.src;
-        
-        // URL에 이미 쿼리 파라미터가 있는지 확인하고 적절히 추가
-        const newSrc = originalSrc.includes('?') 
-          ? `${originalSrc}&cb=${new Date().getTime()}`
-          : `${originalSrc}${cacheBuster}`;
-          
-        console.log(`[이미지 로딩] 마지막 시도 - 소스 변경: ${newSrc}`);
-        e.target.src = newSrc;
-        return; // 추가 처리하지 않고 종료
-      }
-    } catch (retryError) {
-      console.log(`[이미지 로딩] 마지막 시도 실패:`, retryError);
+      console.log(`[이미지 디버그] URL 구조: ${new URL(imageInfo).hostname}`);
+      console.log(`[이미지 디버그] 현재 crossOrigin 설정: ${e.target.crossOrigin}`);
+    } catch (err) {
+      console.log(`[이미지 디버그] URL 파싱 실패: ${err.message}`);
     }
+    
+    // 마지막 시도 로직 제거 - retry 시도 없이 바로 기본 이미지로 대체
   } else {
     console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
   }
