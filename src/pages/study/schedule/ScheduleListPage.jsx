@@ -46,7 +46,7 @@ function ScheduleListPage({
 
   // 일정 수정 페이지로 이동
   const handleNavigateToEditSchedule = (schedule) => {
-    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}/edit`, { 
+    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`, { 
       state: { 
         schedule, 
         breadcrumb: "일정 > 수정"
@@ -210,11 +210,7 @@ function ScheduleListPage({
         </div>
       ) : (
         <div className="timeline-container">
-          {/* 타임라인 세로선 */}
-          <div
-            className="timeline-line"
-            style={{ backgroundColor: colors.border }}
-          ></div>
+          {/* 타임라인 세로선 제거 */}
 
           {/* 일정 아이템 목록 */}
           <div className="schedule-items">
@@ -236,50 +232,34 @@ function ScheduleListPage({
                   style={{
                     backgroundColor: colors.cardBackground,
                     border: '1px solid black',
+                    borderRadius: '8px',
                   }}
                 >
-                  {/* 타임라인 원 */}
-                  <div
-                    className="timeline-dot"
-                    style={{ backgroundColor: colors.primary }}
-                  >
-                    {schedule.round}
-                  </div>
+                  {/* 타임라인 원 제거 */}
 
                   {/* 일정 제목과 메뉴 */}
                   <div className="schedule-header">
-                    <div className="schedule-info">
-                      <div
-                        className="schedule-title"
-                        style={{ color: colors.textPrimary }}
-                      >
-                        {schedule.scheduleTitle}
-                      </div>
+                    <div className="schedule-info-wrapper">
+                      <h4 className="schedule-item-title" style={{ color: colors.textPrimary }}>
+                        {schedule.round}회차 모임
+                      </h4>
                     </div>
-
-                    {/* 메뉴 아이콘 - 관리자만 표시 */}
+                    
                     {isManager && (
-                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: 'auto' }}>
-                        <ScheduleMenu
-                          onEdit={() => handleNavigateToEditSchedule(schedule)}
-                          onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
-                        />
-                      </div>
+                      <ScheduleMenu 
+                        onEdit={() => handleNavigateToEditSchedule(schedule)}
+                        onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
+                      />
                     )}
                   </div>
 
                   {/* 일정 내용 */}
-                  {schedule.scheduleContent && (
-                    <div
-                      className="schedule-content"
-                      style={{
-                        backgroundColor: colors.surfaceHover,
-                        color: colors.text,
-                      }}
-                    >
-                      {schedule.scheduleContent}
-                    </div>
-                  )}
+                  <div 
+                    className="schedule-content"
+                    style={{ color: colors.text }}
+                  >
+                    {schedule.scheduleContent}
+                  </div>
                 </div>
               </div>
             ))}
