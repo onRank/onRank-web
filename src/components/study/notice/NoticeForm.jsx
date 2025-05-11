@@ -3,16 +3,21 @@ import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { useParams } from "react-router-dom";
 
-const NoticeForm = ({ studyId, notice = null, onFinish }) => {
+const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
+  const { studyId } = useParams(); // Get studyId from URL params
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const { isLoading, createNotice } = useNotice();
+  const { isLoading: contextIsLoading, createNotice } = useNotice();
   const { colors } = useTheme();
   const maxLength = 10000;
+
+  // Use loading state from props or context
+  const isLoading = propIsLoading || contextIsLoading;
 
   useEffect(() => {
     if (notice) {
@@ -76,6 +81,25 @@ const NoticeForm = ({ studyId, notice = null, onFinish }) => {
         fileNames: selectedFiles.map((file) => file.name),
       };
 
+      console.log("[NoticeForm] 공지사항 생성 요청, studyId:", studyId);
+      
+      if (!studyId) {
+        console.error("[NoticeForm] studyId가 없습니다!");
+        setError("스터디 ID를 찾을 수 없습니다.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // onSubmit prop을 사용하여 상위 컴포넌트에서 처리
+      if (onSubmit) {
+        const success = await onSubmit(newNotice, selectedFiles);
+        if (!success) {
+          setIsSubmitting(false);
+        }
+        return;
+      }
+      
+      // 직접 createNotice 호출 (기존 코드 유지)
       const result = await createNotice(studyId, newNotice, selectedFiles);
 
       // 성공 여부 확인 (성공이지만 파일 업로드 실패 경고가 있는 경우 포함)
@@ -100,7 +124,7 @@ const NoticeForm = ({ studyId, notice = null, onFinish }) => {
         // 약간 지연 후 콜백 호출 (사용자가 성공/경고 메시지를 볼 수 있도록)
         setTimeout(
           () => {
-            onFinish?.(result.data.noticeId);
+            if (onCancel) onCancel(result.data.noticeId);
           },
           result.warning ? 1500 : 500
         ); // 경고가 있으면 더 오래 표시
@@ -111,7 +135,7 @@ const NoticeForm = ({ studyId, notice = null, onFinish }) => {
         );
         setTimeout(
           () => {
-            onFinish?.();
+            if (onCancel) onCancel();
           },
           result.warning ? 1500 : 500
         );
@@ -311,7 +335,7 @@ const NoticeForm = ({ studyId, notice = null, onFinish }) => {
         <Button
           type="button"
           variant="back"
-          onClick={() => onFinish()}
+          onClick={onCancel}
           disabled={isSubmitting}
         />
       </div>

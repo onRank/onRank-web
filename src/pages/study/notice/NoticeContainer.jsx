@@ -128,15 +128,22 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 공지사항 생성 제출 핸들러
   const handleSubmitCreate = async (noticeData, files) => {
-    const result = await createNotice(studyId, noticeData, files);
-    if (result.success) {
-      // 생성 후 목록으로 이동
-      navigate(`/studies/${studyId}/notices`, { 
-        replace: true 
-      });
-      return true;
-    } else {
-      alert(result.message || '공지사항 생성에 실패했습니다.');
+    try {
+      console.log("[NoticeContainer] 공지사항 생성 요청:", { studyId, noticeData });
+      const result = await createNotice(studyId, noticeData, files);
+      if (result.success) {
+        // 생성 후 목록으로 이동
+        navigate(`/studies/${studyId}/notices`, { 
+          replace: true 
+        });
+        return true;
+      } else {
+        alert(result.message || '공지사항 생성에 실패했습니다.');
+        return false;
+      }
+    } catch (error) {
+      console.error("[NoticeContainer] 공지사항 생성 오류:", error);
+      alert('공지사항 생성에 실패했습니다.');
       return false;
     }
   };
@@ -167,59 +174,88 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const renderContent = () => {
     if (isNewForm) {
       return (
-        <NoticeForm
-          onSubmit={handleSubmitCreate}
-          onCancel={handleCancel}
-          isLoading={isLoading}
-        />
+        <div>
+          <h1 className="page-title">공지사항 추가</h1>
+          <NoticeForm
+            onSubmit={handleSubmitCreate}
+            onCancel={handleCancel}
+            isLoading={isLoading}
+          />
+        </div>
       );
     }
 
     if (isEditForm && selectedNotice) {
       return (
-        <NoticeEditForm
-          notice={selectedNotice}
-          onSubmit={(data, files) => handleSubmitEdit(selectedNotice.noticeId, data, files)}
-          onCancel={handleCancel}
-          isLoading={isLoading}
-        />
+        <div>
+          <h1 className="page-title">공지사항 수정</h1>
+          <NoticeEditForm
+            notice={selectedNotice}
+            onSubmit={(data, files) => handleSubmitEdit(selectedNotice.noticeId, data, files)}
+            onCancel={handleCancel}
+            isLoading={isLoading}
+          />
+        </div>
       );
     }
 
     if (isDetailView && selectedNotice) {
       return (
-        <NoticeDetail
-          notice={selectedNotice}
-          onEdit={() => handleEditNotice(selectedNotice.noticeId)}
-          onDelete={() => handleDeleteNotice(selectedNotice.noticeId)}
-          onBack={handleCancel}
-          isManager={isManager}
-        />
+        <div>
+          <h1 className="page-title">공지사항 상세</h1>
+          <NoticeDetail
+            notice={selectedNotice}
+            onEdit={() => handleEditNotice(selectedNotice.noticeId)}
+            onDelete={() => handleDeleteNotice(selectedNotice.noticeId)}
+            onBack={handleCancel}
+            isManager={isManager}
+          />
+        </div>
       );
     }
 
     // 기본 리스트 뷰
     return (
       <div>
-        <div className="flex justify-between items-center mb-4">
+        <div className="notice-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <h1 className="page-title">공지사항</h1>
           {isManager && (
             <button
               onClick={handleCreateNotice}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-              style={{ backgroundColor: '#FF0000' }}
+              className="notice-add-button"
+              style={{
+                backgroundColor: '#FF0000',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '0.5rem 1rem',
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
             >
               공지사항 추가
             </button>
           )}
         </div>
-        <NoticeList
-          notices={notices}
-          onNoticeClick={handleNoticeClick}
-          onEdit={isManager ? handleEditNotice : undefined}
-          onDelete={isManager ? handleDeleteNotice : undefined}
-          isLoading={isLoading}
-        />
+        {notices && notices.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '2rem',
+            backgroundColor: '#f8f9fa',
+            borderRadius: '8px',
+            marginTop: '1rem'
+          }}>
+            등록된 공지사항이 없습니다.
+          </div>
+        ) : (
+          <NoticeList
+            notices={notices || []}
+            onNoticeClick={handleNoticeClick}
+            onEdit={isManager ? handleEditNotice : undefined}
+            onDelete={isManager ? handleDeleteNotice : undefined}
+            isLoading={isLoading}
+          />
+        )}
       </div>
     );
   };
