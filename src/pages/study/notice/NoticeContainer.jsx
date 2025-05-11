@@ -200,22 +200,41 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
     // 기본 리스트 뷰
     return (
-      <NoticeList
-        notices={notices}
-        onNoticeClick={handleNoticeClick}
-        onEdit={isManager ? handleEditNotice : undefined}
-        onDelete={isManager ? handleDeleteNotice : undefined}
-        onCreateClick={isManager ? handleCreateNotice : undefined}
-        isLoading={isLoading}
-      />
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="page-title">공지사항</h1>
+          {isManager && (
+            <button
+              onClick={handleCreateNotice}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+              style={{ backgroundColor: '#FF0000' }}
+            >
+              공지사항 추가
+            </button>
+          )}
+        </div>
+        <NoticeList
+          notices={notices}
+          onNoticeClick={handleNoticeClick}
+          onEdit={isManager ? handleEditNotice : undefined}
+          onDelete={isManager ? handleDeleteNotice : undefined}
+          isLoading={isLoading}
+        />
+      </div>
     );
   };
 
   return (
-    <>
-      <h1 className="page-title">공지사항</h1>
+    <div 
+      style={{
+        width: '100%',
+        maxWidth: '100%',
+        padding: '0',
+        marginTop: '1rem'
+      }}
+    >
       {renderContent()}
-    </>
+    </div>
   );
 };
 
