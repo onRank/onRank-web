@@ -4,6 +4,8 @@ import PointContainer from "../ranking/PointContainer";
 import Ranking from "../ranking/Ranking";
 import RankingList from "../ranking/RankingList";
 import MyRank from "../ranking/MyRank";
+import { FaCheck } from "react-icons/fa6";
+import { FaFileAlt } from "react-icons/fa";
 
 function DefaultContent({ studyData }) {
   const data = studyData.data || studyData;
@@ -11,13 +13,18 @@ function DefaultContent({ studyData }) {
   const points = [
     {
       title: "과제",
-      icon: "📝",
+      icon: <FaFileAlt color="#fff" />,
       point: data.memberSubmissionPoint || 0,
     },
     {
       title: "출석",
-      icon: "✅",
+      icon: <FaCheck color="#fff" />,
       point: data.memberPresentPoint || 0,
+      details: {
+        출석: data.memberPresentPoint || 0,
+        지각: data.memberLatePoint || 0,
+        결석: data.memberAbsentPoint || 0,
+      },
     },
   ];
 
@@ -108,6 +115,7 @@ function DefaultContent({ studyData }) {
                   title={p.title}
                   icon={p.icon}
                   point={p.point}
+                  details={p.details}
                 />
               ))}
             </div>
