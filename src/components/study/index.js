@@ -5,13 +5,13 @@ import MemberTab from './tabs/MemberTab';
 import AttendanceTab from './tabs/AttendanceTab';
 import VoteTab from './tabs/VoteTab';
 import AdminTab from './tabs/AdminTab';
-import { ScheduleContainer, ScheduleDetailView } from '../../pages/study/schedule';
+import { ScheduleContainer, ScheduleEdit } from '../../pages/study/schedule';
 
 export {
   StudyCard,
   StudyContent,
   ScheduleContainer,
-  ScheduleDetailView,
+  ScheduleEdit,
   TodoTab,
   MemberTab,
   AttendanceTab,

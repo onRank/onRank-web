@@ -1,9 +1,9 @@
-/* ScheduleDetailView.css */
-.schedule-detail-container {
+/* ScheduleEdit.css */
+.schedule-edit-container {
   width: 100%;
 }
 
-.schedule-detail-header {
+.schedule-edit-header {
   display: flex;
   align-items: center;
   margin-bottom: 2rem;
@@ -18,7 +18,7 @@
   align-items: center;
 }
 
-.schedule-detail-title {
+.schedule-edit-title {
   margin: 0;
   margin-left: 0.5rem;
   font-size: 1.5rem;

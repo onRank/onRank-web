@@ -5,7 +5,7 @@ import { studyService } from "../../../services/api";
 import { formatDateYMD as formatDate, formatTime, formatDateTime } from '../../../utils/dateUtils';
 import useStudyRole from "../../../hooks/useStudyRole";
 import ScheduleListPage from "./ScheduleListPage";
-import ScheduleDetailView from "./ScheduleDetailView";
+import ScheduleEdit from "./ScheduleEdit";
 import ScheduleAddPage from "./ScheduleAddPage";
 
 function ScheduleContainer({ onSubPageChange }) {
@@ -49,7 +49,7 @@ function ScheduleContainer({ onSubPageChange }) {
             console.log("[ScheduleContainer] 선택된 일정:", schedule);
             setSelectedSchedule(schedule);
             setShowScheduleDetail(true);
-            onSubPageChange("상세");
+            onSubPageChange("수정");
           } else {
             console.log("[ScheduleContainer] 일정을 찾을 수 없음:", scheduleId);
             setError("해당 일정을 찾을 수 없습니다.");
@@ -111,7 +111,7 @@ function ScheduleContainer({ onSubPageChange }) {
     if (isAddPage) {
       onSubPageChange("추가");
     } else if (showScheduleDetail) {
-      onSubPageChange("상세");
+      onSubPageChange("수정");
     } else {
       onSubPageChange(null); // 목록 페이지에서는 null 전달
     }
@@ -285,7 +285,7 @@ function ScheduleContainer({ onSubPageChange }) {
     
     if (showScheduleDetail || scheduleId) {
       return (
-        <ScheduleDetailView
+        <ScheduleEdit
           schedule={selectedSchedule}
           onBack={handleBackToScheduleList}
           onUpdate={handleUpdateSchedule}
