@@ -26,6 +26,18 @@ api.interceptors.request.use(
       }
     );
 
+    // S3나 외부 도메인 요청에 대한 credentials 설정 제거
+    if (config.url.includes('amazonaws.com') || config.url.includes('s3.')) {
+      config.withCredentials = false;
+      // 인증 헤더 제거
+      delete config.headers.Authorization;
+    }
+    
+    // 알림 관련 요청은 항상 withCredentials 설정
+    if (config.url.includes('/notifications')) {
+      config.withCredentials = true;
+    }
+
     // 토큰이 필요한 요청인 경우 헤더에 토큰 추가
     const token = tokenUtils.getToken();
     if (token) {

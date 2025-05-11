@@ -20,6 +20,7 @@ const NotificationList = ({ onClose }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [imageUrls, setImageUrls] = useState({});
   const navigate = useNavigate();
 
   // 알림 조회 함수
@@ -29,6 +30,14 @@ const NotificationList = ({ onClose }) => {
       const data = await notificationService.getNotifications();
       setNotifications(data || []);
       setError(null);
+      
+      // S3 이미지 URL 처리
+      const urls = {};
+      (data || []).forEach(notification => {
+        if (notification.studyImageUrl) {
+          loadImageWithCredentialsOmitted(notification.studyImageUrl, notification.notificationId);
+        }
+      });
     } catch (err) {
       console.error('알림 조회 실패:', err);
       setError('알림을 불러오는 데 실패했습니다.');
@@ -76,6 +85,45 @@ const NotificationList = ({ onClose }) => {
     }
   };
 
+  // 카테고리 이름 변환
+  const getCategoryName = (category) => {
+    const categoryMap = {
+      'NOTICE': '알림',
+      'SCHEDULE': '일정',
+      'ASSIGNMENT': '과제',
+      'ATTENDANCE': '출석',
+      'MEMBER': '멤버',
+      'STUDY': '스터디'
+    };
+    
+    return categoryMap[category] || category;
+  };
+
+  // S3 이미지 URL 로드
+  const loadImageWithCredentialsOmitted = async (url, id) => {
+    if (!url) return;
+    
+    try {
+      // credentials: 'omit'으로 S3 이미지 가져오기
+      const response = await fetch(url, { 
+        credentials: 'omit',
+        mode: 'cors'
+      });
+      
+      if (!response.ok) {
+        throw new Error('이미지 로드 실패');
+      }
+      
+      // 이미지 URL 상태 업데이트
+      setImageUrls(prev => ({
+        ...prev,
+        [id]: url
+      }));
+    } catch (error) {
+      console.error('S3 이미지 로드 오류:', error);
+    }
+  };
+
   // 날짜 표시 함수
   const formatDate = (dateString) => {
     const now = new Date();
@@ -118,8 +166,13 @@ const NotificationList = ({ onClose }) => {
             {notification.studyImageUrl && (
               <div className="notification-image">
                 <img 
-                  src={notification.studyImageUrl} 
+                  src={notification.studyImageUrl}
                   alt={notification.studyName || '스터디 이미지'} 
+                  onError={(e) => {
+                    e.target.src = '/default-study-image.png'; // 기본 이미지로 대체
+                    e.target.onerror = null; // 무한 루프 방지
+                  }}
+                  crossOrigin="anonymous" // CORS 문제 해결을 위한 설정
                 />
               </div>
             )}
@@ -128,12 +181,9 @@ const NotificationList = ({ onClose }) => {
                 {notification.studyName}
               </div>
               <div className="notification-title">
-                {notification.notificationCategory === 'NOTICE' 
-                  ? '[알림] ' 
-                  : notification.notificationCategory 
-                    ? `[${notification.notificationCategory}] `
-                    : ''
-                }
+                {notification.notificationCategory ? 
+                  `[${getCategoryName(notification.notificationCategory)}] ` : 
+                  ''}
                 {notification.notificationTitle}
               </div>
               <div className="notification-body">
@@ -150,4 +200,4 @@ const NotificationList = ({ onClose }) => {
   );
 };
 
-export default NotificationList; 
+export default NotificationList;

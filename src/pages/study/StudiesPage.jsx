@@ -150,11 +150,6 @@ function StudiesPage() {
     fetchStudies();
   }, [navigate, pageInitialized, dataLoaded]);
 
-  // 수동 새로고침 기능 추가
-  const handleRefresh = async () => {
-    console.log("[StudiesPage] 수동 새로고침 시도");
-    setDataLoaded(false);
-  };
 
   // 토큰에서 사용자 정보 추출 (백업 방법)
   const extractUserInfoFromToken = () => {
