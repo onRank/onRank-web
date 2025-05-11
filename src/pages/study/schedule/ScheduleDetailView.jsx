@@ -233,14 +233,19 @@ const ScheduleDetailView = ({
 
         {/* 관리자만 버튼 표시 */}
         {isManager && (
-          <div className="button-container">
+          <div className="button-container" style={{
+            display: 'flex',
+            gap: '1rem',
+            justifyContent: 'flex-end',
+            marginTop: '2rem',
+            marginBottom: '3rem',
+            paddingBottom: '2rem'
+          }}>
             <Button 
               variant="store" 
               onClick={handleSubmit}
               disabled={!isFormValid || isSubmitting}
               style={{ 
-                width: '84px', 
-                height: '40px',
                 opacity: isFormValid && !isSubmitting ? 1 : 0.5,
                 cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
               }}
@@ -249,7 +254,6 @@ const ScheduleDetailView = ({
               variant="back" 
               label="닫기" 
               onClick={onBack}
-              style={{ width: '84px', height: '40px' }}
             />
           </div>
         )}
