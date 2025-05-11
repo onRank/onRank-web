@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import notificationService from '../../services/notification';
 import { DEFAULT_IMAGE_SVG, handleImageError, isS3Url } from '../../utils/imageUtils';
 import './NotificationStyles.css';
+import PropTypes from 'prop-types';
 
 /**
  * 알림 목록 컴포넌트
@@ -17,7 +18,7 @@ import './NotificationStyles.css';
  * - read: 읽음 여부 (boolean)
  * - notificationCreatedAt: 생성 시각 (date-time)
  */
-const NotificationList = ({ onClose }) => {
+const NotificationList = ({ onClose, onNotificationRead }) => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -61,6 +62,12 @@ const NotificationList = ({ onClose }) => {
           : item
       );
       setNotifications(updatedNotifications);
+      
+      // 알림 카운터 업데이트를 위한 이벤트 발생 및 콜백 호출
+      window.dispatchEvent(new Event('notification-read'));
+      if (onNotificationRead) {
+        onNotificationRead();
+      }
       
       // 서버에 읽음 상태 업데이트 요청
       try {
@@ -241,6 +248,11 @@ const NotificationList = ({ onClose }) => {
       </ul>
     </div>
   );
+};
+
+NotificationList.propTypes = {
+  onClose: PropTypes.func.isRequired,
+  onNotificationRead: PropTypes.func
 };
 
 export default NotificationList;

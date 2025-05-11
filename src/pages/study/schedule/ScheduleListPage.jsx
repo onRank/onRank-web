@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import AddScheduleModal from "../../../components/study/modals/AddScheduleModal";
@@ -31,6 +31,11 @@ function ScheduleListPage({
 
   // 관리자 권한 확인
   const isManager = memberRole === "HOST" || memberRole === "CREATOR";
+  
+  // Debug admin role
+  useEffect(() => {
+    console.log("[ScheduleListPage] isManager:", isManager, "memberRole:", memberRole);
+  }, [isManager, memberRole]);
 
   // 일정 추가 페이지로 이동
   const handleNavigateToAddSchedule = () => {
@@ -254,10 +259,12 @@ function ScheduleListPage({
 
                     {/* 메뉴 아이콘 - 관리자만 표시 */}
                     {isManager && (
-                      <ScheduleMenu
-                        onEdit={() => handleNavigateToEditSchedule(schedule)}
-                        onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', width: 'auto' }}>
+                        <ScheduleMenu
+                          onEdit={() => handleNavigateToEditSchedule(schedule)}
+                          onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
+                        />
+                      </div>
                     )}
                   </div>
 

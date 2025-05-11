@@ -38,6 +38,21 @@ const NotificationIcon = () => {
     return () => clearInterval(pollingInterval);
   }, []);
 
+  // 알림 읽음 상태 변경 이벤트 처리
+  useEffect(() => {
+    // 알림 읽음 처리 시 카운터 감소 이벤트 리스너
+    const handleNotificationRead = () => {
+      setUnreadCount(prevCount => Math.max(0, prevCount - 1));
+    };
+    
+    // 전역 이벤트 등록
+    window.addEventListener('notification-read', handleNotificationRead);
+    
+    return () => {
+      window.removeEventListener('notification-read', handleNotificationRead);
+    };
+  }, []);
+
   // 알림 아이콘 클릭 이벤트
   const handleIconClick = () => {
     setShowNotifications(!showNotifications);
@@ -73,7 +88,7 @@ const NotificationIcon = () => {
       
       {showNotifications && (
         <div className="notification-dropdown">
-          <NotificationList onClose={handleClose} />
+          <NotificationList onClose={handleClose} onNotificationRead={() => setUnreadCount(prev => Math.max(0, prev - 1))} />
         </div>
       )}
     </div>
