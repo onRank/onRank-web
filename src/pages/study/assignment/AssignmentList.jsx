@@ -325,7 +325,16 @@ function AssignmentList() {
              새로운 과제를 추가해주세요.
           </div>
         </div>
-        <Button variant="add" onClick={handleCreateAssignment} />
+        <Button 
+          variant="add" 
+          onClick={handleCreateAssignment}
+          style={{ 
+            width: '60px', 
+            height: '32px',
+            fontSize: '12px'
+          }}
+          label="+추가" 
+        />
       </div>
     );
   };
@@ -333,7 +342,13 @@ function AssignmentList() {
   return (
     <div className="assignment-container">
       <div className="assignment-header">
-        <h1 className="assignment-title">과제</h1>
+      <h1 style={{ 
+            fontSize: '24px',
+            fontWeight: 'bold',
+            marginBottom: '20px'
+          }}>
+            과제
+          </h1>
       </div>
       
       {/* 오류 메시지 표시 */}
