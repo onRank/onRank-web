@@ -8,21 +8,8 @@ function ManagementContainer() {
   const [activeTab, setActiveTab] = useState('study'); // 'study', 'member'
 
   return (
-    <div style={{ padding: '1.5rem' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        marginBottom: '1.5rem'
-      }}>
-        <h2 style={{ 
-          fontSize: '1.5rem', 
-          fontWeight: 'bold',
-          color: '#333'
-        }}>
-          관리
-        </h2>
-      </div>
+    <>
+      <h1 className="page-title">관리</h1>
       
       {/* 관리 탭 메뉴 */}
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
@@ -63,7 +50,7 @@ function ManagementContainer() {
         {activeTab === 'study' && <StudyManagement />}
         {activeTab === 'member' && <MemberManagement />}
       </div>
-    </div>
+    </>
   );
 }
 

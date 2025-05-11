@@ -103,45 +103,48 @@ function DefaultContent({ studyData }) {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.main}>
-        <div style={styles.content}>
-          <div style={styles.grid}>
-            {/* ① PointContainer */}
-            <div style={styles.topLeft}>
-              {points.map((p, i) => (
-                <PointContainer
-                  key={i}
-                  title={p.title}
-                  icon={p.icon}
-                  point={p.point}
-                  details={p.details}
+    <>
+      <h1 className="page-title">스터디 홈</h1>
+      <div style={styles.wrapper}>
+        <div style={styles.main}>
+          <div style={styles.content}>
+            <div style={styles.grid}>
+              {/* ① PointContainer */}
+              <div style={styles.topLeft}>
+                {points.map((p, i) => (
+                  <PointContainer
+                    key={i}
+                    title={p.title}
+                    icon={p.icon}
+                    point={p.point}
+                    details={p.details}
+                  />
+                ))}
+              </div>
+
+              {/* ② MyRank */}
+              <div style={styles.topRight}>
+                <MyRank {...myRank} />
+              </div>
+
+              {/* ③ Ranking */}
+              <div style={styles.bottomLeft}>
+                <Ranking
+                  rankingData={[
+                    rankingData.find((r) => r.rank === 2),
+                    rankingData.find((r) => r.rank === 1),
+                    rankingData.find((r) => r.rank === 3),
+                  ].filter(Boolean)}
                 />
-              ))}
-            </div>
+              </div>
 
-            {/* ② MyRank */}
-            <div style={styles.topRight}>
-              <MyRank {...myRank} />
+              {/* ④ RankingList */}
+              <RankingList rankingList={rankingList} />
             </div>
-
-            {/* ③ Ranking */}
-            <div style={styles.bottomLeft}>
-              <Ranking
-                rankingData={[
-                  rankingData.find((r) => r.rank === 2),
-                  rankingData.find((r) => r.rank === 1),
-                  rankingData.find((r) => r.rank === 3),
-                ].filter(Boolean)}
-              />
-            </div>
-
-            {/* ④ RankingList */}
-            <RankingList rankingList={rankingList} />
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

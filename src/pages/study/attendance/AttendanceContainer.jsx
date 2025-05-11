@@ -105,14 +105,8 @@ function AttendanceContainer() {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1 style={{ 
-        fontSize: '24px', 
-        fontWeight: 'bold', 
-        marginBottom: '2rem' 
-      }}>
-        출석 관리
-      </h1>
+    <>
+      <h1 className="page-title">출석 관리</h1>
       
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ 
@@ -218,7 +212,7 @@ function AttendanceContainer() {
         studyId={studyId} 
         onUpdateStatus={handleUpdateStatus}
       />
-    </div>
+    </>
   );
 }
 

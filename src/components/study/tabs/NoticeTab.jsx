@@ -5,7 +5,12 @@ import NoticeList from '../notice/NoticeList';
 function NoticeTab({ userRole = "MEMBER" }) {
   const { studyId } = useParams();
   
-  return <NoticeList studyId={studyId} userRole={userRole} />;
+  return (
+    <>
+      <h1 className="page-title">공지사항</h1>
+      <NoticeList studyId={studyId} userRole={userRole} />
+    </>
+  );
 }
 
 NoticeTab.propTypes = {

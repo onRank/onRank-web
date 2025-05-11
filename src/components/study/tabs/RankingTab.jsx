@@ -2,7 +2,12 @@ import PropTypes from 'prop-types';
 import DefaultContent from './DefaultContent';
 
 function RankingTab() {
-  return <DefaultContent content="랭킹 및 보증금 기능 개발 중입니다." />;
+  return (
+    <>
+      <h1 className="page-title">랭킹</h1>
+      <DefaultContent content="랭킹 및 보증금 기능 개발 중입니다." />
+    </>
+  );
 }
 
 export default RankingTab; 
