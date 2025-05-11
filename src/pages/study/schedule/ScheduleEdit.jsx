@@ -134,7 +134,7 @@ const ScheduleEdit = ({
           <IoChevronBackOutline size={24} />
         </button>
         <h2 className="schedule-edit-title" style={{ color: colors.text }}>
-          일정 수정
+          일정
         </h2>
       </div>
 
@@ -235,7 +235,7 @@ const ScheduleEdit = ({
         {isManager && (
           <div className="button-container" style={{
             display: 'flex',
-            gap: '1rem',
+            gap: '0.75rem',
             justifyContent: 'flex-end',
             marginTop: '2rem',
             marginBottom: '3rem',
@@ -246,6 +246,9 @@ const ScheduleEdit = ({
               onClick={handleSubmit}
               disabled={!isFormValid || isSubmitting}
               style={{ 
+                width: '60px', 
+                height: '32px',
+                fontSize: '12px',
                 opacity: isFormValid && !isSubmitting ? 1 : 0.5,
                 cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
               }}
@@ -254,6 +257,11 @@ const ScheduleEdit = ({
               variant="back" 
               label="닫기" 
               onClick={onBack}
+              style={{ 
+                width: '60px', 
+                height: '32px',
+                fontSize: '12px'
+              }}
             />
           </div>
         )}

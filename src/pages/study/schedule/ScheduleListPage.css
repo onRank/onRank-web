@@ -49,6 +49,19 @@
 .timeline-container {
   width: 100%;
   position: relative;
+  padding-left: 30px; /* 왼쪽 여백 추가 - 점과 선을 위한 공간 */
+}
+
+/* 타임라인 세로선 스타일 추가 */
+.timeline-container::before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 8px;
+  width: 1px;
+  border-left: 1px dashed #000;
+  z-index: 1;
 }
 
 .schedule-items {
@@ -62,6 +75,19 @@
 .schedule-item-wrapper {
   margin-bottom: 1.5rem;
   position: relative;
+}
+
+/* 타임라인 점 스타일 추가 */
+.schedule-item-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 24px;
+  left: -30px;
+  width: 10px;
+  height: 10px;
+  background-color: #000;
+  border-radius: 50%;
+  z-index: 2;
 }
 
 .schedule-item-header {

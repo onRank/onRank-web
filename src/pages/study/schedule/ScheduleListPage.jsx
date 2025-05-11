@@ -144,7 +144,16 @@ function ScheduleListPage({
               다가올 일정을 추가해주세요.
             </div>
           </div>
-          <Button onClick={handleNavigateToAddSchedule} variant="add" />
+          <Button 
+            onClick={handleNavigateToAddSchedule} 
+            variant="add" 
+            style={{ 
+              width: '60px', 
+              height: '32px',
+              fontSize: '12px'
+            }}
+            label="+추가" 
+          />
         </div>
       )}
 
@@ -186,7 +195,7 @@ function ScheduleListPage({
         </div>
       ) : (
         <div className="timeline-container">
-          {/* 타임라인 세로선 제거 */}
+          {/* 타임라인 세로선 - CSS로 자동 생성됨 */}
 
           {/* 일정 아이템 목록 */}
           <div className="schedule-items">
