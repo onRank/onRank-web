@@ -132,31 +132,12 @@ function ScheduleListPage({
     <div className="schedule-list-container">
       {/* 일정 추가 안내 - 관리자 권한이 있을 때만 표시 */}
       {isManager && (
-        <div 
-          className="schedule-add-box"
-          style={{ 
-            backgroundColor: colors.cardBackground,
-            padding: '0.7rem',
-            marginBottom: '1rem'
-          }}
-        >
+        <div className="add-section-box" style={{ backgroundColor: colors.cardBackground }}>
           <div>
-            <div 
-              style={{ 
-                fontWeight: 'bold', 
-                marginBottom: '0.2rem', 
-                fontSize: '15px',
-                color: colors.text 
-              }}
-            >
+            <div className="add-section-title" style={{ color: colors.text }}>
               일정 추가
             </div>
-            <div 
-              style={{ 
-                fontSize: '13px', 
-                color: colors.textSecondary 
-              }}
-            >
+            <div className="add-section-description" style={{ color: colors.textSecondary }}>
               다가올 일정을 추가해주세요.
             </div>
           </div>
@@ -175,37 +156,21 @@ function ScheduleListPage({
 
       {/* 오류 메시지 표시 */}
       {error && (
-        <div
-          className="schedule-error"
-          style={{
-            backgroundColor: `${colors.error}20`,
-            color: colors.error,
-          }}
-        >
+        <div className="error-message">
           {error}
         </div>
       )}
 
       {/* 로딩 상태 표시 */}
       {isLoading && (
-        <div
-          className="schedule-loading"
-          style={{ color: colors.textSecondary }}
-        >
+        <div className="loading-message">
           일정을 불러오는 중입니다...
         </div>
       )}
 
       {/* 일정 타임라인 */}
       {!isLoading && schedulesWithRounds.length === 0 ? (
-        <div
-          className="schedule-empty"
-          style={{
-            color: colors.textSecondary,
-            border: `1px dashed ${colors.border}`,
-            backgroundColor: colors.cardBackground,
-          }}
-        >
+        <div className="empty-message">
           등록된 일정이 없습니다.{" "}
           {isManager && "일정 추가 버튼을 눌러 새 일정을 추가해보세요."}
         </div>

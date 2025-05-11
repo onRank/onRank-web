@@ -318,10 +318,10 @@ function AssignmentList() {
     if (!isManager) return null;
     
     return (
-      <div className="assignment-add-section">
+      <div className="add-section-box">
         <div>
-          <div className="assignment-add-title">과제 추가</div>
-          <div className="assignment-add-description">
+          <div className="add-section-title">과제 추가</div>
+          <div className="add-section-description">
              새로운 과제를 추가해주세요.
           </div>
         </div>
@@ -342,13 +342,9 @@ function AssignmentList() {
   return (
     <div className="assignment-container">
       <div className="assignment-header">
-      <h1 style={{ 
-            fontSize: '24px',
-            fontWeight: 'bold',
-            marginBottom: '20px'
-          }}>
-            과제
-          </h1>
+        <h1 className="page-title">
+          과제
+        </h1>
       </div>
       
       {/* 오류 메시지 표시 */}

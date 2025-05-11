@@ -1,0 +1,63 @@
+/* common.css - 공통 스타일 정의 */
+
+/* 페이지 제목 스타일 */
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* 컨테이너 스타일 */
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* 추가 박스 스타일 (일정 추가, 과제 추가 등) */
+.add-section-box {
+  border: 1px solid black;
+  border-radius: 12px;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.add-section-title {
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+  font-size: 15px;
+}
+
+.add-section-description {
+  font-size: 13px;
+  color: #666;
+}
+
+/* 로딩 및 오류 메시지 */
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error-message {
+  color: #dc3545;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #f8d7da;
+  border-radius: 4px;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+} 
