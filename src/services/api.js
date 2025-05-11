@@ -71,8 +71,37 @@ api.interceptors.request.use(
     
     // 상대 경로 요청 처리 (내부 API 호출)
     if (!config.url || !config.url.includes('://')) {
-      // 알림 관련 요청은 항상 withCredentials 설정
-      if (config.url && config.url.includes('/notifications')) {
+      // 알림 읽음 처리 요청 특별 처리 (/notifications/{id}/read)
+      if (config.url && config.url.includes('/notifications/') && config.url.includes('/read')) {
+        console.log("[API Interceptor] 알림 읽음 처리 요청 감지, 특별 헤더 설정");
+        config.withCredentials = true;
+        
+        // PATCH 메소드의 CORS 문제 해결을 위한 특별 설정
+        config.headers = {
+          ...config.headers,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
+          'Origin': window.location.origin,
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, PUT, POST, PATCH, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+          'Access-Control-Allow-Credentials': 'true'
+        };
+        
+        // 토큰 추가
+        const token = tokenUtils.getToken();
+        if (token) {
+          config.headers.Authorization = token.startsWith("Bearer ") 
+            ? token 
+            : `Bearer ${token}`;
+        }
+        
+        console.log("[API Interceptor] 알림 읽음 처리 최종 헤더:", config.headers);
+        return config;
+      }
+      // 일반 알림 관련 요청
+      else if (config.url && config.url.includes('/notifications')) {
         console.log("[API Interceptor] 알림 API 요청 감지, withCredentials 설정");
         config.withCredentials = true;
         

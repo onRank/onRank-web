@@ -69,6 +69,34 @@ const NotificationList = ({ onClose }) => {
         console.log(`알림 읽음 처리 성공: ${notification.notificationId}`);
       } catch (err) {
         console.error('알림 읽음 처리 실패:', err);
+        
+        // CORS나 네트워크 오류 시 native fetch로 직접 다시 시도
+        if (err.message && (err.message.includes('Network Error') || err.message.includes('CORS'))) {
+          try {
+            console.log('fetch API로 직접 시도');
+            const apiBaseUrl = import.meta.env.PROD 
+              ? "https://onrank.kr" 
+              : import.meta.env.VITE_API_URL || "https://localhost:8080";
+              
+            const fetchUrl = `${apiBaseUrl}/notifications/${notification.notificationId}/read`;
+            
+            // 쿠키 포함 및 CORS 모드 설정
+            await fetch(fetchUrl, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+              },
+              credentials: 'include',
+              mode: 'cors'
+            });
+            console.log('fetch API로 읽음 처리 성공');
+          } catch (fetchErr) {
+            console.error('fetch API 시도도 실패:', fetchErr);
+            // 에러가 있어도 UI는 이미 업데이트되었으므로 사용자 경험에 영향 없음
+          }
+        }
+        
         // 에러가 있어도 UI는 이미 업데이트되었으므로 사용자 경험에 영향 없음
         // 로컬 UI 상태만 유지하고 계속 진행
       }
