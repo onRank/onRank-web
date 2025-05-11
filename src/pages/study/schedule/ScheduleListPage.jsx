@@ -134,13 +134,29 @@ function ScheduleListPage({
       {isManager && (
         <div 
           className="schedule-add-box"
-          style={{ backgroundColor: colors.cardBackground }}
+          style={{ 
+            backgroundColor: colors.cardBackground,
+            padding: '0.7rem',
+            marginBottom: '1rem'
+          }}
         >
           <div>
-            <div className="schedule-add-title" style={{ color: colors.text }}>
+            <div 
+              style={{ 
+                fontWeight: 'bold', 
+                marginBottom: '0.2rem', 
+                fontSize: '11px',
+                color: colors.text 
+              }}
+            >
               일정 추가
             </div>
-            <div className="schedule-add-description" style={{ color: colors.textSecondary }}>
+            <div 
+              style={{ 
+                fontSize: '10px', 
+                color: colors.textSecondary 
+              }}
+            >
               다가올 일정을 추가해주세요.
             </div>
           </div>
