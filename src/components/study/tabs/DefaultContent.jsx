@@ -124,7 +124,7 @@ function DefaultContent({ studyData }) {
                   rankingData.find((r) => r.rank === 2),
                   rankingData.find((r) => r.rank === 1),
                   rankingData.find((r) => r.rank === 3),
-                ]}
+                ].filter(Boolean)}
               />
             </div>
 

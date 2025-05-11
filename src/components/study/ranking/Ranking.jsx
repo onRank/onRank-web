@@ -107,19 +107,23 @@ function Ranking({ rankingData }) {
 
   return (
     <div style={styles.container}>
-      {rankingData.map((person, index) => (
-        <div key={index} style={getCardStyle(person.rank)}>
-          <div style={styles.icon}>{renderIcon(person.rank)}</div>
-          <div style={styles.name}>{person.name}</div>
-          <div style={styles.point}>{person.point.toLocaleString()} pt</div>
-          <div
-            style={{
-              ...styles.overlay,
-              transitionDelay: getAnimationDelay(person.rank),
-            }}
-          />
-        </div>
-      ))}
+      {(rankingData || []).map((person, index) => 
+        person ? (
+          <div key={index} style={getCardStyle(person.rank)}>
+            <div style={styles.icon}>{renderIcon(person.rank)}</div>
+            <div style={styles.name}>{person.name}</div>
+            <div style={styles.point}>
+              {(person.point || 0).toLocaleString()} pt
+            </div>
+            <div
+              style={{
+                ...styles.overlay,
+                transitionDelay: getAnimationDelay(person.rank),
+              }}
+            />
+          </div>
+        ) : null
+      )}
     </div>
   );
 }
