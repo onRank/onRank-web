@@ -109,9 +109,9 @@ function ScheduleContainer({ onSubPageChange }) {
   // subPage 상태 관리 및 콜백 호출
   useEffect(() => {
     if (isAddPage) {
-      onSubPageChange("일정 추가");
+      onSubPageChange("추가");
     } else if (showScheduleDetail) {
-      onSubPageChange("일정 상세");
+      onSubPageChange("상세");
     } else {
       onSubPageChange(null); // 목록 페이지에서는 null 전달
     }
@@ -265,7 +265,11 @@ function ScheduleContainer({ onSubPageChange }) {
   
   // 일정 추가 페이지로 이동
   const handleNavigateToAddPage = () => {
-    navigate(`/studies/${studyId}/schedules/add`);
+    navigate(`/studies/${studyId}/schedules/add`, {
+      state: {
+        breadcrumb: "일정 > 추가"
+      }
+    });
   };
   
   // 일정 목록 페이지로 이동
