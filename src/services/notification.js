@@ -31,7 +31,7 @@ const notificationService = {
       
       // PATCH 대신 PUT 메서드 사용 시도
       // 일부 백엔드 서버는 PATCH 대신 PUT을 사용하거나 PATCH 요청을 제대로 처리하지 못할 수 있음
-      const response = await api.put(`/notifications/${notificationId}/read`, {}, {
+      const response = await api.patch(`/notifications/${notificationId}/read`, {}, {
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
