@@ -244,19 +244,72 @@ export function NoticeProvider({ children }) {
 
         // 응답 데이터가 있거나 success가 true인 경우 성공으로 처리
         if (response.data || response.success) {
-          // 목록에 새 공지사항 추가
+          // 캐시 무효화
+          invalidateCache(studyId);
+          
+          // 생성된 공지사항의 전체 데이터를 가져오기
+          let createdNotice;
+          
           if (response.data) {
-            setNotices((prev) => [response.data, ...prev]);
-
-            // 캐시 무효화
-            invalidateCache(studyId);
+            createdNotice = response.data;
+          } else {
+            // 완전한 데이터가 없는 경우, 새로운 데이터를 서버에서 가져오기 시도
+            try {
+              // 전체 공지사항 목록을 새로 가져와서 업데이트
+              const refreshedListResponse = await noticeService.getNotices(studyId);
+              if (refreshedListResponse.success && refreshedListResponse.data) {
+                // 최신순 정렬
+                const sortedNotices = [...(refreshedListResponse.data || [])].sort(
+                  (a, b) => new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
+                );
+                setNotices(sortedNotices);
+                
+                // 캐시 업데이트
+                cachedNotices.current[studyId] = {
+                  notices: sortedNotices,
+                  memberRole: refreshedListResponse.memberContext?.memberRole || memberRole,
+                };
+                
+                console.log("[NoticeProvider] 공지사항 목록 새로고침 완료");
+                
+                // 생성된 공지사항은 최신 목록의 첫 번째 항목으로 가정
+                createdNotice = sortedNotices[0];
+              }
+            } catch (refreshError) {
+              console.error("[NoticeProvider] 목록 새로고침 실패:", refreshError);
+              
+              // 새로고침 실패 시 기본 데이터로 공지사항 객체 생성
+              createdNotice = {
+                noticeId: new Date().getTime(), // 임시 ID
+                noticeTitle: newNotice.title || "새 공지사항",
+                noticeContent: newNotice.content || "",
+                noticeCreatedAt: new Date().toISOString(),
+                noticeModifiedAt: new Date().toISOString(),
+                files: []
+              };
+            }
           }
+          
+          // 완전한 공지사항 객체 생성
+          const completeNotice = {
+            noticeId: createdNotice.noticeId || new Date().getTime(),
+            noticeTitle: createdNotice.noticeTitle || newNotice.title || "새 공지사항",
+            noticeContent: createdNotice.noticeContent || newNotice.content || "",
+            noticeCreatedAt: createdNotice.noticeCreatedAt || new Date().toISOString(),
+            noticeModifiedAt: createdNotice.noticeModifiedAt || new Date().toISOString(),
+            files: createdNotice.files || []
+          };
+          
+          // 최신 공지사항을 목록 맨 앞에 추가
+          setNotices(prev => [completeNotice, ...prev]);
+          
+          console.log("[NoticeProvider] 공지사항 생성 후 목록 업데이트:", completeNotice);
 
           // 성공 응답 반환
           return {
             success: true,
             message: "공지사항이 성공적으로 생성되었습니다.",
-            data: response.data,
+            data: completeNotice,
           };
         } else {
           // 명확한 에러 메시지가 있는 경우에만 에러 발생
@@ -282,7 +335,7 @@ export function NoticeProvider({ children }) {
         setIsLoading(false);
       }
     },
-    [invalidateCache]
+    [invalidateCache, memberRole]
   );
 
   // 공지사항 수정

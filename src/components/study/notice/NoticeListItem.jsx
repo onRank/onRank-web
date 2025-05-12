@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
 import { formatDateYMD } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNotice } from "./NoticeProvider";
+import ActionPopup from "../../../components/common/ActionPopup";
 
 function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   const { isDarkMode } = useTheme();
@@ -13,39 +14,27 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
   
-  // 메뉴 영역 외 클릭 시 메뉴 닫기
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [menuRef]);
-
   // 토글 메뉴 클릭 처리
   const handleMenuClick = (e) => {
     e.stopPropagation(); // 클릭 이벤트가 카드까지 전파되지 않도록 방지
     setMenuOpen(!menuOpen);
   };
 
-  // 수정 버튼 클릭 처리
-  const handleEdit = (e) => {
-    e.stopPropagation();
-    setMenuOpen(false);
+  // 수정 처리
+  const handleEdit = () => {
     if (onEdit) onEdit(notice.noticeId);
   };
 
-  // 삭제 버튼 클릭 처리
-  const handleDelete = (e) => {
-    e.stopPropagation();
-    setMenuOpen(false);
+  // 삭제 처리
+  const handleDelete = () => {
     if (onDelete && window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
       onDelete(notice.noticeId);
     }
+  };
+
+  // 메뉴 닫기
+  const handleCloseMenu = () => {
+    setMenuOpen(false);
   };
 
   return (
@@ -70,15 +59,14 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
             ⋮
           </button>
 
-          {/* 드롭다운 메뉴 */}
-          <div className="notice-menu-dropdown" style={{ display: menuOpen ? "block" : "none" }}>
-            <div className="notice-menu-item" onClick={handleEdit}>
-              수정
-            </div>
-            <div className="notice-menu-item-danger" onClick={handleDelete}>
-              삭제
-            </div>
-          </div>
+          {/* 액션 팝업 */}
+          <ActionPopup
+            show={menuOpen}
+            onClose={handleCloseMenu}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            position="bottom-right"
+          />
         </div>
       )}
     </div>

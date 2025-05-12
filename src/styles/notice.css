@@ -123,44 +123,6 @@
   justify-content: center;
 }
 
-.notice-menu-dropdown {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  min-width: 120px;
-}
-
-.notice-menu-item {
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #333;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-
-.notice-menu-item:hover {
-  background-color: #f5f5f5;
-}
-
-.notice-menu-item-danger {
-  padding: 8px 16px;
-  font-size: 14px;
-  color: #dc3545;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background-color 0.2s;
-}
-
-.notice-menu-item-danger:hover {
-  background-color: #f5f5f5;
-}
-
 /* Notice form */
 .notice-form-container {
   width: 100%;
