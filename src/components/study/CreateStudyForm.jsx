@@ -65,12 +65,7 @@ const styles = {
     border: "1px solid #E5E5E5",
     borderRadius: "7px",
     overflow: "hidden",
-  },
-  pointInput: {
-    width: "100%",
-    padding: "12px",
-    border: "none",
-    fontSize: "14px",
+    width: "40%",
   },
   buttonContainer: {
     display: "flex",
@@ -407,9 +402,10 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
+                placeholder="예) 100pt"
                 value={presentPoint}
-                onChange={handlePointChange(setPresentPoint)}
-                style={styles.pointInput}
+                onChange={(e) => setPresentPoint(e.target.value)}
+                style={styles.input}
               />
             </div>
           </div>
@@ -420,9 +416,10 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
+                placeholder="예) 50pt"
                 value={latePoint}
-                onChange={handlePointChange(setLatePoint)}
-                style={styles.pointInput}
+                onChange={(e) => setLatePoint(e.target.value)}
+                style={styles.input}
               />
             </div>
           </div>
@@ -433,9 +430,10 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
             <div style={styles.pointInputContainer}>
               <input
                 type="text"
+                placeholder="예) 0pt"
                 value={absentPoint}
-                onChange={handlePointChange(setAbsentPoint)}
-                style={styles.pointInput}
+                onChange={(e) => setAbsentPoint(e.target.value)}
+                style={styles.input}
               />
             </div>
           </div>
