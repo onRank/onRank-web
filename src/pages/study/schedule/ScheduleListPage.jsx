@@ -31,10 +31,15 @@ function ScheduleListPage({
 
   // 관리자 권한 확인
   const isManager = memberRole === "HOST" || memberRole === "CREATOR";
-  
+
   // Debug admin role
   useEffect(() => {
-    console.log("[ScheduleListPage] isManager:", isManager, "memberRole:", memberRole);
+    console.log(
+      "[ScheduleListPage] isManager:",
+      isManager,
+      "memberRole:",
+      memberRole
+    );
   }, [isManager, memberRole]);
 
   // 일정 추가 페이지로 이동
@@ -46,20 +51,18 @@ function ScheduleListPage({
 
   // 일정 수정 페이지로 이동
   const handleNavigateToEditSchedule = (schedule) => {
-    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`, { 
-      state: { 
-        schedule, 
-        breadcrumb: "일정 > 수정"
-      } 
+    navigate(`/studies/${studyId}/schedules/${schedule.scheduleId}`, {
+      state: {
+        schedule,
+        breadcrumb: "일정 > 수정",
+      },
     });
-    
+
     // 상세 보기 호출
     if (onViewScheduleDetail) {
       onViewScheduleDetail(schedule);
     }
   };
-
-
 
   // 일정 수정 팝업 닫기
   const handleCloseUpdateSchedulePopup = () => {
@@ -132,40 +135,29 @@ function ScheduleListPage({
     <div className="schedule-list-container">
       {/* 일정 추가 안내 - 관리자 권한이 있을 때만 표시 */}
       {isManager && (
-        <div className="add-section-box" style={{ backgroundColor: colors.cardBackground }}>
+        <div
+          className="add-section-box"
+          style={{ backgroundColor: colors.cardBackground }}>
           <div>
             <div className="add-section-title" style={{ color: colors.text }}>
               일정 추가
             </div>
-            <div className="add-section-description" style={{ color: colors.textSecondary }}>
+            <div
+              className="add-section-description"
+              style={{ color: colors.textSecondary }}>
               다가올 일정을 추가해주세요.
             </div>
           </div>
-          <Button 
-            onClick={handleNavigateToAddSchedule} 
-            variant="add" 
-            style={{ 
-              width: '60px', 
-              height: '32px',
-              fontSize: '12px'
-            }}
-            label="+추가" 
-          />
+          <Button onClick={handleNavigateToAddSchedule} variant="add" />
         </div>
       )}
 
       {/* 오류 메시지 표시 */}
-      {error && (
-        <div className="error-message">
-          {error}
-        </div>
-      )}
+      {error && <div className="error-message">{error}</div>}
 
       {/* 로딩 상태 표시 */}
       {isLoading && (
-        <div className="loading-message">
-          일정을 불러오는 중입니다...
-        </div>
+        <div className="loading-message">일정을 불러오는 중입니다...</div>
       )}
 
       {/* 일정 타임라인 */}
@@ -184,42 +176,45 @@ function ScheduleListPage({
               <div key={schedule.scheduleId} className="schedule-item-wrapper">
                 {/* 회차 및 제목 정보 (박스 위) */}
                 <div className="schedule-item-header">
-                  <h3 className="schedule-title" style={{ color: colors.textPrimary }}>
+                  <h3
+                    className="schedule-title"
+                    style={{ color: colors.textPrimary }}>
                     {schedule.scheduleTitle}
                   </h3>
-                  <p style={{ fontSize: '14px', marginBottom: '4px' }}>
-                    {schedule.round}회차(일시: {formatDateTime(schedule.scheduleStartingAt)})
+                  <p style={{ fontSize: "14px", marginBottom: "4px" }}>
+                    {schedule.round}회차(일시:{" "}
+                    {formatDateTime(schedule.scheduleStartingAt)})
                   </p>
                 </div>
-                
+
                 {/* 일정 내용 박스 */}
                 <div
                   className="schedule-item"
                   style={{
                     backgroundColor: colors.cardBackground,
-                    border: '1px solid black',
-                    borderRadius: '8px',
-                  }}
-                >
+                    border: "1px solid black",
+                    borderRadius: "8px",
+                  }}>
                   {/* 일정 제목과 메뉴 */}
                   <div className="schedule-header">
                     <div className="schedule-info-wrapper">
                       {/* N회차 모임 텍스트 제거 */}
                     </div>
-                    
+
                     {isManager && (
-                      <ScheduleMenu 
+                      <ScheduleMenu
                         onEdit={() => handleNavigateToEditSchedule(schedule)}
-                        onDelete={() => handleDeleteSchedule(schedule.scheduleId)}
+                        onDelete={() =>
+                          handleDeleteSchedule(schedule.scheduleId)
+                        }
                       />
                     )}
                   </div>
 
                   {/* 일정 내용 */}
-                  <div 
+                  <div
                     className="schedule-content"
-                    style={{ color: colors.text }}
-                  >
+                    style={{ color: colors.text }}>
                     {schedule.scheduleContent}
                   </div>
                 </div>

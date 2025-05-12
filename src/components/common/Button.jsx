@@ -108,12 +108,12 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
 
   let buttonStyle = {
     borderRadius: "10px",
-    fontSize: "14px",
+    fontSize: "12px",
     fontWeight: "bold",
     cursor: "pointer",
     outline: "none",
-    width: "75px",
-    height: "40px",
+    width: "64px",
+    height: "36px",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
