@@ -13,15 +13,15 @@ function StudyCard({ study, onClick }) {
       onClick={onClick}
       style={{
         backgroundColor: colors.cardBackground,
-        borderRadius: "15px",
-        border: `1px solid ${colors.border}`,
+        borderRadius: "10px",
+        border: `3px solid #1A1A1A`,
         overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         height: "100%",
         cursor: "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
-        boxShadow: `0 2px 4px ${
+        boxShadow: `4px 4px 0 ${
           colors.isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"
         }`,
         ":hover": {
@@ -30,8 +30,7 @@ function StudyCard({ study, onClick }) {
             colors.isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"
           }`,
         },
-      }}
-    >
+      }}>
       {/* 스터디 이미지 */}
       <div
         style={{
@@ -39,8 +38,7 @@ function StudyCard({ study, onClick }) {
           height: "180px",
           overflow: "hidden",
           backgroundColor: colors.secondaryBackground,
-        }}
-      >
+        }}>
         <img
           src={study.imageUrl || DEFAULT_IMAGE_SVG}
           alt={study.title}
@@ -55,19 +53,25 @@ function StudyCard({ study, onClick }) {
 
       <div
         style={{
-          padding: "16px",
+          width: "100%",
+          height: "2px",
+          background: "#1A1A1A",
+        }}
+      />
+
+      <div
+        style={{
+          padding: "16px 16px 36px",
           display: "flex",
           flexDirection: "column",
-        }}
-      >
+        }}>
         <h3
           style={{
             fontSize: "16px",
             fontWeight: "600",
             color: colors.text,
             marginBottom: "8px",
-          }}
-        >
+          }}>
           {study.title || "제목 없음"}
         </h3>
         <p
@@ -78,8 +82,7 @@ function StudyCard({ study, onClick }) {
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
-          }}
-        >
+          }}>
           {study.description || "설명 없음"}
         </p>
       </div>

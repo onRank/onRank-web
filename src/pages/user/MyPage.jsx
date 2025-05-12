@@ -230,7 +230,7 @@ function MyPage() {
                 variant="edit"
                 label="수정하기"
                 // onClick={handleEditButtonClick}
-                style={{ height: 34, fontSize: 12 }}
+                style={{ width: 75, fontSize: 12 }}
               />
             </div>
           </div>
