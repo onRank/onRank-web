@@ -11,7 +11,7 @@ import { mypageService } from "../../services/mypage";
 const styles = {
   wrapper: {
     minHeight: "100vh",
-    background: "#fff",
+    background: "none",
   },
   container: {
     maxWidth: 1200,
@@ -157,6 +157,22 @@ function MyPage() {
     loadUserDetails();
   }, [refreshUserInfo, isDetailedUserInfo, navigate]);
 
+  const formatPhoneNumber = (phoneNumber) => {
+    if (!phoneNumber) return "";
+
+    // 숫자만 추출
+    const cleaned = phoneNumber.replace(/\D/g, "");
+
+    // 길이에 따라 형식 적용
+    if (cleaned.length === 11) {
+      return cleaned.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+    } else if (cleaned.length === 10) {
+      return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    }
+
+    return phoneNumber;
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!myPageData)
@@ -164,7 +180,7 @@ function MyPage() {
 
   // 진행중인 스터디만, studyId 오름차순 정렬
   const studyList = (myPageData.studyList || [])
-    .filter((study) => study.studyStatus === "ACTIVE")
+    .filter((study) => study.studyStatus === "PROGRESS")
     .sort((a, b) => a.studyId - b.studyId);
 
   return (
@@ -192,7 +208,7 @@ function MyPage() {
             <div style={styles.profileInfo}>
               <div style={styles.profileName}>{myPageData.studentName}</div>
               <div style={styles.profileId}>
-                {myPageData.studentPhoneNumber}
+                {formatPhoneNumber(myPageData.studentPhoneNumber)}
                 <br />
                 {myPageData.studentEmail}
               </div>
@@ -215,7 +231,7 @@ function MyPage() {
                 key={idx}
                 icon={study.file?.fileUrl}
                 name={study.studyName}
-                onClick={() => navigate(`/study/${study.studyId}`)}
+                onClick={() => navigate(`/studies/${study.studyId}`)}
               />
             ))}
           </div>
