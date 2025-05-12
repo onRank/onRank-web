@@ -4,19 +4,19 @@ import { useTheme } from "../../../contexts/ThemeContext";
 import Button from "../../../components/common/Button";
 import ActionPopup from "../../../components/common/ActionPopup";
 import { formatDateYMD } from "../../../utils/dateUtils";
-import "../../../styles/board.css";
+import "../../../styles/post.css";
 
-function BoardListPage({
-  boards,
-  onAddBoard,
-  onDeleteBoard,
-  onViewBoardDetail,
+function PostListPage({
+  posts,
+  onAddPost,
+  onDeletePost,
+  onViewPostDetail,
   isLoading,
   error,
   memberRole,
 }) {
   const { colors } = useTheme();
-  const [selectedBoardId, setSelectedBoardId] = useState(null);
+  const [selectedPostId, setSelectedPostId] = useState(null);
   const [showActionPopup, setShowActionPopup] = useState(false);
   const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
@@ -24,33 +24,33 @@ function BoardListPage({
   const isManager = memberRole === "HOST" || memberRole === "CREATOR";
 
   // 게시글 액션 팝업 표시
-  const handleShowActionPopup = (event, boardId) => {
+  const handleShowActionPopup = (event, postId) => {
     event.stopPropagation();
     const rect = event.currentTarget.getBoundingClientRect();
     setPopupPosition({
       x: rect.left + window.scrollX,
       y: rect.bottom + window.scrollY
     });
-    setSelectedBoardId(boardId);
+    setSelectedPostId(postId);
     setShowActionPopup(true);
   };
 
   // 게시글 액션 팝업 닫기
   const handleCloseActionPopup = () => {
     setShowActionPopup(false);
-    setSelectedBoardId(null);
+    setSelectedPostId(null);
   };
 
   // 게시글 삭제 처리
   const handleDelete = async () => {
     if (window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
-      await onDeleteBoard(selectedBoardId);
+      await onDeletePost(selectedPostId);
       handleCloseActionPopup();
     }
   };
 
   return (
-    <div className="board-list-container">
+    <div className="post-list-container">
       {/* 게시글 추가 안내 - 관리자 권한이 있을 때만 표시 */}
       {isManager && (
         <div
@@ -66,7 +66,7 @@ function BoardListPage({
               새로운 게시글을 추가해주세요.
             </div>
           </div>
-          <Button onClick={onAddBoard} variant="add" />
+          <Button onClick={onAddPost} variant="add" />
         </div>
       )}
 
@@ -79,41 +79,41 @@ function BoardListPage({
       )}
 
       {/* 게시글 목록 */}
-      {!isLoading && boards.length === 0 ? (
+      {!isLoading && posts.length === 0 ? (
         <div className="empty-message">
           등록된 게시글이 없습니다.{" "}
           {isManager && "게시글 추가 버튼을 눌러 새 게시글을 추가해보세요."}
         </div>
       ) : (
-        <div className="board-items">
-          {boards.map((board) => (
+        <div className="post-items">
+          {posts.map((post) => (
             <div
-              key={board.postId}
-              className="board-item"
-              onClick={() => onViewBoardDetail(board)}
+              key={post.postId}
+              className="post-item"
+              onClick={() => onViewPostDetail(post)}
               style={{ backgroundColor: colors.cardBackground }}
             >
-              <div className="board-item-header">
-                <h3 className="board-title" style={{ color: colors.textPrimary }}>
-                  {board.postTitle || board.title || board.boardTitle}
+              <div className="post-item-header">
+                <h3 className="post-title" style={{ color: colors.textPrimary }}>
+                  {post.postTitle || post.title || post.boardTitle}
                 </h3>
                 {isManager && (
                   <button
                     className="more-options-button"
-                    onClick={(e) => handleShowActionPopup(e, board.postId || board.boardId)}
+                    onClick={(e) => handleShowActionPopup(e, post.postId || post.boardId)}
                   >
                     <span className="more-options-icon">⋮</span>
                   </button>
                 )}
               </div>
-              <div className="board-item-content" style={{ color: colors.text }}>
-                {board.postContent || board.content || board.boardContent}
+              <div className="post-item-content" style={{ color: colors.text }}>
+                {post.postContent || post.content || post.boardContent}
               </div>
-              <div className="board-item-footer">
-                <span className="board-date">
-                  게시: {formatDateYMD(board.postCreatedAt || board.createdAt || board.boardCreatedAt)}
+              <div className="post-item-footer">
+                <span className="post-date">
+                  게시: {formatDateYMD(post.postCreatedAt || post.createdAt || post.boardCreatedAt)}
                 </span>
-                <span className="board-writer">{board.postWritenBy || board.writer}</span>
+                <span className="post-writer">{post.postWritenBy || post.writer}</span>
               </div>
             </div>
           ))}
@@ -134,14 +134,14 @@ function BoardListPage({
   );
 }
 
-BoardListPage.propTypes = {
-  boards: PropTypes.array.isRequired,
-  onAddBoard: PropTypes.func.isRequired,
-  onDeleteBoard: PropTypes.func.isRequired,
-  onViewBoardDetail: PropTypes.func.isRequired,
+PostListPage.propTypes = {
+  posts: PropTypes.array.isRequired,
+  onAddPost: PropTypes.func.isRequired,
+  onDeletePost: PropTypes.func.isRequired,
+  onViewPostDetail: PropTypes.func.isRequired,
   isLoading: PropTypes.bool.isRequired,
   error: PropTypes.string,
   memberRole: PropTypes.string,
 };
 
-export default BoardListPage; 
+export default PostListPage; 

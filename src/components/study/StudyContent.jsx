@@ -13,7 +13,7 @@ import AssignmentEdit from "../../pages/study/assignment/AssignmentEdit";
 import DefaultContent from "./tabs/DefaultContent";
 import ManagementContainer from "../../pages/study/management/ManagementContainer";
 import NoticeContainer from "../../pages/study/notice/NoticeContainer";
-import BoardContainer from "../../pages/study/board/BoardContainer";
+import PostContainer from "../../pages/study/post/PostContainer";
 import RankingTab from "./tabs/RankingTab";
 import AttendanceContainer from "../../pages/study/attendance/AttendanceContainer";
 import StudySidebarContainer from "../common/sidebar/StudySidebarContainer";
@@ -140,7 +140,7 @@ export default function StudyContent({ activeTab, studyData }) {
         return <NoticeContainer onSubPageChange={handleSubPageChange} />;
       case "게시판":
         console.log("[StudyContent] 게시판 탭 렌더링");
-        return <BoardContainer onSubPageChange={handleSubPageChange} />;
+        return <PostContainer onSubPageChange={handleSubPageChange} />;
       case "출석":
         console.log("[StudyContent] 출석 탭 렌더링, AttendanceContainer 반환");
         return <AttendanceContainer />;

@@ -1,5 +1,5 @@
-/* Board List Page */
-.board-list-container {
+/* Post List Page */
+.post-list-container {
   width: 100%;
   max-width: 100%;
   padding: 0;
@@ -28,7 +28,7 @@
   color: #666;
 }
 
-.board-items {
+.post-items {
   background-color: #fff;
   border: 1px solid black;
   border-radius: 12px;
@@ -40,7 +40,7 @@
   gap: 0;
 }
 
-.board-item {
+.post-item {
   background-color: #fff;
   padding: 16px 20px;
   border-bottom: 1px solid #ccc;
@@ -53,23 +53,23 @@
   box-shadow: none;
 }
 
-.board-item:last-child {
+.post-item:last-child {
   border-bottom: none;
 }
 
-.board-item:hover {
+.post-item:hover {
   background-color: #f8f9fa;
   transform: none;
 }
 
-.board-item-header {
+.post-item-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.5rem;
 }
 
-.board-title {
+.post-title {
   font-size: 14px;
   font-weight: bold;
   color: #333;
@@ -79,7 +79,7 @@
   text-overflow: ellipsis;
 }
 
-.board-item-content {
+.post-item-content {
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
   overflow: hidden;
@@ -89,19 +89,19 @@
   -webkit-box-orient: vertical;
 }
 
-.board-item-footer {
+.post-item-footer {
   display: flex;
   justify-content: space-between;
   font-size: 0.8rem;
   color: #666;
 }
 
-.board-date {
+.post-date {
   color: #666;
   font-size: 12px;
 }
 
-.board-writer {
+.post-writer {
   color: #666;
   font-size: 12px;
 }
@@ -145,19 +145,19 @@
   color: #666;
 }
 
-/* Board Detail Page */
-.board-detail-container {
+/* Post Detail Page */
+.post-detail-container {
   width: 100%;
   padding: 1rem 0;
 }
 
-.board-detail-actions {
+.post-detail-actions {
   display: flex;
   justify-content: space-between;
   margin-bottom: 1rem;
 }
 
-.board-detail-content-container {
+.post-detail-content-container {
   border: 1px solid black;
   border-radius: 12px;
   padding: 1.5rem;
@@ -165,16 +165,16 @@
   width: 100%;
 }
 
-.board-detail-header {
+.post-detail-header {
   margin-bottom: 1.5rem;
 }
 
-.board-detail-title {
+.post-detail-title {
   font-size: 1.5rem;
   margin-bottom: 0.5rem;
 }
 
-.board-detail-meta {
+.post-detail-meta {
   display: flex;
   justify-content: space-between;
   font-size: 0.9rem;
@@ -183,20 +183,89 @@
   border-bottom: 1px solid #eee;
 }
 
-.board-detail-content {
+.post-detail-content {
   padding: 1.5rem 0;
   line-height: 1.6;
 }
 
-.board-detail-files {
+.post-detail-files {
   margin-top: 1.5rem;
   border-top: 1px solid #eee;
   padding-top: 1rem;
 }
 
-/* Board Create/Edit Pages */
-.board-create-container,
-.board-edit-container {
+.post-detail-files-title {
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.post-detail-file-link {
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  color: #0066cc;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+.post-detail-file-link:hover {
+  background-color: #f8f9fa;
+}
+
+/* File attachment styles for posts */
+.post-file-list {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background-color: var(--cardBackground);
+  border-radius: 4px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+}
+
+.post-file-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  color: var(--textPrimary);
+}
+
+.post-file-icon {
+  margin-right: 8px;
+  color: var(--textSecondary);
+}
+
+.post-attachment-wrapper {
+  margin-top: 12px;
+}
+
+.post-attachment-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.post-attachment-item {
+  font-size: 14px;
+  margin-bottom: 8px;
+  color: #0066cc;
+  cursor: pointer;
+  text-decoration: none;
+  padding: 8px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  display: block;
+}
+
+.post-attachment-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Post Create/Edit Pages */
+.post-create-container,
+.post-edit-container {
   width: 100%;
   padding: 1rem 0;
 }

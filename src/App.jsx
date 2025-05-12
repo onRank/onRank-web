@@ -564,25 +564,13 @@ function AppContent() {
                         <StudyDetailPage activeTab="게시판" />
                       }
                     />
+                    <Route
+                      path="posts/:postId/edit"
+                      element={
+                        <StudyDetailPage activeTab="게시판" />
+                      }
+                    />
                     
-                    {/* Board routes */}
-                    <Route
-                      path="boards"
-                      element={<StudyDetailPage activeTab="게시판" />}
-                    />
-                    <Route
-                      path="boards/add"
-                      element={<StudyDetailPage activeTab="게시판" />}
-                    />
-                    <Route
-                      path="boards/:boardId"
-                      element={<StudyDetailPage activeTab="게시판" />}
-                    />
-                    <Route
-                      path="boards/:boardId/edit"
-                      element={<StudyDetailPage activeTab="게시판" />}
-                    />
-
                     <Route path="attendances" element={<StudyDetailPage />} />
                     <Route
                       path="attendances/:scheduleId"
