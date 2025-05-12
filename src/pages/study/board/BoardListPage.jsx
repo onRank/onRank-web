@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import { useTheme } from "../../../contexts/ThemeContext";
 import Button from "../../../components/common/Button";
 import ActionPopup from "../../../components/common/ActionPopup";
+import { formatDateYMD } from "../../../utils/dateUtils";
 import "../../../styles/board.css";
 
 function BoardListPage({
@@ -87,32 +88,32 @@ function BoardListPage({
         <div className="board-items">
           {boards.map((board) => (
             <div
-              key={board.boardId}
+              key={board.postId}
               className="board-item"
               onClick={() => onViewBoardDetail(board)}
               style={{ backgroundColor: colors.cardBackground }}
             >
               <div className="board-item-header">
                 <h3 className="board-title" style={{ color: colors.textPrimary }}>
-                  {board.boardTitle}
+                  {board.postTitle || board.title || board.boardTitle}
                 </h3>
                 {isManager && (
                   <button
                     className="more-options-button"
-                    onClick={(e) => handleShowActionPopup(e, board.boardId)}
+                    onClick={(e) => handleShowActionPopup(e, board.postId || board.boardId)}
                   >
                     <span className="more-options-icon">⋮</span>
                   </button>
                 )}
               </div>
               <div className="board-item-content" style={{ color: colors.text }}>
-                {board.boardContent}
+                {board.postContent || board.content || board.boardContent}
               </div>
               <div className="board-item-footer">
                 <span className="board-date">
-                  {new Date(board.boardCreatedAt).toLocaleDateString()}
+                  게시: {formatDateYMD(board.postCreatedAt || board.createdAt || board.boardCreatedAt)}
                 </span>
-                <span className="board-writer">{board.writer}</span>
+                <span className="board-writer">{board.postWritenBy || board.writer}</span>
               </div>
             </div>
           ))}

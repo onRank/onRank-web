@@ -76,6 +76,7 @@ function BoardContainer({ onSubPageChange }) {
         }
         
         if (response.success) {
+          console.log("[BoardContainer] 게시글 목록 조회 성공:", response.data);
           setBoards(response.data || []);
         } else {
           setError(response.message || "게시글을 불러오는 중 오류가 발생했습니다.");
@@ -258,12 +259,11 @@ function BoardContainer({ onSubPageChange }) {
   
   // 게시글 상세 보기로 전환
   const handleViewBoardDetail = (board) => {
+    console.log("[BoardContainer] 게시글 상세 보기:", board);
+    // 다양한 필드명 처리 (postId 또는 boardId)
+    const boardId = board.postId || board.boardId;
     setSelectedBoard(board);
-    
-    // 상세 페이지로 이동
-    navigate(`/studies/${studyId}/boards/${board.boardId}`, {
-      state: { board }
-    });
+    navigate(`/studies/${studyId}/boards/${boardId}`);
   };
   
   // 게시글 목록 보기로 돌아가기

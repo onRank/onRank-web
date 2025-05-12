@@ -408,6 +408,7 @@ export const boardService = {
     try {
       console.log(`[BoardService] 게시글 수정 요청: /studies/${studyId}/posts/${postId}`);
       console.log("[BoardService] 수정 데이터:", postData);
+      console.log("[BoardService] 첨부 파일 수:", postData.files && postData.files.length);
       
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -425,8 +426,8 @@ export const boardService = {
       
       // API 요청 데이터 준비
       const requestData = {
-        title: postData.title,
-        content: postData.content,
+        postTitle: postData.postTitle,
+        postContent: postData.postContent,
         remainingFileIds: postData.remainingFileIds || [], // 남겨둘 파일 ID
         newFileNames: postData.fileNames || [], // 새로운 파일명
       };
@@ -483,6 +484,14 @@ export const boardService = {
           result.data.content = result.data.boardContent;
         }
         
+        if (result.data.postTitle && !result.data.title) {
+          result.data.title = result.data.postTitle;
+        }
+        
+        if (result.data.postContent && !result.data.content) {
+          result.data.content = result.data.postContent;
+        }
+        
         if (result.data.boardCreatedAt && !result.data.createdAt) {
           result.data.createdAt = result.data.boardCreatedAt;
         }
@@ -495,11 +504,39 @@ export const boardService = {
         // 기본 응답 데이터 구성
         result.data = {
           postId: parseInt(postId),
-          title: postData.title,
-          content: postData.content,
+          title: postData.postTitle,
+          content: postData.postContent,
           updatedAt: new Date().toISOString(),
           fileUrls: []
         };
+      }
+      
+      // 파일 업로드 처리
+      const files = postData.files || [];
+      if (files && files.length > 0) {
+        try {
+          // 응답에 uploadUrls 또는 data 배열이 있는지 확인
+          const hasUploadUrls =
+            response.data &&
+            ((response.data.uploadUrls &&
+              response.data.uploadUrls.length > 0) ||
+              (response.data.data &&
+                Array.isArray(response.data.data) &&
+                response.data.data.length > 0));
+
+          if (hasUploadUrls) {
+            console.log("[BoardService] 파일 업로드 URL 감지, 업로드 시작");
+            await handleFileUpload(response.data, files);
+            console.log("[BoardService] 파일 업로드 완료");
+          } else {
+            console.log(
+              "[BoardService] 업로드 URL이 없어 파일 업로드를 건너뜁니다"
+            );
+          }
+        } catch (uploadError) {
+          console.error("[BoardService] 파일 업로드 중 오류:", uploadError);
+          result.warning = "게시글은 수정되었으나 일부 파일 업로드에 실패했습니다.";
+        }
       }
 
       return result;
@@ -523,8 +560,8 @@ export const boardService = {
       
       // API 요청 데이터 준비
       const requestData = {
-        title: newBoard.title,
-        content: newBoard.content,
+        postTitle: newBoard.postTitle || newBoard.title || "",
+        postContent: newBoard.postContent || newBoard.content || "",
         fileNames: newBoard.fileNames || [] // 파일 이름 배열 추가
       };
       
@@ -590,10 +627,10 @@ export const boardService = {
           
           result.data = {
             postId: postId || Date.now(),
-            title: newBoard.title,
-            content: newBoard.content,
-            createdAt: new Date().toISOString(),
-            writer: "현재 사용자",
+            postTitle: newBoard.postTitle || newBoard.title,
+            postContent: newBoard.postContent || newBoard.content,
+            postCreatedAt: new Date().toISOString(),
+            postWritenBy: "현재 사용자",
             fileUrls: [] // 파일 URL 배열 필드 추가
           };
         } else {
@@ -627,6 +664,18 @@ export const boardService = {
             result.data.content = result.data.boardContent;
           }
           
+          if (result.data.postTitle && !result.data.title) {
+            result.data.title = result.data.postTitle;
+          }
+          
+          if (result.data.postContent && !result.data.content) {
+            result.data.content = result.data.postContent;
+          }
+          
+          if (result.data.boardCreatedAt && !result.data.createdAt) {
+            result.data.createdAt = result.data.boardCreatedAt;
+          }
+          
           // 파일 URL 배열 확인
           if (!result.data.fileUrls) {
             result.data.fileUrls = [];
@@ -637,6 +686,34 @@ export const boardService = {
       } catch (processingError) {
         console.error("[BoardService] 응답 데이터 처리 오류:", processingError);
       }
+      
+      // 파일 업로드 처리
+      const files = newBoard.files || [];
+      if (files && files.length > 0) {
+        try {
+          // 응답에 uploadUrls 또는 data 배열이 있는지 확인
+          const hasUploadUrls =
+            response.data &&
+            ((response.data.uploadUrls &&
+              response.data.uploadUrls.length > 0) ||
+              (response.data.data &&
+                Array.isArray(response.data.data) &&
+                response.data.data.length > 0));
+
+          if (hasUploadUrls) {
+            console.log("[BoardService] 파일 업로드 URL 감지, 업로드 시작");
+            await handleFileUpload(response.data, files);
+            console.log("[BoardService] 파일 업로드 완료");
+          } else {
+            console.log(
+              "[BoardService] 업로드 URL이 없어 파일 업로드를 건너뜁니다"
+            );
+          }
+        } catch (uploadError) {
+          console.error("[BoardService] 파일 업로드 중 오류:", uploadError);
+          result.warning = "게시글은 생성되었으나 일부 파일 업로드에 실패했습니다.";
+        }
+      }
 
       return result;
     } catch (error) {
@@ -646,5 +723,152 @@ export const boardService = {
         message: error.message || "게시글 생성 중 오류가 발생했습니다.",
       };
     }
+  }
+};
+
+// 파일 업로드 처리 함수
+const handleFileUpload = async (responseData, files) => {
+  try {
+    console.log("[FileUpload] 파일 업로드 시작");
+
+    let uploadUrls = [];
+
+    // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
+    if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
+      uploadUrls = responseData.presignedUrls;
+      console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
+    } else if (responseData.data && Array.isArray(responseData.data)) {
+      uploadUrls = responseData.data.map((file) => file.uploadUrl);
+      console.log(
+        "[FileUpload] data 배열에서 fileUrl 추출:",
+        uploadUrls.length
+      );
+    }
+
+    if (uploadUrls.length > 0) {
+      // 각 파일에 대해 업로드 처리
+      for (let i = 0; i < Math.min(files.length, uploadUrls.length); i++) {
+        const file = files[i];
+        const uploadUrl = uploadUrls[i];
+
+        if (!uploadUrl) {
+          console.warn(
+            `[FileUpload] ${i + 1}번째 파일의 업로드 URL이 없습니다`
+          );
+          continue;
+        }
+
+        try {
+          console.log(`[FileUpload] 파일 '${file.name}' 업로드 시작`);
+
+          // 파일 유형에 따라 적절한 업로드 함수 선택
+          if (file.type.startsWith("image/")) {
+            await ImageUploadToS3(uploadUrl, file);
+            console.log(`[FileUpload] 이미지 '${file.name}' 업로드 성공`);
+          } else {
+            await FileUploadToS3(uploadUrl, file);
+            console.log(`[FileUpload] 파일 '${file.name}' 업로드 성공`);
+          }
+        } catch (individualError) {
+          console.error(
+            `[FileUpload] '${file.name}' 파일 업로드 실패:`,
+            individualError
+          );
+          // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
+        }
+      }
+      console.log("[FileUpload] 모든 파일 업로드 완료");
+    } else {
+      console.log("[FileUpload] 업로드할 URL이 없어 파일 업로드를 건너뜁니다");
+    }
+  } catch (error) {
+    console.error("[FileUpload] 파일 업로드 처리 중 오류:", error);
+    throw error;
+  }
+};
+
+// 이미지 업로드 함수
+const ImageUploadToS3 = async (presignedUrl, imageFile) => {
+  try {
+    console.log("[ImageUploadToS3] 이미지 업로드 시작:", imageFile.name);
+
+    // 프리사인드 URL에서 Content-Type 추출
+    let contentType = imageFile.type;
+
+    // URL에서 Content-Type 파라미터가 있는지 확인
+    try {
+      const urlObj = new URL(presignedUrl);
+      const params = new URLSearchParams(urlObj.search);
+      if (params.has("Content-Type")) {
+        contentType = params.get("Content-Type");
+        console.log(
+          `[ImageUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
+        );
+      }
+    } catch (urlError) {
+      console.warn(
+        "[ImageUploadToS3] URL 파싱 실패, 파일 타입 사용:",
+        urlError
+      );
+    }
+
+    const uploadResponse = await axios.put(presignedUrl, imageFile, {
+      headers: {
+        "Content-Type": contentType,
+      },
+    });
+
+    if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+      console.log("[ImageUploadToS3] 이미지 업로드 성공:", imageFile.name);
+    } else {
+      console.error("[ImageUploadToS3] 이미지 업로드 실패:", imageFile.name);
+      throw new Error(`이미지 업로드 실패: ${imageFile.name}`);
+    }
+  } catch (error) {
+    console.error("[ImageUploadToS3] 이미지 업로드 중 오류:", error);
+    throw error;
+  }
+};
+
+// 파일 업로드 함수
+const FileUploadToS3 = async (presignedUrl, file) => {
+  try {
+    console.log("[FileUploadToS3] 파일 업로드 시작:", file.name);
+
+    // 프리사인드 URL에서 Content-Type 추출
+    let contentType = file.type || "application/octet-stream";
+
+    // URL에서 Content-Type 파라미터가 있는지 확인
+    try {
+      const urlObj = new URL(presignedUrl);
+      const params = new URLSearchParams(urlObj.search);
+      if (params.has("Content-Type")) {
+        contentType = params.get("Content-Type");
+        console.log(
+          `[FileUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
+        );
+      }
+    } catch (urlError) {
+      console.warn(
+        "[FileUploadToS3] URL 파싱 실패, 파일 타입 사용:",
+        urlError
+      );
+    }
+
+    const uploadResponse = await axios.put(presignedUrl, file, {
+      headers: {
+        "Content-Type": contentType,
+      },
+    });
+
+    if (uploadResponse.status === 200 || uploadResponse.status === 201) {
+      console.log("[FileUploadToS3] 파일 업로드 성공:", file.name);
+    } else {
+      console.error("[FileUploadToS3] 파일 업로드 실패:", file.name);
+      throw new Error(`파일 업로드 실패: ${file.name}`);
+    }
+  } catch (error) {
+    console.error("[FileUploadToS3] 파일 업로드 중 오류:", error);
+    throw error;
   }
 }; 

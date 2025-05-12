@@ -10,8 +10,8 @@ function BoardCreate({ onSubmit, onCancel, isLoading }) {
   const { studyId } = useParams();
   const { colors } = useTheme();
   const [formData, setFormData] = useState({
-    title: "",
-    content: "",
+    postTitle: "",
+    postContent: "",
   });
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [formErrors, setFormErrors] = useState({});
@@ -73,11 +73,11 @@ function BoardCreate({ onSubmit, onCancel, isLoading }) {
   // 폼 유효성 검사
   const validateForm = () => {
     const errors = {};
-    if (!formData.title.trim()) {
-      errors.title = "제목을 입력해주세요.";
+    if (!formData.postTitle.trim()) {
+      errors.postTitle = "제목을 입력해주세요.";
     }
-    if (!formData.content.trim()) {
-      errors.content = "내용을 입력해주세요.";
+    if (!formData.postContent.trim()) {
+      errors.postContent = "내용을 입력해주세요.";
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -210,38 +210,38 @@ function BoardCreate({ onSubmit, onCancel, isLoading }) {
       {error && <div style={styles.errorMessage}>{error}</div>}
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="title">
+        <label style={styles.label} htmlFor="postTitle">
           제목
         </label>
         <input
-          id="title"
-          name="title"
+          id="postTitle"
+          name="postTitle"
           style={styles.input}
           placeholder="게시글 제목을 입력하세요"
-          value={formData.title}
+          value={formData.postTitle}
           onChange={handleChange}
           required
         />
-        {formErrors.title && <div className="form-error">{formErrors.title}</div>}
+        {formErrors.postTitle && <div className="form-error">{formErrors.postTitle}</div>}
       </div>
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="content">
+        <label style={styles.label} htmlFor="postContent">
           내용을 입력해주세요.
         </label>
         <textarea
-          id="content"
-          name="content"
+          id="postContent"
+          name="postContent"
           style={styles.textarea}
           placeholder="게시글 내용을 입력하세요"
-          value={formData.content}
+          value={formData.postContent}
           onChange={handleChange}
           maxLength={maxLength}
         />
         <div style={styles.charCount}>
-          {formData.content.length}/{maxLength}
+          {formData.postContent.length}/{maxLength}
         </div>
-        {formErrors.content && <div className="form-error">{formErrors.content}</div>}
+        {formErrors.postContent && <div className="form-error">{formErrors.postContent}</div>}
       </div>
 
       {/* 파일 목록 표시 */}
