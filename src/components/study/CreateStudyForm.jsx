@@ -10,7 +10,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     gap: "1rem",
-    maxWidth: "800px",
+    maxWidth: "900px",
     margin: "0 auto",
   },
   header: {
@@ -66,6 +66,13 @@ const styles = {
     borderRadius: "7px",
     overflow: "hidden",
     width: "40%",
+  },
+  pointInput: {
+    width: "100%",
+    padding: "12px",
+    border: "1px solid #E5E5E5",
+    borderRadius: "7px",
+    fontSize: "14px",
   },
   buttonContainer: {
     display: "flex",
@@ -405,7 +412,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 placeholder="예) 100pt"
                 value={presentPoint}
                 onChange={(e) => setPresentPoint(e.target.value)}
-                style={styles.input}
+                style={styles.pointInput}
               />
             </div>
           </div>
@@ -419,7 +426,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 placeholder="예) 50pt"
                 value={latePoint}
                 onChange={(e) => setLatePoint(e.target.value)}
-                style={styles.input}
+                style={styles.pointInput}
               />
             </div>
           </div>
@@ -433,7 +440,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 placeholder="예) 0pt"
                 value={absentPoint}
                 onChange={(e) => setAbsentPoint(e.target.value)}
-                style={styles.input}
+                style={styles.pointInput}
               />
             </div>
           </div>
