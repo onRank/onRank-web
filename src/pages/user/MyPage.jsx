@@ -7,6 +7,7 @@ import ErrorMessage from "../../components/common/ErrorMessage";
 import { FaUserPen } from "react-icons/fa6";
 import MyPageCard from "../../components/user/MyPageCard";
 import { mypageService } from "../../services/mypage";
+import Button from "../../components/common/Button";
 
 const styles = {
   wrapper: {
@@ -173,6 +174,10 @@ function MyPage() {
     return phoneNumber;
   };
 
+  const handleEditButtonClick = () => {
+    navigate("/mypage");
+  };
+
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!myPageData)
@@ -216,7 +221,11 @@ function MyPage() {
               <div style={styles.profileSchoolId}>
                 {myPageData.studentDepartment}
               </div>
-              <button style={styles.editButton}>수정하기</button>
+              <Button
+                variant="edit"
+                label="수정하기"
+                onClick={handleEditButtonClick}
+              />
             </div>
           </div>
         </div>
