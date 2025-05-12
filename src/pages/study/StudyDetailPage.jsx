@@ -92,7 +92,6 @@ function StudyDetailPage({ activeTab: propActiveTab }) {
       posts: "게시판",
       attendances: "출석",
       management: "관리",
-      ranking: "랭킹",
     };
 
     console.log("Tab mapping:", tabMap[section]);

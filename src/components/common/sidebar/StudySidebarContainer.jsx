@@ -110,13 +110,11 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
           borderRadius: "8px",
           border: "1px solid #000",
           width: "210px",
-          boxShadow: "4px 4px 0px rgba(0, 0, 0, 0.9)"
-        }}
-      >
+          boxShadow: "4px 4px 0px rgba(0, 0, 0, 0.9)",
+        }}>
         <Link
           to={`/studies/${studyId}`}
-          style={{ color: "#333", display: "flex", alignItems: "center" }}
-        >
+          style={{ color: "#333", display: "flex", alignItems: "center" }}>
           <IoHome size={20} />
         </Link>
 
@@ -132,8 +130,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
               color: subPage ? "#333" : "#FF0000",
               fontWeight: subPage ? "normal" : "bold",
               textDecoration: "none",
-            }}
-          >
+            }}>
             {activeTab}
           </Link>
         )}
@@ -162,7 +159,6 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
       게시판: "posts",
       출석: "attendances",
       관리: "management",
-      랭킹: "ranking",
     };
     return pathMap[tab] || "";
   };
@@ -184,8 +180,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         position: "sticky",
         top: "1rem",
         maxHeight: "calc(100vh - 2rem)",
-      }}
-    >
+      }}>
       {/* 스터디 정보 헤더 (이미지와 이름) */}
       <StudyInfoHeader
         studyName={studyInfo.studyName}
@@ -200,8 +195,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         style={{
           flex: "0 1 auto",
           overflowY: "auto",
-        }}
-      >
+        }}>
         <StudyNavigation activeTab={activeTab} />
       </div>
     </div>

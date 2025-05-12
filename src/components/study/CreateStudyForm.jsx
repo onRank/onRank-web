@@ -16,7 +16,7 @@ const styles = {
   header: {
     display: "flex",
     alignItems: "center",
-    marginBottom: "2rem",
+    marginBottom: "2rem 0",
     fontSize: "26px",
     fontWeight: "bold",
   },

@@ -61,23 +61,20 @@ const StudyLayout = memo(({ children }) => {
         justifyContent: "center",
         backgroundColor: colors.background,
         color: colors.text,
-      }}
-    >
+      }}>
       <div
         style={{
           padding: "2rem",
           backgroundColor: colors.background,
           overflow: "auto",
           width: "100%",
-        }}
-      >
+        }}>
         <div
           style={{
             maxWidth: "1200px",
             margin: "0 auto",
             width: "100%",
-          }}
-        >
+          }}>
           {children}
         </div>
       </div>
@@ -97,8 +94,7 @@ const DefaultLayout = memo(() => {
       style={{
         backgroundColor: colors.background,
         color: colors.text,
-      }}
-    >
+      }}>
       <Outlet />
     </div>
   );
@@ -152,8 +148,7 @@ const ThemeWrapper = ({ children }) => {
         backgroundColor: colors.background,
         color: colors.text,
         minHeight: "100vh",
-      }}
-    >
+      }}>
       {children}
     </div>
   );
@@ -181,8 +176,7 @@ const ThemeToggle = () => {
         cursor: "pointer",
         zIndex: 1000,
         boxShadow: "0 2px 10px rgba(0, 0, 0, 0.1)",
-      }}
-    >
+      }}>
       {isDarkMode ? "🌞" : "🌙"}
     </button>
   );
@@ -518,7 +512,10 @@ function AppContent() {
                     />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />
-                    <Route path="schedules/:scheduleId" element={<StudyDetailPage />} />
+                    <Route
+                      path="schedules/:scheduleId"
+                      element={<StudyDetailPage />}
+                    />
                     <Route
                       path="assignment"
                       element={<StudyDetailPage activeTab="과제" />}
@@ -545,36 +542,27 @@ function AppContent() {
                     />
                     <Route
                       path="posts"
-                      element={
-                        <StudyDetailPage activeTab="게시판" />
-                      }
+                      element={<StudyDetailPage activeTab="게시판" />}
                     />
                     <Route
                       path="posts/add"
-                      element={
-                        <StudyDetailPage activeTab="게시판" />
-                      }
+                      element={<StudyDetailPage activeTab="게시판" />}
                     />
                     <Route
                       path="posts/:postId"
-                      element={
-                        <StudyDetailPage activeTab="게시판" />
-                      }
+                      element={<StudyDetailPage activeTab="게시판" />}
                     />
                     <Route
                       path="posts/:postId/edit"
-                      element={
-                        <StudyDetailPage activeTab="게시판" />
-                      }
+                      element={<StudyDetailPage activeTab="게시판" />}
                     />
-                    
+
                     <Route path="attendances" element={<StudyDetailPage />} />
                     <Route
                       path="attendances/:scheduleId"
                       element={<AttendanceDetailPage />}
                     />
                     <Route path="management" element={<StudyDetailPage />} />
-                    <Route path="ranking" element={<StudyDetailPage />} />
                   </Routes>
                 </StudyLayout>
               </ProtectedRoute>
