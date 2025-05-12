@@ -22,12 +22,12 @@ function StudyCard({ study, onClick }) {
         cursor: "pointer",
         transition: "transform 0.2s, box-shadow 0.2s",
         boxShadow: `4px 4px 0 ${
-          colors.isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0, 0.05)"
+          colors.isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0)"
         }`,
         ":hover": {
           transform: "translateY(-4px)",
           boxShadow: `0 4px 6px ${
-            colors.isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0, 0.1)"
+            colors.isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0)"
           }`,
         },
       }}>
