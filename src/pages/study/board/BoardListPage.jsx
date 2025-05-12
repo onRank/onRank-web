@@ -48,54 +48,6 @@ function BoardListPage({
     }
   };
 
-  // 임시 개발 중 메시지
-  if (!error) {
-    return (
-      <div className="board-list-container">
-        {/* 게시글 추가 안내 - 관리자 권한이 있을 때만 표시 */}
-        {isManager && (
-          <div
-            className="add-section-box"
-            style={{ backgroundColor: colors.cardBackground }}>
-            <div>
-              <div className="add-section-title" style={{ color: colors.text }}>
-                게시글 추가
-              </div>
-              <div
-                className="add-section-description"
-                style={{ color: colors.textSecondary }}>
-                새로운 게시글을 추가해주세요.
-              </div>
-            </div>
-            <Button onClick={onAddBoard} variant="add" />
-          </div>
-        )}
-
-        {/* 개발 중 메시지 */}
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '3rem',
-          backgroundColor: '#f8f9fa',
-          borderRadius: '8px',
-          marginTop: '1rem' 
-        }}>
-          게시판 기능 개발 중입니다.
-        </div>
-
-        {/* 액션 팝업 */}
-        {showActionPopup && (
-          <ActionPopup
-            position={popupPosition}
-            onClose={handleCloseActionPopup}
-            actions={[
-              { label: "삭제", onClick: handleDelete },
-            ]}
-          />
-        )}
-      </div>
-    );
-  }
-
   return (
     <div className="board-list-container">
       {/* 게시글 추가 안내 - 관리자 권한이 있을 때만 표시 */}

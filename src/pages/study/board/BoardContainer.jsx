@@ -112,12 +112,18 @@ function BoardContainer({ onSubPageChange }) {
   }, [isAddPage, isEditPage, isDetailPage, onSubPageChange]);
 
   // 게시글 추가 핸들러
-  const handleAddBoard = async (newBoard) => {
+  const handleAddBoard = async (newBoard, selectedFiles) => {
     try {
       setIsLoading(true);
 
-      // API를 통해 게시글 생성
-      const result = await boardService.createBoard(studyId, newBoard);
+      // API 요청 데이터에 파일 추가
+      const boardData = {
+        ...newBoard,
+        files: selectedFiles // 파일 데이터 추가
+      };
+
+      // API를 통해 게시글 생성 (파일 포함)
+      const result = await boardService.createBoard(studyId, boardData);
       
       if (result.success) {
         // 멤버 컨텍스트 정보가 있으면 업데이트
@@ -182,12 +188,18 @@ function BoardContainer({ onSubPageChange }) {
   };
 
   // 게시글 수정 핸들러
-  const handleUpdateBoard = async (boardId, updatedBoard) => {
+  const handleUpdateBoard = async (boardId, updatedBoard, selectedFiles) => {
     try {
       setIsLoading(true);
 
-      // API를 통해 게시글 수정
-      const result = await boardService.updateBoard(studyId, boardId, updatedBoard);
+      // API 요청 데이터에 파일 추가
+      const boardData = {
+        ...updatedBoard,
+        files: selectedFiles // 파일 데이터 추가
+      };
+
+      // API를 통해 게시글 수정 (파일 포함)
+      const result = await boardService.updateBoard(studyId, boardId, boardData);
       
       if (result.success) {
         // 멤버 컨텍스트 정보가 있으면 업데이트
