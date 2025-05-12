@@ -107,7 +107,7 @@ const styles = {
   cardList: {
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
+    justifyContent: "flex-start",
     width: "100%",
   },
 };
