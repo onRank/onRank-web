@@ -150,7 +150,6 @@ function StudiesPage() {
     fetchStudies();
   }, [navigate, pageInitialized, dataLoaded]);
 
-
   // 토큰에서 사용자 정보 추출 (백업 방법)
   const extractUserInfoFromToken = () => {
     try {
@@ -193,24 +192,21 @@ function StudiesPage() {
         maxWidth: "1200px",
         margin: "0 auto",
         padding: "2rem",
-      }}
-    >
+      }}>
       {/* 스터디 목록 헤더 */}
       <div
         style={{
           display: "flex",
           flexDirection: "column",
           marginBottom: "1rem",
-        }}
-      >
+        }}>
         {/* 아이콘과 제목 */}
         <div
           style={{
             display: "flex",
             alignItems: "center",
             marginBottom: "1.5rem",
-          }}
-        >
+          }}>
           <span style={{ fontSize: "24px", marginRight: "10px" }}>
             <FaBookReader />
           </span>
@@ -218,8 +214,7 @@ function StudiesPage() {
             style={{
               fontSize: "24px",
               fontWeight: "bold",
-            }}
-          >
+            }}>
             스터디 목록
           </h1>
         </div>
@@ -231,27 +226,24 @@ function StudiesPage() {
             alignItems: "flex-start",
             justifyContent: "space-between",
             marginBottom: "1rem",
-            border: "1px solid #A3A1A1",
+            border: "1px solid #000",
             borderRadius: "12px",
             padding: "14px 20px",
             backgroundColor: "#fff",
-          }}
-        >
+          }}>
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               flex: 1,
-            }}
-          >
+            }}>
             <div
               style={{
                 fontSize: "16px",
                 fontWeight: "500",
                 color: "#333",
                 marginBottom: "4px",
-              }}
-            >
+              }}>
               스터디 생성
             </div>
             <div
@@ -259,8 +251,7 @@ function StudiesPage() {
                 fontSize: "14px",
                 color: "#666",
                 marginLeft: "2px",
-              }}
-            >
+              }}>
               새로운 스터디를 생성하세요.
             </div>
           </div>
@@ -280,8 +271,7 @@ function StudiesPage() {
             display: "flex",
             gap: "0.5rem",
             margin: "1rem 1rem",
-          }}
-        >
+          }}>
           <Button
             variant="all"
             label="전체"
@@ -323,8 +313,7 @@ function StudiesPage() {
             backgroundColor: "#f8f9fa",
             borderRadius: "8px",
             margin: "1rem 0",
-          }}
-        >
+          }}>
           <h3 style={{ marginBottom: "1rem", color: "#495057" }}>
             등록된 스터디가 없습니다
           </h3>

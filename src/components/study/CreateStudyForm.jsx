@@ -9,8 +9,7 @@ const styles = {
   container: {
     display: "flex",
     flexDirection: "column",
-    gap: "2rem",
-    padding: "0 2rem",
+    gap: "1rem",
     maxWidth: "800px",
     margin: "0 auto",
   },
@@ -18,15 +17,12 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginBottom: "2rem",
-    fontSize: "24px",
+    fontSize: "26px",
     fontWeight: "bold",
   },
   searchIcon: {
     marginRight: "8px",
     fontSize: "24px",
-  },
-  formSection: {
-    marginBottom: "2rem",
   },
   formGroup: {
     width: "100%",
@@ -38,29 +34,15 @@ const styles = {
   label: {
     display: "block",
     marginBottom: "0.5rem",
-    fontSize: "16px",
+    fontSize: "20px",
     fontWeight: "bold",
   },
   input: {
-    width: "100%",
+    width: "50%",
     padding: "12px",
     border: "1px solid #E5E5E5",
-    borderRadius: "4px",
+    borderRadius: "7px",
     fontSize: "14px",
-  },
-  shortTextarea: {
-    width: "100%",
-    height: "80px",
-    padding: "12px",
-    border: "1px solid #E5E5E5",
-    borderRadius: "4px",
-    resize: "none",
-    fontSize: "14px",
-  },
-  pointSectionTitle: {
-    fontSize: "16px",
-    fontWeight: "bold",
-    marginBottom: "1rem",
   },
   pointGrid: {
     display: "grid",
@@ -73,15 +55,15 @@ const styles = {
   },
   pointLabel: {
     width: "80px",
-    fontSize: "14px",
+    fontSize: "16px",
     color: "#000000",
+    border: "1px",
   },
   pointInputContainer: {
-    flex: 1,
     display: "flex",
     alignItems: "center",
     border: "1px solid #E5E5E5",
-    borderRadius: "4px",
+    borderRadius: "7px",
     overflow: "hidden",
   },
   pointInput: {
@@ -90,34 +72,10 @@ const styles = {
     border: "none",
     fontSize: "14px",
   },
-  pointInputHint: {
-    color: "#999",
-    fontSize: "14px",
-    marginLeft: "8px",
-  },
-  pointSuffix: {
-    padding: "0 12px",
-    backgroundColor: "#F5F5F5",
-    color: "#666666",
-    fontSize: "14px",
-  },
   buttonContainer: {
     display: "flex",
     justifyContent: "flex-end",
     marginTop: "2rem",
-  },
-  button: {
-    padding: "10px 24px",
-    backgroundColor: "#FF0000",
-    color: "#FFFFFF",
-    border: "none",
-    borderRadius: "4px",
-    fontSize: "16px",
-    cursor: "pointer",
-  },
-  buttonDisabled: {
-    backgroundColor: "#CCCCCC",
-    cursor: "not-allowed",
   },
   errorMessage: {
     padding: "12px",
@@ -418,19 +376,18 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
         <label style={styles.label}>
           <span style={styles.requiredField}>*</span>한 줄 소개
         </label>
-        <textarea
+        <input
+          type="text"
           placeholder="스터디를 한 줄로 소개해주세요."
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          style={styles.shortTextarea}
+          style={styles.input}
         />
       </div>
 
       {/* 이미지 업로드 */}
       <div style={styles.formGroup}>
-        <label style={styles.label}>
-          <span style={styles.requiredField}>*</span>이미지
-        </label>
+        <label style={styles.label}>이미지</label>
         <ImageUploader
           onImageChange={handleImageChange}
           onRemoveImage={handleRemoveImage}
@@ -454,9 +411,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 onChange={handlePointChange(setPresentPoint)}
                 style={styles.pointInput}
               />
-              <div style={styles.pointSuffix}>점</div>
             </div>
-            <div style={styles.pointInputHint}>예) 100pt</div>
           </div>
 
           {/* 지각 포인트 */}
@@ -469,9 +424,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 onChange={handlePointChange(setLatePoint)}
                 style={styles.pointInput}
               />
-              <div style={styles.pointSuffix}>점</div>
             </div>
-            <div style={styles.pointInputHint}>예) 50pt</div>
           </div>
 
           {/* 결석 포인트 */}
@@ -484,9 +437,7 @@ function CreateStudyForm({ onSuccess, onError, onNavigate }) {
                 onChange={handlePointChange(setAbsentPoint)}
                 style={styles.pointInput}
               />
-              <div style={styles.pointSuffix}>점</div>
             </div>
-            <div style={styles.pointInputHint}>예) 0pt</div>
           </div>
         </div>
       </div>
