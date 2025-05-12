@@ -549,27 +549,40 @@ function AppContent() {
                     <Route
                       path="posts"
                       element={
-                        <PostProvider>
-                          <PostPage activeTab="게시판" />
-                        </PostProvider>
+                        <StudyDetailPage activeTab="게시판" />
                       }
                     />
                     <Route
                       path="posts/add"
                       element={
-                        <PostProvider>
-                          <PostFormPage activeTab="게시판" />
-                        </PostProvider>
+                        <StudyDetailPage activeTab="게시판" />
                       }
                     />
                     <Route
                       path="posts/:postId"
                       element={
-                        <PostProvider>
-                          <PostDetailPage activeTab="게시판" />
-                        </PostProvider>
+                        <StudyDetailPage activeTab="게시판" />
                       }
                     />
+                    
+                    {/* Board routes */}
+                    <Route
+                      path="boards"
+                      element={<StudyDetailPage activeTab="게시판" />}
+                    />
+                    <Route
+                      path="boards/add"
+                      element={<StudyDetailPage activeTab="게시판" />}
+                    />
+                    <Route
+                      path="boards/:boardId"
+                      element={<StudyDetailPage activeTab="게시판" />}
+                    />
+                    <Route
+                      path="boards/:boardId/edit"
+                      element={<StudyDetailPage activeTab="게시판" />}
+                    />
+
                     <Route path="attendances" element={<StudyDetailPage />} />
                     <Route
                       path="attendances/:scheduleId"
