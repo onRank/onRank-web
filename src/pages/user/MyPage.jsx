@@ -244,7 +244,9 @@ function MyPage() {
             {studyList.map((study, idx) => (
               <MyPageCard
                 key={idx}
-                icon={study.file?.fileUrl}
+                icon={
+                  study.file?.fileName === null ? null : study.file?.fileUrl
+                }
                 name={study.studyName}
                 onClick={() => navigate(`/studies/${study.studyId}`)}
               />
