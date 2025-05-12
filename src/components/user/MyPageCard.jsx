@@ -1,6 +1,6 @@
 import { FaBookReader } from "react-icons/fa";
 
-function MyPageCard({ icon, name }) {
+function MyPageCard({ icon, name, onClick }) {
   const styles = {
     card: {
       display: "flex",
@@ -46,7 +46,7 @@ function MyPageCard({ icon, name }) {
   };
 
   return (
-    <div style={styles.card}>
+    <div style={styles.card} onClick={onClick}>
       <span style={styles.iconBox}>
         {icon ? (
           <img src={icon} alt={name} style={styles.image} />
