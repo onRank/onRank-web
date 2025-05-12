@@ -60,4 +60,68 @@
   border: 1px dashed #ddd;
   border-radius: 4px;
   background-color: #f8f9fa;
+}
+
+/* 파일 업로더 컴포넌트 스타일 */
+.file-uploader-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.file-uploader-dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.file-uploader-dropzone:hover {
+  border-color: #0066ff;
+  background-color: #f0f7ff;
+}
+
+.file-uploader-dropzone.active {
+  border-color: #0066ff;
+  background-color: #e6f0ff;
+}
+
+.file-uploader-dropzone.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.file-uploader-input {
+  display: none;
+}
+
+.file-uploader-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-uploader-icon {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.file-uploader-label p {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.file-uploader-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.file-uploader-error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
 } 
