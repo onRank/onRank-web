@@ -77,24 +77,24 @@ export const boardService = {
       }
 
       // 응답이 { memberContext, data } 구조인지 확인
-      let boardData = responseData;
+      let postsData = responseData;
       let memberContext = null;
 
       if (responseData.data !== undefined) {
         console.log(
           "[BoardService] 새 API 응답 구조 감지 (memberContext/data)"
         );
-        boardData = responseData.data;
+        postsData = responseData.data;
         memberContext = responseData.memberContext || null;
 
         console.log("[BoardService] 멤버 컨텍스트:", memberContext);
       }
 
       // 데이터가 배열인지 확인
-      let dataArray = Array.isArray(boardData)
-        ? boardData
-        : boardData
-        ? [boardData]
+      let dataArray = Array.isArray(postsData)
+        ? postsData
+        : postsData
+        ? [postsData]
         : [];
 
       if (dataArray.length > 0) {
@@ -105,71 +105,98 @@ export const boardService = {
 
         // 필드명 확인 - 백엔드 DTO 구조에 맞게 확인
         console.log(
-          "[BoardService] boardId 존재 여부:",
-          "boardId" in dataArray[0]
+          "[BoardService] postId 존재 여부:",
+          "postId" in dataArray[0] || "id" in dataArray[0]
         );
         console.log(
-          "[BoardService] boardTitle 존재 여부:",
-          "boardTitle" in dataArray[0]
+          "[BoardService] title 존재 여부:",
+          "title" in dataArray[0]
         );
         console.log(
-          "[BoardService] boardContent 존재 여부:",
-          "boardContent" in dataArray[0]
+          "[BoardService] content 존재 여부:",
+          "content" in dataArray[0]
         );
 
         // 데이터 유효성 검사 및 기본값 설정
-        dataArray = dataArray.map((board) => {
-          const processedBoard = { ...board };
+        dataArray = dataArray.map((post) => {
+          const processedPost = { ...post };
 
-          // boardId가 없거나 유효하지 않은 경우
-          if (!processedBoard.boardId || isNaN(processedBoard.boardId)) {
+          // postId가 없거나 유효하지 않은 경우
+          if (!processedPost.postId && !processedPost.id) {
             console.warn(
-              "[BoardService] boardId 필드 없음 또는 유효하지 않음, 임의 ID 설정"
+              "[BoardService] postId/id 필드 없음 또는 유효하지 않음, 임의 ID 설정"
             );
-            processedBoard.boardId = Math.floor(Math.random() * 10000);
+            processedPost.postId = Math.floor(Math.random() * 10000);
+          } else if (!processedPost.postId && processedPost.id) {
+            processedPost.postId = processedPost.id;
+          }
+
+          // boardId -> postId 필드 변환
+          if (processedPost.boardId && !processedPost.postId) {
+            processedPost.postId = processedPost.boardId;
           }
 
           // 제목이 없거나, null이거나, 빈 문자열인 경우
           if (
-            processedBoard.boardTitle === undefined ||
-            processedBoard.boardTitle === null ||
-            processedBoard.boardTitle.trim() === ""
+            processedPost.title === undefined ||
+            processedPost.title === null ||
+            processedPost.title.trim() === ""
           ) {
             console.warn(
-              "[BoardService] boardTitle 필드 없음 또는 빈 값, 기본값 설정"
+              "[BoardService] title 필드 없음 또는 빈 값, 기본값 설정"
             );
-            processedBoard.boardTitle = "제목 없음";
+            processedPost.title = "제목 없음";
+          }
+
+          // boardTitle -> title 필드 변환
+          if (processedPost.boardTitle && !processedPost.title) {
+            processedPost.title = processedPost.boardTitle;
           }
 
           // 내용이 없거나, null이거나, 빈 문자열인 경우
           if (
-            processedBoard.boardContent === undefined ||
-            processedBoard.boardContent === null ||
-            processedBoard.boardContent.trim() === ""
+            processedPost.content === undefined ||
+            processedPost.content === null ||
+            processedPost.content.trim() === ""
           ) {
             console.warn(
-              "[BoardService] boardContent 필드 없음 또는 빈 값, 기본값 설정"
+              "[BoardService] content 필드 없음 또는 빈 값, 기본값 설정"
             );
-            processedBoard.boardContent = "내용 없음";
+            processedPost.content = "내용 없음";
+          }
+
+          // boardContent -> content 필드 변환
+          if (processedPost.boardContent && !processedPost.content) {
+            processedPost.content = processedPost.boardContent;
           }
 
           // 생성일이 없는 경우
-          if (!processedBoard.boardCreatedAt) {
+          if (!processedPost.createdAt) {
             console.warn(
-              "[BoardService] boardCreatedAt 필드 없음, 현재 시간으로 설정"
+              "[BoardService] createdAt 필드 없음, 현재 시간으로 설정"
             );
-            processedBoard.boardCreatedAt = new Date().toISOString();
+            processedPost.createdAt = new Date().toISOString();
+          }
+
+          // boardCreatedAt -> createdAt 필드 변환
+          if (processedPost.boardCreatedAt && !processedPost.createdAt) {
+            processedPost.createdAt = processedPost.boardCreatedAt;
           }
 
           // 작성자 정보가 없는 경우
-          if (!processedBoard.writer) {
+          if (!processedPost.writer) {
             console.warn(
               "[BoardService] writer 필드 없음, 기본값 설정"
             );
-            processedBoard.writer = "작성자 없음";
+            processedPost.writer = "작성자 없음";
           }
 
-          return processedBoard;
+          // 파일 URL 배열 확인
+          if (!processedPost.fileUrls) {
+            processedPost.fileUrls = [];
+          }
+
+          return processedPost;
         });
       }
 
@@ -192,9 +219,9 @@ export const boardService = {
   },
 
   // 게시글 상세 조회
-  getBoardById: async (studyId, boardId) => {
+  getBoardById: async (studyId, postId) => {
     try {
-      console.log(`[BoardService] 게시글 상세 조회 요청: ${studyId}/posts/${boardId}`);
+      console.log(`[BoardService] 게시글 상세 조회 요청: ${studyId}/posts/${postId}`);
 
       // 토큰 확인 및 갱신
       const token = tokenUtils.getToken();
@@ -202,7 +229,7 @@ export const boardService = {
         ? token
         : `Bearer ${token}`;
 
-      const response = await api.get(`/studies/${studyId}/posts/${boardId}`, {
+      const response = await api.get(`/studies/${studyId}/posts/${postId}`, {
         withCredentials: true,
         headers: {
           Authorization: tokenWithBearer,
@@ -239,58 +266,85 @@ export const boardService = {
       });
 
       // 데이터 유효성 검사 및 기본값 설정
-      const processedBoard = { ...data };
+      const processedPost = { ...data };
 
       // 필수 필드 확인 및 기본값 설정
-      if (!processedBoard.boardId || isNaN(processedBoard.boardId)) {
-        processedBoard.boardId = parseInt(boardId);
+      if (!processedPost.postId && !processedPost.id) {
+        processedPost.postId = parseInt(postId);
+      } else if (!processedPost.postId && processedPost.id) {
+        processedPost.postId = processedPost.id;
+      }
+
+      // boardId -> postId 필드 변환
+      if (processedPost.boardId && !processedPost.postId) {
+        processedPost.postId = processedPost.boardId;
       }
 
       // 제목이 없거나, null이거나, 빈 문자열인 경우
       if (
-        processedBoard.boardTitle === undefined ||
-        processedBoard.boardTitle === null ||
-        processedBoard.boardTitle.trim() === ""
+        processedPost.title === undefined ||
+        processedPost.title === null ||
+        processedPost.title.trim() === ""
       ) {
         console.warn(
-          "[BoardService] boardTitle 필드 없음 또는 빈 값, 기본값 설정"
+          "[BoardService] title 필드 없음 또는 빈 값, 기본값 설정"
         );
-        processedBoard.boardTitle = "제목 없음";
+        processedPost.title = "제목 없음";
+      }
+
+      // boardTitle -> title 필드 변환
+      if (processedPost.boardTitle && !processedPost.title) {
+        processedPost.title = processedPost.boardTitle;
       }
 
       // 내용이 없거나, null이거나, 빈 문자열인 경우
       if (
-        processedBoard.boardContent === undefined ||
-        processedBoard.boardContent === null ||
-        processedBoard.boardContent.trim() === ""
+        processedPost.content === undefined ||
+        processedPost.content === null ||
+        processedPost.content.trim() === ""
       ) {
         console.warn(
-          "[BoardService] boardContent 필드 없음 또는 빈 값, 기본값 설정"
+          "[BoardService] content 필드 없음 또는 빈 값, 기본값 설정"
         );
-        processedBoard.boardContent = "내용 없음";
+        processedPost.content = "내용 없음";
+      }
+
+      // boardContent -> content 필드 변환
+      if (processedPost.boardContent && !processedPost.content) {
+        processedPost.content = processedPost.boardContent;
       }
 
       // 생성일이 없는 경우
-      if (!processedBoard.boardCreatedAt) {
+      if (!processedPost.createdAt) {
         console.warn(
-          "[BoardService] boardCreatedAt 필드 없음, 현재 시간으로 설정"
+          "[BoardService] createdAt 필드 없음, 현재 시간으로 설정"
         );
-        processedBoard.boardCreatedAt = new Date().toISOString();
+        processedPost.createdAt = new Date().toISOString();
+      }
+
+      // boardCreatedAt -> createdAt 필드 변환
+      if (processedPost.boardCreatedAt && !processedPost.createdAt) {
+        processedPost.createdAt = processedPost.boardCreatedAt;
       }
 
       // 작성자 정보가 없는 경우
-      if (!processedBoard.writer) {
+      if (!processedPost.writer) {
         console.warn(
           "[BoardService] writer 필드 없음, 기본값 설정"
         );
-        processedBoard.writer = "작성자 없음";
+        processedPost.writer = "작성자 없음";
+      }
+      
+      // 파일 URL 배열 확인
+      if (!processedPost.fileUrls) {
+        processedPost.fileUrls = [];
       }
 
-      console.log("[BoardService] 가공된 게시글 상세 데이터:", processedBoard);
+      console.log("[BoardService] 가공된 게시글 상세 데이터:", processedPost);
 
       return {
         success: true,
-        data: processedBoard,
+        data: processedPost,
         memberContext: memberContext,
       };
     } catch (error) {
@@ -305,9 +359,9 @@ export const boardService = {
   },
 
   // 게시글 삭제
-  deleteBoard: async (studyId, boardId) => {
+  deleteBoard: async (studyId, postId) => {
     try {
-      console.log(`[BoardService] 게시글 삭제 요청: /studies/${studyId}/posts/${boardId}`);
+      console.log(`[BoardService] 게시글 삭제 요청: /studies/${studyId}/posts/${postId}`);
 
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -324,7 +378,7 @@ export const boardService = {
         : `Bearer ${token}`;
 
       // API 요청
-      const response = await api.delete(`/studies/${studyId}/posts/${boardId}`, {
+      const response = await api.delete(`/studies/${studyId}/posts/${postId}`, {
         withCredentials: true,
         headers: {
           Authorization: tokenWithBearer,
@@ -350,10 +404,10 @@ export const boardService = {
   },
 
   // 게시글 수정
-  updateBoard: async (studyId, boardId, boardData) => {
+  updateBoard: async (studyId, postId, postData) => {
     try {
-      console.log(`[BoardService] 게시글 수정 요청: /studies/${studyId}/posts/${boardId}`);
-      console.log("[BoardService] 수정 데이터:", boardData);
+      console.log(`[BoardService] 게시글 수정 요청: /studies/${studyId}/posts/${postId}`);
+      console.log("[BoardService] 수정 데이터:", postData);
       
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -371,15 +425,17 @@ export const boardService = {
       
       // API 요청 데이터 준비
       const requestData = {
-        title: boardData.title,
-        content: boardData.content,
+        title: postData.title,
+        content: postData.content,
+        remainingFileIds: postData.remainingFileIds || [], // 남겨둘 파일 ID
+        newFileNames: postData.fileNames || [], // 새로운 파일명
       };
       
       console.log("[BoardService] 최종 요청 데이터:", requestData);
 
       // API 요청
       const response = await api.put(
-        `/studies/${studyId}/posts/${boardId}`,
+        `/studies/${studyId}/posts/${postId}`,
         requestData,
         {
           withCredentials: true,
@@ -392,13 +448,61 @@ export const boardService = {
       );
 
       console.log("[BoardService] 게시글 수정 성공:", response.data);
-
-      // 성공 응답 반환
-      return {
+      
+      // 성공 응답 처리
+      let responseData = response.data;
+      let result = {
         success: true,
         message: "게시글이 성공적으로 수정되었습니다.",
-        data: response.data
       };
+
+      // 응답 데이터 처리
+      if (responseData) {
+        // 응답 데이터 변환 및 정제
+        if (responseData.data) {
+          // { memberContext, data } 구조
+          result.data = responseData.data;
+          result.memberContext = responseData.memberContext;
+        } else {
+          // 직접 데이터 구조
+          result.data = responseData;
+        }
+        
+        // ID와 필드명 처리
+        if (!result.data.postId && result.data.id) {
+          result.data.postId = result.data.id;
+        } else if (result.data.boardId && !result.data.postId) {
+          result.data.postId = result.data.boardId;
+        }
+        
+        if (result.data.boardTitle && !result.data.title) {
+          result.data.title = result.data.boardTitle;
+        }
+        
+        if (result.data.boardContent && !result.data.content) {
+          result.data.content = result.data.boardContent;
+        }
+        
+        if (result.data.boardCreatedAt && !result.data.createdAt) {
+          result.data.createdAt = result.data.boardCreatedAt;
+        }
+        
+        // 파일 URL 배열 확인
+        if (!result.data.fileUrls) {
+          result.data.fileUrls = [];
+        }
+      } else {
+        // 기본 응답 데이터 구성
+        result.data = {
+          postId: parseInt(postId),
+          title: postData.title,
+          content: postData.content,
+          updatedAt: new Date().toISOString(),
+          fileUrls: []
+        };
+      }
+
+      return result;
     } catch (error) {
       console.error("[BoardService] 게시글 수정 오류:", error);
       return {
@@ -412,6 +516,7 @@ export const boardService = {
   createBoard: async (studyId, newBoard) => {
     try {
       console.log("[BoardService] 게시글 생성 요청:", newBoard);
+      console.log("[BoardService] 첨부 파일 수:", newBoard.files && newBoard.files.length);
       
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -420,6 +525,7 @@ export const boardService = {
       const requestData = {
         title: newBoard.title,
         content: newBoard.content,
+        fileNames: newBoard.fileNames || [] // 파일 이름 배열 추가
       };
       
       console.log("[BoardService] 변환된 요청 데이터:", requestData);
@@ -436,9 +542,9 @@ export const boardService = {
         ? token
         : `Bearer ${token}`;
 
-      // API 요청
+      // API 요청 - 수정된 엔드포인트 사용
       const response = await api.post(
-        `/studies/${studyId}/posts`,
+        `/studies/${studyId}/posts/add`,
         requestData,
         {
           withCredentials: true,
@@ -473,21 +579,22 @@ export const boardService = {
           
           // 헤더에서 위치 정보 추출해 ID 찾기 시도
           const locationHeader = response.headers.location;
-          let boardId = null;
+          let postId = null;
           
           if (locationHeader) {
             const match = locationHeader.match(/\/([^\/]+)$/);
             if (match && match[1]) {
-              boardId = parseInt(match[1]);
+              postId = parseInt(match[1]);
             }
           }
           
           result.data = {
-            boardId: boardId || Date.now(),
-            boardTitle: newBoard.title,
-            boardContent: newBoard.content,
-            boardCreatedAt: new Date().toISOString(),
+            postId: postId || Date.now(),
+            title: newBoard.title,
+            content: newBoard.content,
+            createdAt: new Date().toISOString(),
             writer: "현재 사용자",
+            fileUrls: [] // 파일 URL 배열 필드 추가
           };
         } else {
           // 응답 데이터 변환 및 정제
@@ -501,8 +608,28 @@ export const boardService = {
           }
 
           // ID가 없는 경우 대체
-          if (!result.data.boardId) {
-            result.data.boardId = Date.now();
+          if (!result.data.postId && result.data.id) {
+            result.data.postId = result.data.id;
+          } else if (!result.data.postId) {
+            result.data.postId = Date.now();
+          }
+          
+          // 필드명 통일 (API 응답의 필드명에 맞게)
+          if (result.data.boardId && !result.data.postId) {
+            result.data.postId = result.data.boardId;
+          }
+          
+          if (result.data.boardTitle && !result.data.title) {
+            result.data.title = result.data.boardTitle;
+          }
+          
+          if (result.data.boardContent && !result.data.content) {
+            result.data.content = result.data.boardContent;
+          }
+          
+          // 파일 URL 배열 확인
+          if (!result.data.fileUrls) {
+            result.data.fileUrls = [];
           }
         }
 
