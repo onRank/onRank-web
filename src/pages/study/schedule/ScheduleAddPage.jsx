@@ -188,21 +188,21 @@ function ScheduleAddPage({ onCancel }) {
             내용
           </h3>
           <div className="textarea-container">
-            <textarea
-              value={content}
+          <textarea
+            value={content}
               onChange={handleContentChange}
               placeholder="일정에 대한 설명을 입력하세요."
               className="form-input"
-              style={{
-                border: `1px solid ${colors.border}`,
+            style={{
+              border: `1px solid ${colors.border}`,
                 backgroundColor: colors.inputBackground,
                 color: colors.textPrimary,
-                minHeight: '200px',
+              minHeight: '200px',
                 resize: 'vertical'
-              }}
+            }}
               maxLength={10000}
               required
-            />
+          />
             <div className="char-counter" style={{ color: colors.textSecondary }}>
               {content.length}/10000
             </div>
@@ -214,7 +214,7 @@ function ScheduleAddPage({ onCancel }) {
             variant="upload" 
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
-            style={{ 
+            style={{
               width: '84px', 
               height: '40px',
               opacity: isFormValid && !isSubmitting ? 1 : 0.5,

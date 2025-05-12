@@ -16,15 +16,11 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
-  const [isNewForm, setIsNewForm] = useState(false);
-  const [isEditForm, setIsEditForm] = useState(false);
-  const [selectedNotice, setSelectedNotice] = useState(null);
-  const [isDetailView, setIsDetailView] = useState(false);
-
+  
   // Notice Context 사용
   const { 
     notices, 
-    selectedNotice: contextNotice, 
+    selectedNotice, 
     isLoading: contextLoading, 
     error, 
     memberRole,
@@ -37,28 +33,29 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 권한 훅 사용
   const { isManager } = useStudyRole();
+  
+  // 현재 경로를 분석하여 페이지 타입 결정
+  const isAddPage = location.pathname.endsWith('/notices/add');
+  const isEditPage = location.pathname.includes('/edit');
+  const isDetailPage = noticeId && !isEditPage && !isAddPage;
 
-  // URL 상태 확인
+  // 컴포넌트 마운트 시 공지사항 목록 로드
   useEffect(() => {
-    const path = location.pathname;
-    // Check if the URL ends with /add or contains /new for create page
-    const isCreatePage = path.endsWith('/notices/add') || path.includes('/notices/new');
-    // Check if the URL contains /edit/ for edit page
-    const isEditPage = path.includes('/notices/edit/');
-    // Check if the URL has a noticeId but is not edit or create page
-    const isDetailPage = noticeId && !isEditPage && !isCreatePage;
+    if (!isAddPage && notices.length === 0) {
+      getNotices(studyId);
+    }
+  }, [studyId, notices, getNotices, isAddPage]);
 
-    setIsNewForm(isCreatePage);
-    setIsEditForm(isEditPage);
-    setIsDetailView(isDetailPage);
-
-    // URL 파라미터가 있으면 해당 공지사항 로드
-    if (noticeId && !contextNotice) {
+  // noticeId가 URL에 있는 경우 해당 공지사항 상세 정보 조회
+  useEffect(() => {
+    if (noticeId) {
       getNoticeById(studyId, noticeId);
     }
-
-    // 하위 페이지 상태 업데이트
-    if (isCreatePage) {
+  }, [studyId, noticeId, getNoticeById]);
+  
+  // subPage 상태 관리 및 콜백 호출
+  useEffect(() => {
+    if (isAddPage) {
       onSubPageChange("추가");
     } else if (isEditPage) {
       onSubPageChange("수정");
@@ -67,51 +64,35 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
     } else {
       onSubPageChange(null);
     }
-
+    // 컴포넌트 언마운트 시 subPage 초기화
     return () => {
       onSubPageChange(null);
     };
-  }, [location.pathname, noticeId, studyId, contextNotice, getNoticeById, onSubPageChange]);
-
-  // 공지사항 데이터가 변경될 때 상태 업데이트
-  useEffect(() => {
-    if (!notices || notices.length === 0) {
-      getNotices(studyId);
-    }
-  }, [studyId, notices, getNotices]);
-
-  useEffect(() => {
-    if (contextNotice && noticeId && parseInt(noticeId) === contextNotice.noticeId) {
-      setSelectedNotice(contextNotice);
-    }
-  }, [contextNotice, noticeId]);
+  }, [isAddPage, isEditPage, isDetailPage, onSubPageChange]);
 
   // 로딩 상태 통합
   useEffect(() => {
     setIsLoading(contextLoading);
   }, [contextLoading]);
 
-  // 공지사항 클릭 핸들러
+  // 공지사항 상세 보기로 전환
   const handleNoticeClick = (noticeId) => {
-    navigate(`/studies/${studyId}/notices/${noticeId}`, { 
-      replace: true, 
-      state: { fromNoticeList: true } 
-    });
+    navigate(`/studies/${studyId}/notices/${noticeId}`);
   };
 
   // 공지사항 추가 페이지로 이동
-  const handleCreateNotice = () => {
-    navigate(`/studies/${studyId}/notices/add`, { 
-      replace: true 
-    });
+  const handleNavigateToAddPage = () => {
+    navigate(`/studies/${studyId}/notices/add`);
   };
 
   // 공지사항 수정 페이지로 이동
-  const handleEditNotice = (noticeId) => {
-    navigate(`/studies/${studyId}/notices/${noticeId}`, { 
-      replace: true,
-      state: { isEdit: true } 
-    });
+  const handleNavigateToEditPage = (noticeId) => {
+    navigate(`/studies/${studyId}/notices/${noticeId}/edit`);
+  };
+
+  // 공지사항 목록 페이지로 이동
+  const handleNavigateToListPage = () => {
+    navigate(`/studies/${studyId}/notices`);
   };
 
   // 공지사항 삭제 핸들러
@@ -119,12 +100,9 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
     if (window.confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
       const result = await deleteNotice(studyId, noticeId);
       if (result.success) {
-        // 삭제 후 목록으로 이동
-        navigate(`/studies/${studyId}/notices`, { 
-          replace: true 
-        });
+        handleNavigateToListPage();
       } else {
-        alert('공지사항 삭제에 실패했습니다.');
+        alert(result.message || '공지사항 삭제에 실패했습니다.');
       }
     }
   };
@@ -132,13 +110,13 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   // 공지사항 생성 제출 핸들러
   const handleSubmitCreate = async (noticeData, files) => {
     try {
+      setIsLoading(true);
       console.log("[NoticeContainer] 공지사항 생성 요청:", { studyId, noticeData });
+      
       const result = await createNotice(studyId, noticeData, files);
+      
       if (result.success) {
-        // 생성 후 목록으로 이동
-        navigate(`/studies/${studyId}/notices`, { 
-          replace: true 
-        });
+        handleNavigateToListPage();
         return true;
       } else {
         alert(result.message || '공지사항 생성에 실패했습니다.');
@@ -148,76 +126,83 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
       console.error("[NoticeContainer] 공지사항 생성 오류:", error);
       alert('공지사항 생성에 실패했습니다.');
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   // 공지사항 수정 제출 핸들러
   const handleSubmitEdit = async (noticeId, noticeData, files) => {
-    const result = await editNotice(studyId, noticeId, noticeData, files);
-    if (result.success) {
-      // 수정 후 상세 페이지로 이동
-      navigate(`/studies/${studyId}/notices/${noticeId}`, { 
-        replace: true 
-      });
-      return true;
-    } else {
-      alert(result.message || '공지사항 수정에 실패했습니다.');
+    try {
+      setIsLoading(true);
+      
+      const result = await editNotice(studyId, noticeId, noticeData, files);
+      
+      if (result.success) {
+        // 수정 후 상세 페이지로 이동
+        navigate(`/studies/${studyId}/notices/${noticeId}`);
+        return true;
+      } else {
+        alert(result.message || '공지사항 수정에 실패했습니다.');
+        return false;
+      }
+    } catch (error) {
+      console.error("[NoticeContainer] 공지사항 수정 오류:", error);
+      alert('공지사항 수정에 실패했습니다.');
       return false;
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  // 취소 버튼 핸들러 (목록으로 돌아가기)
-  const handleCancel = () => {
-    navigate(`/studies/${studyId}/notices`, { 
-      replace: true 
-    });
   };
 
   // 컨텐츠 렌더링
   const renderContent = () => {
-    if (isNewForm) {
+    // 공지사항 추가 페이지
+    if (isAddPage) {
       return (
         <div>
           <h1 className="page-title">공지사항 추가</h1>
           <NoticeForm
             onSubmit={handleSubmitCreate}
-            onCancel={handleCancel}
+            onCancel={handleNavigateToListPage}
             isLoading={isLoading}
           />
         </div>
       );
     }
-
-    if (isEditForm && selectedNotice) {
+    
+    // 공지사항 수정 페이지
+    if (isEditPage && selectedNotice) {
       return (
         <div>
           <h1 className="page-title">공지사항 수정</h1>
           <NoticeEditForm
-            notice={selectedNotice}
-            onSubmit={(data, files) => handleSubmitEdit(selectedNotice.noticeId, data, files)}
-            onCancel={handleCancel}
-            isLoading={isLoading}
+            studyId={studyId}
+            noticeId={noticeId}
+            initialData={selectedNotice}
+            onCancel={handleNavigateToListPage}
+            onSaveComplete={() => navigate(`/studies/${studyId}/notices/${noticeId}`)}
           />
         </div>
       );
     }
-
-    if (isDetailView && selectedNotice) {
+    
+    // 공지사항 상세 페이지
+    if (isDetailPage && selectedNotice) {
       return (
         <div>
           <h1 className="page-title">공지사항 상세</h1>
           <NoticeDetail
-            notice={selectedNotice}
-            onEdit={() => handleEditNotice(selectedNotice.noticeId)}
-            onDelete={() => handleDeleteNotice(selectedNotice.noticeId)}
-            onBack={handleCancel}
-            isManager={isManager}
+            studyId={studyId}
+            noticeId={selectedNotice.noticeId}
+            handleBack={handleNavigateToListPage}
+            handleEdit={isManager ? () => handleNavigateToEditPage(selectedNotice.noticeId) : undefined}
           />
         </div>
       );
     }
 
-    // 기본 리스트 뷰
+    // 기본 공지사항 목록 페이지
     return (
       <div>
         <h1 className="page-title">공지사항</h1>
@@ -228,7 +213,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
               <div className="notice-add-title">공지사항 추가</div>
               <div className="notice-add-description">새로운 공지사항을 추가해주세요.</div>
             </div>
-            <Button variant="add" onClick={handleCreateNotice} />
+            <Button variant="add" onClick={handleNavigateToAddPage} />
           </div>
         )}
 
@@ -244,7 +229,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
           <NoticeList
             notices={notices || []}
             onNoticeClick={handleNoticeClick}
-            onEdit={isManager ? handleEditNotice : undefined}
+            onEdit={isManager ? handleNavigateToEditPage : undefined}
             onDelete={isManager ? handleDeleteNotice : undefined}
             isLoading={isLoading}
           />

@@ -515,6 +515,10 @@ function AppContent() {
                       path="notices/:noticeId"
                       element={<StudyDetailPage activeTab="공지사항" />}
                     />
+                    <Route
+                      path="notices/:noticeId/edit"
+                      element={<StudyDetailPage activeTab="공지사항" />}
+                    />
                     <Route path="schedules" element={<StudyDetailPage />} />
                     <Route path="schedules/add" element={<StudyDetailPage />} />
                     <Route path="schedules/:scheduleId" element={<StudyDetailPage />} />

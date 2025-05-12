@@ -5,7 +5,6 @@ import {
   useState,
   useCallback,
   useEffect,
-  useRef,
 } from "react";
 import { noticeService } from "../../../services/notice";
 import { useParams } from "react-router-dom";
@@ -22,43 +21,11 @@ export function NoticeProvider({ children }) {
   const [error, setError] = useState(null);
   const [memberRole, setMemberRole] = useState(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-
-  // 요청 상태 추적을 위한 레퍼런스 추가
-  const pendingRequests = useRef({});
-  const cachedNotices = useRef({});
-  const cachedNoticeDetails = useRef({});
-  const lastFetchTime = useRef(null);
-
-  // 캐시 유효성 검사 (10분 = 600000ms)
-  const isCacheValid = () => {
-    if (!lastFetchTime.current) return false;
-    return Date.now() - lastFetchTime.current < 600000;
-  };
-
+  
   // 공지사항 목록 불러오기
   const getNotices = useCallback(async (studyId) => {
     if (!studyId) return;
-
-    // 이미 진행 중인 요청이 있는지 확인
-    const requestKey = `getNotices_${studyId}`;
-    if (pendingRequests.current[requestKey]) {
-      console.log(
-        "[NoticeProvider] 이미 진행 중인 공지사항 목록 요청이 있습니다."
-      );
-      return;
-    }
-
-    // 캐시된 데이터가 있는지 확인
-    if (cachedNotices.current[studyId] && isCacheValid()) {
-      console.log("[NoticeProvider] 캐시된 공지사항 목록 사용");
-      const cachedData = cachedNotices.current[studyId];
-      setNotices(cachedData.notices);
-      setMemberRole(cachedData.memberRole);
-      setInitialLoadDone(true);
-      return;
-    }
-
-    pendingRequests.current[requestKey] = true;
+    
     setIsLoading(true);
     setError(null);
 
@@ -82,13 +49,6 @@ export function NoticeProvider({ children }) {
           (a, b) => new Date(b.noticeCreatedAt) - new Date(a.noticeCreatedAt)
         );
         setNotices(sortedNotices);
-
-        // 캐시에 저장
-        cachedNotices.current[studyId] = {
-          notices: sortedNotices,
-          memberRole: response.memberContext?.memberRole || "PARTICIPANT",
-        };
-        lastFetchTime.current = Date.now();
       } else {
         setError(
           response.message || "공지사항 목록을 불러오는데 실패했습니다."
@@ -102,7 +62,6 @@ export function NoticeProvider({ children }) {
     } finally {
       setIsLoading(false);
       setInitialLoadDone(true);
-      delete pendingRequests.current[requestKey];
     }
   }, []);
 
@@ -119,35 +78,13 @@ export function NoticeProvider({ children }) {
       if (!studyId || !noticeId) return;
       noticeId = parseInt(noticeId, 10);
 
-      // 이미 진행 중인 요청이 있는지 확인
-      const requestKey = `getNoticeById_${studyId}_${noticeId}`;
-      if (pendingRequests.current[requestKey]) {
-        console.log(
-          "[NoticeProvider] 이미 진행 중인 공지사항 상세 요청이 있습니다."
-        );
-        return;
-      }
-
       // 현재 선택된 공지사항이 이미 같은 것인지 확인
       if (selectedNotice && selectedNotice.noticeId === noticeId) {
         console.log("[NoticeProvider] 이미 선택된 공지사항과 동일함");
         return;
       }
 
-      // 캐시된 데이터가 있는지 확인
-      if (
-        cachedNoticeDetails.current[`${studyId}_${noticeId}`] &&
-        isCacheValid()
-      ) {
-        console.log("[NoticeProvider] 캐시된 공지사항 상세 정보 사용");
-        const cachedData =
-          cachedNoticeDetails.current[`${studyId}_${noticeId}`];
-        setSelectedNotice(cachedData.notice);
-        if (cachedData.memberRole) setMemberRole(cachedData.memberRole);
-        return;
-      }
-
-      // 목록에서 기본 정보를 먼저 표시
+      // 목록에서 기본 정보를 먼저 표시 (빠른 UI 반응을 위해)
       const noticeFromList = notices.find(
         (notice) => notice.noticeId === noticeId
       );
@@ -156,7 +93,6 @@ export function NoticeProvider({ children }) {
         setSelectedNotice(noticeFromList);
       }
 
-      pendingRequests.current[requestKey] = true;
       setIsLoading(true);
       setError(null);
 
@@ -169,66 +105,19 @@ export function NoticeProvider({ children }) {
 
         if (response.success) {
           setSelectedNotice(response.data);
-
-          // 캐시에 저장
-          cachedNoticeDetails.current[`${studyId}_${noticeId}`] = {
-            notice: response.data,
-            memberRole: response.memberContext?.memberRole,
-          };
-          lastFetchTime.current = Date.now();
         } else {
           setError(response.message || "공지사항을 불러오는데 실패했습니다.");
           if (!noticeFromList) setSelectedNotice(null);
         }
       } catch (err) {
-        console.error("공지사항 상세 조회 실패:", err);
+        console.error("[NoticeProvider] 공지사항 상세 조회 실패:", err);
         setError(err.message || "공지사항을 불러오는데 실패했습니다.");
         if (!noticeFromList) setSelectedNotice(null);
       } finally {
         setIsLoading(false);
-        delete pendingRequests.current[requestKey];
       }
     },
     [notices, selectedNotice]
-  );
-
-  // 캐시 무효화 함수
-  const invalidateCache = useCallback(
-    (studyId, noticeId = null, forceReload = false) => {
-      // 캐시 초기화
-      if (studyId) {
-        // 목록 캐시 삭제
-        delete cachedNotices.current[studyId];
-
-        // 특정 공지사항 상세 캐시 삭제
-        if (noticeId) {
-          delete cachedNoticeDetails.current[`${studyId}_${noticeId}`];
-        } else {
-          // 해당 스터디의 모든 공지사항 상세 캐시 삭제
-          Object.keys(cachedNoticeDetails.current).forEach((key) => {
-            if (key.startsWith(`${studyId}_`)) {
-              delete cachedNoticeDetails.current[key];
-            }
-          });
-        }
-      } else {
-        // 전체 캐시 초기화
-        cachedNotices.current = {};
-        cachedNoticeDetails.current = {};
-      }
-
-      // 마지막 패치 시간 초기화
-      lastFetchTime.current = null;
-
-      // 강제 재로드가 필요한 경우
-      if (forceReload && noticeId) {
-        console.log(`[NoticeProvider] 공지사항 ${noticeId} 강제 재로드`);
-        return noticeService.getNoticeById(studyId, noticeId);
-      }
-
-      return Promise.resolve(null);
-    },
-    []
   );
 
   // 공지사항 생성
@@ -317,10 +206,15 @@ export function NoticeProvider({ children }) {
             );
           });
 
-          // 캐시 무효화 후 새로운 데이터 가져오기
-          await invalidateCache(studyId, noticeId, true);
+          // 선택된 공지사항이 있고 ID가 일치하면 해당 공지사항도 업데이트
+          if (selectedNotice && selectedNotice.noticeId === noticeId) {
+            setSelectedNotice((prevSelected) => ({
+              ...prevSelected,
+              ...updatedNoticeData,
+            }));
+          }
 
-          // 파일 정보를 포함한 완전한 데이터를 가져와서 selectedNotice 업데이트
+          // 수정 후 새로운 데이터 가져오기
           try {
             const freshData = await noticeService.getNoticeById(
               studyId,
@@ -337,12 +231,6 @@ export function NoticeProvider({ children }) {
                 )
               );
 
-              // 캐시 업데이트
-              cachedNoticeDetails.current[`${studyId}_${noticeId}`] = {
-                notice: freshData.data,
-                memberRole: freshData.memberContext?.memberRole,
-              };
-
               console.log(
                 "[NoticeProvider] 공지사항 수정 후 데이터 새로고침 완료"
               );
@@ -352,14 +240,6 @@ export function NoticeProvider({ children }) {
               "[NoticeProvider] 수정 후 데이터 새로고침 실패:",
               refreshError
             );
-
-            // 새로고침에 실패했더라도 기존 데이터로 업데이트
-            if (selectedNotice && selectedNotice.noticeId === noticeId) {
-              setSelectedNotice((prevSelected) => ({
-                ...prevSelected,
-                ...updatedNoticeData,
-              }));
-            }
           }
 
           return {
@@ -380,7 +260,7 @@ export function NoticeProvider({ children }) {
         setIsLoading(false);
       }
     },
-    [invalidateCache, selectedNotice]
+    [selectedNotice]
   );
 
   // 공지사항 삭제
@@ -395,15 +275,17 @@ export function NoticeProvider({ children }) {
             prev.filter((notice) => notice.noticeId !== noticeId)
           );
 
-          // 캐시 무효화
-          invalidateCache(studyId);
+          // 선택된 공지사항이 삭제된 것과 같으면 선택 해제
+          if (selectedNotice && selectedNotice.noticeId === noticeId) {
+            setSelectedNotice(null);
+          }
 
           return { success: true };
         } else {
           throw new Error(response.message || "공지사항 삭제에 실패했습니다.");
         }
       } catch (err) {
-        console.error("공지사항 삭제 실패:", err);
+        console.error("[NoticeProvider] 공지사항 삭제 실패:", err);
         return {
           success: false,
           message: err.message || "공지사항 삭제에 실패했습니다.",
@@ -412,7 +294,7 @@ export function NoticeProvider({ children }) {
         setIsLoading(false);
       }
     },
-    [invalidateCache]
+    [selectedNotice]
   );
 
   return (
@@ -428,7 +310,6 @@ export function NoticeProvider({ children }) {
         createNotice,
         editNotice,
         deleteNotice,
-        invalidateCache,
       }}
     >
       {children}

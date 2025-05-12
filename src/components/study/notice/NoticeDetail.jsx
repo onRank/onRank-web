@@ -28,8 +28,10 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
   if (error) {
     return (
       <div style={{ padding: "1.5rem" }}>
-        <Button onClick={handleBack} variant="back" />
         <ErrorMessage message={error} />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+          <Button onClick={handleBack} variant="back" />
+        </div>
       </div>
     );
   }
@@ -41,25 +43,16 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
   ) {
     return (
       <div style={{ padding: "1.5rem" }}>
-        <Button onClick={handleBack} variant="back" />
         <ErrorMessage message="잘못된 공지사항 데이터입니다." type="warning" />
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+          <Button onClick={handleBack} variant="back" />
+        </div>
       </div>
     );
   }
 
   return (
     <div style={{ padding: "1.5rem" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <Button onClick={handleBack} variant="back" />
-        <Button onClick={() => handleEdit(noticeId)} variant="edit" />
-      </div>
       <div
         style={{
           border: `1px solid var(--border)`,
@@ -98,15 +91,18 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
           {selectedNotice.noticeContent}
         </div>
       </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+        <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
+      </div>
     </div>
   );
 }
 
 NoticeDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
-  noticeId: PropTypes.number.isRequired,
+  noticeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   handleBack: PropTypes.func.isRequired,
-  handleEdit: PropTypes.func.isRequired,
+  handleEdit: PropTypes.func
 };
 
 export default NoticeDetail;

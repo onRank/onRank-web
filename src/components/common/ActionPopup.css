@@ -1,13 +1,13 @@
 .action-popup {
   position: absolute;
   background-color: white;
-  border-radius: 12px;
+  border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  width: 150px;
+  width: 200px;
   overflow: hidden;
   border: 1px solid black;
-  padding: 10px;
+  padding: 20px;
 }
 
 /* Position variants */
@@ -44,17 +44,17 @@
 
 .action-popup-close {
   position: absolute;
-  top: -5px;
-  right: -5px;
+  top: -10px;
+  right: -10px;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: 20px;
   color: #333;
   cursor: pointer;
   padding: 0;
   margin: 0;
-  height: 20px;
-  width: 20px;
+  height: 24px;
+  width: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -83,8 +83,9 @@
 }
 
 .action-popup-text {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: normal;
+  color: black;
 }
 
 .delete-button .action-popup-text {
@@ -93,8 +94,8 @@
 
 .action-popup-divider {
   height: 1px;
-  border-top: 1px dashed gray;
-  margin: 8px 0;
+  border-top: 1px dashed #888;
+  margin: 12px 0;
   width: 100%;
 }
 
