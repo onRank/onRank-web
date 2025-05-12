@@ -15,7 +15,7 @@ export function PostProvider({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // 게시판 목록 불러오기
+  // 게시글 목록 불러오기
   const getPosts = useCallback(async (studyId) => {
     setIsLoading(true);
     setError(null);
@@ -28,19 +28,19 @@ export function PostProvider({ children }) {
         );
         setPosts(sortedPosts);
       } else {
-        setError(response.message || "게시판 목록을 불러오는데 실패했습니다.");
+        setError(response.message || "게시글 목록을 불러오는데 실패했습니다.");
         setPosts([]);
       }
     } catch (err) {
-      console.error("게시판 목록 조회 실패:", err);
-      setError(err.message || "게시판 목록을 불러오는데 실패했습니다.");
+      console.error("게시글 목록 조회 실패:", err);
+      setError(err.message || "게시글 목록을 불러오는데 실패했습니다.");
       setPosts([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // 게시판 상세보기
+  // 게시글 상세보기
   const getPostById = useCallback(async (studyId, postId) => {
     setIsLoading(true);
     setError(null);
@@ -49,35 +49,35 @@ export function PostProvider({ children }) {
       if (response.success) {
         setSelectedPost(response.data);
       } else {
-        setError(response.message || "게시판을 불러오는데 실패했습니다.");
+        setError(response.message || "게시글을 불러오는데 실패했습니다.");
         setSelectedPost(null);
       }
     } catch (err) {
-      console.error("게시판 상세 조회 실패:", err);
-      setError(err.message || "게시판을 불러오는데 실패했습니다.");
+      console.error("게시글 상세 조회 실패:", err);
+      setError(err.message || "게시글을 불러오는데 실패했습니다.");
       setSelectedPost(null);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // 게시판 생성
+  // 게시글 생성
   const createPost = useCallback(async (studyId, newPost, files = []) => {
     setIsLoading(true);
     try {
       const response = await postService.createPost(studyId, newPost, files);
       if (response.success) {
-        // 성공시 목록에 새 게시판 추가
+        // 성공시 목록에 새 게시글 추가
         if (response.data) {
           setPosts((prev) => {
-            // 새 게시판 추가 수행
+            // 새 게시글 추가 수행
             return [response.data, ...prev];
           });
         }
         // 성공 응답 반환
         return {
           success: true,
-          message: "게시판이 성공적으로 생성되었습니다.",
+          message: "게시글이 성공적으로 생성되었습니다.",
           data: response.data,
         };
       } else {
@@ -87,23 +87,23 @@ export function PostProvider({ children }) {
         } else {
           return {
             success: true,
-            message: "게시판이 생성되었습니다.",
+            message: "게시글이 생성되었습니다.",
             data: response.data,
           };
         }
       }
     } catch (err) {
-      console.error("[PostProvider] 게시판 등록 실패:", err);
+      console.error("[PostProvider] 게시글 등록 실패:", err);
       return {
         success: false,
-        message: "게시판 등록 중 문제가 발생했습니다.",
+        message: "게시글 등록 중 문제가 발생했습니다.",
       };
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  // 게시판 수정
+  // 게시글 수정
   const editPost = useCallback(
     async (studyId, postId, postData, files = []) => {
       setIsLoading(true);
@@ -115,9 +115,9 @@ export function PostProvider({ children }) {
           files
         );
         if (response.success) {
-          // 수정된 게시판으로 상태 업데이트 (정렬 없이)
+          // 수정된 게시글으로 상태 업데이트 (정렬 없이)
           setPosts((prev) => {
-            // 해당 게시판만 업데이트
+            // 해당 게시글만 업데이트
             return prev.map((post) =>
               post.postId === postId
                 ? {
@@ -129,13 +129,13 @@ export function PostProvider({ children }) {
           });
           return response; // 경고 메시지 등을 포함하기 위해 전체 응답 반환
         } else {
-          throw new Error(response.message || "게시판 수정에 실패했습니다.");
+          throw new Error(response.message || "게시글 수정에 실패했습니다.");
         }
       } catch (err) {
-        console.error("게시판 수정 실패:", err);
+        console.error("게시글 수정 실패:", err);
         return {
           success: false,
-          message: err.message || "게시판 수정에 실패했습니다.",
+          message: err.message || "게시글 수정에 실패했습니다.",
         };
       } finally {
         setIsLoading(false);
@@ -144,23 +144,23 @@ export function PostProvider({ children }) {
     []
   );
 
-  // 게시판 삭제
+  // 게시글 삭제
   const deletePost = useCallback(async (studyId, postId) => {
     setIsLoading(true);
     try {
       const response = await postService.deletePost(studyId, postId);
       if (response.success) {
-        // 삭제된 게시판을 목록에서 제거
+        // 삭제된 게시글을 목록에서 제거
         setPosts((prev) => prev.filter((post) => post.postId !== postId));
         return { success: true };
       } else {
-        throw new Error(response.message || "게시판 삭제에 실패했습니다.");
+        throw new Error(response.message || "게시글 삭제에 실패했습니다.");
       }
     } catch (err) {
-      console.error("게시판 삭제 실패:", err);
+      console.error("게시글 삭제 실패:", err);
       return {
         success: false,
-        message: err.message || "게시판 삭제에 실패했습니다.",
+        message: err.message || "게시글 삭제에 실패했습니다.",
       };
     } finally {
       setIsLoading(false);

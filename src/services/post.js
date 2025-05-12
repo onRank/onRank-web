@@ -723,6 +723,14 @@ export const postService = {
         message: error.message || "게시글 생성 중 오류가 발생했습니다.",
       };
     }
+  },
+  
+  // editPost 함수 추가 (updatePost의 별칭으로 사용)
+  editPost: async (studyId, postId, postData, files = []) => {
+    return postService.updatePost(studyId, postId, {
+      ...postData,
+      files: files
+    });
   }
 };
 
