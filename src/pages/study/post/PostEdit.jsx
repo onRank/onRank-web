@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { useTheme } from "../../../contexts/ThemeContext";
 import Button from "../../../components/common/Button";
-import FileUpload from "../../../components/common/FileUpload";
+import FileUploader from "../../../components/common/FileUploader";
 import "../../../styles/post.css";
 
 function PostEdit({ post, onSubmit, onCancel, isLoading, error }) {
@@ -169,7 +169,7 @@ function PostEdit({ post, onSubmit, onCancel, isLoading, error }) {
           <label className="form-label" style={{ color: colors.text }}>
             첨부 파일 추가
           </label>
-          <FileUpload
+          <FileUploader
             onFileSelect={handleFileSelection}
             maxFiles={5}
             acceptedFileTypes="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip"
