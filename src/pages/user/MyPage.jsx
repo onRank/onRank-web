@@ -63,6 +63,7 @@ const styles = {
   profileInfo: {
     textAlign: "center",
     marginBottom: 12,
+    display: "contents",
   },
   profileName: {
     fontWeight: 600,
@@ -120,6 +121,7 @@ function MyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [myPageData, setMyPageData] = useState(null);
+  const [isEdit, setIsEdit] = useState(false);
 
   useEffect(() => {
     const fetchMyPage = async () => {
@@ -174,9 +176,12 @@ function MyPage() {
     return phoneNumber;
   };
 
-  const handleEditButtonClick = () => {
-    navigate("/mypage");
-  };
+  // const handleEditButtonClick = async () => {
+  //   const response = await mypageService.editMypage(myPageData.studentId);
+  //   if (response.status === 200) {
+  //       setIsEdit(true);
+  //   }
+  // };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -224,7 +229,8 @@ function MyPage() {
               <Button
                 variant="edit"
                 label="수정하기"
-                onClick={handleEditButtonClick}
+                // onClick={handleEditButtonClick}
+                style={{ height: 34, fontSize: 12 }}
               />
             </div>
           </div>
