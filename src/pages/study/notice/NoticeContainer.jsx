@@ -218,7 +218,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
     // 기본 리스트 뷰
     return (
-      <div className="notice-container">
+      <div>
         <h1 className="page-title">공지사항</h1>
 
         {isManager && (
@@ -253,8 +253,24 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   };
 
   return (
-    <div className="notice-container">
-      {renderContent()}
+    <div style={{
+      width: '100%', 
+      maxWidth: '100%',
+      overflowX: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center'
+    }}>
+      <div style={{
+        width: '100%',
+        position: 'relative',
+        padding: '0 1rem',
+        marginTop: '1rem'
+      }}>
+        <div style={{ flex: 1 }}>
+          {renderContent()}
+        </div>
+      </div>
     </div>
   );
 };
