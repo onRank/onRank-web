@@ -4,9 +4,10 @@
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  min-width: 150px;
+  width: 250px;
   overflow: hidden;
-  border: 1px solid #e5e5e5;
+  border: 1px solid black;
+  padding: 20px;
 }
 
 /* Position variants */
@@ -38,12 +39,31 @@
   display: flex;
   flex-direction: column;
   width: 100%;
+  position: relative;
+}
+
+.action-popup-close {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #333;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  height: 24px;
+  width: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .action-popup-button {
   display: flex;
   align-items: center;
-  padding: 16px;
+  padding: 8px 0;
   border: none;
   background: none;
   width: 100%;
@@ -52,7 +72,7 @@
 }
 
 .action-popup-button:hover {
-  background-color: #f8f9fa;
+  background-color: transparent;
 }
 
 .action-popup-icon {
@@ -60,7 +80,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+}
+
+.action-popup-text {
+  font-size: 14px;
+  font-weight: normal;
+}
+
+.delete-button .action-popup-text {
+  color: #000;
+}
+
+.action-popup-divider {
+  height: 1px;
+  border-top: 1px dashed #ccc;
+  margin: 8px 0;
+  width: 100%;
 }
 
 .edit-icon {
@@ -69,19 +104,4 @@
 
 .delete-icon {
   color: #FF3B30;
-}
-
-.action-popup-text {
-  font-size: 15px;
-}
-
-.delete-button .action-popup-text {
-  color: #FF3B30;
-}
-
-.action-popup-divider {
-  height: 1px;
-  background-color: #e5e5e5;
-  margin: 0;
-  width: 100%;
 } 
