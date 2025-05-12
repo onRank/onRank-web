@@ -102,6 +102,7 @@ function NoticeDetailContent({ onTitleLoaded }) {
       display: "flex",
       justifyContent: "flex-end",
       gap: "12px",
+      marginTop: "20px",
     },
   };
 
@@ -130,7 +131,11 @@ function NoticeDetailContent({ onTitleLoaded }) {
         </div>
       )}
       <div style={styles.buttonContainer}>
-        <Button variant="back" onClick={handleClose} />
+        <Button 
+          variant="back" 
+          onClick={handleClose} 
+          style={{ width: "84px", height: "36px" }}
+        />
       </div>
     </div>
   );

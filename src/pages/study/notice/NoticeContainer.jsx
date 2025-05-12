@@ -108,8 +108,9 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 공지사항 수정 페이지로 이동
   const handleEditNotice = (noticeId) => {
-    navigate(`/studies/${studyId}/notices/edit/${noticeId}`, { 
-      replace: true 
+    navigate(`/studies/${studyId}/notices/${noticeId}`, { 
+      replace: true,
+      state: { isEdit: true } 
     });
   };
 
