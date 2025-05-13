@@ -25,12 +25,71 @@ const ActionPopup = ({
   position = "bottom-right"
 }) => {
   const popupRef = useRef(null);
+  const triggerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(show);
+  const [popupStyle, setPopupStyle] = useState({});
 
   // Handle show prop changes
   useEffect(() => {
     setIsVisible(show);
+    
+    // Calculate position when popup becomes visible
+    if (show) {
+      calculatePosition();
+    }
   }, [show]);
+
+  // Calculate popup position based on trigger element
+  const calculatePosition = () => {
+    if (!triggerRef.current) {
+      // Find the menu button that triggered this popup
+      const menuButton = document.activeElement;
+      if (menuButton) {
+        triggerRef.current = menuButton;
+      } else {
+        // If no trigger element found, position at center
+        setPopupStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+        return;
+      }
+    }
+
+    const rect = triggerRef.current.getBoundingClientRect();
+    const style = {};
+
+    // Position based on the specified position prop
+    switch (position) {
+      case 'top-left':
+        style.bottom = window.innerHeight - rect.top + 8;
+        style.left = rect.left;
+        break;
+      case 'top-right':
+        style.bottom = window.innerHeight - rect.top + 8;
+        style.left = rect.right - 200; // Popup width
+        break;
+      case 'bottom-left':
+        style.top = rect.bottom + 8;
+        style.left = rect.left;
+        break;
+      case 'bottom-right':
+      default:
+        style.top = rect.bottom + 8;
+        style.left = rect.right - 200; // Popup width
+        break;
+    }
+
+    // Ensure the popup stays within viewport
+    if (style.top && style.top + 200 > window.innerHeight) { // 200 is approximate popup height
+      style.top = rect.top - 200 - 8;
+    }
+    
+    if (style.left < 0) {
+      style.left = 10;
+    } else if (style.left + 200 > window.innerWidth) {
+      style.left = window.innerWidth - 210;
+    }
+
+    setPopupStyle(style);
+  };
 
   // Handle clicks outside the popup to close it
   useEffect(() => {
@@ -42,10 +101,14 @@ const ActionPopup = ({
 
     if (isVisible) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('resize', calculatePosition);
+      window.addEventListener('scroll', calculatePosition);
     }
     
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', calculatePosition);
+      window.removeEventListener('scroll', calculatePosition);
     };
   }, [isVisible, onClose]);
 
@@ -66,7 +129,7 @@ const ActionPopup = ({
   if (!isVisible) return null;
 
   return (
-    <div className={`action-popup ${position}`} ref={popupRef}>
+    <div className={`action-popup ${position}`} ref={popupRef} style={popupStyle}>
       <div className="action-popup-content">
         <button className="action-popup-close" onClick={onClose}>×</button>
         <button className="action-popup-button edit-button" onClick={handleEdit}>
