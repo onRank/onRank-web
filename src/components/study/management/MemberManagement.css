@@ -1,6 +1,7 @@
 .member-management-container {
   padding: 20px;
-  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .member-table {
@@ -44,7 +45,7 @@
 .role-badge.creator {
   background-color: #ffd700;
   color: #333;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .role-select {
@@ -53,12 +54,12 @@
   border: none;
   cursor: pointer;
   position: relative;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .role-select:hover {
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .role-select:disabled {
@@ -97,13 +98,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .delete-button:hover {
   background-color: #d33426;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
 }
 
 .delete-button:disabled {
@@ -141,11 +142,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
 }
 
 .add-member-button:hover {
   background-color: #3367d6;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-} 
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
