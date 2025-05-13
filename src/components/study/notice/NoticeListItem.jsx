@@ -15,6 +15,9 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
   // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
   
+  // 공지사항의 경우 관리자만 메뉴를 보여줌 (수정/삭제 권한)
+  const showMenu = isManager;
+  
   // 파일 첨부 여부 확인
   const hasFiles = 
     (notice.files && notice.files.length > 0) || 
@@ -45,7 +48,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
 
   // 삭제 처리
   const handleDelete = () => {
-    if (onDelete && window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
+    if (onDelete) {
       onDelete(notice.noticeId);
     }
   };
@@ -70,7 +73,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
         </h2>
       </div>
 
-      {isManager && (
+      {showMenu && (
         <div className="notice-menu-container" ref={menuRef}>
           <button
             className="notice-menu-button"
@@ -87,6 +90,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
             onEdit={handleEdit}
             onDelete={handleDelete}
             position={popupPosition}
+            skipConfirm={false}
           />
         </div>
       )}

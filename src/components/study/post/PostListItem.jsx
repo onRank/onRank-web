@@ -14,7 +14,13 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
   const { memberRole } = usePost();
 
   // 관리자 권한 (CREATOR / HOST)
-  const isManager = memberRole === "CREATOR" || memberRole === "HOST";
+  const isAdmin = memberRole === "CREATOR" || memberRole === "HOST";
+  
+  // 게시글 작성자인지 확인 - post.memberId와 현재 사용자의 memberId 비교
+  const isPostCreator = post.memberId === (post.currentMemberId || post.memberContext?.memberId);
+  
+  // 메뉴를 보여줄지 결정 - 관리자이거나 작성자인 경우에만
+  const showMenu = isAdmin || isPostCreator;
 
   // 파일 첨부 여부 확인
   const hasFiles = 
@@ -44,7 +50,7 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
   };
 
   const handleDelete = () => {
-    if (onDelete && window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+    if (onDelete) {
       onDelete(post.postId);
     }
   };
@@ -68,7 +74,7 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
         </h2>
       </div>
 
-      {isManager && (
+      {showMenu && (
         <div className="post-menu-container" ref={menuRef}>
           <button
             className="post-menu-button"
@@ -83,6 +89,7 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
             onEdit={handleEdit}
             onDelete={handleDelete}
             position={popupPosition}
+            skipConfirm={false}
           />
         </div>
       )}
@@ -99,7 +106,10 @@ PostListItem.propTypes = {
     createdAt: PropTypes.string,
     boardTitle: PropTypes.string,
     files: PropTypes.array,
-    fileUrls: PropTypes.array
+    fileUrls: PropTypes.array,
+    memberId: PropTypes.number,
+    currentMemberId: PropTypes.number,
+    memberContext: PropTypes.object
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,

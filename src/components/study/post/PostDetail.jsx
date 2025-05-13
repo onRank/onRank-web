@@ -165,51 +165,41 @@ function PostDetail({ studyId, postId, handleBack }) {
           {content}
         </div>
         
-        {/* 파일 목록 표시 - 향상된 UI */}
+        {/* 파일 목록 표시 - AssignmentDetail과 동일한 향상된 UI */}
         {getAllFiles().length > 0 && (
-          <div className="post-file-list">
-            <div className="post-attachment-title">첨부 파일</div>
-            <div className="post-files-container">
+          <div className="files-container">
+            <h3 className="section-subtitle">첨부파일</h3>
+            <div className="files-list">
               {getAllFiles().map((file, index) => (
-                <div key={`file-${index}`} className="post-file-item">
-                  <div className="post-file-info-row">
-                    <div className="post-file-icon">{getFileIcon(file.fileName)}</div>
-                    <div className="post-file-info">
-                      <div className="post-file-name">{file.fileName}</div>
-                      {file.fileSize > 0 && (
-                        <div className="post-file-size">{formatFileSize(file.fileSize)}</div>
-                      )}
+                <div className="file-download-item" key={index}>
+                  <div className="file-info-row">
+                    <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                    <div className="file-details">
+                      <div className="file-name">{file.fileName}</div>
                     </div>
-                    
-                    <div className="post-file-actions">
-                      {isImageFile(file.fileName) && (
-                        <button 
-                          className="post-preview-button"
-                          onClick={() => handleImagePreview(file.fileUrl)}
-                          type="button"
-                        >
-                          미리보기
-                        </button>
-                      )}
-                      <button
-                        className="post-download-button"
-                        onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
+                    {isImageFile(file.fileName) && file.fileUrl && (
+                      <button 
+                        className="preview-button"
+                        onClick={() => window.open(file.fileUrl, '_blank')}
+                        title="이미지 미리보기"
                         type="button"
                       >
-                        다운로드
+                        미리보기
                       </button>
-                    </div>
+                    )}
+                    <button
+                      className="download-button"
+                      onClick={() =>
+                        downloadFile(file.fileUrl, file.fileName)
+                      }
+                      type="button"
+                    >
+                      다운로드
+                    </button>
                   </div>
-                  
-                  {/* 확장된 이미지 미리보기 */}
-                  {isImageFile(file.fileName) && expandedImageIndex === index && (
-                    <div className="post-image-preview-container">
-                      <img 
-                        className="post-image-preview-full" 
-                        src={file.fileUrl} 
-                        alt={file.fileName} 
-                        onClick={() => toggleImageExpand(index)}
-                      />
+                  {isImageFile(file.fileName) && file.fileUrl && (
+                    <div className="image-preview-container">
+                      <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
                     </div>
                   )}
                 </div>

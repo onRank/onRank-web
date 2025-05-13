@@ -13,6 +13,7 @@ import './ActionPopup.css';
  * @param {string} props.editText - Text to display for edit option (default: "수정")
  * @param {string} props.deleteText - Text to display for delete option (default: "삭제")
  * @param {string} props.position - Position of the popup (default: "bottom-right")
+ * @param {boolean} props.skipConfirm - Skip confirmation dialog (default: false) - used to avoid duplicate confirmations
  * @returns {JSX.Element}
  */
 const ActionPopup = ({ 
@@ -22,7 +23,8 @@ const ActionPopup = ({
   onDelete,
   editText = "수정",
   deleteText = "삭제",
-  position = "bottom-right"
+  position = "bottom-right",
+  skipConfirm = false
 }) => {
   const popupRef = useRef(null);
   const triggerRef = useRef(null);
@@ -53,41 +55,47 @@ const ActionPopup = ({
       }
     }
 
-    const rect = triggerRef.current.getBoundingClientRect();
-    const style = {};
-
-    // Position based on the specified position prop
-    switch (position) {
-      case 'top-left':
-        style.bottom = window.innerHeight - rect.top + 8;
-        style.left = rect.left;
-        break;
-      case 'top-right':
-        style.bottom = window.innerHeight - rect.top + 8;
-        style.left = rect.right - 200; // Popup width
-        break;
-      case 'bottom-left':
-        style.top = rect.bottom + 8;
-        style.left = rect.left;
-        break;
-      case 'bottom-right':
-      default:
-        style.top = rect.bottom + 8;
-        style.left = rect.right - 200; // Popup width
-        break;
-    }
-
-    // Ensure the popup stays within viewport
-    if (style.top && style.top + 200 > window.innerHeight) { // 200 is approximate popup height
-      style.top = rect.top - 200 - 8;
+    const buttonRect = triggerRef.current.getBoundingClientRect();
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    // Popup approximate dimensions
+    const popupWidth = 200;
+    const popupHeight = 150;
+    
+    // Default positioning is bottom-right
+    let style = {};
+    
+    // Check if popup would go below the bottom of the viewport
+    if (buttonRect.bottom + popupHeight > viewportHeight) {
+      // Position above the button
+      style.bottom = viewportHeight - buttonRect.top;
+      style.top = 'auto';
+    } else {
+      // Position below the button
+      style.top = buttonRect.bottom;
+      style.bottom = 'auto';
     }
     
-    if (style.left < 0) {
-      style.left = 10;
-    } else if (style.left + 200 > window.innerWidth) {
-      style.left = window.innerWidth - 210;
+    // Horizontal positioning
+    if (buttonRect.right - popupWidth < 0) {
+      // Too far left, align with left of button
+      style.left = buttonRect.left;
+    } else if (buttonRect.right > viewportWidth) {
+      // Too far right, ensure popup stays in viewport
+      style.left = viewportWidth - popupWidth - 10;
+    } else {
+      // Default: align with right of button
+      style.left = buttonRect.right - popupWidth;
     }
-
+    
+    // Make sure popup stays in viewport
+    style.left = Math.max(10, Math.min(viewportWidth - popupWidth - 10, style.left));
+    
+    // Set fixed position to make popup appear above all other elements
+    style.position = 'fixed';
+    style.zIndex = 9999;
+    
     setPopupStyle(style);
   };
 
@@ -122,7 +130,12 @@ const ActionPopup = ({
   // Handle delete click
   const handleDelete = (e) => {
     e.stopPropagation();
-    onDelete();
+    
+    // Skip confirmation if skipConfirm is true
+    if (skipConfirm || window.confirm("정말로 삭제하시겠습니까?")) {
+      onDelete();
+    }
+    
     onClose();
   };
 
@@ -165,6 +178,7 @@ ActionPopup.propTypes = {
   editText: PropTypes.string,
   deleteText: PropTypes.string,
   position: PropTypes.oneOf(['top-left', 'top-right', 'bottom-left', 'bottom-right']),
+  skipConfirm: PropTypes.bool
 };
 
 export default ActionPopup; 
