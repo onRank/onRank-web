@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { usePost } from "./PostProvider";
@@ -18,15 +18,40 @@ function PostEditForm({
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
+  // 콘솔에 초기 데이터 기록
+  useEffect(() => {
+    console.log("[PostEditForm] initialData:", initialData);
+  }, [initialData]);
+
   const [postTitle, setPostTitle] = useState(initialData?.postTitle || "");
   const [postContent, setPostContent] = useState(
     initialData?.postContent || ""
   );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  // 남겨둘 파일 ID 배열 상태 (기본값은 모든 파일 ID)
-  const [remainingFileIds, setRemainingFileIds] = useState(
-    initialData?.files?.map((file) => file.fileId) || []
-  );
+  
+  // 남겨둘 파일 ID 배열 상태 처리 개선
+  const [remainingFileIds, setRemainingFileIds] = useState([]);
+
+  // 초기 파일 데이터 설정
+  useEffect(() => {
+    if (initialData) {
+      // API 응답 구조에 맞게 파일 ID 추출
+      const fileIds = [];
+      
+      // files 배열이 있는 경우
+      if (initialData.files && Array.isArray(initialData.files)) {
+        initialData.files.forEach(file => {
+          if (file.fileId) {
+            fileIds.push(file.fileId);
+          }
+        });
+      }
+      
+      console.log("[PostEditForm] 초기 파일 IDs:", fileIds);
+      setRemainingFileIds(fileIds);
+    }
+  }, [initialData]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const maxLength = 10000;
@@ -160,6 +185,9 @@ function PostEditForm({
         remainingFileIds: remainingFileIds,
         newFileNames: selectedFiles.map((file) => file.name),
       };
+      
+      console.log("[PostEditForm] 수정 요청 데이터:", updatedPost);
+      console.log("[PostEditForm] 새 파일 수:", selectedFiles.length);
 
       const result = await editPost(
         studyId,
@@ -167,6 +195,8 @@ function PostEditForm({
         updatedPost,
         selectedFiles
       );
+
+      console.log("[PostEditForm] 수정 응답:", result);
 
       if (!result.success) {
         if (result.message && result.message.includes("권한이 없습니다")) {
@@ -179,7 +209,7 @@ function PostEditForm({
           }
         } else {
           setSubmitError(
-            result.message || "게시판 수정 중 오류가 발생했습니다."
+            result.message || "게시글 수정 중 오류가 발생했습니다."
           );
         }
         setIsSubmitting(false);
@@ -194,8 +224,8 @@ function PostEditForm({
         navigate(`/studies/${studyId}/posts/${postId}`);
       }
     } catch (error) {
-      console.error("게시판 수정 중 오류:", error);
-      setSubmitError("게시판 수정 중 오류가 발생했습니다.");
+      console.error("게시글 수정 중 오류:", error);
+      setSubmitError("게시글 수정 중 오류가 발생했습니다.");
       setIsSubmitting(false);
     }
   };
@@ -286,10 +316,11 @@ function PostEditForm({
   };
 
   // 현재 표시할 기존 파일 필터링 - remainingFileIds에 있는 파일만 표시
-  const filteredExistingFiles =
-    initialData?.files?.filter((file) =>
-      remainingFileIds.includes(file.fileId)
-    ) || [];
+  const filteredExistingFiles = initialData?.files?.filter(file => 
+    remainingFileIds.includes(file.fileId)
+  ) || [];
+  
+  console.log("[PostEditForm] 남은 파일:", filteredExistingFiles);
 
   // 파일이 하나도 없는지 확인
   const hasNoFiles =

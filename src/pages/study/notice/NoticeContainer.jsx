@@ -16,6 +16,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   
   // Notice Context 사용
   const { 
@@ -40,10 +41,12 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 컴포넌트 마운트 시 공지사항 목록 로드
   useEffect(() => {
-    if (!isAddPage && !noticeId && (!notices || notices.length === 0)) {
-      getNotices(studyId);
+    if (!isAddPage && !noticeId && !initialLoadDone) {
+      getNotices(studyId).then(() => {
+        setInitialLoadDone(true);
+      });
     }
-  }, [studyId, notices, getNotices, isAddPage, noticeId]);
+  }, [studyId, getNotices, isAddPage, noticeId, initialLoadDone]);
 
   // noticeId가 URL에 있는 경우 해당 공지사항 상세 정보 조회
   useEffect(() => {

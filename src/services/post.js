@@ -338,6 +338,7 @@ export const postService = {
       console.log(`[PostService] 게시글 수정 요청: /studies/${studyId}/posts/${postId}`);
       console.log("[PostService] 수정 데이터:", postData);
       console.log("[PostService] 첨부 파일 수:", postData.files && postData.files.length);
+      console.log("[PostService] 유지할 파일 ID 수:", postData.remainingFileIds && postData.remainingFileIds.length);
       
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -358,10 +359,12 @@ export const postService = {
         postTitle: postData.postTitle,
         postContent: postData.postContent,
         remainingFileIds: postData.remainingFileIds || [], // 남겨둘 파일 ID
-        newFileNames: postData.fileNames || [], // 새로운 파일명
+        newFileNames: postData.newFileNames || postData.fileNames || [], // 새로운 파일명
       };
       
       console.log("[PostService] 최종 요청 데이터:", requestData);
+      console.log("[PostService] 유지할 파일 ID:", requestData.remainingFileIds);
+      console.log("[PostService] 새 파일명:", requestData.newFileNames);
 
       // API 요청
       const response = await api.put(
@@ -377,7 +380,7 @@ export const postService = {
         }
       );
 
-      console.log("[PostService] 게시글 수정 성공:", response.data);
+      console.log("[PostService] 게시글 수정 성공 응답:", response.data);
       
       // 성공 응답 처리
       let responseData = response.data;
@@ -393,9 +396,11 @@ export const postService = {
           // { memberContext, data } 구조
           result.data = responseData.data;
           result.memberContext = responseData.memberContext;
+          console.log("[PostService] 응답의 memberContext/data 구조 감지");
         } else {
           // 직접 데이터 구조
           result.data = responseData;
+          console.log("[PostService] 응답의 직접 데이터 구조 감지");
         }
         
         // ID와 필드명 처리
@@ -429,15 +434,24 @@ export const postService = {
         if (!result.data.fileUrls) {
           result.data.fileUrls = [];
         }
+        
+        // 파일 목록 확인
+        if (!result.data.files) {
+          result.data.files = [];
+        }
+        
+        console.log("[PostService] 정제된 응답 데이터:", result.data);
       } else {
         // 기본 응답 데이터 구성
         result.data = {
           postId: parseInt(postId),
-          title: postData.postTitle,
-          content: postData.postContent,
+          postTitle: postData.postTitle,
+          postContent: postData.postContent,
           updatedAt: new Date().toISOString(),
-          fileUrls: []
+          fileUrls: [],
+          files: []
         };
+        console.log("[PostService] 응답 데이터 없음, 기본 데이터 생성");
       }
       
       // 파일 업로드 처리
@@ -656,6 +670,18 @@ export const postService = {
   
   // editPost 함수 추가 (updatePost의 별칭으로 사용)
   editPost: async (studyId, postId, postData, files = []) => {
+    console.log("[PostService] editPost 호출:", { studyId, postId });
+    console.log("[PostService] editPost postData:", postData);
+    console.log("[PostService] editPost files:", files.length + "개 파일");
+    
+    // 파일 이름 확인
+    if (postData.newFileNames && postData.newFileNames.length > 0) {
+      console.log("[PostService] 새 파일명 이미 설정됨:", postData.newFileNames);
+    } else if (files.length > 0) {
+      postData.newFileNames = files.map(file => file.name);
+      console.log("[PostService] 새 파일명 생성:", postData.newFileNames);
+    }
+    
     return postService.updatePost(studyId, postId, {
       ...postData,
       files: files

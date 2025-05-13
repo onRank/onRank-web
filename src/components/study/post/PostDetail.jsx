@@ -53,7 +53,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
   const content = selectedPost.postContent || selectedPost.content || "내용 없음";
   const createdAt = selectedPost.postCreatedAt || selectedPost.createdAt || new Date().toISOString();
   
-  // 파일 정보 확인
+  // 파일 정보 확인 - API 응답 구조 처리
   const files = selectedPost.files || [];
   const fileUrls = selectedPost.fileUrls || [];
   
@@ -67,6 +67,8 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
     console.log(`[PostDetail] 파일 다운로드 요청: ${fileName} (${fileUrl})`);
     downloadFile(fileUrl, fileName);
   };
+
+  console.log("[PostDetail] 게시글 데이터:", selectedPost);
 
   return (
     <div style={{ padding: "1.5rem" }}>
