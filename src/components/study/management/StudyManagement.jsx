@@ -506,12 +506,12 @@ function StudyManagement() {
 
           <div className="container">
             <div className="title">스터디 이름</div>
-            <div value={studyName} className="input" />
+            <div className="input">{studyName}</div>
           </div>
 
           <div className="container">
             <div className="title">한 줄 소개</div>
-            <div value={studyDescription} className="input" />
+            <div className="input">{studyDescription}</div>
           </div>
 
           <div className="container">

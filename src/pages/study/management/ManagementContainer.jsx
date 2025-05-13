@@ -10,16 +10,25 @@ function ManagementContainer() {
 
   return (
     <>
-      <div style={{ fontSize: "24px", fontWeight: "700", margin: "30px" }}>
+      <div
+        style={{
+          maxWidth: "800px",
+          fontSize: "24px",
+          fontWeight: "700",
+          margin: "30px auto",
+          padding: "0 20px",
+        }}>
         관리
       </div>
 
       {/* 관리 탭 메뉴 */}
       <div
         style={{
+          maxWidth: "800px",
           display: "flex",
           justifyContent: "flex-start",
-          margin: "2rem 1rem",
+          margin: "2rem auto",
+          padding: "0 30px",
         }}>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <Button
