@@ -94,7 +94,7 @@ const ActionPopup = ({
     
     // Set fixed position to make popup appear above all other elements
     style.position = 'fixed';
-    style.zIndex = 9999;
+    style.zIndex = 2147483647;
     
     setPopupStyle(style);
   };
