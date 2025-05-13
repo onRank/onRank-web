@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
-import { formatFileSize, getFileIcon, isImageFile } from "../../utils/fileUtils";
+import { formatFileSize, getFileIcon, isImageFile, getFilePreviewUrl } from "../../utils/fileUtils";
 import Button from "./Button";
+import { IoAttach } from "react-icons/io5";
 import "../../styles/fileUploader.css";
 
 /**
@@ -115,13 +116,64 @@ function FileUploader({
     setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
-  // 이미지 미리보기 핸들러
-  const handleImagePreview = (fileUrl) => {
-    window.open(fileUrl);
+  // 파일 첨부 버튼 클릭
+  const handleAttachClick = () => {
+    fileInputRef.current.click();
   };
 
-  // 통합된 파일 목록
-  const hasFiles = existingFiles.length > 0 || selectedFiles.length > 0;
+  // 파일 목록 표시
+  const renderFileList = () => {
+    const allFiles = [
+      // 기존 파일 목록
+      ...existingFiles.map(file => ({
+        id: file.fileId,
+        name: file.fileName,
+        size: 0, // 기존 파일은 size 정보가 없을 수 있음
+        isExisting: true,
+        url: file.fileUrl
+      })),
+      // 새로 선택된 파일 목록
+      ...selectedFiles.map(file => ({
+        id: null,
+        name: file.name,
+        size: file.size,
+        isExisting: false,
+        file: file,
+        url: getFilePreviewUrl(file)
+      }))
+    ];
+
+    if (allFiles.length === 0) return null;
+
+    return (
+      <div className="file-list">
+        {allFiles.map((file, index) => (
+          <div className="file-item" key={index}>
+            {isImageFile(file.name) && (
+              <div className="image-preview">
+                <img src={file.url} alt={file.name} />
+              </div>
+            )}
+            <div className="file-info">
+              <span className="file-name">{file.name}</span>
+              {file.size > 0 && (
+                <span className="file-size">({formatFileSize(file.size)})</span>
+              )}
+            </div>
+            <button 
+              className="remove-file-button" 
+              onClick={() => file.isExisting 
+                ? handleRemoveExistingFile(file.id) 
+                : handleRemoveFile(file.name)} 
+              type="button"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="file-uploader-container">
@@ -129,145 +181,31 @@ function FileUploader({
 
       <h3 className="section-subtitle">첨부파일</h3>
       
-      <div className="file-upload-container">
-        {hasFiles ? (
-          <div className="file-list">
-            {/* 기존 파일 표시 */}
-            {existingFiles.map((file) => (
-              <div className="file-item" key={file.fileId}>
-                <div className="file-info-container">
-                  {isImageFile(file.fileName) && file.fileUrl && (
-                    <div className="image-preview">
-                      <img src={file.fileUrl} alt={file.fileName} />
-                    </div>
-                  )}
-                  <div className="file-info">
-                    <div className="file-name">{file.fileName}</div>
-                  </div>
-                </div>
-                <div className="file-actions">
-                  <Button 
-                    variant="delete" 
-                    onClick={() => handleRemoveExistingFile(file.fileId)}
-                    label="✕" 
-                    style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#e74c3c' }}
-                  />
-                  {isImageFile(file.fileName) && file.fileUrl && (
-                    <Button
-                      variant="default"
-                      onClick={() => handleImagePreview(file.fileUrl)}
-                      label="👁️"
-                      title="이미지 미리보기"
-                      style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#17a2b8' }}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-
-            {/* 새 파일 표시 */}
-            {selectedFiles.map((file, index) => (
-              <div className="file-item" key={`new-${index}`}>
-                <div className="file-info-container">
-                  {isImageFile(file.name) && (
-                    <div className="image-preview">
-                      <img src={URL.createObjectURL(file)} alt={file.name} />
-                    </div>
-                  )}
-                  <div className="file-info">
-                    <div className="file-name">{file.name}</div>
-                    <div className="file-size">{formatFileSize(file.size)}</div>
-                  </div>
-                </div>
-                <div className="file-actions">
-                  <Button 
-                    variant="delete" 
-                    onClick={() => handleRemoveFile(file.name)}
-                    label="✕" 
-                    style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#e74c3c' }}
-                  />
-                  {isImageFile(file.name) && (
-                    <Button
-                      variant="default"
-                      onClick={() => handleImagePreview(URL.createObjectURL(file))}
-                      label="👁️"
-                      title="이미지 미리보기"
-                      style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#17a2b8' }}
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div 
-            className={`file-upload-box ${isDragging ? 'file-upload-dragging' : ''}`}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <label className="file-input-label">
-              <input
-                ref={fileInputRef}
-                className="file-input"
-                type="file"
-                onChange={handleFileChange}
-                multiple
-                accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
-              />
-              <div className="upload-icon">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M12 18V6"
-                    stroke="#6c757d"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <path
-                    d="M7 11L12 6L17 11"
-                    stroke="#6c757d"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <path
-                    d="M20 18H4"
-                    stroke="#6c757d"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </div>
-              <div className="upload-text">
-                파일을 클릭하여 추가하거나
-                <br />
-                여기에 드래그하세요
-              </div>
-            </label>
-          </div>
-        )}
-
-        {hasFiles && (
-          <div className="add-more-files-button">
-            <label className="file-input-label">
-              <input
-                className="file-input"
-                type="file"
-                onChange={handleFileChange}
-                multiple
-                accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
-              />
-              <span>+ 파일 추가</span>
-            </label>
-          </div>
-        )}
+      {/* 파일 목록 */}
+      {renderFileList()}
+      
+      {/* 파일 첨부 버튼 영역 */}
+      <div 
+        className={`attach-button-area ${isDragging ? 'dragging' : ''}`}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+      >
+        <input 
+          className="hidden-file-input"
+          type="file" 
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          multiple
+          accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+        />
+        
+        <button className="attach-button" type="button" onClick={handleAttachClick}>
+          <IoAttach size={18} />
+          파일을 끌어서 놓거나
+          클릭하여 추가하세요
+        </button>
       </div>
     </div>
   );

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
-import { IoAttach } from 'react-icons/io5';
-import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
 import Button from '../../../components/common/Button';
+import FileUploader from '../../../components/common/FileUploader';
 import './AssignmentStyles.css';
 import { Flex } from '@chakra-ui/react';
 
@@ -14,7 +13,6 @@ function AssignmentCreate() {
   const { isManager } = useStudyRole();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
   
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -46,29 +44,13 @@ function AssignmentCreate() {
   };
   
   // 파일 첨부 처리
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...selectedFiles]);
-      // 파일 이름 배열 업데이트
-      setFormData(prev => ({
-        ...prev,
-        fileNames: [...prev.fileNames, ...selectedFiles.map(file => file.name)]
-      }));
-    }
-  };
-  
-  // 파일 첨부 버튼 클릭
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
-  };
-  
-  // 첨부 파일 삭제
-  const handleRemoveFile = (index) => {
-    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  const handleFileSelect = (files) => {
+    setAttachedFiles(files);
+    
+    // 파일 이름 배열 업데이트
     setFormData(prev => ({
       ...prev,
-      fileNames: prev.fileNames.filter((_, i) => i !== index)
+      fileNames: files.map(file => file.name)
     }));
   };
   
@@ -208,48 +190,13 @@ function AssignmentCreate() {
           />
         </div>
         
-        {/* 첨부 파일 영역 */}
+        {/* 파일 업로더 컴포넌트 사용 */}
         <div className="form-group">
           <label className="label">첨부파일 추가</label>
-          <input 
-            className="hidden-file-input"
-            type="file" 
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            multiple
+          <FileUploader 
+            existingFiles={[]} 
+            onFileSelect={handleFileSelect}
           />
-          
-          {/* 첨부파일 목록 */}
-          {attachedFiles.length > 0 && (
-            <div className="file-list">
-              {attachedFiles.map((file, index) => (
-                <div className="file-item" key={index}>
-                  {isImageFile(file) && (
-                    <div className="image-preview">
-                      <img src={getFilePreviewUrl(file)} alt={file.name} />
-                    </div>
-                  )}
-                  <div className="file-info">
-                    <span className="file-name">{file.name}</span>
-                    <span className="file-size">({formatFileSize(file.size)})</span>
-                  </div>
-                  <button 
-                    className="remove-file-button" 
-                    onClick={() => handleRemoveFile(index)} 
-                    type="button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <button className="attach-button" type="button" onClick={handleAttachClick}>
-            <IoAttach size={18} />
-            파일을 끌어서 놓거나
-            클릭하여 추가하세요
-          </button>
         </div>
         
         <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>

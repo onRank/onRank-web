@@ -1,3 +1,5 @@
+//공지사항 추가
+
 import { useState, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
@@ -142,7 +144,7 @@ const NoticeForm = ({
 
       <div className="notice-input-group">
         <label className="notice-label" htmlFor="content">
-          내용을 입력해주세요.
+          내용
         </label>
         <textarea
           id="content"
