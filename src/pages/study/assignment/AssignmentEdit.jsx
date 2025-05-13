@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
-import { IoAttach } from 'react-icons/io5';
-import { formatFileSize, isImageFile, getFilePreviewUrl, revokeFilePreviewUrl } from '../../../utils/fileUtils';
+import FileUploader from '../../../components/common/FileUploader';
+import Button from '../../../components/common/Button';
 import './AssignmentStyles.css';
 
 function AssignmentEdit() {
@@ -13,7 +13,6 @@ function AssignmentEdit() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
   const [error, setError] = useState(null);
-  const fileInputRef = useRef(null);
   
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -105,45 +104,21 @@ function AssignmentEdit() {
     }));
   };
   
-  // 파일 첨부 처리
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (selectedFiles.length > 0) {
-      setAttachedFiles(prev => [...prev, ...selectedFiles]);
-      // 새 파일 이름 배열 업데이트
-      setFormData(prev => ({
-        ...prev,
-        newFileNames: [...prev.newFileNames, ...selectedFiles.map(file => file.name)]
-      }));
-    }
-  };
-  
-  // 파일 첨부 버튼 클릭
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
-  };
-  
-  // 기존 첨부 파일 삭제
-  const handleRemoveExistingFile = (index, fileId) => {
-    // 기존 파일 목록에서 해당 파일 제거
-    setExistingFiles(prev => prev.filter((_, i) => i !== index));
-    
-    // remainingFileIds에서 해당 파일의 ID 제거
+  // 새로 첨부된 파일 처리
+  const handleFileSelect = (files) => {
+    setAttachedFiles(files);
     setFormData(prev => ({
       ...prev,
-      remainingFileIds: prev.remainingFileIds.filter(id => id !== fileId)
+      newFileNames: files.map(file => file.name)
     }));
   };
   
-  // 새로 첨부한 파일 삭제
-  const handleRemoveFile = (index) => {
-    // 새 파일 목록에서 해당 파일 제거
-    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
-    
-    // newFileNames에서 해당 파일 이름 제거
+  // 기존 파일 삭제 처리
+  const handleExistingFileRemove = (fileId) => {
+    setExistingFiles(prev => prev.filter(file => file.fileId !== fileId));
     setFormData(prev => ({
       ...prev,
-      newFileNames: prev.newFileNames.filter((_, i) => i !== index)
+      remainingFileIds: prev.remainingFileIds.filter(id => id !== fileId)
     }));
   };
   
@@ -235,13 +210,17 @@ function AssignmentEdit() {
   }
   
   return (
-    <div className="container">
+    <div className="container" style={{ padding: "20px", paddingBottom: "100px" }}>
       <div className="header">
         <h1 className="title">과제 수정</h1>
-        <button className="back-button" onClick={handleCancel}>목록으로 돌아가기</button>
+        <Button 
+          variant="back" 
+          onClick={handleCancel} 
+          label="목록으로"
+        />
       </div>
       
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit} style={{ paddingBottom: "80px" }}>
         {error && (
           <div className="error-message">{error}</div>
         )}
@@ -300,83 +279,32 @@ function AssignmentEdit() {
           />
         </div>
         
-        {/* 기존 첨부 파일 영역 */}
-        {existingFiles.length > 0 && (
-          <div className="form-group">
-            <label className="label">기존 첨부 파일</label>
-            <div className="file-list">
-              {existingFiles.map((file, index) => (
-                <div className="file-item" key={file.fileId}>
-                  {isImageFile(file.fileUrl) && (
-                    <div className="image-preview">
-                      <img src={file.fileUrl} alt={file.fileName} />
-                    </div>
-                  )}
-                  <div className="file-info">
-                    <span className="file-name">{file.fileName}</span>
-                    <span className="file-size">{file.fileSize ? `(${formatFileSize(file.fileSize)})` : ''}</span>
-                  </div>
-                  <button 
-                    className="remove-file-button" 
-                    onClick={() => handleRemoveExistingFile(index, file.fileId)} 
-                    type="button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* 새 첨부 파일 영역 */}
-        <div className="form-group">
-          <label className="label">새 첨부 파일</label>
-          <input 
-            className="hidden-file-input"
-            type="file" 
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            multiple
+        {/* 통합 FileUploader 컴포넌트 사용 */}
+        <div className="form-group" style={{ marginBottom: "40px" }}>
+          <FileUploader
+            existingFiles={existingFiles.map(file => ({
+              fileId: file.fileId,
+              fileName: file.fileName,
+              fileUrl: file.fileUrl,
+              fileSize: file.fileSize
+            }))}
+            onFileSelect={handleFileSelect}
+            onExistingFileRemove={handleExistingFileRemove}
           />
-          
-          {/* 첨부파일 목록 */}
-          {attachedFiles.length > 0 && (
-            <div className="file-list">
-              {attachedFiles.map((file, index) => (
-                <div className="file-item" key={index}>
-                  {isImageFile(file) && (
-                    <div className="image-preview">
-                      <img src={getFilePreviewUrl(file)} alt={file.name} />
-                    </div>
-                  )}
-                  <div className="file-info">
-                    <span className="file-name">{file.name}</span>
-                    <span className="file-size">({formatFileSize(file.size)})</span>
-                  </div>
-                  <button 
-                    className="remove-file-button" 
-                    onClick={() => handleRemoveFile(index)} 
-                    type="button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          
-          <button className="attach-button" type="button" onClick={handleAttachClick}>
-            <IoAttach size={18} />
-            파일 첨부
-          </button>
         </div>
         
-        <div className="button-group">
-          <button className="button cancel-button" type="button" onClick={handleCancel}>취소</button>
-          <button className="button submit-button" type="submit" disabled={isLoading}>
-            {isLoading ? '수정 중...' : '수정'}
-          </button>
+        <div className="button-group" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "30px" }}>
+          <Button 
+            variant="back" 
+            onClick={handleCancel} 
+            label="취소"
+          />
+          <Button 
+            variant="submit" 
+            type="submit" 
+            label={isLoading ? "수정 중..." : "수정"}
+            disabled={isLoading}
+          />
         </div>
       </form>
     </div>

@@ -6,6 +6,7 @@ import { IoAttach } from 'react-icons/io5';
 import { formatFileSize, isImageFile, getFilePreviewUrl } from '../../../utils/fileUtils';
 import Button from '../../../components/common/Button';
 import './AssignmentStyles.css';
+import { Flex } from '@chakra-ui/react';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -251,7 +252,7 @@ function AssignmentCreate() {
           </button>
         </div>
         
-        <div className="button-group">
+        <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
         <Button 
             variant="upload" 
             onClick={handleSubmit}
