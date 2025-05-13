@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
 import { usePost, PostProvider } from "../../../components/study/post/PostProvider";
 import PostList from "../../../components/study/post/PostList";
-import PostDetail from "./PostDetail";
+import PostDetail from "../../../components/study/post/PostDetail";
 import PostForm from "../../../components/study/post/PostForm";
 import PostEditForm from "../../../components/study/post/PostEditForm";
 import useStudyRole from "../../../hooks/useStudyRole";
@@ -149,7 +149,7 @@ const PostInnerContainer = ({ onSubPageChange }) => {
         <h1 className="page-title">게시글 상세</h1>
         <PostDetail
           studyId={studyId}
-          postId={selectedPost.postId}
+          postId={parseInt(postId, 10)}
           handleBack={navigateToList}
           handleEdit={isManager ? navigateToEdit : undefined}
           handleDelete={isManager ? handleDelete : undefined}
