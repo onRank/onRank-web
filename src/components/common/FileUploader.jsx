@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { formatFileSize, getFileIcon, isImageFile, getFilePreviewUrl } from "../../utils/fileUtils";
+import { formatFileSize, getFileIcon, isImageFile, getFilePreviewUrl, revokeFilePreviewUrl } from "../../utils/fileUtils";
 import Button from "./Button";
 import { IoAttach } from "react-icons/io5";
 import "../../styles/fileUploader.css";
@@ -19,6 +19,46 @@ function FileUploader({
   const [isDragging, setIsDragging] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef(null);
+  
+  // 파일 미리보기 URL 저장
+  const [previewUrls, setPreviewUrls] = useState({});
+
+  // 파일 변경 시 미리보기 URL 생성
+  useEffect(() => {
+    const newPreviewUrls = {};
+    
+    // 새 파일에 대한 미리보기 URL 생성
+    selectedFiles.forEach(file => {
+      if (isImageFile(file) && !previewUrls[file.name]) {
+        newPreviewUrls[file.name] = URL.createObjectURL(file);
+      }
+    });
+    
+    if (Object.keys(newPreviewUrls).length > 0) {
+      setPreviewUrls(prev => ({...prev, ...newPreviewUrls}));
+    }
+    
+    // 컴포넌트 언마운트 시 모든 URL 정리
+    return () => {
+      Object.values(newPreviewUrls).forEach(url => {
+        if (url && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [selectedFiles]);
+
+  // 컴포넌트 언마운트 시 모든 URL 정리
+  useEffect(() => {
+    return () => {
+      // 기존 모든 URL 메모리 정리
+      Object.values(previewUrls).forEach(url => {
+        if (url && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
+        }
+      });
+    };
+  }, [previewUrls]); // previewUrls 의존성 추가
 
   useEffect(() => {
     if (onFileSelect) {
@@ -50,7 +90,7 @@ function FileUploader({
     }
 
     // 선택된 파일 추가
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+    setSelectedFiles(prev => [...prev, ...newFiles]);
     
     // 파일 선택 후 input 초기화
     e.target.value = "";
@@ -58,7 +98,17 @@ function FileUploader({
 
   // 선택된 파일 제거 핸들러
   const handleRemoveFile = (fileName) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
+    setSelectedFiles(prev => prev.filter((file) => file.name !== fileName));
+    
+    // 파일 제거 시 URL 해제
+    if (previewUrls[fileName]) {
+      URL.revokeObjectURL(previewUrls[fileName]);
+      setPreviewUrls(prev => {
+        const newUrls = {...prev};
+        delete newUrls[fileName];
+        return newUrls;
+      });
+    }
   };
 
   // 기존 파일 제거 핸들러
@@ -113,7 +163,7 @@ function FileUploader({
     }
 
     // 선택된 파일 추가
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+    setSelectedFiles(prev => [...prev, ...newFiles]);
   };
 
   // 파일 첨부 버튼 클릭
@@ -121,8 +171,8 @@ function FileUploader({
     fileInputRef.current.click();
   };
 
-  // 파일 목록 표시
-  const renderFileList = () => {
+  // 파일 목록 메모이제이션
+  const fileList = useMemo(() => {
     const allFiles = [
       // 기존 파일 목록
       ...existingFiles.map(file => ({
@@ -139,7 +189,7 @@ function FileUploader({
         size: file.size,
         isExisting: false,
         file: file,
-        url: getFilePreviewUrl(file)
+        url: previewUrls[file.name] || null
       }))
     ];
 
@@ -149,7 +199,7 @@ function FileUploader({
       <div className="file-list">
         {allFiles.map((file, index) => (
           <div className="file-item" key={index}>
-            {isImageFile(file.name) && (
+            {isImageFile(file.name) && file.url && (
               <div className="image-preview">
                 <img src={file.url} alt={file.name} />
               </div>
@@ -173,7 +223,7 @@ function FileUploader({
         ))}
       </div>
     );
-  };
+  }, [existingFiles, selectedFiles, previewUrls]);
 
   return (
     <div className="file-uploader-container">
@@ -182,7 +232,7 @@ function FileUploader({
       <h3 className="section-subtitle">첨부파일</h3>
       
       {/* 파일 목록 */}
-      {renderFileList()}
+      {fileList}
       
       {/* 파일 첨부 버튼 영역 */}
       <div 

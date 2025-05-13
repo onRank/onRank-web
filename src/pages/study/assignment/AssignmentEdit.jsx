@@ -298,6 +298,7 @@ function AssignmentEdit() {
             variant="back" 
             onClick={handleCancel} 
             label="취소"
+            type="button"
           />
           <Button 
             variant="submit" 

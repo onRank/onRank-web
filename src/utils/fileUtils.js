@@ -172,18 +172,18 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
   try {
     // URL 유효성 검사
     if (!uploadUrl || typeof uploadUrl !== 'string') {
-      console.error('Invalid upload URL:', uploadUrl);
+      console.error('[uploadFileToS3] 유효하지 않은 업로드 URL:', uploadUrl);
       return { success: false, message: '업로드 URL이 유효하지 않습니다.' };
     }
     
     // 파일 유효성 검사
     if (!file || !(file instanceof File)) {
-      console.error('Invalid file object:', file);
+      console.error('[uploadFileToS3] 유효하지 않은 파일 객체:', file);
       return { success: false, message: '유효하지 않은 파일입니다.' };
     }
     
     console.log(`[uploadFileToS3] 파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
-    console.log(`[uploadFileToS3] 업로드 URL: ${uploadUrl.substring(0, 100)}...`);
+    console.log(`[uploadFileToS3] 업로드 URL: ${uploadUrl}`);
     
     // 프리사인드 URL에서 Content-Type 추출
     let contentType = file.type || "application/octet-stream";
@@ -195,9 +195,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
       mode: 'cors',
       credentials: 'omit', // 중요: 인증 정보 전송 안함
       headers: {
-        'Content-Type': contentType,
-        // 추가 헤더는 필요한 경우에만 사용
-        'Cache-Control': 'max-age=31536000' // 선택적: 캐시 설정
+        'Content-Type': contentType
       }
     };
     
@@ -219,14 +217,6 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
         console.log(`[uploadFileToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`);
         requestOptions.headers['Content-Type'] = contentType;
       }
-      
-      // 추가: X-Amz 헤더가 URL에 있는 경우 헤더로 추가
-      for (const [key, value] of params.entries()) {
-        if (key.startsWith('X-Amz-')) {
-          // URL에서 추출한 AWS 서명 관련 헤더는 추가하지 않음 (URL에 이미 포함됨)
-          console.log(`[uploadFileToS3] URL에서 AWS 파라미터 감지: ${key}`);
-        }
-      }
     } catch (urlError) {
       console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
     }
@@ -242,6 +232,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     });
     
     // fetch API 사용하여 업로드 시도
+    console.log(`[uploadFileToS3] 업로드 요청 전송 중...`);
     const response = await fetch(uploadUrl, requestOptions);
     
     // 응답 로깅
@@ -303,40 +294,97 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
  */
 export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl', extractMultiple = false) => {
   // 응답이 null이거나 undefined인 경우
-  if (!response) return extractMultiple ? [] : null;
+  if (!response) {
+    console.warn('[FileUtils] 응답이 null이거나 undefined입니다.');
+    return extractMultiple ? [] : null;
+  }
   
   // 응답이 직접 URL인 경우
-  if (typeof response === 'string') return extractMultiple ? [response] : response;
+  if (typeof response === 'string') {
+    console.log('[FileUtils] 응답이 직접 URL 문자열입니다.');
+    return extractMultiple ? [response] : response;
+  }
+  
+  console.log('[FileUtils] URL 추출 시작, 찾는 키:', searchKey);
+  
+  // 업로드 URL 프로퍼티 이름 목록 - 검색할 다양한 가능성 추가
+  const possibleKeys = [
+    searchKey,
+    'uploadUrl',
+    'presignedUrl',
+    'preSignedUrl',
+    'url',
+    'fileUploadUrl',
+    's3UploadUrl'
+  ];
+  
+  // 응답에서 uploadUrls 배열 직접 검색 (최상위)
+  if (response.uploadUrls && Array.isArray(response.uploadUrls) && response.uploadUrls.length > 0) {
+    console.log('[FileUtils] 최상위에서 uploadUrls 배열 발견:', response.uploadUrls.length);
+    return extractMultiple ? response.uploadUrls : response.uploadUrls[0];
+  }
   
   // data 배열이 있는 새로운 응답 구조 처리
   if (response.data && Array.isArray(response.data)) {
-    // data 배열에서 uploadUrl 추출
-    const urls = response.data
-      .map(item => item[searchKey])
-      .filter(url => url); // undefined나 null 제거
+    console.log('[FileUtils] data 배열에서 URL 검색, 항목 수:', response.data.length);
+    
+    // 각 항목에서 가능한 키 목록으로 URL 찾기
+    const urls = [];
+    for (const item of response.data) {
+      // 모든 가능한 키 이름으로 검색
+      for (const key of possibleKeys) {
+        if (item[key]) {
+          console.log(`[FileUtils] data 배열 항목에서 ${key} 발견`);
+          urls.push(item[key]);
+          break; // 첫 번째 발견된 URL 키만 사용
+        }
+      }
+    }
     
     if (urls.length > 0) {
+      console.log(`[FileUtils] data 배열에서 ${urls.length}개 URL 발견`);
       return extractMultiple ? urls : urls[0]; // 여러 URL 또는 첫 번째 URL 반환
     }
   }
   
   // 응답이 객체인 경우 searchKey 검색
   if (typeof response === 'object') {
-    // 직접 키가 있는지 확인
-    if (response[searchKey]) return extractMultiple ? [response[searchKey]] : response[searchKey];
+    // 직접 키가 있는지 확인 - 가능한 모든 키 이름으로 검색
+    for (const key of possibleKeys) {
+      if (response[key]) {
+        console.log(`[FileUtils] 최상위에서 ${key} 발견`);
+        return extractMultiple ? [response[key]] : response[key];
+      }
+    }
+    
+    // data 객체 확인
+    if (response.data && typeof response.data === 'object' && !Array.isArray(response.data)) {
+      console.log('[FileUtils] data 객체에서 URL 검색');
+      
+      // data 내의 가능한 키 이름으로 검색
+      for (const key of possibleKeys) {
+        if (response.data[key]) {
+          console.log(`[FileUtils] data 객체에서 ${key} 발견`);
+          return extractMultiple ? [response.data[key]] : response.data[key];
+        }
+      }
+    }
     
     // 재귀적으로 중첩된 객체 내부 검색
     let foundUrls = [];
     
     for (const key in response) {
       if (typeof response[key] === 'object' && response[key] !== null) {
+        console.log(`[FileUtils] '${key}' 속성 내부 검색`);
         const nestedResult = extractUploadUrlFromResponse(response[key], searchKey, extractMultiple);
         
         if (nestedResult) {
           if (extractMultiple) {
             // 배열이면 합치고, 아니면 배열에 추가
             foundUrls = foundUrls.concat(Array.isArray(nestedResult) ? nestedResult : [nestedResult]);
+            console.log(`[FileUtils] '${key}' 속성에서 URL 발견, 총 ${foundUrls.length}개`);
           } else {
+            console.log(`[FileUtils] '${key}' 속성에서 URL 발견`);
             return nestedResult; // 단일 URL 검색 시 첫 번째 발견된 URL 반환
           }
         }
@@ -345,10 +393,12 @@ export const extractUploadUrlFromResponse = (response, searchKey = 'uploadUrl', 
     
     // 여러 URL 추출 모드에서 URL이 있으면 반환
     if (extractMultiple && foundUrls.length > 0) {
+      console.log(`[FileUtils] 재귀 검색으로 총 ${foundUrls.length}개 URL 발견`);
       return foundUrls;
     }
   }
   
+  console.warn('[FileUtils] 응답에서 URL을 찾을 수 없음');
   return extractMultiple ? [] : null;
 };
 
@@ -376,11 +426,26 @@ export const handleFileUploadWithS3 = async (responseData, files, urlKeyName = '
     }));
   }
   
+  console.log('[FileUtils] API 응답 데이터 구조 확인:', JSON.stringify(responseData, null, 2));
+  
   // 업로드 URL 추출
   const uploadUrls = extractUploadUrlFromResponse(responseData, urlKeyName, true);
   
+  console.log('[FileUtils] 추출된 업로드 URL:', uploadUrls);
+  
   if (!uploadUrls || uploadUrls.length === 0) {
-    console.warn('[FileUtils] 업로드 URL을 찾을 수 없습니다.');
+    console.warn('[FileUtils] 업로드 URL을 찾을 수 없습니다. 응답 구조:', Object.keys(responseData));
+    
+    // data 객체가 있는지 확인 
+    if (responseData.data) {
+      console.log('[FileUtils] data 객체 내용:', responseData.data);
+      
+      // data 객체 내의 첫 번째 항목 확인
+      if (Array.isArray(responseData.data) && responseData.data.length > 0) {
+        console.log('[FileUtils] data 배열 첫 항목 구조:', Object.keys(responseData.data[0]));
+      }
+    }
+    
     return files.map(file => ({
       fileName: file.name,
       success: false,
@@ -389,6 +454,7 @@ export const handleFileUploadWithS3 = async (responseData, files, urlKeyName = '
   }
   
   console.log(`[FileUtils] ${uploadUrls.length}개의 업로드 URL을 발견했습니다.`);
+  console.log(`[FileUtils] 첫 번째 URL 샘플:`, uploadUrls[0].substring(0, 100) + '...');
   
   // 파일 수와 URL 수가 일치하지 않을 수 있음을 경고
   if (uploadUrls.length !== files.length) {

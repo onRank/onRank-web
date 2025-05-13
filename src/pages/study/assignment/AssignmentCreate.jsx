@@ -4,8 +4,8 @@ import useStudyRole from '../../../hooks/useStudyRole';
 import assignmentService from '../../../services/assignment';
 import Button from '../../../components/common/Button';
 import FileUploader from '../../../components/common/FileUploader';
+import { formatFileSize } from '../../../utils/fileUtils';
 import './AssignmentStyles.css';
-import { Flex } from '@chakra-ui/react';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -82,17 +82,46 @@ function AssignmentCreate() {
       console.log('[AssignmentCreate] 첨부된 파일:', attachedFiles);
       console.log('[AssignmentCreate] 첨부된 파일 목록:', attachedFiles.map(file => `${file.name} (${file.size} bytes)`));
       
+      // FormData 객체 생성 (파일 업로드를 위해)
+      const requestFormData = new FormData();
+      
+      // 필수 필드 추가
+      requestFormData.append('assignmentTitle', formData.assignmentTitle);
+      requestFormData.append('assignmentContent', formData.assignmentContent);
+      requestFormData.append('assignmentMaxPoint', formData.assignmentMaxPoint.toString());
+      
       // ISO 형식으로 날짜 변환
-      const formattedData = {
-        ...formData,
-        assignmentDueDate: new Date(formData.assignmentDueDate).toISOString(),
-        files: attachedFiles // 파일 객체 배열 직접 추가
-      };
+      const dueDateISO = new Date(formData.assignmentDueDate).toISOString();
+      requestFormData.append('assignmentDueDate', dueDateISO);
       
-      console.log('[AssignmentCreate] 과제 생성 요청 데이터:', formattedData);
+      // 파일 이름 추가 (각각 별도로 추가)
+      attachedFiles.forEach(file => {
+        requestFormData.append('fileNames', file.name);
+      });
       
-      // 과제 업로드 API 호출 (preSignedURL 방식)
-      await assignmentService.createAssignment(studyId, formattedData);
+      // 파일 객체 추가
+      attachedFiles.forEach(file => {
+        // 'files' 키로 모든 파일 추가 (서버 처리 방식에 맞게)
+        requestFormData.append('files', file);
+      });
+      
+      console.log('[AssignmentCreate] 과제 생성 요청 구성 완료:');
+      console.log(' - 제목:', formData.assignmentTitle);
+      console.log(' - 마감기한:', dueDateISO);
+      console.log(' - 최대 포인트:', formData.assignmentMaxPoint);
+      console.log(' - 파일 개수:', attachedFiles.length);
+      
+      // FormData 내용 확인
+      for (const [key, value] of requestFormData.entries()) {
+        if (value instanceof File) {
+          console.log(` - ${key}: ${value.name} (${formatFileSize(value.size)})`);
+        } else {
+          console.log(` - ${key}: ${value}`);
+        }
+      }
+      
+      // 과제 업로드 API 호출 (FormData 객체 사용)
+      await assignmentService.createAssignment(studyId, requestFormData);
       
       alert('과제가 성공적으로 업로드되었습니다.');
       navigate(`/studies/${studyId}/assignment`); // 목록 페이지로 이동
@@ -202,7 +231,7 @@ function AssignmentCreate() {
         <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
         <Button 
             variant="upload" 
-            onClick={handleSubmit}
+            type="submit"
             disabled={isLoading}
             style={{ 
               width: '60px', 
@@ -212,6 +241,7 @@ function AssignmentCreate() {
           />
           <Button 
             variant="back" 
+            type="button"
             onClick={handleCancel}
             style={{ 
               width: '60px', 
