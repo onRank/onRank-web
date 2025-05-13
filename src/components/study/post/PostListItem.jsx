@@ -70,7 +70,6 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
         <div className="post-date">게시: {formatDateYMD(createdAt)}</div>
         <h2 className="post-title">
           {title}
-          {hasFiles && <span className="post-attachment-icon">📎</span>}
         </h2>
       </div>
 
