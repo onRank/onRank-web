@@ -104,13 +104,16 @@ const PostInnerContainer = ({ onSubPageChange }) => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return false;
-    const result = await deletePost(studyId, id);
-    if (result.success) {
-      navigateToList();
-      return true;
+    if (window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) {
+      const result = await deletePost(studyId, id);
+      if (result.success) {
+        navigateToList();
+        return true;
+      } else {
+        alert(result.message || "게시글 삭제에 실패했습니다.");
+        return false;
+      }
     }
-    alert(result.message || "게시글 삭제에 실패했습니다.");
     return false;
   };
 

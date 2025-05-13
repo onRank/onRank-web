@@ -15,6 +15,11 @@ function PostListItem({ post, onClick, onEdit, onDelete }) {
   // 관리자 권한 (CREATOR / HOST)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
 
+  // 파일 첨부 여부 확인
+  const hasFiles = 
+    (post.files && post.files.length > 0) || 
+    (post.fileUrls && post.fileUrls.length > 0);
+
   // 토글 메뉴
   const handleMenuClick = (e) => {
     e.stopPropagation();
@@ -39,7 +44,10 @@ function PostListItem({ post, onClick, onEdit, onDelete }) {
     <div onClick={onClick} className="post-item">
       <div className="post-content-block">
         <div className="post-date">게시: {formatDateYMD(createdAt)}</div>
-        <h2 className="post-title">{title}</h2>
+        <h2 className="post-title">
+          {title}
+          {hasFiles && <span className="post-attachment-icon">📎</span>}
+        </h2>
       </div>
 
       {isManager && (
@@ -73,6 +81,8 @@ PostListItem.propTypes = {
     postCreatedAt: PropTypes.string,
     createdAt: PropTypes.string,
     boardTitle: PropTypes.string,
+    files: PropTypes.array,
+    fileUrls: PropTypes.array
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,

@@ -103,10 +103,13 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
       const result = await deleteNotice(studyId, noticeId);
       if (result.success) {
         handleNavigateToListPage();
+        return true;
       } else {
         alert(result.message || '공지사항 삭제에 실패했습니다.');
+        return false;
       }
     }
+    return false;
   };
 
   // 공지사항 생성 제출 핸들러

@@ -127,7 +127,8 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
       'ASSIGNMENT': '과제',
       'ATTENDANCE': '출석',
       'MEMBER': '멤버',
-      'STUDY': '스터디'
+      'STUDY': '스터디',
+      'POST': '게시글',
     };
     
     return categoryMap[category] || category;

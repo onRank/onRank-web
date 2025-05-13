@@ -115,13 +115,9 @@ export function PostProvider({ children }) {
     try {
       const response = await postService.createPost(studyId, newPost, files);
       if (response.success) {
-        // 성공시 목록에 새 게시글 추가
-        if (response.data) {
-          setPosts((prev) => {
-            // 새 게시글 추가 수행
-            return [response.data, ...prev];
-          });
-        }
+        // 목록 새로고침 (직접 추가 대신 API 재호출)
+        await getPosts(studyId);
+        
         // 성공 응답 반환
         return {
           success: true,
@@ -149,7 +145,7 @@ export function PostProvider({ children }) {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getPosts]);
 
   // 게시글 수정
   const editPost = useCallback(
@@ -194,26 +190,54 @@ export function PostProvider({ children }) {
 
   // 게시글 삭제
   const deletePost = useCallback(async (studyId, postId) => {
+    if (!studyId || !postId) {
+      console.error("[PostProvider] 게시글 삭제 실패: 스터디ID 또는 게시글ID 누락");
+      return { 
+        success: false, 
+        message: "필수 정보가 누락되었습니다." 
+      };
+    }
+    
     setIsLoading(true);
+    setError(null);
+    
     try {
+      console.log(`[PostProvider] 게시글 삭제 요청: ${studyId}/${postId}`);
       const response = await postService.deletePost(studyId, postId);
+      
       if (response.success) {
-        // 삭제된 게시글을 목록에서 제거
-        setPosts((prev) => prev.filter((post) => post.postId !== postId));
-        return { success: true };
+        // 목록에서 삭제된 게시글 제거
+        setPosts(prevPosts => 
+          prevPosts.filter(post => post.postId !== parseInt(postId, 10))
+        );
+        
+        // 현재 선택된 게시글이 삭제되는 경우 초기화
+        if (selectedPost && selectedPost.postId === parseInt(postId, 10)) {
+          setSelectedPost(null);
+        }
+        
+        return {
+          success: true,
+          message: "게시글이 성공적으로 삭제되었습니다."
+        };
       } else {
-        throw new Error(response.message || "게시글 삭제에 실패했습니다.");
+        setError(response.message || "게시글 삭제 중 오류가 발생했습니다.");
+        return {
+          success: false,
+          message: response.message || "게시글 삭제 중 오류가 발생했습니다."
+        };
       }
     } catch (err) {
-      console.error("게시글 삭제 실패:", err);
+      console.error("[PostProvider] 게시글 삭제 중 오류:", err);
+      setError("게시글 삭제 중 오류가 발생했습니다.");
       return {
         success: false,
-        message: err.message || "게시글 삭제에 실패했습니다.",
+        message: err.message || "게시글 삭제 중 오류가 발생했습니다."
       };
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [selectedPost]);
 
   return (
     <PostContext.Provider

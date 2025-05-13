@@ -14,6 +14,11 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
   
+  // 파일 첨부 여부 확인
+  const hasFiles = 
+    (notice.files && notice.files.length > 0) || 
+    (notice.fileUrls && notice.fileUrls.length > 0);
+  
   // 토글 메뉴 클릭 처리
   const handleMenuClick = (e) => {
     e.stopPropagation(); // 클릭 이벤트가 카드까지 전파되지 않도록 방지
@@ -46,7 +51,10 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
         <div className="notice-date">
           게시: {formatDateYMD(notice.noticeCreatedAt)}
         </div>
-        <h2 className="notice-title">{notice.noticeTitle}</h2>
+        <h2 className="notice-title">
+          {notice.noticeTitle}
+          {hasFiles && <span className="notice-attachment-icon">📎</span>}
+        </h2>
       </div>
 
       {isManager && (
@@ -87,6 +95,7 @@ NoticeListItem.propTypes = {
         fileUrl: PropTypes.string.isRequired,
       })
     ),
+    fileUrls: PropTypes.arrayOf(PropTypes.string)
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
