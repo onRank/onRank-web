@@ -1,6 +1,11 @@
 import { api, tokenUtils } from "./api";
 import axios from "axios";
 import { studyContextService } from "./studyContext";
+import { 
+  handleFileUploadWithS3, 
+  extractUploadUrlFromResponse,
+  uploadFileToS3 
+} from "../utils/fileUtils";
 
 export const postService = {
   // 게시글 목록 조회
@@ -359,7 +364,7 @@ export const postService = {
         postTitle: postData.postTitle,
         postContent: postData.postContent,
         remainingFileIds: postData.remainingFileIds || [], // 남겨둘 파일 ID
-        newFileNames: postData.newFileNames || postData.fileNames || [], // 새로운 파일명
+        newFileNames: postData.newFileNames || [], // 새로운 파일명
       };
       
       console.log("[PostService] 최종 요청 데이터:", requestData);
@@ -458,23 +463,27 @@ export const postService = {
       const files = postData.files || [];
       if (files && files.length > 0) {
         try {
-          // 응답에 uploadUrls 또는 data 배열이 있는지 확인
-          const hasUploadUrls =
-            response.data &&
-            ((response.data.uploadUrls &&
-              response.data.uploadUrls.length > 0) ||
-              (response.data.data &&
-                Array.isArray(response.data.data) &&
-                response.data.data.length > 0));
-
-          if (hasUploadUrls) {
-            console.log("[PostService] 파일 업로드 URL 감지, 업로드 시작");
-            await handleFileUpload(response.data, files);
-            console.log("[PostService] 파일 업로드 완료");
-          } else {
-            console.log(
-              "[PostService] 업로드 URL이 없어 파일 업로드를 건너뜁니다"
-            );
+          console.log("[PostService] 파일 업로드 시작, 파일 개수:", files.length);
+          
+          // 파일 업로드 수행 - 개선된 함수 사용
+          const uploadResults = await handleFileUpload(response.data, files);
+          
+          // 업로드 결과 확인
+          const successCount = uploadResults.filter(r => r.success).length;
+          console.log(`[PostService] 파일 업로드 완료: ${successCount}/${files.length} 성공`);
+          
+          // 업로드 실패 있는 경우 경고 추가
+          if (successCount < files.length) {
+            result.warning = `게시글은 수정되었으나 일부 파일(${files.length - successCount}개)이 업로드되지 않았습니다.`;
+          }
+          
+          // 업로드된 파일 URL을 결과에 추가
+          const uploadedUrls = uploadResults
+            .filter(r => r.success && r.url)
+            .map(r => r.url);
+            
+          if (uploadedUrls.length > 0) {
+            result.data.fileUrls = uploadedUrls;
           }
         } catch (uploadError) {
           console.error("[PostService] 파일 업로드 중 오류:", uploadError);
@@ -493,10 +502,10 @@ export const postService = {
   },
 
   // 게시글 생성
-  createPost: async (studyId, newPost) => {
+  createPost: async (studyId, newPost, files = []) => {
     try {
       console.log("[PostService] 게시글 생성 요청:", newPost);
-      console.log("[PostService] 첨부 파일 수:", newPost.files && newPost.files.length);
+      console.log("[PostService] 첨부 파일 수:", files && files.length);
       
       // 토큰 확인
       const token = tokenUtils.getToken();
@@ -505,10 +514,11 @@ export const postService = {
       const requestData = {
         postTitle: newPost.postTitle || newPost.title || "",
         postContent: newPost.postContent || newPost.content || "",
-        fileNames: newPost.fileNames || [] // 파일 이름 배열 추가
+        fileNames: (files && files.length > 0) ? files.map(file => file.name) : []
       };
       
       console.log("[PostService] 변환된 요청 데이터:", requestData);
+      console.log("[PostService] 파일명 배열:", requestData.fileNames);
 
       if (!token) {
         console.error("[PostService] 토큰 없음, 게시글 생성 불가");
@@ -631,26 +641,29 @@ export const postService = {
       }
       
       // 파일 업로드 처리
-      const files = newPost.files || [];
       if (files && files.length > 0) {
         try {
-          // 응답에 uploadUrls 또는 data 배열이 있는지 확인
-          const hasUploadUrls =
-            response.data &&
-            ((response.data.uploadUrls &&
-              response.data.uploadUrls.length > 0) ||
-              (response.data.data &&
-                Array.isArray(response.data.data) &&
-                response.data.data.length > 0));
-
-          if (hasUploadUrls) {
-            console.log("[PostService] 파일 업로드 URL 감지, 업로드 시작");
-            await handleFileUpload(response.data, files);
-            console.log("[PostService] 파일 업로드 완료");
-          } else {
-            console.log(
-              "[PostService] 업로드 URL이 없어 파일 업로드를 건너뜁니다"
-            );
+          console.log("[PostService] 파일 업로드 시작, 파일 개수:", files.length);
+          
+          // 파일 업로드 수행
+          const uploadResults = await handleFileUpload(response.data, files);
+          
+          // 업로드 결과 확인
+          const successCount = uploadResults.filter(r => r.success).length;
+          console.log(`[PostService] 파일 업로드 완료: ${successCount}/${files.length} 성공`);
+          
+          // 업로드 실패 있는 경우 경고 추가
+          if (successCount < files.length) {
+            result.warning = `게시글은 생성되었으나 일부 파일(${files.length - successCount}개)이 업로드되지 않았습니다.`;
+          }
+          
+          // 업로드된 파일 URL을 결과에 추가
+          const uploadedUrls = uploadResults
+            .filter(r => r.success && r.url)
+            .map(r => r.url);
+            
+          if (uploadedUrls.length > 0) {
+            result.data.fileUrls = uploadedUrls;
           }
         } catch (uploadError) {
           console.error("[PostService] 파일 업로드 중 오류:", uploadError);
@@ -674,164 +687,127 @@ export const postService = {
     console.log("[PostService] editPost postData:", postData);
     console.log("[PostService] editPost files:", files.length + "개 파일");
     
-    // 파일 이름 확인
-    if (postData.newFileNames && postData.newFileNames.length > 0) {
-      console.log("[PostService] 새 파일명 이미 설정됨:", postData.newFileNames);
-    } else if (files.length > 0) {
-      postData.newFileNames = files.map(file => file.name);
-      console.log("[PostService] 새 파일명 생성:", postData.newFileNames);
+    // 파일명 배열 준비
+    let newFileNames = [];
+    if (files && files.length > 0) {
+      newFileNames = files.map(file => file.name);
+      console.log("[PostService] 새 파일명 목록:", newFileNames);
     }
     
-    return postService.updatePost(studyId, postId, {
+    // updatePost 호출 전 필요한 데이터 통합
+    const completePostData = {
       ...postData,
-      files: files
-    });
+      files,
+      newFileNames
+    };
+    
+    // updatePost 호출
+    return postService.updatePost(studyId, postId, completePostData);
   }
 };
 
 // 파일 업로드 처리 함수
 const handleFileUpload = async (responseData, files) => {
   try {
-    console.log("[FileUpload] 파일 업로드 시작");
+    console.log("[FileUpload] 파일 업로드 시작, 파일 수:", files.length);
+    console.log("[FileUpload] 파일 목록:", files.map(f => f.name));
+    console.log("[FileUpload] 응답 데이터:", responseData);
 
-    let uploadUrls = [];
-
-    // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
-    if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
-      uploadUrls = responseData.presignedUrls;
-      console.log("[FileUpload] presignedUrls 사용:", uploadUrls.length);
-    } else if (responseData.data && Array.isArray(responseData.data)) {
-      uploadUrls = responseData.data.map((file) => file.uploadUrl);
-      console.log(
-        "[FileUpload] data 배열에서 fileUrl 추출:",
-        uploadUrls.length
-      );
+    if (!files || files.length === 0) {
+      console.log("[FileUpload] 업로드할 파일이 없어 처리를 건너뜁니다");
+      return [];
     }
 
-    if (uploadUrls.length > 0) {
-      // 각 파일에 대해 업로드 처리
-      for (let i = 0; i < Math.min(files.length, uploadUrls.length); i++) {
-        const file = files[i];
-        const uploadUrl = uploadUrls[i];
+    if (!responseData) {
+      console.error("[FileUpload] API 응답 데이터가 없습니다");
+      return [];
+    }
 
-        if (!uploadUrl) {
-          console.warn(
-            `[FileUpload] ${i + 1}번째 파일의 업로드 URL이 없습니다`
-          );
-          continue;
+    // fileUtils의 handleFileUploadWithS3 함수 사용 (통합된 방식)
+    // 여러 가능한 uploadUrl 키 이름 처리
+    const possibleUrlKeys = ['uploadUrl', 'presignedUrl', 'url', 'fileUrl'];
+    
+    // 각 키 이름으로 시도
+    let uploadResults = [];
+    let successfulUpload = false;
+    
+    for (const urlKey of possibleUrlKeys) {
+      console.log(`[FileUpload] '${urlKey}' 키로 업로드 URL 검색 시도`);
+      
+      try {
+        // 업로드 시도
+        uploadResults = await handleFileUploadWithS3(responseData, files, urlKey);
+        
+        // 성공한 업로드가 있는지 확인
+        const successCount = uploadResults.filter(r => r.success).length;
+        if (successCount > 0) {
+          console.log(`[FileUpload] '${urlKey}' 키 사용 성공: ${successCount}/${files.length} 파일 업로드됨`);
+          successfulUpload = true;
+          break; // 성공했으므로 루프 종료
+        } else {
+          console.log(`[FileUpload] '${urlKey}' 키로 업로드 URL 발견되지 않음`);
         }
+      } catch (keyError) {
+        console.warn(`[FileUpload] '${urlKey}' 키 사용 시도 중 오류:`, keyError);
+        // 다음 키로 계속 시도
+      }
+    }
+    
+    if (!successfulUpload) {
+      console.warn("[FileUpload] 모든 키 시도 실패, 레거시 방식으로 시도");
+      
+      // 레거시 코드: 이전 방식(백업용)
+      let uploadUrls = [];
 
-        try {
-          console.log(`[FileUpload] 파일 '${file.name}' 업로드 시작`);
-
-          // 파일 유형에 따라 적절한 업로드 함수 선택
-          if (file.type.startsWith("image/")) {
-            await ImageUploadToS3(uploadUrl, file);
-            console.log(`[FileUpload] 이미지 '${file.name}' 업로드 성공`);
-          } else {
-            await FileUploadToS3(uploadUrl, file);
-            console.log(`[FileUpload] 파일 '${file.name}' 업로드 성공`);
-          }
-        } catch (individualError) {
-          console.error(
-            `[FileUpload] '${file.name}' 파일 업로드 실패:`,
-            individualError
-          );
-          // 개별 파일 실패 시 다른 파일 업로드는 계속 진행
+      // 백엔드 응답 구조 대응: presignedUrls 또는 data 배열 확인
+      if (responseData.presignedUrls && responseData.presignedUrls.length > 0) {
+        uploadUrls = responseData.presignedUrls;
+        console.log("[FileUpload] presignedUrls 필드 발견:", uploadUrls.length);
+      } else if (responseData.data && Array.isArray(responseData.data)) {
+        // data 배열 탐색
+        const uploadUrlsFromData = responseData.data
+          .map(item => item.uploadUrl || item.presignedUrl || item.url)
+          .filter(url => url); // null/undefined 제거
+          
+        if (uploadUrlsFromData.length > 0) {
+          uploadUrls = uploadUrlsFromData;
+          console.log("[FileUpload] data 배열에서 URL 추출:", uploadUrls.length);
         }
       }
-      console.log("[FileUpload] 모든 파일 업로드 완료");
-    } else {
-      console.log("[FileUpload] 업로드할 URL이 없어 파일 업로드를 건너뜁니다");
+
+      if (uploadUrls.length > 0) {
+        console.log("[FileUpload] 레거시 방식으로 업로드 URL 찾음:", uploadUrls.length);
+        
+        // 각 파일 업로드 처리
+        uploadResults = await Promise.all(
+          files.map((file, index) => {
+            if (index < uploadUrls.length) {
+              return uploadFileToS3(uploadUrls[index], file)
+                .then(result => ({
+                  fileName: file.name,
+                  size: file.size,
+                  type: file.type,
+                  ...result
+                }));
+            } else {
+              return Promise.resolve({
+                fileName: file.name,
+                success: false,
+                message: '업로드 URL 부족'
+              });
+            }
+          })
+        );
+      } else {
+        console.error("[FileUpload] 어떤 방식으로도 업로드 URL을 찾을 수 없음");
+        return [];
+      }
     }
+    
+    console.log("[FileUpload] 최종 업로드 결과:", uploadResults);
+    return uploadResults;
   } catch (error) {
     console.error("[FileUpload] 파일 업로드 처리 중 오류:", error);
-    throw error;
-  }
-};
-
-// 이미지 업로드 함수
-const ImageUploadToS3 = async (presignedUrl, imageFile) => {
-  try {
-    console.log("[ImageUploadToS3] 이미지 업로드 시작:", imageFile.name);
-
-    // 프리사인드 URL에서 Content-Type 추출
-    let contentType = imageFile.type;
-
-    // URL에서 Content-Type 파라미터가 있는지 확인
-    try {
-      const urlObj = new URL(presignedUrl);
-      const params = new URLSearchParams(urlObj.search);
-      if (params.has("Content-Type")) {
-        contentType = params.get("Content-Type");
-        console.log(
-          `[ImageUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
-        );
-      }
-    } catch (urlError) {
-      console.warn(
-        "[ImageUploadToS3] URL 파싱 실패, 파일 타입 사용:",
-        urlError
-      );
-    }
-
-    const uploadResponse = await axios.put(presignedUrl, imageFile, {
-      headers: {
-        "Content-Type": contentType,
-      },
-    });
-
-    if (uploadResponse.status === 200 || uploadResponse.status === 201) {
-      console.log("[ImageUploadToS3] 이미지 업로드 성공:", imageFile.name);
-    } else {
-      console.error("[ImageUploadToS3] 이미지 업로드 실패:", imageFile.name);
-      throw new Error(`이미지 업로드 실패: ${imageFile.name}`);
-    }
-  } catch (error) {
-    console.error("[ImageUploadToS3] 이미지 업로드 중 오류:", error);
-    throw error;
-  }
-};
-
-// 파일 업로드 함수
-const FileUploadToS3 = async (presignedUrl, file) => {
-  try {
-    console.log("[FileUploadToS3] 파일 업로드 시작:", file.name);
-
-    // 프리사인드 URL에서 Content-Type 추출
-    let contentType = file.type || "application/octet-stream";
-
-    // URL에서 Content-Type 파라미터가 있는지 확인
-    try {
-      const urlObj = new URL(presignedUrl);
-      const params = new URLSearchParams(urlObj.search);
-      if (params.has("Content-Type")) {
-        contentType = params.get("Content-Type");
-        console.log(
-          `[FileUploadToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`
-        );
-      }
-    } catch (urlError) {
-      console.warn(
-        "[FileUploadToS3] URL 파싱 실패, 파일 타입 사용:",
-        urlError
-      );
-    }
-
-    const uploadResponse = await axios.put(presignedUrl, file, {
-      headers: {
-        "Content-Type": contentType,
-      },
-    });
-
-    if (uploadResponse.status === 200 || uploadResponse.status === 201) {
-      console.log("[FileUploadToS3] 파일 업로드 성공:", file.name);
-    } else {
-      console.error("[FileUploadToS3] 파일 업로드 실패:", file.name);
-      throw new Error(`파일 업로드 실패: ${file.name}`);
-    }
-  } catch (error) {
-    console.error("[FileUploadToS3] 파일 업로드 중 오류:", error);
     throw error;
   }
 }; 

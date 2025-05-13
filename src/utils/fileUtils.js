@@ -182,50 +182,96 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
       return { success: false, message: '유효하지 않은 파일입니다.' };
     }
     
-    console.log(`파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
-    console.log(`업로드 URL: ${uploadUrl.substring(0, 100)}...`);
+    console.log(`[uploadFileToS3] 파일 업로드 시작: ${file.name} (${formatFileSize(file.size)})`);
+    console.log(`[uploadFileToS3] 업로드 URL: ${uploadUrl.substring(0, 100)}...`);
     
     // 프리사인드 URL에서 Content-Type 추출
     let contentType = file.type || "application/octet-stream";
-
+    
+    // 기본 요청 옵션
+    const requestOptions = {
+      method: 'PUT',
+      body: file,
+      mode: 'cors',
+      credentials: 'omit', // 중요: 인증 정보 전송 안함
+      headers: {
+        'Content-Type': contentType,
+        // 추가 헤더는 필요한 경우에만 사용
+        'Cache-Control': 'max-age=31536000' // 선택적: 캐시 설정
+      }
+    };
+    
     // URL에서 Content-Type 파라미터가 있는지 확인
     try {
       const urlObj = new URL(uploadUrl);
+      
+      // 로깅: URL 구조 확인
+      console.log(`[uploadFileToS3] URL 구문 분석:`, {
+        protocol: urlObj.protocol,
+        hostname: urlObj.hostname,
+        pathname: urlObj.pathname,
+        search: urlObj.search,
+      });
+      
       const params = new URLSearchParams(urlObj.search);
       if (params.has("Content-Type")) {
         contentType = params.get("Content-Type");
         console.log(`[uploadFileToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`);
+        requestOptions.headers['Content-Type'] = contentType;
+      }
+      
+      // 추가: X-Amz 헤더가 URL에 있는 경우 헤더로 추가
+      for (const [key, value] of params.entries()) {
+        if (key.startsWith('X-Amz-')) {
+          // URL에서 추출한 AWS 서명 관련 헤더는 추가하지 않음 (URL에 이미 포함됨)
+          console.log(`[uploadFileToS3] URL에서 AWS 파라미터 감지: ${key}`);
+        }
       }
     } catch (urlError) {
       console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
     }
     
-    console.log(`[uploadFileToS3] 파일 업로드 요청 - 파일: ${file.name}, 타입: ${contentType}`);
+    console.log(`[uploadFileToS3] 파일 업로드 요청 설정:`, {
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+      credentials: requestOptions.credentials,
+      mode: requestOptions.mode,
+      fileType: file.type,
+      fileName: file.name,
+      fileSize: formatFileSize(file.size)
+    });
     
-    const response = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': contentType,
-      },
-      body: file,
-      credentials: 'omit' // 중요: 인증 정보 전송 안함
+    // fetch API 사용하여 업로드 시도
+    const response = await fetch(uploadUrl, requestOptions);
+    
+    // 응답 로깅
+    console.log(`[uploadFileToS3] 응답 상태:`, {
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok
     });
     
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('File upload failed:', errorText);
-      console.error('Response status:', response.status, response.statusText);
+      // 실패 시 응답 상세 정보 수집
+      let errorDetails;
+      try {
+        errorDetails = await response.text();
+        console.error('[uploadFileToS3] 응답 상세 정보:', errorDetails);
+      } catch (textError) {
+        errorDetails = '응답 상세 정보를 읽을 수 없음';
+      }
+      
       return { 
         success: false, 
         message: `파일 업로드 실패: ${response.status} ${response.statusText}`,
-        error: errorText 
+        error: errorDetails
       };
     }
     
     // S3 업로드 URL로부터 다운로드 URL 가져오기
     // 일반적으로 사전 서명된 PUT URL에서 쿼리 파라미터를 제거하면 다운로드 URL을 얻을 수 있음
     const fileUrl = uploadUrl.split('?')[0];
-    console.log(`파일 업로드 성공: ${file.name} -> ${fileUrl}`);
+    console.log(`[uploadFileToS3] 파일 업로드 성공: ${file.name} -> ${fileUrl}`);
     
     return {
       success: true,
@@ -233,7 +279,7 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
       url: fileUrl
     };
   } catch (error) {
-    console.error('Error uploading file to S3:', error);
+    console.error('[uploadFileToS3] 파일 업로드 중 예외 발생:', error);
     return {
       success: false,
       message: `파일 업로드 중 오류가 발생했습니다: ${error.message}`,
