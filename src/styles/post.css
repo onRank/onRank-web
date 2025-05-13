@@ -33,6 +33,7 @@
   flex-direction: column;
   gap: 16px;
   width: 100%;
+  padding-bottom: 80px;
 }
 
 .post-item {
@@ -412,12 +413,17 @@
   color: #e53935;
   font-size: 12px;
   margin-top: 4px;
+  background-color: #fdecea;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 16px;
 }
 
 .form-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   margin-top: 24px;
+  gap: 10px;
 }
 
 .attach-button {
@@ -616,4 +622,19 @@
 
 .file-icon {
   font-size: 24px;
+}
+
+/* Preview icon button style */
+.preview-icon-button {
+  background: none;
+  border: none;
+  color: #17a2b8;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 0 8px;
+  transition: color 0.2s;
+}
+
+.preview-icon-button:hover {
+  color: #138496;
 } 

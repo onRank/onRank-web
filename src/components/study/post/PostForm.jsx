@@ -1,12 +1,11 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { IoAttach } from "react-icons/io5";
-import { getFileIcon, formatFileSize, isImageFile, getFilePreviewUrl } from "../../../utils/fileUtils";
+import FileUploader from "../../common/FileUploader";
 import "../../../styles/post.css";
 
 /*
@@ -25,7 +24,6 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
   const { isLoading: contextIsLoading, createPost } = usePost();
   const { colors } = useTheme(); // eslint-disable-line no-unused-vars
   const maxLength = 10000;
-  const fileInputRef = useRef(null);
 
   const isLoading = propIsLoading || contextIsLoading;
 
@@ -38,31 +36,9 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
     }
   }, [post]);
 
-  // 파일 선택 버튼 클릭 핸들러
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
-  };
-
-  // 파일 선택
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    // 중복 & 용량(10MB) 체크
-    const newFiles = files.filter((file) => !selectedFiles.some((f) => f.name === file.name));
-    const oversized = newFiles.filter((file) => file.size > 10 * 1024 * 1024);
-    if (oversized.length) {
-      setError(`다음 파일이 10MB를 초과합니다: ${oversized.map((f) => f.name).join(", ")}`);
-      return;
-    }
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
-    // reset input
-    e.target.value = "";
-  };
-
-  // 첨부 취소
-  const handleRemoveFile = (fileName) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
+  // 파일 선택 콜백
+  const handleFileSelect = (files) => {
+    setSelectedFiles(files);
   };
 
   // 게시글 생성
@@ -160,62 +136,14 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         <div className="char-count">{postContent.length}/{maxLength}</div>
       </div>
 
-      {/* 첨부파일 목록 - 향상된 UI */}
-      {selectedFiles.length > 0 && (
-        <div className="file-list">
-          <h3 className="file-list-title">첨부 파일</h3>
-          <div className="post-files-container">
-            {selectedFiles.map((file, index) => (
-              <div className="post-file-item" key={index}>
-                {isImageFile(file) && (
-                  <div className="post-image-preview">
-                    <img src={getFilePreviewUrl(file)} alt={file.name} />
-                  </div>
-                )}
-                <div className="post-file-info-row">
-                  <div className="post-file-icon">{getFileIcon(file.name)}</div>
-                  <div className="post-file-info">
-                    <div className="post-file-name">{file.name}</div>
-                    <div className="post-file-size">{formatFileSize(file.size)}</div>
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemoveFile(file.name)}
-                    className="remove-button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 파일 업로드 섹션 */}
-      <div className="form-group">
-        <input 
-          ref={fileInputRef}
-          type="file" 
-          multiple
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
-        
-        <button 
-          type="button" 
-          onClick={handleAttachClick}
-          className="attach-button"
-        >
-          <IoAttach size={24} style={{ marginBottom: "8px" }} />
-          파일을 끌어서 놓거나 클릭하여 추가하세요
-        </button>
-      </div>
+      {/* 공용 파일 업로더 컴포넌트 사용 */}
+      <FileUploader
+        existingFiles={[]}
+        onFileSelect={handleFileSelect}
+      />
 
       <div className="form-buttons">
-        <div>
-          <Button type="submit" variant="upload" disabled={isSubmitting} />
-        </div>
+        <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button type="button" variant="back" onClick={onCancel} disabled={isSubmitting} />
       </div>
     </form>

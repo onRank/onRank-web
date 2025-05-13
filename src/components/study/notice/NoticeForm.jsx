@@ -1,11 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { useParams } from "react-router-dom";
-import { IoAttach } from "react-icons/io5";
-import { getFileIcon, formatFileSize, isImageFile, getFilePreviewUrl } from "../../../utils/fileUtils";
+import FileUploader from "../../common/FileUploader";
 import "../../../styles/notice.css";
 
 const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
@@ -18,7 +17,6 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
   const { isLoading: contextIsLoading, createNotice } = useNotice();
   const { colors } = useTheme();
   const maxLength = 10000;
-  const fileInputRef = useRef(null);
 
   // Use loading state from props or context
   const isLoading = propIsLoading || contextIsLoading;
@@ -30,46 +28,11 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
     }
   }, [notice]);
 
-  // 파일 선택 버튼 클릭 핸들러
-  const handleAttachClick = () => {
-    fileInputRef.current.click();
+  // 파일 선택 콜백
+  const handleFileSelect = (files) => {
+    setSelectedFiles(files);
   };
 
-  // 파일 선택 핸들러
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length === 0) return;
-
-    // 이미 선택된 파일과 중복 확인 (새로 추가하는 파일)
-    const newFiles = files.filter(
-      (file) => !selectedFiles.some((f) => f.name === file.name)
-    );
-
-    // 파일 크기 제한 (10MB)
-    const oversizedFiles = newFiles.filter(
-      (file) => file.size > 10 * 1024 * 1024
-    );
-    if (oversizedFiles.length > 0) {
-      setError(
-        `다음 파일이 10MB를 초과합니다: ${oversizedFiles
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
-
-    // 선택된 파일 추가
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
-    // 파일 선택 후 input 초기화
-    e.target.value = "";
-  };
-
-  // 선택된 파일 제거 핸들러
-  const handleRemoveFile = (fileName) => {
-    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
-  };
-
-  // 공지사항 생성 핸들러
   const handleCreateNotice = async (e) => {
     e.preventDefault();
     setError("");
@@ -128,40 +91,25 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
       }
 
       // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
-      if (result.data && result.data.noticeId) {
-        console.log("[NoticeForm] 생성된 공지사항 ID:", result.data.noticeId);
-        // 약간 지연 후 콜백 호출 (사용자가 성공/경고 메시지를 볼 수 있도록)
-        setTimeout(
-          () => {
-            if (onCancel) onCancel(result.data.noticeId);
-          },
-          result.warning ? 1500 : 500
-        ); // 경고가 있으면 더 오래 표시
+      if (result.data?.noticeId) {
+        setTimeout(() => {
+          if (onCancel) onCancel(result.data.noticeId);
+        }, result.warning ? 1500 : 500);
       } else {
-        console.warn(
-          "[NoticeForm] 생성된 공지사항에 ID가 없습니다:",
-          result.data
-        );
-        setTimeout(
-          () => {
-            if (onCancel) onCancel();
-          },
-          result.warning ? 1500 : 500
-        );
+        setTimeout(() => {
+          if (onCancel) onCancel();
+        }, result.warning ? 1500 : 500);
       }
-    } catch (error) {
-      console.error("[NoticeForm] 공지사항 처리 중 오류:", error);
-      setError(
-        "공지사항 처리 중 오류 발생: " + (error.message || "알 수 없는 오류")
-      );
+    } catch (err) {
+      console.error("[NoticeForm] 공지사항 처리 오류:", err);
+      setError(err.message || "공지사항 처리 중 오류가 발생했습니다.");
       setIsSubmitting(false);
-    } finally {
-      // 오류가 있거나 경고가 있는 경우에는 isSubmitting 상태를 변경하지 않음
-      // 성공 콜백에서 페이지 이동 처리
     }
   };
 
-  if (isLoading || isSubmitting) return <LoadingSpinner />;
+  if (isLoading || isSubmitting) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <form onSubmit={handleCreateNotice} className="notice-form">
@@ -198,57 +146,11 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
         </div>
       </div>
 
-      {/* 첨부파일 목록 - 향상된 UI */}
-      {selectedFiles.length > 0 && (
-        <div className="notice-form-file-list">
-          <h3 className="notice-form-file-title">첨부 파일</h3>
-          <div className="notice-files-container">
-            {selectedFiles.map((file, index) => (
-              <div className="notice-file-item" key={index}>
-                {isImageFile(file) && (
-                  <div className="notice-image-preview">
-                    <img src={getFilePreviewUrl(file)} alt={file.name} />
-                  </div>
-                )}
-                <div className="notice-file-info-row">
-                  <div className="notice-file-icon">{getFileIcon(file.name)}</div>
-                  <div className="notice-file-info">
-                    <div className="notice-file-name">{file.name}</div>
-                    <div className="notice-file-size">{formatFileSize(file.size)}</div>
-                  </div>
-                  <button 
-                    type="button" 
-                    onClick={() => handleRemoveFile(file.name)}
-                    className="notice-remove-button"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* 파일 업로드 버튼 */}
-      <div className="notice-input-group">
-        <input 
-          ref={fileInputRef}
-          type="file" 
-          multiple
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
-        
-        <button 
-          type="button" 
-          onClick={handleAttachClick}
-          className="notice-attach-button"
-        >
-          <IoAttach size={24} style={{ marginBottom: "8px" }} />
-          파일을 끌어서 놓거나 클릭하여 추가하세요
-        </button>
-      </div>
+      {/* 공용 파일 업로더 컴포넌트 사용 */}
+      <FileUploader
+        existingFiles={[]}
+        onFileSelect={handleFileSelect}
+      />
 
       <div className="notice-action-buttons">
         <div className="notice-left-buttons">
