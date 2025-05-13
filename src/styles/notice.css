@@ -140,9 +140,10 @@
 
 .notice-form-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
   margin-top: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .notice-input-group {
