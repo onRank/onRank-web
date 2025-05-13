@@ -7,7 +7,7 @@ import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 
-function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
+function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
   const { colors } = useTheme();
 
@@ -91,8 +91,16 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit }) {
           {selectedNotice.noticeContent}
         </div>
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
-        <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
+        {handleEdit && (
+          <Button onClick={() => handleEdit(noticeId)} variant="edit" style={{ width: "84px", height: "36px" }} />
+        )}
+        <div style={{ display: "flex", gap: "0.5rem" }}>
+          {handleDelete && (
+            <Button onClick={() => handleDelete(noticeId)} variant="delete" style={{ width: "84px", height: "36px" }} />
+          )}
+          <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
+        </div>
       </div>
     </div>
   );
@@ -102,7 +110,8 @@ NoticeDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
   noticeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
   handleBack: PropTypes.func.isRequired,
-  handleEdit: PropTypes.func
+  handleEdit: PropTypes.func,
+  handleDelete: PropTypes.func
 };
 
 export default NoticeDetail;

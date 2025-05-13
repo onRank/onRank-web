@@ -23,7 +23,6 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
     selectedNotice, 
     isLoading: contextLoading, 
     error, 
-    memberRole,
     getNotices, 
     getNoticeById, 
     createNotice, 
@@ -35,16 +34,16 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const { isManager } = useStudyRole();
   
   // 현재 경로를 분석하여 페이지 타입 결정
-  const isAddPage = location.pathname.endsWith('/notices/add');
+  const isAddPage = location.pathname.endsWith('/add');
   const isEditPage = location.pathname.includes('/edit');
   const isDetailPage = noticeId && !isEditPage && !isAddPage;
 
   // 컴포넌트 마운트 시 공지사항 목록 로드
   useEffect(() => {
-    if (!isAddPage && notices.length === 0) {
+    if (!isAddPage && !noticeId && (!notices || notices.length === 0)) {
       getNotices(studyId);
     }
-  }, [studyId, notices, getNotices, isAddPage]);
+  }, [studyId, notices, getNotices, isAddPage, noticeId]);
 
   // noticeId가 URL에 있는 경우 해당 공지사항 상세 정보 조회
   useEffect(() => {
@@ -76,7 +75,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   }, [contextLoading]);
 
   // 공지사항 상세 보기로 전환
-  const handleNoticeClick = (noticeId) => {
+  const handleViewNoticeDetail = (noticeId) => {
     navigate(`/studies/${studyId}/notices/${noticeId}`);
   };
 
@@ -160,53 +159,43 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
     // 공지사항 추가 페이지
     if (isAddPage) {
       return (
-        <div>
-          <h1 className="page-title">공지사항 추가</h1>
-          <NoticeForm
-            onSubmit={handleSubmitCreate}
-            onCancel={handleNavigateToListPage}
-            isLoading={isLoading}
-          />
-        </div>
+        <NoticeForm
+          onSubmit={handleSubmitCreate}
+          onCancel={handleNavigateToListPage}
+          isLoading={isLoading}
+        />
       );
     }
     
     // 공지사항 수정 페이지
     if (isEditPage && selectedNotice) {
       return (
-        <div>
-          <h1 className="page-title">공지사항 수정</h1>
-          <NoticeEditForm
-            studyId={studyId}
-            noticeId={noticeId}
-            initialData={selectedNotice}
-            onCancel={handleNavigateToListPage}
-            onSaveComplete={() => navigate(`/studies/${studyId}/notices/${noticeId}`)}
-          />
-        </div>
+        <NoticeEditForm
+          studyId={studyId}
+          noticeId={noticeId}
+          initialData={selectedNotice}
+          onCancel={handleNavigateToListPage}
+          onSaveComplete={() => navigate(`/studies/${studyId}/notices/${noticeId}`)}
+        />
       );
     }
     
     // 공지사항 상세 페이지
     if (isDetailPage && selectedNotice) {
       return (
-        <div>
-          <h1 className="page-title">공지사항 상세</h1>
-          <NoticeDetail
-            studyId={studyId}
-            noticeId={selectedNotice.noticeId}
-            handleBack={handleNavigateToListPage}
-            handleEdit={isManager ? () => handleNavigateToEditPage(selectedNotice.noticeId) : undefined}
-          />
-        </div>
+        <NoticeDetail
+          studyId={studyId}
+          noticeId={selectedNotice.noticeId}
+          handleBack={handleNavigateToListPage}
+          handleEdit={isManager ? () => handleNavigateToEditPage(selectedNotice.noticeId) : undefined}
+          handleDelete={isManager ? handleDeleteNotice : undefined}
+        />
       );
     }
 
     // 기본 공지사항 목록 페이지
     return (
-      <div>
-        <h1 className="page-title">공지사항</h1>
-
+      <>
         {isManager && (
           <div className="notice-add-box">
             <div>
@@ -228,13 +217,13 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         ) : (
           <NoticeList
             notices={notices || []}
-            onNoticeClick={handleNoticeClick}
+            onNoticeClick={handleViewNoticeDetail}
             onEdit={isManager ? handleNavigateToEditPage : undefined}
             onDelete={isManager ? handleDeleteNotice : undefined}
             isLoading={isLoading}
           />
         )}
-      </div>
+      </>
     );
   };
 
@@ -254,6 +243,11 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         marginTop: '1rem'
       }}>
         <div style={{ flex: 1 }}>
+          <h1 className="page-title">
+            {isAddPage ? "공지사항 추가" : 
+             isEditPage ? "공지사항 수정" : 
+             isDetailPage ? "공지사항 상세" : "공지사항"}
+          </h1>
           {renderContent()}
         </div>
       </div>

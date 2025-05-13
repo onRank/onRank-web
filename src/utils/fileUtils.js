@@ -416,32 +416,77 @@ export const downloadFile = async (url, fileName) => {
     // S3 URL 여부 확인 (amazonaws.com 도메인 체크)
     const isS3Url = url.includes('amazonaws.com') || url.includes('s3.');
     
-    // S3 URL인 경우 백엔드 프록시 API 경로로 변환 (선택적 구현)
-    if (isS3Url && window.API_BASE_URL) {
-      // 원래 URL을 인코딩하여 백엔드에 전달
-      const encodedFileUrl = encodeURIComponent(url);
-      const proxyUrl = `${window.API_BASE_URL}/api/files/download?url=${encodedFileUrl}&fileName=${encodeURIComponent(fileName)}`;
+    // S3 URL인 경우 백엔드 프록시 API 경로로 변환
+    if (isS3Url) {
+      console.log(`[fileUtils] S3 URL 감지: ${url}`);
       
-      console.log(`[fileUtils] S3 URL 감지, 백엔드 프록시 사용 시도: ${proxyUrl}`);
-      
-      // 백엔드 프록시를 통한 다운로드 시도
-      window.open(proxyUrl, '_blank');
-      
-      // 다운로드 시작됨을 사용자에게 알림
-      console.log(`[fileUtils] 백엔드 프록시를 통한 다운로드 시작됨`);
-      return;
+      try {
+        // 원본 URL을 인코딩하여 요청
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache'
+          },
+          // 크로스 도메인 요청 시 인증정보 제외
+          credentials: 'omit',
+          mode: 'cors'
+        });
+        
+        if (!response.ok) {
+          throw new Error(`S3 다운로드 실패: ${response.status} ${response.statusText}`);
+        }
+        
+        // 응답을 Blob으로 변환
+        const blob = await response.blob();
+        
+        // Blob URL 생성
+        const downloadUrl = window.URL.createObjectURL(blob);
+        
+        // 다운로드 링크 생성 및 클릭
+        const blobLink = document.createElement('a');
+        blobLink.href = downloadUrl;
+        blobLink.download = fileName;
+        
+        document.body.appendChild(blobLink);
+        blobLink.click();
+        document.body.removeChild(blobLink);
+        
+        // 메모리 누수 방지를 위해 URL 해제
+        setTimeout(() => {
+          window.URL.revokeObjectURL(downloadUrl);
+        }, 100);
+        
+        console.log(`[fileUtils] S3 다운로드 성공: ${fileName}`);
+        return;
+      } catch (s3Error) {
+        console.error('[fileUtils] S3 직접 다운로드 실패:', s3Error);
+        
+        // 백엔드 프록시를 통한 다운로드 시도 (대체 방법)
+        if (window.API_BASE_URL) {
+          // 원래 URL을 인코딩하여 백엔드에 전달
+          const encodedFileUrl = encodeURIComponent(url);
+          const proxyUrl = `${window.API_BASE_URL}/api/files/download?url=${encodedFileUrl}&fileName=${encodeURIComponent(fileName)}`;
+          
+          console.log(`[fileUtils] 백엔드 프록시 사용 시도: ${proxyUrl}`);
+          
+          // 백엔드 프록시를 통한 다운로드 시도
+          window.open(proxyUrl, '_blank');
+          
+          console.log(`[fileUtils] 백엔드 프록시를 통한 다운로드 시작됨`);
+          return;
+        }
+      }
     }
     
-    // 직접 다운로드 (fetch API 사용)
+    // 일반 URL 또는 S3 직접 다운로드 실패 시 기본 방식으로 시도
     try {
-      // S3에 요청할 때는 Authorization 헤더를 명시적으로 제거
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache'
         },
-        // 기존 인증 정보를 전송하지 않음
-        credentials: 'omit'
+        // 로컬 요청이거나 동일 도메인일 경우 인증정보 포함
+        credentials: 'same-origin'
       });
       
       // 응답이 성공적인지 확인
