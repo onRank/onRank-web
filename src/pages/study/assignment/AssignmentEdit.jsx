@@ -5,7 +5,6 @@ import assignmentService from '../../../services/assignment';
 import FileUploader from '../../../components/common/FileUploader';
 import Button from '../../../components/common/Button';
 import './AssignmentStyles.css';
-import '../../../styles/notice.css';
 
 function AssignmentEdit() {
   const { studyId, assignmentId } = useParams();
@@ -211,26 +210,27 @@ function AssignmentEdit() {
   }
   
   return (
-    <div className="notice-container">
-      <div className="notice-header">
-        <h1 className="notice-title">과제 수정</h1>
+    <div className="container" style={{ padding: "20px", paddingBottom: "100px" }}>
+      <div className="header">
+        <h1 className="title">과제 수정</h1>
         <Button 
           variant="back" 
           onClick={handleCancel} 
+          label="목록으로"
         />
       </div>
       
-      <form className="notice-form" onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit} style={{ paddingBottom: "80px" }}>
         {error && (
-          <div className="notice-error-message">{error}</div>
+          <div className="error-message">{error}</div>
         )}
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentTitle">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentTitle">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>과제 제목
           </label>
           <input
-            className="notice-input"
+            className="input"
             id="assignmentTitle"
             name="assignmentTitle"
             value={formData.assignmentTitle}
@@ -240,12 +240,12 @@ function AssignmentEdit() {
           />
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentContent">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentContent">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
           </label>
           <textarea
-            className="notice-textarea"
+            className="textarea"
             id="assignmentContent"
             name="assignmentContent"
             value={formData.assignmentContent}
@@ -254,15 +254,15 @@ function AssignmentEdit() {
             rows={6}
             required
           />
-          <div className="notice-char-count">{formData.assignmentContent.length}/10000</div>
+          <div className="char-count">{formData.assignmentContent.length}/10000</div>
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentDueDate">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentDueDate">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제출 기한
           </label>
           <input
-            className="notice-input"
+            className="input"
             id="assignmentDueDate"
             name="assignmentDueDate"
             type="datetime-local"
@@ -272,10 +272,12 @@ function AssignmentEdit() {
           />
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentMaxPoint">최대 점수</label>
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentMaxPoint">
+            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 점수
+          </label>
           <input
-            className="notice-input"
+            className="input"
             id="assignmentMaxPoint"
             name="assignmentMaxPoint"
             type="number"
@@ -286,7 +288,7 @@ function AssignmentEdit() {
         </div>
         
         {/* 통합 FileUploader 컴포넌트 사용 */}
-        <div className="notice-input-group">
+        <div className="form-group" style={{ marginBottom: "40px" }}>
           <FileUploader
             existingFiles={existingFiles.map(file => ({
               fileId: file.fileId,
@@ -299,15 +301,17 @@ function AssignmentEdit() {
           />
         </div>
         
-        <div className="notice-action-buttons">
+        <div className="button-group" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "30px" }}>
           <Button 
-            variant="store" 
+            variant="submit" 
             type="submit" 
+            label={isLoading ? "수정 중..." : "수정"}
             disabled={isLoading}
           />
           <Button 
             variant="back" 
             onClick={handleCancel} 
+            label="취소"
             type="button"
           />
         </div>

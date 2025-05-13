@@ -140,26 +140,20 @@ function AssignmentCreate() {
   };
   
   return (
-    <div className="notice-container">
-      <div className="notice-header">
-        <h1 className="notice-title">과제 추가</h1>
-        <Button 
-          variant="back" 
-          onClick={handleCancel} 
-        />
-      </div>
+    <>
+      <h1 className="title">과제 추가</h1>
       
-      <form className="notice-form" onSubmit={handleSubmit}>
+      <form className="form" onSubmit={handleSubmit}>
         {error && (
-          <div className="notice-error-message">{error}</div>
+          <div className="error-message">{error}</div>
         )}
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentTitle">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentTitle">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
           </label>
           <input
-            className="notice-input"
+            className="input"
             id="assignmentTitle"
             name="assignmentTitle"
             value={formData.assignmentTitle}
@@ -169,12 +163,12 @@ function AssignmentCreate() {
           />
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentContent">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentContent">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
           </label>
           <textarea
-            className="notice-textarea"
+            className="textarea"
             id="assignmentContent"
             name="assignmentContent"
             value={formData.assignmentContent}
@@ -183,16 +177,16 @@ function AssignmentCreate() {
             rows={6}
             required
           />
-          <div className="notice-char-count">{formData.assignmentContent.length}/10000</div>
+          <div className="char-count">{formData.assignmentContent.length}/10000</div>
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentDueDate">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentDueDate">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>마감기한
           </label>
           <div className="date-picker-wrapper">
             <input
-              className="notice-input"
+              className="input"
               id="assignmentDueDate"
               name="assignmentDueDate"
               type="datetime-local"
@@ -203,12 +197,12 @@ function AssignmentCreate() {
           </div>
         </div>
         
-        <div className="notice-input-group">
-          <label className="notice-label" htmlFor="assignmentMaxPoint">
+        <div className="form-group">
+          <label className="label" htmlFor="assignmentMaxPoint">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 포인트
           </label>
           <input
-            className="notice-input"
+            className="input"
             id="assignmentMaxPoint"
             name="assignmentMaxPoint"
             type="number"
@@ -219,15 +213,15 @@ function AssignmentCreate() {
         </div>
         
         {/* 파일 업로더 컴포넌트 사용 */}
-        <div className="notice-input-group">
-          <label className="notice-label">첨부파일 추가</label>
+        <div className="form-group">
+          <label className="label">첨부파일 추가</label>
           <FileUploader 
             existingFiles={[]} 
             onFileSelect={handleFileSelect}
           />
         </div>
         
-        <div className="notice-action-buttons">
+        <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
           <Button 
             variant="upload" 
             type="submit"
@@ -240,7 +234,7 @@ function AssignmentCreate() {
           />
         </div>
       </form>
-    </div>
+    </>
   );
 }
 
