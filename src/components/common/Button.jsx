@@ -18,6 +18,8 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     progressing: "진행중",
     addFiles: "파일 첨부",
     delete: "삭제",
+    study: "스터디",
+    member: "회원",
     default: "확인",
   };
 
@@ -93,6 +95,16 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       border: "1px solid #ccc",
     },
     progressing: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
+    study: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
+    member: {
       backgroundColor: "#fff",
       color: "#333",
       border: "1px solid #ccc",
