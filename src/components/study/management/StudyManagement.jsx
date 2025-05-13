@@ -397,7 +397,7 @@ function StudyManagement() {
       {isEditing ? (
         <form onSubmit={handleSubmit}>
           <div className="container">
-            <h3 className="title">스터디 상태</h3>
+            <div className="title">스터디 상태</div>
             <select
               value={studyStatus}
               onChange={(e) => setStudyStatus(e.target.value)}
@@ -410,7 +410,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <h3 className="title">스터디 이름</h3>
+            <div className="title">스터디 이름</div>
             <input
               type="text"
               value={studyName}
@@ -422,7 +422,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <h3 className="title">한 줄 소개</h3>
+            <div className="title">한 줄 소개</div>
             <input
               value={studyDescription}
               onChange={(e) => setStudyDescription(e.target.value)}
@@ -433,7 +433,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <h3 className="title">스터디 이미지</h3>
+            <div className="title">스터디 이미지</div>
             <div className="image-upload-container">
               <input
                 type="file"
@@ -452,7 +452,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <h3 className="title">포인트 설정</h3>
+            <div className="title">포인트 설정</div>
             <div
               className="flex-column"
               style={{ gap: "1rem", marginBottom: "1.5rem" }}>
@@ -505,27 +505,27 @@ function StudyManagement() {
       ) : (
         <div>
           <div className="container">
-            <h3 className="title">스터디 상태</h3>
+            <div className="title">스터디 상태</div>
             <div className="flex-column">{renderStudyStatus()}</div>
           </div>
 
           <div className="container">
-            <h3 className="title">스터디 이름</h3>
+            <div className="title">스터디 이름</div>
             <div value={studyName} className="input" />
           </div>
 
           <div className="container">
-            <h3 className="title">한 줄 소개</h3>
+            <div className="title">한 줄 소개</div>
             <div value={studyDescription} className="input" />
           </div>
 
           <div className="image-container">
-            <h3 className="title">스터디 이미지</h3>
+            <div className="title">스터디 이미지</div>
             {renderStudyImage()}
           </div>
 
           <div className="container">
-            <h3 className="title">포인트 설정</h3>
+            <div className="title">포인트 설정</div>
             <div
               className="flex-column"
               style={{ gap: "1rem", marginBottom: "1.5rem" }}>

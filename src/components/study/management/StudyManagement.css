@@ -1,11 +1,14 @@
 .container {
-  margin-bottom: 2rem;
+  margin-bottom: 0;
 }
 .title {
   margin-bottom: 1.5rem;
-}
-.subtitle {
-  margin-bottom: 1rem;
+  font-size: 20;
+  font-weight: 700;
+  margin: 0;
+  padding-bottom: 5px;
+  display: flex;
+  align-items: center;
 }
 .label {
   display: block;
