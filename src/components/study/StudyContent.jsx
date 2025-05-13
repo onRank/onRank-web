@@ -174,7 +174,7 @@ export default function StudyContent({ activeTab, studyData }) {
         width: "100%",
         maxWidth: "1200px",
         position: "relative",
-        minHeight: "calc(100vh - 120px)",
+        minHeight: "calc(99vh - 120px)",
         alignItems: "flex-start",
       }}>
       <StudySidebarContainer activeTab={activeTab} subPage={currentSubPage} />
