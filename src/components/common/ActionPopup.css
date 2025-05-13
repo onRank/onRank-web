@@ -135,4 +135,20 @@
 
 .delete-icon {
   color: black;
+}
+
+.action-popup button {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action-popup button:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.action-popup-button:focus,
+.action-popup-close:focus {
+  outline: none !important;
+  box-shadow: none !important;
 } 

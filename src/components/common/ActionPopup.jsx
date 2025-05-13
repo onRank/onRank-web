@@ -147,7 +147,9 @@ const ActionPopup = ({
     alignItems: 'flex-start',
     justifyContent: 'flex-start',
     textAlign: 'left',
-    width: '100%'
+    width: '100%',
+    outline: 'none',
+    padding: '8px 0'
   };
   
   // 아이콘 스타일
@@ -155,24 +157,52 @@ const ActionPopup = ({
     marginRight: '12px',
     marginTop: '2px',
     display: 'flex',
-    alignItems: 'flex-start'
+    alignItems: 'flex-start',
+    width: '16px'
+  };
+
+  // 텍스트 스타일 추가
+  const textStyle = {
+    display: 'block',
+    textAlign: 'left'
+  };
+
+  // 이벤트 핸들러 강화
+  const handleButtonClick = (e, callback) => {
+    e.stopPropagation();
+    e.preventDefault();
+    callback();
+    onClose();
   };
 
   // 포털을 사용하여 팝업을 body에 직접 렌더링 (z-index 문제 해결을 위해)
   return createPortal(
-    <div className={`action-popup ${position}`} ref={popupRef} style={{...popupStyle, zIndex: 2147483647}}>
+    <div className={`action-popup ${position}`} 
+         ref={popupRef} 
+         style={{...popupStyle, zIndex: 2147483647}}
+         onClick={(e) => e.stopPropagation()}>
       <div className="action-popup-content">
-        <button className="action-popup-close" onClick={onClose}>×</button>
-        <button className="action-popup-button edit-button" onClick={handleEdit} style={buttonStyle}>
+        <button className="action-popup-close" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  onClose();
+                }}
+                style={{outline: 'none'}}>×</button>
+        <button className="action-popup-button edit-button" 
+                onClick={(e) => handleButtonClick(e, onEdit)} 
+                style={buttonStyle}>
           <span className="action-popup-icon edit-icon" style={iconStyle}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M12.3 1.70001C11.91 1.31001 11.28 1.31001 10.89 1.70001L2.78002 9.81001C2.69002 9.90001 2.62002 10.02 2.58002 10.15L1.04002 14.77C0.980023 14.95 1.03002 15.15 1.17002 15.28C1.31002 15.42 1.50002 15.47 1.69002 15.41L6.31002 13.87C6.44002 13.83 6.55002 13.76 6.64002 13.67L14.75 5.56001C15.14 5.17001 15.14 4.54001 14.75 4.15001L12.3 1.70001ZM5.85002 12.88L2.75002 14C2.75002 14 2.75002 14 2.74002 14L4.22002 9.90001L10.59 3.54001L12.91 5.86001L5.85002 12.88Z" fill="black"/>
             </svg>
           </span>
-          <span className="action-popup-text">{editText}</span>
+          <span className="action-popup-text" style={textStyle}>{editText}</span>
         </button>
         <div className="action-popup-divider"></div>
-        <button className="action-popup-button delete-button" onClick={handleDelete} style={buttonStyle}>
+        <button className="action-popup-button delete-button" 
+                onClick={(e) => handleButtonClick(e, onDelete)} 
+                style={buttonStyle}>
           <span className="action-popup-icon delete-icon" style={iconStyle}>
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M13.5 3H10.5V2.5C10.5 1.67 9.83 1 9 1H7C6.17 1 5.5 1.67 5.5 2.5V3H2.5C2.22 3 2 3.22 2 3.5C2 3.78 2.22 4 2.5 4H3V12.5C3 13.33 3.67 14 4.5 14H11.5C12.33 14 13 13.33 13 12.5V4H13.5C13.78 4 14 3.78 14 3.5C14 3.22 13.78 3 13.5 3ZM6.5 2.5C6.5 2.22 6.72 2 7 2H9C9.28 2 9.5 2.22 9.5 2.5V3H6.5V2.5ZM12 12.5C12 12.78 11.78 13 11.5 13H4.5C4.22 13 4 12.78 4 12.5V4H12V12.5Z" fill="black"/>
@@ -181,7 +211,7 @@ const ActionPopup = ({
               <path d="M10.5 11.5C10.78 11.5 11 11.28 11 11V6C11 5.72 10.78 5.5 10.5 5.5C10.22 5.5 10 5.72 10 6V11C10 11.28 10.22 11.5 10.5 11.5Z" fill="black"/>
             </svg>
           </span>
-          <span className="action-popup-text">{deleteText}</span>
+          <span className="action-popup-text" style={textStyle}>{deleteText}</span>
         </button>
       </div>
     </div>,
