@@ -36,16 +36,16 @@ function NoticeEditForm({
     if (initialData) {
       // API 응답 구조에 맞게 파일 ID 추출
       const fileIds = [];
-      
+
       // files 배열이 있는 경우
       if (initialData.files && Array.isArray(initialData.files)) {
-        initialData.files.forEach(file => {
+        initialData.files.forEach((file) => {
           if (file.fileId) {
             fileIds.push(file.fileId);
           }
         });
       }
-      
+
       console.log("[NoticeEditForm] 초기 파일 IDs:", fileIds);
       setRemainingFileIds(fileIds);
     }
@@ -85,7 +85,7 @@ function NoticeEditForm({
         remainingFileIds: remainingFileIds,
         newFileNames: selectedFiles.map((file) => file.name),
       };
-      
+
       console.log("[NoticeEditForm] 수정 요청 데이터:", updatedNotice);
       console.log("[NoticeEditForm] 새 파일 수:", selectedFiles.length);
 
@@ -146,10 +146,11 @@ function NoticeEditForm({
   }
 
   // 현재 표시할 기존 파일 필터링 - remainingFileIds에 있는 파일만 표시
-  const filteredExistingFiles = initialData?.files?.filter(file => 
-    remainingFileIds.includes(file.fileId)
-  ) || [];
-  
+  const filteredExistingFiles =
+    initialData?.files?.filter((file) =>
+      remainingFileIds.includes(file.fileId)
+    ) || [];
+
   console.log("[NoticeEditForm] 남은 파일:", filteredExistingFiles);
 
   return (
@@ -194,11 +195,11 @@ function NoticeEditForm({
         onExistingFileRemove={handleExistingFileRemove}
       />
 
-      <div className="notice-form-buttons">
-        <div className="notice-left-buttons">
-          <Button type="submit" variant="store" disabled={isSubmitting} />
-          <Button type="button" variant="delete" onClick={handleDelete} disabled={isSubmitting} />
-        </div>
+      <div
+        className="notice-form-buttons"
+        style={{ display: "flex", justifyContent: "flex-end" }}
+      >
+        <Button type="submit" variant="store" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
