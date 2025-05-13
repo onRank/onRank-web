@@ -28,22 +28,20 @@
 
 /* 새로운 깔끔한 UI 스타일 */
 .assignment-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 20px 0;
+  padding: 0;
+  margin: 0;
 }
 
 .page-title {
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  padding-bottom: 10px;
 }
 
 .form-container {
-  background-color: #f8f9fa;
-  border-radius: 8px;
-  padding: 30px;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
 }
 
 .form-field {
