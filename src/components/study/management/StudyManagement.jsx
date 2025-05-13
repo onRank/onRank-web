@@ -5,6 +5,7 @@ import { managementService } from "../../../services/management";
 import { studyService } from "../../../services/api";
 import { getBackgroundImageStyle } from "../../../utils/imageUtils";
 import Button from "../../common/Button";
+import "./StudyManagement.css";
 
 function StudyManagement() {
   const { studyId } = useParams();
@@ -201,8 +202,7 @@ function StudyManagement() {
             backgroundColor: "#f9f9f9",
             color: "#999",
             maxWidth: "300px",
-          }}
-        >
+          }}>
           등록된 이미지가 없습니다
         </div>
       );
@@ -219,8 +219,7 @@ function StudyManagement() {
           minHeight: "150px",
           minWidth: "200px",
           textAlign: "center",
-        }}
-      >
+        }}>
         <img
           ref={imageRef}
           src={studyImageUrl}
@@ -246,26 +245,13 @@ function StudyManagement() {
   // 수정 모드에서 이미지 미리보기 수정
   const renderImagePreview = () => {
     if (!studyImageUrl) return null;
-
     return (
-      <div
-        style={{
-          width: "100px",
-          height: "100px",
-          overflow: "hidden",
-          borderRadius: "4px",
-          border: "1px solid #ddd",
-        }}
-      >
+      <div className="image-preview">
         <img
           src={studyImageUrl}
           alt="스터디 이미지 미리보기"
           crossOrigin="anonymous"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
+          className="image-preview-img"
           onError={(e) => {
             e.target.onerror = null;
             e.target.src =
@@ -405,129 +391,50 @@ function StudyManagement() {
 
   return (
     <div>
-      <h3 style={{ marginBottom: "1.5rem" }}>스터디 정보 관리</h3>
-
-      {error && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "#ffebee",
-            color: "#c62828",
-            borderRadius: "4px",
-            fontSize: "0.9rem",
-          }}
-        >
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div
-          style={{
-            marginBottom: "1rem",
-            padding: "0.5rem 1rem",
-            backgroundColor: "#e6f7e6",
-            color: "#2e7d32",
-            borderRadius: "4px",
-            fontSize: "0.9rem",
-          }}
-        >
-          {success}
-        </div>
-      )}
+      {error && <div className="alert error-alert">{error}</div>}
+      {success && <div className="alert success-alert">{success}</div>}
 
       {isEditing ? (
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "500",
-              }}
-            >
-              스터디 이름
-            </label>
-            <input
-              type="text"
-              value={studyName}
-              onChange={(e) => setStudyName(e.target.value)}
-              placeholder="스터디 이름"
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-              }}
-              disabled={loading}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "500",
-              }}
-            >
-              스터디 설명
-            </label>
-            <textarea
-              value={studyDescription}
-              onChange={(e) => setStudyDescription(e.target.value)}
-              placeholder="스터디에 대한 간략한 설명"
-              rows={4}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                resize: "vertical",
-              }}
-              disabled={loading}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "500",
-              }}
-            >
-              스터디 상태
-            </label>
+          <div className="container">
+            <h3 className="title">스터디 상태</h3>
             <select
               value={studyStatus}
               onChange={(e) => setStudyStatus(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.5rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-              }}
-              disabled={loading}
-            >
+              className="select"
+              disabled={loading}>
               <option value="PREPARING">준비 중</option>
               <option value="PROGRESS">진행 중</option>
               <option value="COMPLETED">완료</option>
             </select>
           </div>
 
-          <div style={{ marginBottom: "1rem" }}>
-            <label
-              style={{
-                display: "block",
-                marginBottom: "0.5rem",
-                fontWeight: "500",
-              }}
-            >
-              스터디 이미지
-            </label>
-            <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div className="container">
+            <h3 className="title">스터디 이름</h3>
+            <input
+              type="text"
+              value={studyName}
+              onChange={(e) => setStudyName(e.target.value)}
+              placeholder="스터디 이름"
+              className="input"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="container">
+            <h3 className="title">한 줄 소개</h3>
+            <input
+              value={studyDescription}
+              onChange={(e) => setStudyDescription(e.target.value)}
+              placeholder="스터디에 대한 간략한 설명"
+              className="input"
+              disabled={loading}
+            />
+          </div>
+
+          <div className="container">
+            <h3 className="title">스터디 이미지</h3>
+            <div className="image-upload-container">
               <input
                 type="file"
                 accept="image/*"
@@ -538,230 +445,118 @@ function StudyManagement() {
               {renderImagePreview()}
             </div>
             {studyImageUrl && (
-              <div
-                style={{
-                  marginTop: "0.5rem",
-                  fontSize: "0.8rem",
-                  color: "#666",
-                }}
-              >
+              <div className="image-upload-hint">
                 현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
               </div>
             )}
           </div>
 
-          <h4 style={{ marginTop: "2rem", marginBottom: "1rem" }}>
-            출석 점수 설정
-          </h4>
-
-          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem" }}>
-            <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "500",
-                }}
-              >
-                출석 점수
-              </label>
-              <input
-                type="number"
-                value={presentPoint}
-                onChange={(e) => setPresentPoint(parseInt(e.target.value))}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-                disabled={loading}
-              />
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "500",
-                }}
-              >
-                결석 점수
-              </label>
-              <input
-                type="number"
-                value={absentPoint}
-                onChange={(e) => setAbsentPoint(parseInt(e.target.value))}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-                disabled={loading}
-              />
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <label
-                style={{
-                  display: "block",
-                  marginBottom: "0.5rem",
-                  fontWeight: "500",
-                }}
-              >
-                지각 점수
-              </label>
-              <input
-                type="number"
-                value={latePoint}
-                onChange={(e) => setLatePoint(parseInt(e.target.value))}
-                style={{
-                  width: "100%",
-                  padding: "0.5rem",
-                  border: "1px solid #ddd",
-                  borderRadius: "4px",
-                }}
-                disabled={loading}
-              />
+          <div className="container">
+            <h3 className="title">포인트 설정</h3>
+            <div
+              className="flex-column"
+              style={{ gap: "1rem", marginBottom: "1.5rem" }}>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>출석</span>
+                <input
+                  type="number"
+                  value={presentPoint}
+                  onChange={(e) => setPresentPoint(parseInt(e.target.value))}
+                  className="input"
+                  placeholder="예) 100pt"
+                  disabled={loading}
+                />
+              </div>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>지각</span>
+                <input
+                  type="number"
+                  value={latePoint}
+                  onChange={(e) => setLatePoint(parseInt(e.target.value))}
+                  className="input"
+                  placeholder="예) 50pt"
+                  disabled={loading}
+                />
+              </div>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>결석</span>
+                <input
+                  type="number"
+                  value={absentPoint}
+                  onChange={(e) => setAbsentPoint(parseInt(e.target.value))}
+                  className="input"
+                  placeholder="예) 0pt"
+                  disabled={loading}
+                />
+              </div>
             </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "0.5rem",
-              marginTop: "2rem",
-            }}
-          >
-            <button
-              type="button"
-              onClick={handleCancel}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "1px solid #ddd",
-                borderRadius: "4px",
-                backgroundColor: "#ffffff",
-                cursor: "pointer",
-              }}
-              disabled={loading}
-            >
-              취소
-            </button>
-
-            <button
-              type="submit"
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "4px",
-                backgroundColor: "#000000",
-                color: "white",
-                cursor: "pointer",
-              }}
-              disabled={loading}
-            >
-              {loading ? "저장 중..." : "저장"}
-            </button>
+          <div className="button-container">
+            <Button type="submit" variant="store" disabled={loading} />
           </div>
         </form>
       ) : (
         <div>
-          <div style={{ marginBottom: "2rem" }}>
-            <h4 style={{ marginBottom: "1rem" }}>기본 정보</h4>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-              }}
-            >
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <span style={{ fontWeight: "500" }}>스터디 이름:</span>
-                <span>{studyName}</span>
-              </div>
-
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <span style={{ fontWeight: "500" }}>스터디 설명:</span>
-                <span>{studyDescription}</span>
-              </div>
-
-              {renderStudyStatus()}
-            </div>
+          <div className="container">
+            <h3 className="title">스터디 상태</h3>
+            <div className="flex-column">{renderStudyStatus()}</div>
           </div>
 
-          {studyImageUrl ? (
-            <div style={{ marginBottom: "2rem" }}>
-              <h4 style={{ marginBottom: "1rem" }}>스터디 이미지</h4>
-              {renderStudyImage()}
-            </div>
-          ) : (
-            <div style={{ marginBottom: "2rem" }}>
-              <h4 style={{ marginBottom: "1rem" }}>스터디 이미지</h4>
-              {renderStudyImage()}
-            </div>
-          )}
+          <div className="container">
+            <h3 className="title">스터디 이름</h3>
+            <div value={studyName} className="input" />
+          </div>
 
-          <div style={{ marginBottom: "2rem" }}>
-            <h4 style={{ marginBottom: "1rem" }}>출석 점수 설정</h4>
+          <div className="container">
+            <h3 className="title">한 줄 소개</h3>
+            <div value={studyDescription} className="input" />
+          </div>
+
+          <div className="image-container">
+            <h3 className="title">스터디 이미지</h3>
+            {renderStudyImage()}
+          </div>
+
+          <div className="container">
+            <h3 className="title">포인트 설정</h3>
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "0.5rem",
-              }}
-            >
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <span style={{ fontWeight: "500" }}>출석:</span>
+              className="flex-column"
+              style={{ gap: "1rem", marginBottom: "1.5rem" }}>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>출석</span>
                 <span>
                   {presentPoint > 0 ? `+${presentPoint}` : presentPoint} 점
                 </span>
               </div>
-
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <span style={{ fontWeight: "500" }}>결석:</span>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>지각</span>
+                <span>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</span>
+              </div>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>결석</span>
                 <span>
                   {absentPoint > 0 ? `+${absentPoint}` : absentPoint} 점
                 </span>
               </div>
-
-              <div style={{ display: "flex", gap: "0.5rem" }}>
-                <span style={{ fontWeight: "500" }}>지각:</span>
-                <span>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</span>
-              </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <button
-              onClick={handleDelete}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "4px",
-                backgroundColor: "#dc3545", // 빨간색 배경
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              삭제
-            </button>
-
-            <button
-              onClick={handleEdit}
-              style={{
-                padding: "0.5rem 1rem",
-                border: "none",
-                borderRadius: "4px",
-                backgroundColor: "#000000",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              수정
-            </button>
+          <div className="button-container">
+            <Button variant="delete" onClick={handleDelete} />
+            <Button variant="edit" onClick={handleEdit} />
           </div>
         </div>
       )}
