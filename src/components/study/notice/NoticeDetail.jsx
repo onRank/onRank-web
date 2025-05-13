@@ -121,7 +121,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
   console.log("[NoticeDetail] 첨부 파일:", files);
 
   return (
-    <div style={{ padding: "1.5rem" }}>
+    <>
       <h1
         style={{
           fontSize: "1.5rem",
@@ -199,7 +199,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
         <Button onClick={handleBack} variant="back" style={{ width: "auto", padding: "0 16px" }} />
       </div>
-    </div>
+    </>
   );
 }
 

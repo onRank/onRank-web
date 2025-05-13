@@ -137,7 +137,7 @@ function PostDetail({ studyId, postId, handleBack }) {
   const hasFiles = allFiles.length > 0;
 
   return (
-    <div style={{ padding: "1.5rem" }}>
+    <>
       <h1
         style={{
           fontSize: "1.5rem",
@@ -215,7 +215,7 @@ function PostDetail({ studyId, postId, handleBack }) {
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
         <Button onClick={handleBack} variant="back" style={{ width: "auto", padding: "0 16px" }} />
       </div>
-    </div>
+    </>
   );
 }
 
