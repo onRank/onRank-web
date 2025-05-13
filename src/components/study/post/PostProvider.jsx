@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect } from "react";
 import { postService } from "../../../services/post";
+import { useParams } from "react-router-dom";
 
 // Context 생성
 const PostContext = createContext();
@@ -14,6 +15,17 @@ export function PostProvider({ children }) {
   const [selectedPost, setSelectedPost] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { studyId } = useParams();
+  const [memberRole, setMemberRole] = useState(null);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Automatically fetch posts when component mounts (only once per study)
+  useEffect(() => {
+    if (studyId && !initialLoadDone) {
+      getPosts(studyId);
+      setInitialLoadDone(true);
+    }
+  }, [studyId, initialLoadDone, getPosts]);
 
   // 게시글 목록 불러오기
   const getPosts = useCallback(async (studyId) => {
@@ -42,24 +54,46 @@ export function PostProvider({ children }) {
 
   // 게시글 상세보기
   const getPostById = useCallback(async (studyId, postId) => {
+    if (!studyId || !postId) return;
+    postId = parseInt(postId, 10);
+
+    // Avoid duplicate fetch if already selected
+    if (selectedPost && selectedPost.postId === postId) {
+      console.log("[PostProvider] 이미 선택된 게시글과 동일함");
+      return;
+    }
+
+    // Optimistic UI – show data from list if exists
+    const postFromList = posts.find((post) => post.postId === postId);
+    if (postFromList) {
+      setSelectedPost(postFromList);
+    }
+
     setIsLoading(true);
     setError(null);
+
     try {
       const response = await postService.getPostById(studyId, postId);
+
+      // Extract member role if present
+      if (response.memberContext && response.memberContext.memberRole) {
+        setMemberRole(response.memberContext.memberRole);
+      }
+
       if (response.success) {
         setSelectedPost(response.data);
       } else {
         setError(response.message || "게시글을 불러오는데 실패했습니다.");
-        setSelectedPost(null);
+        if (!postFromList) setSelectedPost(null);
       }
     } catch (err) {
-      console.error("게시글 상세 조회 실패:", err);
+      console.error("[PostProvider] 게시글 상세 조회 실패:", err);
       setError(err.message || "게시글을 불러오는데 실패했습니다.");
-      setSelectedPost(null);
+      if (!postFromList) setSelectedPost(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [posts, selectedPost]);
 
   // 게시글 생성
   const createPost = useCallback(async (studyId, newPost, files = []) => {
@@ -174,6 +208,7 @@ export function PostProvider({ children }) {
         selectedPost,
         isLoading,
         error,
+        memberRole,
         getPosts,
         getPostById,
         createPost,
