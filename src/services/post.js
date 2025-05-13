@@ -1,11 +1,12 @@
 import { api, tokenUtils } from "./api";
 import axios from "axios";
+import { studyContextService } from "./studyContext";
 
 export const postService = {
   // 게시글 목록 조회
   getPosts: async (studyId, params = {}) => {
     try {
-      console.log("[PostService] 게시글 목록 조회 요청");
+      console.log("[PostService] 게시글 목록 조회 요청:", studyId);
 
       // 토큰 확인 및 갱신
       const token = tokenUtils.getToken();
@@ -18,6 +19,14 @@ export const postService = {
       const tokenWithBearer = token?.startsWith("Bearer ")
         ? token
         : `Bearer ${token}`;
+
+      console.log("[Token Debug] Retrieved token from localStorage:", tokenWithBearer.substring(0, 20) + "...");
+        
+      console.log("[API Request Debug] GET /studies/" + studyId + "/posts", {
+        headers: tokenWithBearer ? "Bearer token present" : "No token",
+        data: undefined
+      });
+
       const response = await api.get(`/studies/${studyId}/posts`, {
         params,
         withCredentials: true,
@@ -88,6 +97,11 @@ export const postService = {
         memberContext = responseData.memberContext || null;
 
         console.log("[PostService] 멤버 컨텍스트:", memberContext);
+        
+        // 스터디 컨텍스트 서비스를 통해 역할 정보 업데이트
+        if (memberContext && studyId) {
+          studyContextService.updateFromApiResponse(studyId, responseData);
+        }
       }
 
       // 데이터가 배열인지 확인
@@ -109,15 +123,15 @@ export const postService = {
           "postId" in dataArray[0] || "id" in dataArray[0]
         );
         console.log(
-          "[PostService] title 존재 여부:",
-          "title" in dataArray[0]
+          "[PostService] postTitle 존재 여부:",
+          "postTitle" in dataArray[0]
         );
         console.log(
-          "[PostService] content 존재 여부:",
-          "content" in dataArray[0]
+          "[PostService] postContent 존재 여부:",
+          "postContent" in dataArray[0]
         );
 
-        // 데이터 유효성 검사 및 기본값 설정
+        // 데이터 필드명 확인 및 일관성 유지
         dataArray = dataArray.map((post) => {
           const processedPost = { ...post };
 
@@ -131,64 +145,45 @@ export const postService = {
             processedPost.postId = processedPost.id;
           }
 
-          // boardId -> postId 필드 변환
-          if (processedPost.boardId && !processedPost.postId) {
-            processedPost.postId = processedPost.boardId;
-          }
-
-          // 제목이 없거나, null이거나, 빈 문자열인 경우
-          if (
-            processedPost.title === undefined ||
-            processedPost.title === null ||
-            processedPost.title.trim() === ""
+          // 제목이 없는 경우 (postTitle 또는 title 필드 확인)
+          if (!processedPost.postTitle && processedPost.title) {
+            processedPost.postTitle = processedPost.title;
+          } else if (
+            !processedPost.postTitle ||
+            processedPost.postTitle.trim() === ""
           ) {
             console.warn(
-              "[PostService] title 필드 없음 또는 빈 값, 기본값 설정"
+              "[PostService] postTitle 필드 없음 또는 빈 값, 기본값 설정"
             );
-            processedPost.title = "제목 없음";
+            processedPost.postTitle = "제목 없음";
           }
 
-          // boardTitle -> title 필드 변환
-          if (processedPost.boardTitle && !processedPost.title) {
-            processedPost.title = processedPost.boardTitle;
-          }
-
-          // 내용이 없거나, null이거나, 빈 문자열인 경우
-          if (
-            processedPost.content === undefined ||
-            processedPost.content === null ||
-            processedPost.content.trim() === ""
+          // 내용이 없는 경우 (postContent 또는 content 필드 확인)
+          if (!processedPost.postContent && processedPost.content) {
+            processedPost.postContent = processedPost.content;
+          } else if (
+            !processedPost.postContent ||
+            processedPost.postContent.trim() === ""
           ) {
             console.warn(
-              "[PostService] content 필드 없음 또는 빈 값, 기본값 설정"
+              "[PostService] postContent 필드 없음 또는 빈 값, 기본값 설정"
             );
-            processedPost.content = "내용 없음";
-          }
-
-          // boardContent -> content 필드 변환
-          if (processedPost.boardContent && !processedPost.content) {
-            processedPost.content = processedPost.boardContent;
+            processedPost.postContent = "내용 없음";
           }
 
           // 생성일이 없는 경우
-          if (!processedPost.createdAt) {
+          if (!processedPost.postCreatedAt && processedPost.createdAt) {
+            processedPost.postCreatedAt = processedPost.createdAt;
+          } else if (!processedPost.postCreatedAt) {
             console.warn(
-              "[PostService] createdAt 필드 없음, 현재 시간으로 설정"
+              "[PostService] postCreatedAt 필드 없음, 현재 시간으로 설정"
             );
-            processedPost.createdAt = new Date().toISOString();
+            processedPost.postCreatedAt = new Date().toISOString();
           }
 
-          // boardCreatedAt -> createdAt 필드 변환
-          if (processedPost.boardCreatedAt && !processedPost.createdAt) {
-            processedPost.createdAt = processedPost.boardCreatedAt;
-          }
-
-          // 작성자 정보가 없는 경우
-          if (!processedPost.writer) {
-            console.warn(
-              "[PostService] writer 필드 없음, 기본값 설정"
-            );
-            processedPost.writer = "작성자 없음";
+          // 수정일이 없는 경우
+          if (!processedPost.postModifiedAt && processedPost.modifiedAt) {
+            processedPost.postModifiedAt = processedPost.modifiedAt;
           }
 
           // 파일 URL 배열 확인
@@ -239,120 +234,54 @@ export const postService = {
 
       console.log("[PostService] 게시글 상세 조회 성공:", response.data);
 
-      if (!response.data) {
-        console.warn("[PostService] 응답 데이터 없음");
-        return {
-          success: false,
-          message: "게시글 정보를 불러올 수 없습니다.",
-          data: null,
-        };
-      }
-
       // 응답이 { memberContext, data } 구조인지 확인
-      let data = response.data;
+      let postData = response.data;
       let memberContext = null;
 
-      if (response.data.data !== undefined) {
-        console.log(
-          "[PostService] 새 API 응답 구조 감지 (memberContext/data)"
-        );
-        data = response.data.data;
+      if (response.data?.data !== undefined) {
+        postData = response.data.data;
         memberContext = response.data.memberContext || null;
+        
+        // 스터디 컨텍스트 서비스를 통해 역할 정보 업데이트
+        if (memberContext && studyId) {
+          studyContextService.updateFromApiResponse(studyId, response.data);
+        }
       }
 
-      console.log("[PostService] 게시판 상세 응답 구조:", {
-        data,
-        memberContext,
-      });
+      // 단일 게시글 데이터 처리
+      if (postData) {
+        // 필드명 표준화
+        if (!postData.postId && postData.id) {
+          postData.postId = postData.id;
+        }
+        
+        if (!postData.postTitle && postData.title) {
+          postData.postTitle = postData.title;
+        }
+        
+        if (!postData.postContent && postData.content) {
+          postData.postContent = postData.content;
+        }
 
-      // 데이터 유효성 검사 및 기본값 설정
-      const processedPost = { ...data };
+        if (!postData.postCreatedAt && postData.createdAt) {
+          postData.postCreatedAt = postData.createdAt;
+        }
 
-      // 필수 필드 확인 및 기본값 설정
-      if (!processedPost.postId && !processedPost.id) {
-        processedPost.postId = parseInt(postId);
-      } else if (!processedPost.postId && processedPost.id) {
-        processedPost.postId = processedPost.id;
+        if (!postData.postModifiedAt && postData.modifiedAt) {
+          postData.postModifiedAt = postData.modifiedAt;
+        }
       }
-
-      // boardId -> postId 필드 변환
-      if (processedPost.boardId && !processedPost.postId) {
-        processedPost.postId = processedPost.boardId;
-      }
-
-      // 제목이 없거나, null이거나, 빈 문자열인 경우
-      if (
-        processedPost.title === undefined ||
-        processedPost.title === null ||
-        processedPost.title.trim() === ""
-      ) {
-        console.warn(
-          "[PostService] title 필드 없음 또는 빈 값, 기본값 설정"
-        );
-        processedPost.title = "제목 없음";
-      }
-
-      // boardTitle -> title 필드 변환
-      if (processedPost.boardTitle && !processedPost.title) {
-        processedPost.title = processedPost.boardTitle;
-      }
-
-      // 내용이 없거나, null이거나, 빈 문자열인 경우
-      if (
-        processedPost.content === undefined ||
-        processedPost.content === null ||
-        processedPost.content.trim() === ""
-      ) {
-        console.warn(
-          "[PostService] content 필드 없음 또는 빈 값, 기본값 설정"
-        );
-        processedPost.content = "내용 없음";
-      }
-
-      // boardContent -> content 필드 변환
-      if (processedPost.boardContent && !processedPost.content) {
-        processedPost.content = processedPost.boardContent;
-      }
-
-      // 생성일이 없는 경우
-      if (!processedPost.createdAt) {
-        console.warn(
-          "[PostService] createdAt 필드 없음, 현재 시간으로 설정"
-        );
-        processedPost.createdAt = new Date().toISOString();
-      }
-
-      // boardCreatedAt -> createdAt 필드 변환
-      if (processedPost.boardCreatedAt && !processedPost.createdAt) {
-        processedPost.createdAt = processedPost.boardCreatedAt;
-      }
-
-      // 작성자 정보가 없는 경우
-      if (!processedPost.writer) {
-        console.warn(
-          "[PostService] writer 필드 없음, 기본값 설정"
-        );
-        processedPost.writer = "작성자 없음";
-      }
-      
-      // 파일 URL 배열 확인
-      if (!processedPost.fileUrls) {
-        processedPost.fileUrls = [];
-      }
-
-      console.log("[PostService] 가공된 게시글 상세 데이터:", processedPost);
 
       return {
         success: true,
-        data: processedPost,
+        data: postData,
         memberContext: memberContext,
       };
     } catch (error) {
-      console.error("[PostService] 게시글 상세 조회 오류:", error);
+      console.error(`[PostService] 게시글 상세 조회 오류:`, error);
       return {
         success: false,
-        message:
-          error.message || "게시글 정보를 불러오는 중 오류가 발생했습니다.",
+        message: error.message || "게시글을 불러오는 중 오류가 발생했습니다",
         data: null,
       };
     }

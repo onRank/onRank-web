@@ -36,20 +36,21 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
     );
   }
 
-  if (
-    !selectedPost ||
-    !selectedPost.postTitle ||
-    !selectedPost.postContent
-  ) {
+  if (!selectedPost) {
     return (
       <div style={{ padding: "1.5rem" }}>
-        <ErrorMessage message="잘못된 게시글 데이터입니다." type="warning" />
+        <ErrorMessage message="게시글 데이터를 찾을 수 없습니다." type="warning" />
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
           <Button onClick={handleBack} variant="back" />
         </div>
       </div>
     );
   }
+
+  // 필드명 일관성을 위해 가져올 수 있는 모든 필드를 확인
+  const title = selectedPost.postTitle || selectedPost.title || "제목 없음";
+  const content = selectedPost.postContent || selectedPost.content || "내용 없음";
+  const createdAt = selectedPost.postCreatedAt || selectedPost.createdAt || new Date().toISOString();
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -69,7 +70,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
             color: `var(--textPrimary)`,
           }}
         >
-          {selectedPost.postTitle}
+          {title}
         </h1>
         <div
           style={{
@@ -80,7 +81,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
           }}
         >
           <span style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>•</span>
-          <span>{formatDate(selectedPost.postCreatedAt || selectedPost.createdAt)}</span>
+          <span>{formatDate(createdAt)}</span>
         </div>
         <div
           style={{
@@ -88,7 +89,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
             color: `var(--textPrimary)`,
           }}
         >
-          {selectedPost.postContent}
+          {content}
         </div>
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>

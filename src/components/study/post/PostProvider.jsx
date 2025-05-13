@@ -19,24 +19,30 @@ export function PostProvider({ children }) {
   const [memberRole, setMemberRole] = useState(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
-  // Automatically fetch posts when component mounts (only once per study)
-  useEffect(() => {
-    if (studyId && !initialLoadDone) {
-      getPosts(studyId);
-      setInitialLoadDone(true);
-    }
-  }, [studyId, initialLoadDone, getPosts]);
-
-  // 게시글 목록 불러오기
+  // 게시글 목록 불러오기 - useCallback 먼저 선언
   const getPosts = useCallback(async (studyId) => {
+    if (!studyId) return;
+    
     setIsLoading(true);
     setError(null);
     try {
+      console.log("[PostService] 게시글 목록 조회 요청:", studyId);
       const response = await postService.getPosts(studyId);
+      
+      // memberContext에서 역할 정보 추출
+      if (response && typeof response === "object") {
+        if (response.memberContext && response.memberContext.memberRole) {
+          setMemberRole(response.memberContext.memberRole);
+        } else {
+          // 역할 정보가 없을 경우 기본값 설정
+          setMemberRole("PARTICIPANT");
+        }
+      }
+      
       if (response.success) {
         // 최신순 정렬 (생성일 기준) - 이 부분 유지
         const sortedPosts = [...(response.data || [])].sort(
-          (a, b) => new Date(b.postCreatedAt) - new Date(a.postCreatedAt)
+          (a, b) => new Date(b.postCreatedAt || b.createdAt) - new Date(a.postCreatedAt || a.createdAt)
         );
         setPosts(sortedPosts);
       } else {
@@ -44,13 +50,21 @@ export function PostProvider({ children }) {
         setPosts([]);
       }
     } catch (err) {
-      console.error("게시글 목록 조회 실패:", err);
+      console.error("[PostService] 게시글 목록 조회 실패:", err);
       setError(err.message || "게시글 목록을 불러오는데 실패했습니다.");
       setPosts([]);
     } finally {
       setIsLoading(false);
+      setInitialLoadDone(true);
     }
   }, []);
+
+  // Automatically fetch posts when component mounts (only once per study)
+  useEffect(() => {
+    if (studyId && !initialLoadDone) {
+      getPosts(studyId);
+    }
+  }, [studyId, initialLoadDone, getPosts]);
 
   // 게시글 상세보기
   const getPostById = useCallback(async (studyId, postId) => {

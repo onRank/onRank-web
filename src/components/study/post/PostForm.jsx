@@ -29,6 +29,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
   // 수정 모드라면 초기 데이터 세팅
   useEffect(() => {
     if (post) {
+      // 필드명 일관성을 위해 가능한 모든 필드명 확인
       setPostTitle(post.postTitle || post.title || "");
       setPostContent(post.postContent || post.content || "");
     }
@@ -69,6 +70,8 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
     }
 
     try {
+      console.log("[PostForm] 게시글 생성 요청 준비, studyId:", studyId);
+      
       const newPost = {
         postTitle,
         postContent,
@@ -76,6 +79,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
       };
 
       if (!studyId) {
+        console.error("[PostForm] studyId가 없습니다!");
         setError("스터디 ID를 찾을 수 없습니다.");
         setIsSubmitting(false);
         return;
@@ -171,7 +175,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         <div style={styles.fileList}>
           {selectedFiles.map((file, idx) => (
             <div key={idx} style={styles.fileItem}>
-              <span style={styles.fileIcon}>��</span>{file.name}
+              <span style={styles.fileIcon}>📎</span>{file.name}
               <span style={{ marginLeft: "10px", color: "var(--textSecondary)", fontSize: "12px" }}>({(file.size/1024).toFixed(1)} KB)</span>
               <button type="button" onClick={() => handleRemoveFile(file.name)} style={{ marginLeft: "auto", color: "var(--error)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
             </div>
