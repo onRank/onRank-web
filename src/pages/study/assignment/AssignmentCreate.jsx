@@ -6,6 +6,7 @@ import Button from '../../../components/common/Button';
 import FileUploader from '../../../components/common/FileUploader';
 import { formatFileSize } from '../../../utils/fileUtils';
 import './AssignmentStyles.css';
+import '../../../styles/notice.css';
 
 function AssignmentCreate() {
   const { studyId } = useParams();
@@ -139,20 +140,26 @@ function AssignmentCreate() {
   };
   
   return (
-    <>
-      <h1 className="page-title">과제 추가</h1>
+    <div className="notice-container">
+      <div className="notice-header">
+        <h1 className="notice-title">과제 추가</h1>
+        <Button 
+          variant="back" 
+          onClick={handleCancel} 
+        />
+      </div>
       
-      <form className="form" onSubmit={handleSubmit}>
+      <form className="notice-form" onSubmit={handleSubmit}>
         {error && (
-          <div className="error-message">{error}</div>
+          <div className="notice-error-message">{error}</div>
         )}
         
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentTitle">
+        <div className="notice-input-group">
+          <label className="notice-label" htmlFor="assignmentTitle">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
           </label>
           <input
-            className="input"
+            className="notice-input"
             id="assignmentTitle"
             name="assignmentTitle"
             value={formData.assignmentTitle}
@@ -162,15 +169,12 @@ function AssignmentCreate() {
           />
         </div>
         
-        <div className="form-group">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <label className="label" htmlFor="assignmentContent">
-              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
-            </label>
-            <div className="char-count">{formData.assignmentContent.length}/10000</div>
-          </div>
+        <div className="notice-input-group">
+          <label className="notice-label" htmlFor="assignmentContent">
+            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
+          </label>
           <textarea
-            className="textarea"
+            className="notice-textarea"
             id="assignmentContent"
             name="assignmentContent"
             value={formData.assignmentContent}
@@ -179,21 +183,16 @@ function AssignmentCreate() {
             rows={6}
             required
           />
+          <div className="notice-char-count">{formData.assignmentContent.length}/10000</div>
         </div>
         
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentDueDate">
+        <div className="notice-input-group">
+          <label className="notice-label" htmlFor="assignmentDueDate">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>마감기한
           </label>
-          <div 
-            className="date-picker-wrapper"
-            onClick={() => {
-              document.getElementById('assignmentDueDate').focus();
-              document.getElementById('assignmentDueDate').showPicker();
-            }}
-          >
+          <div className="date-picker-wrapper">
             <input
-              className="input"
+              className="notice-input"
               id="assignmentDueDate"
               name="assignmentDueDate"
               type="datetime-local"
@@ -204,12 +203,12 @@ function AssignmentCreate() {
           </div>
         </div>
         
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentMaxPoint">
+        <div className="notice-input-group">
+          <label className="notice-label" htmlFor="assignmentMaxPoint">
             <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 포인트
           </label>
           <input
-            className="input"
+            className="notice-input"
             id="assignmentMaxPoint"
             name="assignmentMaxPoint"
             type="number"
@@ -220,39 +219,28 @@ function AssignmentCreate() {
         </div>
         
         {/* 파일 업로더 컴포넌트 사용 */}
-        <div className="form-group">
-          <label className="label">첨부파일 추가</label>
+        <div className="notice-input-group">
+          <label className="notice-label">첨부파일 추가</label>
           <FileUploader 
             existingFiles={[]} 
             onFileSelect={handleFileSelect}
           />
         </div>
         
-        <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-        <Button 
+        <div className="notice-action-buttons">
+          <Button 
             variant="upload" 
             type="submit"
             disabled={isLoading}
-            style={{ 
-              width: '60px', 
-              height: '32px',
-              fontSize: '12px'
-            }}
           />
           <Button 
             variant="back" 
             type="button"
             onClick={handleCancel}
-            style={{ 
-              width: '60px', 
-              height: '32px',
-              fontSize: '12px'
-            }}
           />
-          
         </div>
       </form>
-    </>
+    </div>
   );
 }
 

@@ -7,6 +7,8 @@ import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 import FileUploader from "../../common/FileUploader";
 import "../../../styles/post.css";
+import "../../../styles/notice.css";
+
 
 /*
   PostForm – 게시글 작성 공통 컴포넌트
@@ -108,14 +110,16 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleCreatePost} className="post-form">
-      {error && <div className="error-message">{error}</div>}
+    <form onSubmit={handleCreatePost} className="notice-form">
+      {error && <div className="notice-error-message">{error}</div>}
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="title">제목</label>
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="title">
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
+        </label>
         <input
           id="title"
-          className="form-control"
+          className="notice-input"
           placeholder="게시글 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
@@ -123,17 +127,19 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         />
       </div>
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="content">내용을 입력해주세요.</label>
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="content">
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용
+        </label>
         <textarea
           id="content"
-          className="form-control textarea"
+          className="notice-textarea"
           placeholder="게시글 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div className="char-count">{postContent.length}/{maxLength}</div>
+        <div className="notice-char-count">{postContent.length}/{maxLength}</div>
       </div>
 
       {/* 공용 파일 업로더 컴포넌트 사용 */}
@@ -142,7 +148,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         onFileSelect={handleFileSelect}
       />
 
-      <div className="form-buttons">
+      <div className="notice-action-buttons">
         <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button type="button" variant="back" onClick={onCancel} disabled={isSubmitting} />
       </div>

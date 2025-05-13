@@ -5,6 +5,7 @@ import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import FileUploader from "../../common/FileUploader";
+import "../../../styles/notice.css";
 
 function PostEditForm({
   studyId,
@@ -142,16 +143,16 @@ function PostEditForm({
   console.log("[PostEditForm] 남은 파일:", filteredExistingFiles);
 
   return (
-    <form onSubmit={handleSave} className="post-form">
-      {submitError && <div className="form-error">{submitError}</div>}
+    <form onSubmit={handleSave} className="notice-form">
+      {submitError && <div className="notice-error-message">{submitError}</div>}
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="title">
-          제목
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="title">
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
         </label>
         <input
           id="title"
-          className="form-control"
+          className="notice-input"
           placeholder="게시판 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
@@ -159,19 +160,19 @@ function PostEditForm({
         />
       </div>
 
-      <div className="form-group">
-        <label className="form-label" htmlFor="content">
-          내용을 입력해주세요.
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="content">
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용
         </label>
         <textarea
           id="content"
-          className="form-control textarea"
+          className="notice-textarea"
           placeholder="게시판 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div className="char-count">
+        <div className="notice-char-count">
           {postContent.length}/{maxLength}
         </div>
       </div>
@@ -183,14 +184,13 @@ function PostEditForm({
         onExistingFileRemove={handleExistingFileRemove}
       />
 
-      <div className="form-buttons">
+      <div className="notice-action-buttons">
         <Button type="submit" variant="store" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
           onClick={() => onCancel()}
           disabled={isSubmitting}
-          style={{ marginLeft: "10px" }}
         />
       </div>
     </form>

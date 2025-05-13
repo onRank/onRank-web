@@ -159,7 +159,7 @@ function NoticeEditForm({
 
       <div className="notice-input-group">
         <label className="notice-label" htmlFor="title">
-          제목
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
         </label>
         <input
           id="title"
@@ -173,7 +173,7 @@ function NoticeEditForm({
 
       <div className="notice-input-group">
         <label className="notice-label" htmlFor="content">
-          내용을 입력해주세요.
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용을 입력해주세요.
         </label>
         <textarea
           id="content"

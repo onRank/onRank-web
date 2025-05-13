@@ -130,7 +130,7 @@ const NoticeForm = ({
 
       <div className="notice-input-group">
         <label className="notice-label" htmlFor="title">
-          제목
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
         </label>
         <input
           id="title"
@@ -144,7 +144,7 @@ const NoticeForm = ({
 
       <div className="notice-input-group">
         <label className="notice-label" htmlFor="content">
-          내용
+          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용
         </label>
         <textarea
           id="content"
