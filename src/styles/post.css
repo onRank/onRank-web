@@ -45,7 +45,8 @@
   padding: 16px 20px;
   border-bottom: 1px solid #ccc;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
   cursor: pointer;
   transition: background-color 0.2s ease;
   transform: none;
@@ -60,6 +61,11 @@
 .post-item:hover {
   background-color: #f8f9fa;
   transform: none;
+}
+
+.post-content-block {
+  flex: 1;
+  min-width: 0; /* 내용이 넘칠 때 올바르게 줄임 처리 */
 }
 
 .post-item-header {
@@ -106,12 +112,18 @@
   font-size: 12px;
 }
 
-.more-options-button {
+.post-menu-container {
+  position: relative;
+  margin-left: auto;
+  padding-left: 12px;
+}
+
+.post-menu-button {
   background: none;
   border: none;
   cursor: pointer;
   padding: 5px;
-  font-size: 16px;
+  font-size: 20px;
   color: #333;
 }
 
@@ -217,10 +229,10 @@
 
 /* File attachment styles for posts */
 .post-file-list {
-  margin-top: 8px;
-  padding: 8px 12px;
+  margin-top: 16px;
+  padding: 16px;
   background-color: var(--cardBackground);
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 14px;
   border: 1px solid var(--border);
 }
@@ -228,7 +240,10 @@
 .post-file-item {
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.03);
   color: var(--textPrimary);
 }
 
@@ -238,7 +253,7 @@
 }
 
 .post-attachment-wrapper {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .post-attachment-title {
@@ -248,59 +263,59 @@
 }
 
 .post-attachment-item {
-  font-size: 14px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
   margin-bottom: 8px;
-  color: #0066cc;
   cursor: pointer;
-  text-decoration: none;
-  padding: 8px;
-  border: 1px solid #eee;
-  border-radius: 4px;
-  display: block;
+  transition: background-color 0.2s;
 }
 
 .post-attachment-item:hover {
-  background-color: #f5f5f5;
+  background-color: var(--hoverBackground);
 }
 
 /* Post Create/Edit Pages */
 .post-create-container,
 .post-edit-container {
   width: 100%;
-  padding: 1rem 0;
+  max-width: 100%;
 }
 
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
 }
 
 .form-label {
   display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 14px;
 }
 
 .form-control {
   width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
+  padding: 10px;
+  border: 1px solid #ccc;
   border-radius: 4px;
-  font-size: 1rem;
+  font-size: 14px;
 }
 
 .form-control.textarea {
-  min-height: 150px;
+  min-height: 200px;
   resize: vertical;
 }
 
 .form-error {
   color: #e53935;
-  font-size: 0.8rem;
-  margin-top: 0.3rem;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
 .form-buttons {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 2rem;
+  justify-content: space-between;
+  margin-top: 24px;
 } 

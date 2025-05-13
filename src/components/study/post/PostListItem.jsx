@@ -31,19 +31,24 @@ function PostListItem({ post, onClick, onEdit, onDelete }) {
     }
   };
 
+  // 일관된 필드명 처리
+  const title = post.postTitle || post.title || post.boardTitle || "제목 없음";
+  const createdAt = post.postCreatedAt || post.createdAt || new Date().toISOString();
+
   return (
     <div onClick={onClick} className="post-item">
       <div className="post-content-block">
-        <div className="post-date">게시: {formatDateYMD(post.postCreatedAt || post.createdAt)}</div>
-        <h2 className="post-title">{post.postTitle || post.title || post.boardTitle}</h2>
+        <div className="post-date">게시: {formatDateYMD(createdAt)}</div>
+        <h2 className="post-title">{title}</h2>
       </div>
 
       {isManager && (
-        <div className="post-menu-container" ref={menuRef}>
+        <div className="post-menu-container" ref={menuRef} style={{ marginLeft: "auto" }}>
           <button
             className="post-menu-button"
             onClick={handleMenuClick}
-            aria-label="메뉴 열기">
+            aria-label="메뉴 열기"
+            style={{ background: "none", border: "none", fontSize: "20px", cursor: "pointer" }}>
             ⋮
           </button>
 

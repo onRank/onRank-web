@@ -6,6 +6,7 @@ import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { getFileIcon, downloadFile, isImageFile } from "../../../utils/fileUtils";
 
 function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
   const { selectedPost, isLoading, error, getPostById } = usePost();
@@ -51,6 +52,21 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
   const title = selectedPost.postTitle || selectedPost.title || "제목 없음";
   const content = selectedPost.postContent || selectedPost.content || "내용 없음";
   const createdAt = selectedPost.postCreatedAt || selectedPost.createdAt || new Date().toISOString();
+  
+  // 파일 정보 확인
+  const files = selectedPost.files || [];
+  const fileUrls = selectedPost.fileUrls || [];
+  
+  // memberContext에서 파일 정보 확인
+  const memberContext = selectedPost.memberContext || {};
+  const memberContextFile = memberContext.file || null;
+  
+  // 파일 다운로드 핸들러
+  const handleFileDownload = (fileUrl, fileName) => {
+    if (!fileUrl) return;
+    console.log(`[PostDetail] 파일 다운로드 요청: ${fileName} (${fileUrl})`);
+    downloadFile(fileUrl, fileName);
+  };
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -87,10 +103,59 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
           style={{
             maxWidth: "none",
             color: `var(--textPrimary)`,
+            marginBottom: "1.5rem",
           }}
         >
           {content}
         </div>
+        
+        {/* 파일 목록 표시 */}
+        {(files.length > 0 || fileUrls.length > 0 || memberContextFile) && (
+          <div className="post-file-list">
+            <div className="post-attachment-title">첨부 파일</div>
+            
+            {/* 일반 파일 배열 처리 */}
+            {files.map((file, index) => (
+              <div 
+                key={`file-${index}`} 
+                className="post-file-item"
+                onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
+                style={{ cursor: "pointer" }}
+              >
+                <span className="post-file-icon">{getFileIcon(file.fileName)}</span>
+                <span>{file.fileName}</span>
+              </div>
+            ))}
+            
+            {/* 파일 URL 배열 처리 */}
+            {fileUrls.map((fileUrl, index) => {
+              const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
+              return (
+                <div 
+                  key={`url-${index}`} 
+                  className="post-file-item"
+                  onClick={() => handleFileDownload(fileUrl, fileName)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <span className="post-file-icon">{getFileIcon(fileName)}</span>
+                  <span>{fileName}</span>
+                </div>
+              );
+            })}
+            
+            {/* memberContext 파일 처리 */}
+            {memberContextFile && memberContextFile.fileUrl && (
+              <div 
+                className="post-file-item"
+                onClick={() => handleFileDownload(memberContextFile.fileUrl, memberContextFile.fileName)}
+                style={{ cursor: "pointer" }}
+              >
+                <span className="post-file-icon">{getFileIcon(memberContextFile.fileName)}</span>
+                <span>{memberContextFile.fileName}</span>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
         {handleEdit && (
