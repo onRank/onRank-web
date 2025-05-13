@@ -1,17 +1,18 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { getFileIcon, downloadFile, isImageFile } from "../../../utils/fileUtils";
+import { getFileIcon, downloadFile, isImageFile, formatFileSize } from "../../../utils/fileUtils";
 import "../../../styles/notice.css";
 
 function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
   const { colors } = useTheme();
+  const [expandedImageIndex, setExpandedImageIndex] = useState(null);
 
   useEffect(() => {
     if (!selectedNotice || selectedNotice.noticeId !== parseInt(noticeId, 10)) {
@@ -25,11 +26,55 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
     }
   }, [studyId, noticeId, getNoticeById, selectedNotice]);
 
+  // 이미지 미리보기 핸들러
+  const handleImagePreview = (fileUrl) => {
+    window.open(fileUrl, '_blank');
+  };
+
+  // 이미지 확장/축소 핸들러
+  const toggleImageExpand = (index) => {
+    setExpandedImageIndex(expandedImageIndex === index ? null : index);
+  };
+
   // 파일 다운로드 핸들러
   const handleFileDownload = (fileUrl, fileName) => {
     if (!fileUrl) return;
     console.log(`[NoticeDetail] 파일 다운로드 요청: ${fileName} (${fileUrl})`);
     downloadFile(fileUrl, fileName);
+  };
+
+  // 모든 파일들을 통합하여 처리
+  const getAllFiles = () => {
+    if (!selectedNotice) return [];
+    
+    const allFiles = [];
+    
+    // 일반 파일 배열 처리
+    if (selectedNotice.files && selectedNotice.files.length > 0) {
+      selectedNotice.files.forEach(file => {
+        allFiles.push({
+          fileName: file.fileName,
+          fileUrl: file.fileUrl,
+          fileSize: file.fileSize || 0,
+          type: 'file'
+        });
+      });
+    }
+    
+    // 파일 URL 배열 처리
+    if (selectedNotice.fileUrls && selectedNotice.fileUrls.length > 0) {
+      selectedNotice.fileUrls.forEach((fileUrl, index) => {
+        const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
+        allFiles.push({
+          fileName: fileName,
+          fileUrl: fileUrl,
+          fileSize: 0, // 크기 정보 없음
+          type: 'url'
+        });
+      });
+    }
+    
+    return allFiles;
   };
 
   if (isLoading) return <LoadingSpinner />;
@@ -60,13 +105,11 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
     );
   }
 
-  // 파일 정보 처리 - API 응답 구조 처리
-  const files = selectedNotice.files || [];
-  const fileUrls = selectedNotice.fileUrls || [];
-  const hasFiles = files.length > 0 || fileUrls.length > 0;
+  const files = getAllFiles();
+  const hasFiles = files.length > 0;
 
   console.log("[NoticeDetail] 공지사항 데이터:", selectedNotice);
-  console.log("[NoticeDetail] 첨부 파일:", { files, fileUrls });
+  console.log("[NoticeDetail] 첨부 파일:", files);
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -109,52 +152,65 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
           {selectedNotice.noticeContent}
         </div>
         
-        {/* 파일 목록 표시 */}
+        {/* 파일 목록 표시 - 향상된 UI */}
         {hasFiles && (
           <div className="notice-file-list">
             <div className="notice-attachment-title">첨부 파일</div>
             
-            {/* 일반 파일 배열 처리 */}
             {files.map((file, index) => (
-              <div 
-                key={`file-${index}`} 
-                className="notice-file-item"
-                onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
-                style={{ cursor: "pointer" }}
-              >
-                <span className="notice-file-icon">{getFileIcon(file.fileName)}</span>
-                <span>{file.fileName}</span>
+              <div key={`file-${index}`} className="notice-file-item">
+                <div className="notice-file-info-row">
+                  {isImageFile(file.fileName) && (
+                    <div className="notice-image-preview">
+                      <img src={file.fileUrl} alt={file.fileName} />
+                    </div>
+                  )}
+                  <div className="notice-file-icon">{getFileIcon(file.fileName)}</div>
+                  <div className="notice-file-info">
+                    <div className="notice-file-name">{file.fileName}</div>
+                    {file.fileSize > 0 && (
+                      <div className="notice-file-size">{formatFileSize(file.fileSize)}</div>
+                    )}
+                  </div>
+                  
+                  <div className="notice-file-actions">
+                    {isImageFile(file.fileName) && (
+                      <button 
+                        className="notice-preview-button"
+                        onClick={() => handleImagePreview(file.fileUrl)}
+                        type="button"
+                      >
+                        미리보기
+                      </button>
+                    )}
+                    <button
+                      className="notice-download-button"
+                      onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
+                      type="button"
+                    >
+                      다운로드
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 확장된 이미지 미리보기 */}
+                {isImageFile(file.fileName) && expandedImageIndex === index && (
+                  <div className="notice-image-preview-container">
+                    <img 
+                      className="notice-image-preview-full" 
+                      src={file.fileUrl} 
+                      alt={file.fileName} 
+                      onClick={() => toggleImageExpand(index)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
-            
-            {/* 파일 URL 배열 처리 */}
-            {fileUrls.map((fileUrl, index) => {
-              const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
-              return (
-                <div 
-                  key={`url-${index}`} 
-                  className="notice-file-item"
-                  onClick={() => handleFileDownload(fileUrl, fileName)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="notice-file-icon">{getFileIcon(fileName)}</span>
-                  <span>{fileName}</span>
-                </div>
-              );
-            })}
           </div>
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-        {handleEdit && (
-          <Button onClick={() => handleEdit(noticeId)} variant="edit" style={{ width: "84px", height: "36px" }} />
-        )}
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          {handleDelete && (
-            <Button onClick={() => handleDelete(noticeId)} variant="delete" style={{ width: "84px", height: "36px" }} />
-          )}
-          <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
-        </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+        <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
       </div>
     </div>
   );

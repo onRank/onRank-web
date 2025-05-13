@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { IoAttach } from "react-icons/io5";
+import { getFileIcon, formatFileSize, isImageFile, getFilePreviewUrl } from "../../../utils/fileUtils";
 import "../../../styles/post.css";
 
 /*
@@ -23,6 +25,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
   const { isLoading: contextIsLoading, createPost } = usePost();
   const { colors } = useTheme(); // eslint-disable-line no-unused-vars
   const maxLength = 10000;
+  const fileInputRef = useRef(null);
 
   const isLoading = propIsLoading || contextIsLoading;
 
@@ -34,6 +37,11 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
       setPostContent(post.postContent || post.content || "");
     }
   }, [post]);
+
+  // 파일 선택 버튼 클릭 핸들러
+  const handleAttachClick = () => {
+    fileInputRef.current.click();
+  };
 
   // 파일 선택
   const handleFileChange = (e) => {
@@ -121,35 +129,17 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
     }
   };
 
-  /* --------------------------- 스타일 (NoticeForm 재활용) --------------------------- */
-  const styles = {
-    formContainer: { width: "100%" },
-    inputGroup: { marginBottom: "24px" },
-    label: { display: "block", fontWeight: "bold", marginBottom: "8px", color: "var(--textPrimary)" },
-    input: { width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: "14px", backgroundColor: "var(--inputBackground)", color: "var(--textPrimary)" },
-    textarea: { width: "100%", minHeight: "200px", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)", resize: "none", fontSize: "14px", backgroundColor: "var(--inputBackground)", color: "var(--textPrimary)" },
-    charCount: { textAlign: "right", fontSize: "12px", color: "var(--textSecondary)", marginTop: "4px" },
-    fileUploadRow: { display: "flex", justifyContent: "flex-end", marginTop: "8px", marginBottom: "32px" },
-    fileUploadButton: { backgroundColor: "var(--primary)", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontSize: "14px" },
-    actionButtons: { display: "flex", justifyContent: "space-between", marginTop: "24px" },
-    leftButtons: { display: "flex", gap: "12px" },
-    errorMessage: { backgroundColor: "var(--errorBackground)", color: "var(--error)", padding: "12px", borderRadius: "6px", marginBottom: "16px" },
-    fileList: { marginTop: "8px", padding: "8px 12px", backgroundColor: "var(--cardBackground)", borderRadius: "4px", fontSize: "14px", border: "1px solid var(--border)" },
-    fileItem: { display: "flex", alignItems: "center", marginBottom: "4px", color: "var(--textPrimary)" },
-    fileIcon: { marginRight: "8px", color: "var(--textSecondary)" },
-  };
-
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleCreatePost} style={styles.formContainer}>
-      {error && <div style={styles.errorMessage}>{error}</div>}
+    <form onSubmit={handleCreatePost} className="post-form">
+      {error && <div className="error-message">{error}</div>}
 
-      <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="title">제목</label>
+      <div className="form-group">
+        <label className="form-label" htmlFor="title">제목</label>
         <input
           id="title"
-          style={styles.input}
+          className="form-control"
           placeholder="게시글 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
@@ -157,41 +147,73 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         />
       </div>
 
-      <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="content">내용을 입력해주세요.</label>
+      <div className="form-group">
+        <label className="form-label" htmlFor="content">내용을 입력해주세요.</label>
         <textarea
           id="content"
-          style={styles.textarea}
+          className="form-control textarea"
           placeholder="게시글 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div style={styles.charCount}>{postContent.length}/{maxLength}</div>
+        <div className="char-count">{postContent.length}/{maxLength}</div>
       </div>
 
-      {/* 파일 목록 */}
+      {/* 첨부파일 목록 - 향상된 UI */}
       {selectedFiles.length > 0 && (
-        <div style={styles.fileList}>
-          {selectedFiles.map((file, idx) => (
-            <div key={idx} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>{file.name}
-              <span style={{ marginLeft: "10px", color: "var(--textSecondary)", fontSize: "12px" }}>({(file.size/1024).toFixed(1)} KB)</span>
-              <button type="button" onClick={() => handleRemoveFile(file.name)} style={{ marginLeft: "auto", color: "var(--error)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
-            </div>
-          ))}
+        <div className="file-list">
+          <h3 className="file-list-title">첨부 파일</h3>
+          <div className="post-files-container">
+            {selectedFiles.map((file, index) => (
+              <div className="post-file-item" key={index}>
+                {isImageFile(file) && (
+                  <div className="post-image-preview">
+                    <img src={getFilePreviewUrl(file)} alt={file.name} />
+                  </div>
+                )}
+                <div className="post-file-info-row">
+                  <div className="post-file-icon">{getFileIcon(file.name)}</div>
+                  <div className="post-file-info">
+                    <div className="post-file-name">{file.name}</div>
+                    <div className="post-file-size">{formatFileSize(file.size)}</div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveFile(file.name)}
+                    className="remove-button"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <div style={styles.fileUploadRow}>
-        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-          <div style={styles.fileUploadButton}>파일 첨부</div>
-          <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
-        </label>
+      {/* 파일 업로드 섹션 */}
+      <div className="form-group">
+        <input 
+          ref={fileInputRef}
+          type="file" 
+          multiple
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
+        
+        <button 
+          type="button" 
+          onClick={handleAttachClick}
+          className="attach-button"
+        >
+          <IoAttach size={24} style={{ marginBottom: "8px" }} />
+          파일을 끌어서 놓거나 클릭하여 추가하세요
+        </button>
       </div>
 
-      <div style={styles.actionButtons}>
-        <div style={styles.leftButtons}>
+      <div className="form-buttons">
+        <div>
           <Button type="submit" variant="upload" disabled={isSubmitting} />
         </div>
         <Button type="button" variant="back" onClick={onCancel} disabled={isSubmitting} />

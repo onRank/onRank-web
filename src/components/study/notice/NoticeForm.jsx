@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNotice } from "./NoticeProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 import { useParams } from "react-router-dom";
+import { IoAttach } from "react-icons/io5";
+import { getFileIcon, formatFileSize, isImageFile, getFilePreviewUrl } from "../../../utils/fileUtils";
+import "../../../styles/notice.css";
 
 const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
   const { studyId } = useParams(); // Get studyId from URL params
@@ -15,6 +18,7 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
   const { isLoading: contextIsLoading, createNotice } = useNotice();
   const { colors } = useTheme();
   const maxLength = 10000;
+  const fileInputRef = useRef(null);
 
   // Use loading state from props or context
   const isLoading = propIsLoading || contextIsLoading;
@@ -25,6 +29,11 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
       setNoticeContent(notice.noticeContent);
     }
   }, [notice]);
+
+  // 파일 선택 버튼 클릭 핸들러
+  const handleAttachClick = () => {
+    fileInputRef.current.click();
+  };
 
   // 파일 선택 핸들러
   const handleFileChange = (e) => {
@@ -152,110 +161,19 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
     }
   };
 
-  // NoticeFormPage 스타일 적용
-  const styles = {
-    formContainer: {
-      width: "100%",
-    },
-    inputGroup: {
-      marginBottom: "24px",
-    },
-    label: {
-      display: "block",
-      fontWeight: "bold",
-      marginBottom: "8px",
-      color: `var(--textPrimary)`,
-    },
-    input: {
-      width: "100%",
-      padding: "10px",
-      borderRadius: "6px",
-      border: `1px solid var(--border)`,
-      fontSize: "14px",
-      backgroundColor: `var(--inputBackground)`,
-      color: `var(--textPrimary)`,
-    },
-    textarea: {
-      width: "100%",
-      minHeight: "200px",
-      padding: "10px",
-      borderRadius: "8px",
-      border: `1px solid var(--border)`,
-      resize: "none",
-      fontSize: "14px",
-      backgroundColor: `var(--inputBackground)`,
-      color: `var(--textPrimary)`,
-    },
-    charCount: {
-      textAlign: "right",
-      fontSize: "12px",
-      color: `var(--textSecondary)`,
-      marginTop: "4px",
-    },
-    fileUploadRow: {
-      display: "flex",
-      justifyContent: "flex-end",
-      marginTop: "8px",
-      marginBottom: "32px",
-    },
-    fileUploadButton: {
-      backgroundColor: `var(--primary)`,
-      color: "#fff",
-      border: "none",
-      borderRadius: "6px",
-      padding: "6px 12px",
-      cursor: "pointer",
-      fontSize: "14px",
-    },
-    actionButtons: {
-      display: "flex",
-      justifyContent: "space-between",
-      marginTop: "24px",
-    },
-    leftButtons: {
-      display: "flex",
-      gap: "12px",
-    },
-    errorMessage: {
-      backgroundColor: `var(--errorBackground)`,
-      color: `var(--error)`,
-      padding: "12px",
-      borderRadius: "6px",
-      marginBottom: "16px",
-    },
-    fileList: {
-      marginTop: "8px",
-      padding: "8px 12px",
-      backgroundColor: `var(--cardBackground)`,
-      borderRadius: "4px",
-      fontSize: "14px",
-      border: `1px solid var(--border)`,
-    },
-    fileItem: {
-      display: "flex",
-      alignItems: "center",
-      marginBottom: "4px",
-      color: `var(--textPrimary)`,
-    },
-    fileIcon: {
-      marginRight: "8px",
-      color: `var(--textSecondary)`,
-    },
-  };
-
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleCreateNotice} style={styles.formContainer}>
-      {error && <div style={styles.errorMessage}>{error}</div>}
+    <form onSubmit={handleCreateNotice} className="notice-form">
+      {error && <div className="notice-error-message">{error}</div>}
 
-      <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="title">
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="title">
           제목
         </label>
         <input
           id="title"
-          style={styles.input}
+          className="notice-input"
           placeholder="공지사항 제목을 입력하세요"
           value={noticeTitle}
           onChange={(e) => setNoticeTitle(e.target.value)}
@@ -263,73 +181,77 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
         />
       </div>
 
-      <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="content">
+      <div className="notice-input-group">
+        <label className="notice-label" htmlFor="content">
           내용을 입력해주세요.
         </label>
         <textarea
           id="content"
-          style={styles.textarea}
+          className="notice-textarea"
           placeholder="공지사항 내용을 입력하세요"
           value={noticeContent}
           onChange={(e) => setNoticeContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div style={styles.charCount}>
+        <div className="notice-char-count">
           {noticeContent.length}/{maxLength}
         </div>
       </div>
 
-      {/* 파일 목록 표시 */}
+      {/* 첨부파일 목록 - 향상된 UI */}
       {selectedFiles.length > 0 && (
-        <div style={styles.fileList}>
-          {selectedFiles.map((file, index) => (
-            <div key={index} style={styles.fileItem}>
-              <span style={styles.fileIcon}>📎</span>
-              {file.name}
-              <span
-                style={{
-                  marginLeft: "10px",
-                  color: `var(--textSecondary)`,
-                  fontSize: "12px",
-                }}
-              >
-                ({(file.size / 1024).toFixed(1)} KB)
-              </span>
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(file.name)}
-                style={{
-                  marginBottom: "4px",
-                  marginLeft: "auto",
-                  color: `var(--error)`,
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
-            </div>
-          ))}
+        <div className="notice-form-file-list">
+          <h3 className="notice-form-file-title">첨부 파일</h3>
+          <div className="notice-files-container">
+            {selectedFiles.map((file, index) => (
+              <div className="notice-file-item" key={index}>
+                {isImageFile(file) && (
+                  <div className="notice-image-preview">
+                    <img src={getFilePreviewUrl(file)} alt={file.name} />
+                  </div>
+                )}
+                <div className="notice-file-info-row">
+                  <div className="notice-file-icon">{getFileIcon(file.name)}</div>
+                  <div className="notice-file-info">
+                    <div className="notice-file-name">{file.name}</div>
+                    <div className="notice-file-size">{formatFileSize(file.size)}</div>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => handleRemoveFile(file.name)}
+                    className="notice-remove-button"
+                  >
+                    ✕
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <div style={styles.fileUploadRow}>
-        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
-          <div style={styles.fileUploadButton}>파일 첨부</div>
-          <input
-            id="file-upload"
-            type="file"
-            multiple
-            onChange={handleFileChange}
-            style={{ display: "none" }}
-          />
-        </label>
+      {/* 파일 업로드 버튼 */}
+      <div className="notice-input-group">
+        <input 
+          ref={fileInputRef}
+          type="file" 
+          multiple
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+        />
+        
+        <button 
+          type="button" 
+          onClick={handleAttachClick}
+          className="notice-attach-button"
+        >
+          <IoAttach size={24} style={{ marginBottom: "8px" }} />
+          파일을 끌어서 놓거나 클릭하여 추가하세요
+        </button>
       </div>
 
-      <div style={styles.actionButtons}>
-        <div style={styles.leftButtons}>
+      <div className="notice-action-buttons">
+        <div className="notice-left-buttons">
           <Button type="submit" variant="upload" disabled={isSubmitting} />
         </div>
         <Button

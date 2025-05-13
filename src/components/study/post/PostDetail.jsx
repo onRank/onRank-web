@@ -1,16 +1,17 @@
 import PropTypes from "prop-types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { getFileIcon, downloadFile, isImageFile } from "../../../utils/fileUtils";
+import { getFileIcon, downloadFile, isImageFile, formatFileSize } from "../../../utils/fileUtils";
 
-function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
+function PostDetail({ studyId, postId, handleBack }) {
   const { selectedPost, isLoading, error, getPostById } = usePost();
   const { colors } = useTheme(); // eslint-disable-line no-unused-vars
+  const [expandedImageIndex, setExpandedImageIndex] = useState(null);
 
   useEffect(() => {
     if (!selectedPost || selectedPost.postId !== parseInt(postId, 10)) {
@@ -23,6 +24,16 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
       );
     }
   }, [studyId, postId, getPostById, selectedPost]);
+
+  // 이미지 미리보기 핸들러
+  const handleImagePreview = (fileUrl) => {
+    window.open(fileUrl, '_blank');
+  };
+
+  // 이미지 확장/축소 핸들러
+  const toggleImageExpand = (index) => {
+    setExpandedImageIndex(expandedImageIndex === index ? null : index);
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -70,6 +81,49 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
 
   console.log("[PostDetail] 게시글 데이터:", selectedPost);
 
+  // 모든 파일들을 통합하여 처리
+  const getAllFiles = () => {
+    const allFiles = [];
+    
+    // 일반 파일 배열 처리
+    if (selectedPost.files && selectedPost.files.length > 0) {
+      selectedPost.files.forEach(file => {
+        allFiles.push({
+          fileName: file.fileName,
+          fileUrl: file.fileUrl,
+          fileSize: file.fileSize || 0,
+          type: 'file'
+        });
+      });
+    }
+    
+    // 파일 URL 배열 처리
+    if (selectedPost.fileUrls && selectedPost.fileUrls.length > 0) {
+      selectedPost.fileUrls.forEach((fileUrl, index) => {
+        const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
+        allFiles.push({
+          fileName: fileName,
+          fileUrl: fileUrl,
+          fileSize: 0, // 크기 정보 없음
+          type: 'url'
+        });
+      });
+    }
+    
+    // memberContext 파일 처리
+    if (selectedPost.memberContext && selectedPost.memberContext.file) {
+      const memberFile = selectedPost.memberContext.file;
+      allFiles.push({
+        fileName: memberFile.fileName,
+        fileUrl: memberFile.fileUrl,
+        fileSize: memberFile.fileSize || 0,
+        type: 'member'
+      });
+    }
+    
+    return allFiles;
+  };
+
   return (
     <div style={{ padding: "1.5rem" }}>
       <div
@@ -111,64 +165,65 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
           {content}
         </div>
         
-        {/* 파일 목록 표시 */}
-        {(files.length > 0 || fileUrls.length > 0 || memberContextFile) && (
+        {/* 파일 목록 표시 - 향상된 UI */}
+        {getAllFiles().length > 0 && (
           <div className="post-file-list">
             <div className="post-attachment-title">첨부 파일</div>
             
-            {/* 일반 파일 배열 처리 */}
-            {files.map((file, index) => (
-              <div 
-                key={`file-${index}`} 
-                className="post-file-item"
-                onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
-                style={{ cursor: "pointer" }}
-              >
-                <span className="post-file-icon">{getFileIcon(file.fileName)}</span>
-                <span>{file.fileName}</span>
+            {getAllFiles().map((file, index) => (
+              <div key={`file-${index}`} className="post-file-item">
+                <div className="post-file-info-row">
+                  {isImageFile(file.fileName) && (
+                    <div className="post-image-preview">
+                      <img src={file.fileUrl} alt={file.fileName} />
+                    </div>
+                  )}
+                  <div className="post-file-icon">{getFileIcon(file.fileName)}</div>
+                  <div className="post-file-info">
+                    <div className="post-file-name">{file.fileName}</div>
+                    {file.fileSize > 0 && (
+                      <div className="post-file-size">{formatFileSize(file.fileSize)}</div>
+                    )}
+                  </div>
+                  
+                  <div className="post-file-actions">
+                    {isImageFile(file.fileName) && (
+                      <button 
+                        className="post-preview-button"
+                        onClick={() => handleImagePreview(file.fileUrl)}
+                        type="button"
+                      >
+                        미리보기
+                      </button>
+                    )}
+                    <button
+                      className="post-download-button"
+                      onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
+                      type="button"
+                    >
+                      다운로드
+                    </button>
+                  </div>
+                </div>
+                
+                {/* 확장된 이미지 미리보기 */}
+                {isImageFile(file.fileName) && expandedImageIndex === index && (
+                  <div className="post-image-preview-container">
+                    <img 
+                      className="post-image-preview-full" 
+                      src={file.fileUrl} 
+                      alt={file.fileName} 
+                      onClick={() => toggleImageExpand(index)}
+                    />
+                  </div>
+                )}
               </div>
             ))}
-            
-            {/* 파일 URL 배열 처리 */}
-            {fileUrls.map((fileUrl, index) => {
-              const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
-              return (
-                <div 
-                  key={`url-${index}`} 
-                  className="post-file-item"
-                  onClick={() => handleFileDownload(fileUrl, fileName)}
-                  style={{ cursor: "pointer" }}
-                >
-                  <span className="post-file-icon">{getFileIcon(fileName)}</span>
-                  <span>{fileName}</span>
-                </div>
-              );
-            })}
-            
-            {/* memberContext 파일 처리 */}
-            {memberContextFile && memberContextFile.fileUrl && (
-              <div 
-                className="post-file-item"
-                onClick={() => handleFileDownload(memberContextFile.fileUrl, memberContextFile.fileName)}
-                style={{ cursor: "pointer" }}
-              >
-                <span className="post-file-icon">{getFileIcon(memberContextFile.fileName)}</span>
-                <span>{memberContextFile.fileName}</span>
-              </div>
-            )}
           </div>
         )}
       </div>
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
-        {handleEdit && (
-          <Button onClick={() => handleEdit(postId)} variant="edit" style={{ width: "84px", height: "36px" }} />
-        )}
-        <div style={{ display: "flex", gap: "0.5rem" }}>
-          {handleDelete && (
-            <Button onClick={() => handleDelete(postId)} variant="delete" style={{ width: "84px", height: "36px" }} />
-          )}
-          <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
-        </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+        <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
       </div>
     </div>
   );
@@ -177,9 +232,7 @@ function PostDetail({ studyId, postId, handleBack, handleEdit, handleDelete }) {
 PostDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
   postId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-  handleBack: PropTypes.func.isRequired,
-  handleEdit: PropTypes.func,
-  handleDelete: PropTypes.func
+  handleBack: PropTypes.func.isRequired
 };
 
 export default PostDetail;

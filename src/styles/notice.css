@@ -128,6 +128,10 @@
   width: 100%;
 }
 
+.notice-form {
+  width: 100%;
+}
+
 .notice-input-group {
   margin-bottom: 24px;
 }
@@ -168,6 +172,26 @@
   margin-top: 4px;
 }
 
+.notice-attach-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666;
+  min-height: 100px;
+  width: 100%;
+}
+
+.notice-attach-button:hover {
+  background-color: #e9ecef;
+}
+
 .notice-file-upload-row {
   display: flex;
   justify-content: flex-end;
@@ -204,6 +228,33 @@
   margin-bottom: 16px;
 }
 
+.notice-remove-button {
+  background: none;
+  border: none;
+  color: var(--error);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.notice-remove-button:hover {
+  opacity: 0.7;
+}
+
+.notice-form-file-list {
+  margin-bottom: 24px;
+  padding: 16px;
+  background-color: var(--cardBackground);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.notice-form-file-title {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
 /* 공지사항 첨부파일 관련 스타일 */
 .notice-file-list {
   margin-top: 1.5rem;
@@ -223,7 +274,7 @@
 .notice-file-item {
   display: flex;
   align-items: center;
-  padding: 0.5rem;
+  padding: 0.75rem;
   margin-bottom: 0.5rem;
   border-radius: 0.25rem;
   background-color: var(--cardBackground);
@@ -237,13 +288,106 @@
 
 .notice-file-icon {
   margin-right: 0.75rem;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
 }
 
 .notice-attachment-icon {
   margin-left: 0.5rem;
   color: var(--textSecondary);
   font-size: 0.875rem;
+}
+
+/* New improved file handling UI for notices */
+.notice-file-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.notice-file-name {
+  font-size: 14px;
+  margin-right: 8px;
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.notice-file-size {
+  font-size: 12px;
+  color: #666;
+}
+
+.notice-preview-button {
+  padding: 6px 12px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  margin-right: 8px;
+  transition: background-color 0.2s;
+}
+
+.notice-preview-button:hover {
+  background-color: #138496;
+}
+
+.notice-download-button {
+  padding: 6px 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.notice-download-button:hover {
+  background-color: #218838;
+}
+
+.notice-image-preview {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.notice-image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.notice-image-preview-container {
+  margin-top: 12px;
+  text-align: center;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.notice-image-preview-full {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.notice-file-actions {
+  display: flex;
+  align-items: center;
+}
+
+.notice-file-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Notice details */
