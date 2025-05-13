@@ -376,6 +376,7 @@
 
 .post-form {
   width: 100%;
+  padding-bottom: 80px;
 }
 
 .form-group {
@@ -421,8 +422,9 @@
 
 .form-buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   margin-top: 24px;
+  margin-bottom: 20px;
   gap: 10px;
 }
 

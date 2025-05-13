@@ -135,12 +135,14 @@
 
 .notice-form {
   width: 100%;
+  padding-bottom: 80px;
 }
 
 .notice-form-buttons {
   display: flex;
-  justify-content: flex-end;
-  gap: 10px; /* 버튼 간격 */
+  justify-content: space-between;
+  margin-top: 24px;
+  margin-bottom: 20px;
 }
 
 .notice-input-group {
@@ -222,8 +224,10 @@
 
 .notice-action-buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
   margin-top: 24px;
+  margin-bottom: 24px;
 }
 
 .notice-left-buttons {

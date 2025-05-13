@@ -7,7 +7,12 @@ import { useParams } from "react-router-dom";
 import FileUploader from "../../common/FileUploader";
 import "../../../styles/notice.css";
 
-const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
+const NoticeForm = ({
+  notice = null,
+  onSubmit,
+  onCancel,
+  isLoading: propIsLoading,
+}) => {
   const { studyId } = useParams(); // Get studyId from URL params
   const [noticeTitle, setNoticeTitle] = useState("");
   const [noticeContent, setNoticeContent] = useState("");
@@ -54,7 +59,7 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
       };
 
       console.log("[NoticeForm] 공지사항 생성 요청, studyId:", studyId);
-      
+
       if (!studyId) {
         console.error("[NoticeForm] studyId가 없습니다!");
         setError("스터디 ID를 찾을 수 없습니다.");
@@ -70,7 +75,7 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
         }
         return;
       }
-      
+
       // 직접 createNotice 호출 (기존 코드 유지)
       const result = await createNotice(studyId, newNotice, selectedFiles);
 
@@ -92,13 +97,19 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
 
       // 성공 시 콜백 호출 - 생성된 공지사항의 ID를 전달
       if (result.data?.noticeId) {
-        setTimeout(() => {
-          if (onCancel) onCancel(result.data.noticeId);
-        }, result.warning ? 1500 : 500);
+        setTimeout(
+          () => {
+            if (onCancel) onCancel(result.data.noticeId);
+          },
+          result.warning ? 1500 : 500
+        );
       } else {
-        setTimeout(() => {
-          if (onCancel) onCancel();
-        }, result.warning ? 1500 : 500);
+        setTimeout(
+          () => {
+            if (onCancel) onCancel();
+          },
+          result.warning ? 1500 : 500
+        );
       }
     } catch (err) {
       console.error("[NoticeForm] 공지사항 처리 오류:", err);
@@ -147,13 +158,10 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
       </div>
 
       {/* 공용 파일 업로더 컴포넌트 사용 */}
-      <FileUploader
-        existingFiles={[]}
-        onFileSelect={handleFileSelect}
-      />
+      <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
 
       <div className="notice-action-buttons">
-      <Button type="submit" variant="upload" disabled={isSubmitting} />
+        <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
