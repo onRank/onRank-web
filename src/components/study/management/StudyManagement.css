@@ -53,18 +53,6 @@
   border-radius: 4px;
   cursor: pointer;
 }
-.primary-button {
-  background-color: #000000;
-  color: white;
-}
-.secondary-button {
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-}
-.danger-button {
-  background-color: #dc3545;
-  color: white;
-}
 .alert {
   margin-bottom: 1rem;
   padding: 0.5rem 1rem;

@@ -397,7 +397,7 @@ function StudyManagement() {
       {isEditing ? (
         <form onSubmit={handleSubmit}>
           <div className="container">
-            <label className="title">스터디 상태</label>
+            <h3 className="title">스터디 상태</h3>
             <select
               value={studyStatus}
               onChange={(e) => setStudyStatus(e.target.value)}
@@ -410,7 +410,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <label className="title">스터디 이름</label>
+            <h3 className="title">스터디 이름</h3>
             <input
               type="text"
               value={studyName}
@@ -422,7 +422,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <label className="title">한 줄 소개</label>
+            <h3 className="title">한 줄 소개</h3>
             <input
               value={studyDescription}
               onChange={(e) => setStudyDescription(e.target.value)}
@@ -433,7 +433,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <label className="label">스터디 이미지</label>
+            <h3 className="title">스터디 이미지</h3>
             <div className="image-upload-container">
               <input
                 type="file"
@@ -452,7 +452,7 @@ function StudyManagement() {
           </div>
 
           <div className="container">
-            <label className="label">포인트 설정</label>
+            <h3 className="title">포인트 설정</h3>
             <div
               className="flex-column"
               style={{ gap: "1rem", marginBottom: "1.5rem" }}>
@@ -505,62 +505,58 @@ function StudyManagement() {
       ) : (
         <div>
           <div className="container">
+            <h3 className="title">스터디 상태</h3>
+            <div className="flex-column">{renderStudyStatus()}</div>
+          </div>
+
+          <div className="container">
             <h3 className="title">스터디 이름</h3>
+            <div value={studyName} className="input" />
+          </div>
+
+          <div className="container">
             <h3 className="title">한 줄 소개</h3>
-            <h3 className="title">이미지</h3>
-            <h3 className="title">포인트 설정</h3>
-            <div className="flex-column">
-              <div className="flex-container">
-                <span className="label">스터디 이름:</span>
-                <span>{studyName}</span>
-              </div>
-
-              <div className="flex-container">
-                <span className="label">스터디 설명:</span>
-                <span>{studyDescription}</span>
-              </div>
-
-              {renderStudyStatus()}
-            </div>
+            <div value={studyDescription} className="input" />
           </div>
 
           <div className="image-container">
-            <h4 className="subtitle">스터디 이미지</h4>
+            <h3 className="title">스터디 이미지</h3>
             {renderStudyImage()}
           </div>
 
           <div className="container">
-            <h4 className="subtitle">출석 점수 설정</h4>
-            <div className="flex-column">
-              <div className="flex-container">
-                <span className="label">출석:</span>
+            <h3 className="title">포인트 설정</h3>
+            <div
+              className="flex-column"
+              style={{ gap: "1rem", marginBottom: "1.5rem" }}>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>출석</span>
                 <span>
                   {presentPoint > 0 ? `+${presentPoint}` : presentPoint} 점
                 </span>
               </div>
-
-              <div className="flex-container">
-                <span className="label">결석:</span>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>지각</span>
+                <span>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</span>
+              </div>
+              <div
+                className="flex-container"
+                style={{ alignItems: "center", gap: "1rem" }}>
+                <span style={{ minWidth: "48px", fontWeight: 700 }}>결석</span>
                 <span>
                   {absentPoint > 0 ? `+${absentPoint}` : absentPoint} 점
                 </span>
-              </div>
-
-              <div className="flex-container">
-                <span className="label">지각:</span>
-                <span>{latePoint > 0 ? `+${latePoint}` : latePoint} 점</span>
               </div>
             </div>
           </div>
 
           <div className="button-container">
-            <button onClick={handleDelete} className="button danger-button">
-              삭제
-            </button>
-
-            <button onClick={handleEdit} className="button primary-button">
-              수정
-            </button>
+            <Button variant="delete" onClick={handleDelete} />
+            <Button variant="edit" onClick={handleEdit} />
           </div>
         </div>
       )}
