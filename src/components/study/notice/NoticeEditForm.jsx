@@ -195,10 +195,7 @@ function NoticeEditForm({
         onExistingFileRemove={handleExistingFileRemove}
       />
 
-      <div
-        className="notice-form-buttons"
-        style={{ display: "flex", justifyContent: "flex-end" }}
-      >
+      <div className="notice-form-buttons">
         <Button type="submit" variant="store" disabled={isSubmitting} />
         <Button
           type="button"

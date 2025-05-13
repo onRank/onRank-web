@@ -137,6 +137,12 @@
   width: 100%;
 }
 
+.notice-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px; /* 버튼 간격 */
+}
+
 .notice-input-group {
   margin-bottom: 24px;
 }

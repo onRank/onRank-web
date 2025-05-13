@@ -153,9 +153,7 @@ const NoticeForm = ({ notice = null, onSubmit, onCancel, isLoading: propIsLoadin
       />
 
       <div className="notice-action-buttons">
-        <div className="notice-left-buttons">
-          <Button type="submit" variant="upload" disabled={isSubmitting} />
-        </div>
+      <Button type="submit" variant="upload" disabled={isSubmitting} />
         <Button
           type="button"
           variant="back"
