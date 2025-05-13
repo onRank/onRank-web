@@ -121,58 +121,40 @@ export function NoticeProvider({ children }) {
   );
 
   // 공지사항 생성
-  const createNotice = useCallback(
-    async (studyId, newNotice, files = []) => {
-      setIsLoading(true);
-      try {
-        console.log("[NoticeProvider] 공지사항 생성 요청:", { studyId, newNotice });
-        const response = await noticeService.createNotice(
-          studyId,
-          newNotice,
-          files
-        );
-
-        // 응답 데이터가 있거나 success가 true인 경우 성공으로 처리
-        if (response.data || response.success) {
-          // API 응답 데이터 사용
-          if (response.data) {
-            // 응답 데이터를 바로 공지사항 목록에 추가
-            setNotices(prev => [response.data, ...prev]);
-            console.log("[NoticeProvider] 새 공지사항 추가 완료:", response.data);
-          }
-
-          // 성공 응답 반환
-          return {
-            success: true,
-            message: "공지사항이 성공적으로 생성되었습니다.",
-            data: response.data
-          };
-        } else {
-          // 명확한 에러 메시지가 있는 경우에만 에러 발생
-          if (response.message) {
-            throw new Error(response.message);
-          } else {
-            return {
-              success: true,
-              message: "공지사항이 생성되었습니다.",
-              data: response.data,
-            };
-          }
-        }
-      } catch (err) {
-        console.error("[NoticeProvider] 공지사항 등록 실패:", err);
-
-        // 간소화된 에러 처리
+  const createNotice = useCallback(async (studyId, noticeData, files = []) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log("[NoticeProvider] 공지사항 생성 요청:", noticeData);
+      const response = await noticeService.createNotice(studyId, noticeData, files);
+      
+      if (response.success) {
+        // 목록 새로고침
+        await getNotices(studyId);
+        return {
+          success: true,
+          message: "공지사항이 성공적으로 생성되었습니다.",
+          data: response.data
+        };
+      } else {
+        setError(response.message || "공지사항 생성 중 오류가 발생했습니다.");
         return {
           success: false,
-          message: "공지사항 등록 중 문제가 발생했습니다.",
+          message: response.message || "공지사항 생성 중 오류가 발생했습니다."
         };
-      } finally {
-        setIsLoading(false);
       }
-    },
-    []
-  );
+    } catch (err) {
+      console.error("[NoticeProvider] 공지사항 생성 중 오류 발생:", err);
+      setError("공지사항 생성 중 오류가 발생했습니다.");
+      return {
+        success: false,
+        message: err.message || "공지사항 생성 중 오류가 발생했습니다."
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [getNotices]);
 
   // 공지사항 수정
   const editNotice = useCallback(
@@ -264,38 +246,55 @@ export function NoticeProvider({ children }) {
   );
 
   // 공지사항 삭제
-  const deleteNotice = useCallback(
-    async (studyId, noticeId) => {
-      setIsLoading(true);
-      try {
-        const response = await noticeService.deleteNotice(studyId, noticeId);
-        if (response.success) {
-          // 삭제된 공지사항을 목록에서 제거
-          setNotices((prev) =>
-            prev.filter((notice) => notice.noticeId !== noticeId)
-          );
-
-          // 선택된 공지사항이 삭제된 것과 같으면 선택 해제
-          if (selectedNotice && selectedNotice.noticeId === noticeId) {
-            setSelectedNotice(null);
-          }
-
-          return { success: true };
-        } else {
-          throw new Error(response.message || "공지사항 삭제에 실패했습니다.");
+  const deleteNotice = useCallback(async (studyId, noticeId) => {
+    if (!studyId || !noticeId) {
+      console.error("[NoticeProvider] 공지사항 삭제 실패: 스터디ID 또는 공지사항ID 누락");
+      return { 
+        success: false, 
+        message: "필수 정보가 누락되었습니다." 
+      };
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      console.log(`[NoticeProvider] 공지사항 삭제 요청: ${studyId}/${noticeId}`);
+      const response = await noticeService.deleteNotice(studyId, noticeId);
+      
+      if (response.success) {
+        // 목록에서 삭제된 공지사항 제거
+        setNotices(prevNotices => 
+          prevNotices.filter(notice => notice.noticeId !== parseInt(noticeId, 10))
+        );
+        
+        // 현재 선택된 공지사항이 삭제되는 경우 초기화
+        if (selectedNotice && selectedNotice.noticeId === parseInt(noticeId, 10)) {
+          setSelectedNotice(null);
         }
-      } catch (err) {
-        console.error("[NoticeProvider] 공지사항 삭제 실패:", err);
+        
+        return {
+          success: true,
+          message: "공지사항이 성공적으로 삭제되었습니다."
+        };
+      } else {
+        setError(response.message || "공지사항 삭제 중 오류가 발생했습니다.");
         return {
           success: false,
-          message: err.message || "공지사항 삭제에 실패했습니다.",
+          message: response.message
         };
-      } finally {
-        setIsLoading(false);
       }
-    },
-    [selectedNotice]
-  );
+    } catch (err) {
+      console.error("[NoticeProvider] 공지사항 삭제 중 오류:", err);
+      setError("공지사항 삭제 중 오류가 발생했습니다.");
+      return {
+        success: false,
+        message: err.message || "공지사항 삭제 중 오류가 발생했습니다."
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedNotice]);
 
   return (
     <NoticeContext.Provider

@@ -204,25 +204,46 @@
   margin-bottom: 16px;
 }
 
+/* 공지사항 첨부파일 관련 스타일 */
 .notice-file-list {
-  margin-top: 8px;
-  padding: 8px 12px;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
   background-color: var(--cardBackground);
-  border-radius: 4px;
-  font-size: 14px;
   border: 1px solid var(--border);
+}
+
+.notice-attachment-title {
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+  color: var(--textPrimary);
+  font-size: 1rem;
 }
 
 .notice-file-item {
   display: flex;
   align-items: center;
-  margin-bottom: 4px;
-  color: var(--textPrimary);
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--cardBackground);
+  border: 1px solid var(--border);
+  transition: background-color 0.2s;
+}
+
+.notice-file-item:hover {
+  background-color: var(--hoverBackground);
 }
 
 .notice-file-icon {
-  margin-right: 8px;
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.notice-attachment-icon {
+  margin-left: 0.5rem;
   color: var(--textSecondary);
+  font-size: 0.875rem;
 }
 
 /* Notice details */

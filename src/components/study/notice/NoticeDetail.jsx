@@ -6,6 +6,8 @@ import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
+import { getFileIcon, downloadFile, isImageFile } from "../../../utils/fileUtils";
+import "../../../styles/notice.css";
 
 function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete }) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
@@ -22,6 +24,13 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
       );
     }
   }, [studyId, noticeId, getNoticeById, selectedNotice]);
+
+  // 파일 다운로드 핸들러
+  const handleFileDownload = (fileUrl, fileName) => {
+    if (!fileUrl) return;
+    console.log(`[NoticeDetail] 파일 다운로드 요청: ${fileName} (${fileUrl})`);
+    downloadFile(fileUrl, fileName);
+  };
 
   if (isLoading) return <LoadingSpinner />;
 
@@ -50,6 +59,14 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
       </div>
     );
   }
+
+  // 파일 정보 처리 - API 응답 구조 처리
+  const files = selectedNotice.files || [];
+  const fileUrls = selectedNotice.fileUrls || [];
+  const hasFiles = files.length > 0 || fileUrls.length > 0;
+
+  console.log("[NoticeDetail] 공지사항 데이터:", selectedNotice);
+  console.log("[NoticeDetail] 첨부 파일:", { files, fileUrls });
 
   return (
     <div style={{ padding: "1.5rem" }}>
@@ -86,10 +103,47 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
           style={{
             maxWidth: "none",
             color: `var(--textPrimary)`,
+            marginBottom: hasFiles ? "1.5rem" : "0"
           }}
         >
           {selectedNotice.noticeContent}
         </div>
+        
+        {/* 파일 목록 표시 */}
+        {hasFiles && (
+          <div className="notice-file-list">
+            <div className="notice-attachment-title">첨부 파일</div>
+            
+            {/* 일반 파일 배열 처리 */}
+            {files.map((file, index) => (
+              <div 
+                key={`file-${index}`} 
+                className="notice-file-item"
+                onClick={() => handleFileDownload(file.fileUrl, file.fileName)}
+                style={{ cursor: "pointer" }}
+              >
+                <span className="notice-file-icon">{getFileIcon(file.fileName)}</span>
+                <span>{file.fileName}</span>
+              </div>
+            ))}
+            
+            {/* 파일 URL 배열 처리 */}
+            {fileUrls.map((fileUrl, index) => {
+              const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
+              return (
+                <div 
+                  key={`url-${index}`} 
+                  className="notice-file-item"
+                  onClick={() => handleFileDownload(fileUrl, fileName)}
+                  style={{ cursor: "pointer" }}
+                >
+                  <span className="notice-file-icon">{getFileIcon(fileName)}</span>
+                  <span>{fileName}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1.5rem" }}>
         {handleEdit && (

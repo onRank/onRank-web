@@ -229,27 +229,37 @@
 
 /* File attachment styles for posts */
 .post-file-list {
-  margin-top: 16px;
-  padding: 16px;
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
   background-color: var(--cardBackground);
-  border-radius: 8px;
-  font-size: 14px;
   border: 1px solid var(--border);
 }
 
 .post-file-item {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
-  padding: 8px 12px;
-  border-radius: 4px;
-  background-color: rgba(0, 0, 0, 0.03);
-  color: var(--textPrimary);
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--cardBackground);
+  border: 1px solid var(--border);
+  transition: background-color 0.2s;
+}
+
+.post-file-item:hover {
+  background-color: var(--hoverBackground);
 }
 
 .post-file-icon {
-  margin-right: 8px;
+  margin-right: 0.75rem;
+  font-size: 1.25rem;
+}
+
+.post-attachment-icon {
+  margin-left: 0.5rem;
   color: var(--textSecondary);
+  font-size: 0.875rem;
 }
 
 .post-attachment-wrapper {
@@ -257,9 +267,10 @@
 }
 
 .post-attachment-title {
-  font-size: 16px;
   font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: 0.75rem;
+  color: var(--textPrimary);
+  font-size: 1rem;
 }
 
 .post-attachment-item {
@@ -318,4 +329,38 @@
   display: flex;
   justify-content: space-between;
   margin-top: 24px;
+}
+
+/* 게시글 목록 확인 팝업 스타일 */
+.post-confirm-delete {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--warningBackground);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.post-confirm-buttons {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.post-confirm-yes, .post-confirm-no {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: none;
+  cursor: pointer;
+}
+
+.post-confirm-yes {
+  background-color: var(--error);
+  color: white;
+}
+
+.post-confirm-no {
+  background-color: var(--secondary);
+  color: white;
 } 
