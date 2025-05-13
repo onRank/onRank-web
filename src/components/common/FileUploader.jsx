@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import PropTypes from "prop-types";
 import { formatFileSize, getFileIcon, isImageFile } from "../../utils/fileUtils";
+import Button from "./Button";
 import "../../styles/fileUploader.css";
 
 /**
@@ -114,6 +115,11 @@ function FileUploader({
     setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
+  // 이미지 미리보기 핸들러
+  const handleImagePreview = (fileUrl) => {
+    window.open(fileUrl);
+  };
+
   // 통합된 파일 목록
   const hasFiles = existingFiles.length > 0 || selectedFiles.length > 0;
 
@@ -140,22 +146,20 @@ function FileUploader({
                   </div>
                 </div>
                 <div className="file-actions">
-                  <button
-                    className="remove-file-button"
+                  <Button 
+                    variant="delete" 
                     onClick={() => handleRemoveExistingFile(file.fileId)}
-                    type="button"
-                  >
-                    ✕
-                  </button>
+                    label="✕" 
+                    style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#e74c3c' }}
+                  />
                   {isImageFile(file.fileName) && file.fileUrl && (
-                    <button
-                      className="preview-icon-button"
-                      onClick={() => window.open(file.fileUrl)}
+                    <Button
+                      variant="default"
+                      onClick={() => handleImagePreview(file.fileUrl)}
+                      label="👁️"
                       title="이미지 미리보기"
-                      type="button"
-                    >
-                      👁️
-                    </button>
+                      style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#17a2b8' }}
+                    />
                   )}
                 </div>
               </div>
@@ -176,22 +180,20 @@ function FileUploader({
                   </div>
                 </div>
                 <div className="file-actions">
-                  <button
-                    className="remove-file-button"
+                  <Button 
+                    variant="delete" 
                     onClick={() => handleRemoveFile(file.name)}
-                    type="button"
-                  >
-                    ✕
-                  </button>
+                    label="✕" 
+                    style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#e74c3c' }}
+                  />
                   {isImageFile(file.name) && (
-                    <button
-                      className="preview-icon-button"
-                      onClick={() => window.open(URL.createObjectURL(file))}
+                    <Button
+                      variant="default"
+                      onClick={() => handleImagePreview(URL.createObjectURL(file))}
+                      label="👁️"
                       title="이미지 미리보기"
-                      type="button"
-                    >
-                      👁️
-                    </button>
+                      style={{ width: 'auto', padding: '0 8px', height: 'auto', boxShadow: 'none', background: 'none', color: '#17a2b8' }}
+                    />
                   )}
                 </div>
               </div>
