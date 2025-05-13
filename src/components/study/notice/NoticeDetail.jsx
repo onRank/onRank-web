@@ -108,95 +108,96 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
   const files = getAllFiles();
   const hasFiles = files.length > 0;
 
+  // 날짜 포맷 변경 (YYYY.MM.DD)
+  const formattedDate = selectedNotice.noticeCreatedAt
+    ? new Date(selectedNotice.noticeCreatedAt).toLocaleDateString('ko-KR', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).replace(/\. /g, '.').replace(/\.$/, '')
+    : '';
+
   console.log("[NoticeDetail] 공지사항 데이터:", selectedNotice);
   console.log("[NoticeDetail] 첨부 파일:", files);
 
   return (
     <div style={{ padding: "1.5rem" }}>
-      <div
+      <h1
         style={{
-          border: `1px solid var(--border)`,
-          borderRadius: "0.5rem",
-          padding: "1.5rem",
-          backgroundColor: `var(--cardBackground)`,
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+          marginBottom: "0.5rem",
+          color: `var(--textPrimary)`,
         }}
       >
-        <h1
-          style={{
-            fontSize: "1.5rem",
-            fontWeight: "bold",
-            marginBottom: "1rem",
-            color: `var(--textPrimary)`,
-          }}
-        >
-          {selectedNotice.noticeTitle}
-        </h1>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            color: `var(--textSecondary)`,
-            marginBottom: "1.5rem",
-          }}
-        >
-          <span style={{ marginLeft: "0.5rem", marginRight: "0.5rem" }}>•</span>
-          <span>{formatDate(selectedNotice.noticeCreatedAt)}</span>
-        </div>
-        <div
-          style={{
-            maxWidth: "none",
-            color: `var(--textPrimary)`,
-            marginBottom: hasFiles ? "1.5rem" : "0"
-          }}
-        >
-          {selectedNotice.noticeContent}
-        </div>
-        
-        {/* 파일 목록 표시 - AssignmentDetail과 동일한 향상된 UI */}
-        {hasFiles && (
-          <div className="files-container">
-            <h3 className="section-subtitle">첨부파일</h3>
-            <div className="files-list">
-              {files.map((file, index) => (
-                <div className="file-download-item" key={index}>
-                  <div className="file-info-row">
-                    <div className="file-icon">{getFileIcon(file.fileName)}</div>
-                    <div className="file-details">
-                      <div className="file-name">{file.fileName}</div>
-                    </div>
-                    {isImageFile(file.fileName) && file.fileUrl && (
-                      <button 
-                        className="preview-button"
-                        onClick={() => window.open(file.fileUrl, '_blank')}
-                        title="이미지 미리보기"
-                        type="button"
-                      >
-                        미리보기
-                      </button>
-                    )}
-                    <button
-                      className="download-button"
-                      onClick={() =>
-                        downloadFile(file.fileUrl, file.fileName)
-                      }
-                      type="button"
-                    >
-                      다운로드
-                    </button>
+        {selectedNotice.noticeTitle}
+      </h1>
+      
+      <div
+        style={{
+          fontSize: "0.9rem",
+          color: `var(--textSecondary)`,
+          marginBottom: "1.5rem",
+        }}
+      >
+        게시: {formattedDate}
+      </div>
+      
+      <div
+        style={{
+          maxWidth: "none",
+          color: `var(--textPrimary)`,
+          marginBottom: hasFiles ? "1.5rem" : "0"
+        }}
+      >
+        {selectedNotice.noticeContent}
+      </div>
+      
+      {/* 파일 목록 표시 */}
+      {hasFiles && (
+        <div className="files-container">
+          <h3 className="section-subtitle">첨부파일</h3>
+          <div className="files-list">
+            {files.map((file, index) => (
+              <div className="file-download-item" key={index}>
+                <div className="file-info-row">
+                  <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                  <div className="file-details">
+                    <div className="file-name">{file.fileName}</div>
                   </div>
                   {isImageFile(file.fileName) && file.fileUrl && (
-                    <div className="image-preview-container">
-                      <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
-                    </div>
+                    <button 
+                      className="preview-button"
+                      onClick={() => window.open(file.fileUrl, '_blank')}
+                      title="이미지 미리보기"
+                      type="button"
+                    >
+                      미리보기
+                    </button>
                   )}
+                  <button
+                    className="download-button"
+                    onClick={() =>
+                      downloadFile(file.fileUrl, file.fileName)
+                    }
+                    type="button"
+                  >
+                    다운로드
+                  </button>
                 </div>
-              ))}
-            </div>
+                {isImageFile(file.fileName) && file.fileUrl && (
+                  <div className="image-preview-container">
+                    <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+      
       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
-        <Button onClick={handleBack} variant="back" style={{ width: "84px", height: "36px" }} />
+        <Button onClick={handleBack} variant="back" style={{ width: "auto", padding: "0 16px" }} />
       </div>
     </div>
   );
