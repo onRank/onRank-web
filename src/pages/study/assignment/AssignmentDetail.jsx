@@ -799,7 +799,7 @@ const AssignmentDetail = () => {
                     label="닫기"
                   />
                 </div>
-                <div></div>
+                <div style={{paddingBottom: 100}}></div>
               </>
             )
           )}
