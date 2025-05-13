@@ -149,9 +149,6 @@
   background-color: #f8f9fa;
 }
 
-.popup-menu-item:not(:last-child) {
-  border-bottom: 1px solid #e9ecef;
-}
 
 .popup-menu-item span {
   color: #16191f;

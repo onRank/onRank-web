@@ -82,9 +82,6 @@
   transition: background-color 0.2s ease;
 }
 
-.submission-item:last-child {
-  border-bottom: none;
-}
 
 .submission-item:hover {
   background-color: #f8f9fa;
