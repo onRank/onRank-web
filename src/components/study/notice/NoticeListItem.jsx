@@ -69,7 +69,6 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
         </div>
         <h2 className="notice-title">
           {notice.noticeTitle}
-          {hasFiles && <span className="notice-attachment-icon">📎</span>}
         </h2>
       </div>
 
