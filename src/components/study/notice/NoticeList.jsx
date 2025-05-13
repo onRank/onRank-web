@@ -14,15 +14,19 @@ function NoticeList({ notices, onNoticeClick, onEdit, onDelete, isLoading }) {
     return <div className="notice-empty">등록된 공지사항이 없습니다.</div>;
   }
 
+  const totalItems = notices.length;
+
   return (
     <div className="notice-list-container">
-      {notices.map((notice) => (
+      {notices.map((notice, index) => (
         <NoticeListItem
           key={notice.noticeId}
           notice={notice}
           onClick={() => onNoticeClick(notice.noticeId)}
           onEdit={onEdit}
           onDelete={onDelete}
+          index={index}
+          totalItems={totalItems}
         />
       ))}
     </div>

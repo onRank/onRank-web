@@ -462,124 +462,119 @@ export const downloadFile = async (url, fileName) => {
     // S3 URL 여부 확인 (amazonaws.com 도메인 체크)
     const isS3Url = url.includes('amazonaws.com') || url.includes('s3.');
     
-    // S3 URL인 경우 백엔드 프록시 API 경로로 변환
     if (isS3Url) {
       console.log(`[fileUtils] S3 URL 감지: ${url}`);
       
+      // 프록시 서버를 통한 다운로드 시도 (CORS 문제 해결을 위함)
+      const downloadViaProxy = async () => {
+        // 백엔드 API 경로가 있으면 사용
+        if (window.API_BASE_URL) {
+          try {
+            const encodedFileUrl = encodeURIComponent(url);
+            const proxyUrl = `${window.API_BASE_URL}/api/files/download?url=${encodedFileUrl}&fileName=${encodeURIComponent(fileName)}`;
+            
+            console.log(`[fileUtils] 백엔드 프록시 사용: ${proxyUrl}`);
+            
+            // 새 창에서 다운로드
+            window.open(proxyUrl, '_blank');
+            return true;
+          } catch (proxyError) {
+            console.error('[fileUtils] 프록시 다운로드 실패:', proxyError);
+            return false;
+          }
+        }
+        return false;
+      };
+      
+      // 직접 S3에서 다운로드 시도
       try {
-        // 원본 URL을 인코딩하여 요청
         const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Cache-Control': 'no-cache'
           },
-          // 크로스 도메인 요청 시 인증정보 제외
+          // 크로스 도메인 요청을 위한 설정
           credentials: 'omit',
           mode: 'cors'
         });
         
         if (!response.ok) {
+          console.warn(`[fileUtils] S3 직접 다운로드 실패 (${response.status}): ${response.statusText}`);
+          // 직접 다운로드 실패시 프록시 시도
+          if (await downloadViaProxy()) return;
           throw new Error(`S3 다운로드 실패: ${response.status} ${response.statusText}`);
         }
         
         // 응답을 Blob으로 변환
         const blob = await response.blob();
         
-        // Blob URL 생성
+        // Blob URL 생성 및 다운로드
         const downloadUrl = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = downloadUrl;
+        link.download = fileName;
         
-        // 다운로드 링크 생성 및 클릭
-        const blobLink = document.createElement('a');
-        blobLink.href = downloadUrl;
-        blobLink.download = fileName;
+        // DOM에 링크 추가하고 클릭
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
-        document.body.appendChild(blobLink);
-        blobLink.click();
-        document.body.removeChild(blobLink);
-        
-        // 메모리 누수 방지를 위해 URL 해제
-        setTimeout(() => {
-          window.URL.revokeObjectURL(downloadUrl);
-        }, 100);
+        // 메모리 누수 방지
+        setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 100);
         
         console.log(`[fileUtils] S3 다운로드 성공: ${fileName}`);
         return;
       } catch (s3Error) {
-        console.error('[fileUtils] S3 직접 다운로드 실패:', s3Error);
+        console.error('[fileUtils] S3 직접 다운로드 오류:', s3Error);
         
-        // 백엔드 프록시를 통한 다운로드 시도 (대체 방법)
-        if (window.API_BASE_URL) {
-          // 원래 URL을 인코딩하여 백엔드에 전달
-          const encodedFileUrl = encodeURIComponent(url);
-          const proxyUrl = `${window.API_BASE_URL}/api/files/download?url=${encodedFileUrl}&fileName=${encodeURIComponent(fileName)}`;
-          
-          console.log(`[fileUtils] 백엔드 프록시 사용 시도: ${proxyUrl}`);
-          
-          // 백엔드 프록시를 통한 다운로드 시도
-          window.open(proxyUrl, '_blank');
-          
-          console.log(`[fileUtils] 백엔드 프록시를 통한 다운로드 시작됨`);
-          return;
-        }
+        // 직접 다운로드 실패시 프록시 시도
+        if (await downloadViaProxy()) return;
+        
+        // 마지막 대안으로 URL 직접 열기
+        window.open(url, '_blank');
+        console.log('[fileUtils] 새 창에서 URL 직접 열기 시도');
+        return;
       }
     }
     
-    // 일반 URL 또는 S3 직접 다운로드 실패 시 기본 방식으로 시도
+    // 일반 URL 다운로드 처리
     try {
+      // 일반 URL 직접 다운로드
       const response = await fetch(url, {
         method: 'GET',
         headers: {
           'Cache-Control': 'no-cache'
-        },
-        // 로컬 요청이거나 동일 도메인일 경우 인증정보 포함
-        credentials: 'same-origin'
+        }
       });
       
-      // 응답이 성공적인지 확인
       if (!response.ok) {
-        console.warn(`[fileUtils] 직접 다운로드 실패 (${response.status})`);
         throw new Error(`다운로드 실패: ${response.status} ${response.statusText}`);
       }
       
-      // 응답을 Blob으로 변환
       const blob = await response.blob();
-      
-      // Blob URL 생성
       const downloadUrl = window.URL.createObjectURL(blob);
       
-      // 다운로드 링크 생성 및 클릭
-      const blobLink = document.createElement('a');
-      blobLink.href = downloadUrl;
-      blobLink.download = fileName;
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = fileName;
       
-      document.body.appendChild(blobLink);
-      blobLink.click();
-      document.body.removeChild(blobLink);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       
-      // 메모리 누수 방지를 위해 URL 해제
-      setTimeout(() => {
-        window.URL.revokeObjectURL(downloadUrl);
-      }, 100);
+      setTimeout(() => window.URL.revokeObjectURL(downloadUrl), 100);
       
-      console.log(`[fileUtils] 직접 다운로드 성공: ${fileName}`);
-    } catch (directError) {
-      console.error('[fileUtils] 직접 다운로드 중 오류:', directError);
-      throw directError;
-    }
-    
-  } catch (error) {
-    console.error('[fileUtils] 파일 다운로드 중 오류:', error);
-    
-    // 사용자에게 오류 알림
-    alert(`파일 다운로드에 실패했습니다. 나중에 다시 시도해 주세요.`);
-    
-    // 다른 방법으로 링크 열기 시도 (대안책)
-    try {
+      console.log(`[fileUtils] 일반 URL 다운로드 성공: ${fileName}`);
+    } catch (error) {
+      console.error('[fileUtils] 일반 URL 다운로드 실패:', error);
+      
+      // 직접 URL 열기 시도
       window.open(url, '_blank');
-      console.log('[fileUtils] 새 창에서 열기로 대체');
-    } catch (fallbackError) {
-      console.error('[fileUtils] 대체 열기 실패:', fallbackError);
+      console.log('[fileUtils] 새 창에서 열기 시도');
     }
+  } catch (error) {
+    console.error('[fileUtils] 다운로드 중 예상치 못한 오류:', error);
+    alert(`파일 다운로드에 실패했습니다. 다시 시도해주세요.`);
   }
 };
 

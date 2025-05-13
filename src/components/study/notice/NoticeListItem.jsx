@@ -1,13 +1,14 @@
 import PropTypes from "prop-types";
 import { formatDateYMD } from "../../../utils/dateUtils";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import ActionPopup from "../../../components/common/ActionPopup";
 
-function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
+function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }) {
   const { isDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [popupPosition, setPopupPosition] = useState("bottom-right");
   const menuRef = useRef(null);
   const { memberRole } = useNotice();
 
@@ -18,6 +19,18 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
   const hasFiles = 
     (notice.files && notice.files.length > 0) || 
     (notice.fileUrls && notice.fileUrls.length > 0);
+  
+  // 아이템 위치에 따라 팝업 위치 결정
+  useEffect(() => {
+    if (index !== undefined && totalItems !== undefined) {
+      // 마지막 3개 아이템은 팝업이 위로 나타나도록 설정
+      if (index >= totalItems - 3) {
+        setPopupPosition("top-right");
+      } else {
+        setPopupPosition("bottom-right");
+      }
+    }
+  }, [index, totalItems]);
   
   // 토글 메뉴 클릭 처리
   const handleMenuClick = (e) => {
@@ -73,7 +86,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete }) {
             onClose={handleCloseMenu}
             onEdit={handleEdit}
             onDelete={handleDelete}
-            position="bottom-right"
+            position={popupPosition}
           />
         </div>
       )}
@@ -100,6 +113,8 @@ NoticeListItem.propTypes = {
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
+  index: PropTypes.number,
+  totalItems: PropTypes.number
 };
 
 export default NoticeListItem;

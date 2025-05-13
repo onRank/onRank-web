@@ -12,15 +12,19 @@ function PostList({ posts, onPostClick, onEdit, onDelete, isLoading }) {
     return <div className="empty-message">등록된 게시글이 없습니다.</div>;
   }
 
+  const totalItems = posts.length;
+
   return (
     <div className="post-items">
-      {posts.map((post) => (
+      {posts.map((post, index) => (
         <PostListItem
           key={post.postId}
           post={post}
           onClick={() => onPostClick(post.postId)}
           onEdit={onEdit}
           onDelete={onDelete}
+          index={index}
+          totalItems={totalItems}
         />
       ))}
     </div>
