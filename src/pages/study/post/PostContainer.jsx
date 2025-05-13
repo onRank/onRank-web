@@ -4,8 +4,8 @@ import PropTypes from "prop-types";
 import { usePost, PostProvider } from "../../../components/study/post/PostProvider";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "./PostDetail";
-import PostCreate from "./PostCreate";
-import PostEdit from "./PostEdit";
+import PostForm from "../../../components/study/post/PostForm";
+import PostEditForm from "../../../components/study/post/PostEditForm";
 import useStudyRole from "../../../hooks/useStudyRole";
 import Button from "../../../components/common/Button";
 import "../../../styles/post.css";
@@ -72,9 +72,9 @@ const PostInnerContainer = ({ onSubPageChange }) => {
   const navigateToDetail = (id) => navigate(`/studies/${studyId}/posts/${id}`);
 
   // CRUD 핸들러
-  const handleSubmitCreate = async (title, content, files) => {
+  const handleSubmitCreate = async (postData, files) => {
     setIsLoading(true);
-    const newPost = { title, content };
+    const newPost = postData; // {postTitle, postContent, fileNames}
     try {
       const result = await createPost(studyId, newPost, files);
       if (result.success) {
@@ -88,10 +88,9 @@ const PostInnerContainer = ({ onSubPageChange }) => {
     }
   };
 
-  const handleSubmitEdit = async (id, title, content, files) => {
+  const handleSubmitEdit = async (id, updatedPostData, files) => {
     setIsLoading(true);
     try {
-      const updatedPostData = { title, content };
       const result = await editPost(studyId, id, updatedPostData, files);
       if (result.success) {
         navigateToDetail(id);
@@ -120,11 +119,10 @@ const PostInnerContainer = ({ onSubPageChange }) => {
     return (
       <div>
         <h1 className="page-title">게시글 추가</h1>
-        <PostCreate
+        <PostForm
           onSubmit={handleSubmitCreate}
           onCancel={navigateToList}
           isLoading={isLoading}
-          error={error}
         />
       </div>
     );
@@ -134,12 +132,12 @@ const PostInnerContainer = ({ onSubPageChange }) => {
     return (
       <div>
         <h1 className="page-title">게시글 수정</h1>
-        <PostEdit
-          post={selectedPost}
-          isLoading={isLoading}
-          error={error}
+        <PostEditForm
+          studyId={studyId}
+          postId={postId}
+          initialData={selectedPost}
           onCancel={navigateToList}
-          onSubmit={(title, content, files) => handleSubmitEdit(postId, title, content, files)}
+          onSaveComplete={() => navigateToDetail(postId)}
         />
       </div>
     );
@@ -150,10 +148,11 @@ const PostInnerContainer = ({ onSubPageChange }) => {
       <div>
         <h1 className="page-title">게시글 상세</h1>
         <PostDetail
-          post={selectedPost}
-          onBack={navigateToList}
-          onEdit={isManager ? navigateToEdit : () => {}}
-          onDelete={isManager ? handleDelete : () => {}}
+          studyId={studyId}
+          postId={selectedPost.postId}
+          handleBack={navigateToList}
+          handleEdit={isManager ? navigateToEdit : undefined}
+          handleDelete={isManager ? handleDelete : undefined}
         />
       </div>
     );

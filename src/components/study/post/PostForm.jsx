@@ -1,160 +1,67 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { useParams } from "react-router-dom";
 import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
-import FileCard from "../FileCard"; // FileCard 컴포넌트 import 추가
+import { useTheme } from "../../../contexts/ThemeContext";
+import "../../../styles/post.css";
 
-const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
+/*
+  PostForm – 게시글 작성 공통 컴포넌트
+  • NoticeForm 의 구조/스타일/UX 를 그대로 차용하고, 필드명만 post* 로 교체
+  • 모든 스터디 참여자가 글 작성 가능하므로 별도 권한 체크는 하지 않는다.
+*/
+
+const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
+  const { studyId } = useParams();
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [existingFiles, setExistingFiles] = useState([]);
-  const [filesToRemove, setFilesToRemove] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const { isLoading, createPost, editPost } = usePost();
+  const { isLoading: contextIsLoading, createPost } = usePost();
+  const { colors } = useTheme(); // eslint-disable-line no-unused-vars
   const maxLength = 10000;
 
+  const isLoading = propIsLoading || contextIsLoading;
+
+  // 수정 모드라면 초기 데이터 세팅
   useEffect(() => {
     if (post) {
-      setPostTitle(post.postTitle);
-      setPostContent(post.postContent);
-
-      // 기존 파일이 있으면 설정
-      if (post.files && Array.isArray(post.files)) {
-        setExistingFiles(post.files);
-      }
+      setPostTitle(post.postTitle || post.title || "");
+      setPostContent(post.postContent || post.content || "");
     }
   }, [post]);
 
-  // 파일 선택 핸들러
+  // 파일 선택
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    // 이미 선택된 파일과 중복 확인 (새로 추가하는 파일)
-    const newFiles = files.filter(
-      (file) => !selectedFiles.some((f) => f.name === file.name)
-    );
-
-    // 기존 파일과 이름 중복 확인 (수정 모드에서)
-    const duplicateWithExisting = newFiles.filter((file) =>
-      existingFiles.some((f) => f.fileName === file.name)
-    );
-
-    if (duplicateWithExisting.length > 0) {
-      setError(
-        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
-          .map((f) => f.name)
-          .join(", ")}`
-      );
+    // 중복 & 용량(10MB) 체크
+    const newFiles = files.filter((file) => !selectedFiles.some((f) => f.name === file.name));
+    const oversized = newFiles.filter((file) => file.size > 10 * 1024 * 1024);
+    if (oversized.length) {
+      setError(`다음 파일이 10MB를 초과합니다: ${oversized.map((f) => f.name).join(", ")}`);
       return;
     }
-
-    // 파일 크기 제한 (10MB)
-    const oversizedFiles = newFiles.filter(
-      (file) => file.size > 10 * 1024 * 1024
-    );
-    if (oversizedFiles.length > 0) {
-      setError(
-        `다음 파일이 10MB를 초과합니다: ${oversizedFiles
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
-
-    // 선택된 파일 추가
     setSelectedFiles((prev) => [...prev, ...newFiles]);
-    // 파일 선택 후 input 초기화
+    // reset input
     e.target.value = "";
   };
 
-  // 드래그 앤 드롭 이벤트 핸들러
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // 첨부 취소
+  const handleRemoveFile = (fileName) => {
+    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
-  const handleDragEnter = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length === 0) return;
-
-    // 이미 선택된 파일과 중복 확인 (새로 추가하는 파일)
-    const newFiles = files.filter(
-      (file) => !selectedFiles.some((f) => f.name === file.name)
-    );
-
-    // 기존 파일과 이름 중복 확인 (수정 모드에서)
-    const duplicateWithExisting = newFiles.filter((file) =>
-      existingFiles.some((f) => f.fileName === file.name)
-    );
-
-    if (duplicateWithExisting.length > 0) {
-      setError(
-        `이미 존재하는 파일이 있습니다: ${duplicateWithExisting
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
-
-    // 파일 크기 제한 (10MB)
-    const oversizedFiles = newFiles.filter(
-      (file) => file.size > 10 * 1024 * 1024
-    );
-    if (oversizedFiles.length > 0) {
-      setError(
-        `다음 파일이 10MB를 초과합니다: ${oversizedFiles
-          .map((f) => f.name)
-          .join(", ")}`
-      );
-      return;
-    }
-
-    // 선택된 파일 추가
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
-  };
-
-  // 선택된 파일 제거 핸들러
-  const handleRemoveFile = (fileToRemove) => {
-    setSelectedFiles((prev) =>
-      prev.filter((file) => file.name !== fileToRemove.name)
-    );
-  };
-
-  // 기존 파일 제거 핸들러
-  const handleRemoveExistingFile = (fileToRemove) => {
-    setExistingFiles((prev) =>
-      prev.filter((file) => file.fileId !== fileToRemove.fileId)
-    );
-    setFilesToRemove((prev) => [...prev, fileToRemove]);
-  };
-
-  // 게시판 생성 핸들러
+  // 게시글 생성
   const handleCreatePost = async (e) => {
     e.preventDefault();
     setError("");
     setIsSubmitting(true);
 
-    // 입력 검증
     if (!postTitle.trim()) {
       setError("제목을 입력해주세요.");
       setIsSubmitting(false);
@@ -162,170 +69,70 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
     }
 
     try {
-      if (mode === "create") {
-        // 생성 모드
-        const newPost = {
-          postTitle,
-          postContent,
-          fileNames: selectedFiles.map((file) => file.name),
-        };
+      const newPost = {
+        postTitle,
+        postContent,
+        fileNames: selectedFiles.map((f) => f.name),
+      };
 
-        const result = await createPost(studyId, newPost, selectedFiles);
-        if (!result.success) {
-          setError(result.message || "게시판 저장 중 오류가 발생했습니다.");
-          return;
-        }
-        if (result.warning) {
-          setError(result.warning);
-        }
-
-        // 성공 시 콜백 호출 - 생성된 게시판의 ID를 전달
-        if (result.data && result.data.postId) {
-          console.log("[PostForm] 생성된 게시판 ID:", result.data.postId);
-          onFinish?.(result.data.postId);
-        } else {
-          console.warn(
-            "[PostForm] 생성된 게시판에 ID가 없습니다:",
-            result.data
-          );
-          onFinish?.();
-        }
-      } else {
-        // 수정 모드
-        const updatedPost = {
-          postTitle,
-          postContent,
-          fileNames: selectedFiles.map((file) => file.name),
-          // 유지할 기존 파일 목록
-          remainingFileIds: existingFiles.map((file) => file.fileId),
-          // 제거할 파일 목록
-          removeFileIds: filesToRemove.map((file) => file.fileId),
-        };
-
-        const result = await editPost(
-          studyId,
-          post.postId,
-          updatedPost,
-          selectedFiles
-        );
-        if (!result.success) {
-          setError(result.message || "게시판 수정 중 오류가 발생했습니다.");
-          return;
-        }
-        if (result.warning) {
-          setError(result.warning);
-        }
-
-        // 수정 모드에서는 기존 ID 전달
-        onFinish?.(post.postId);
+      if (!studyId) {
+        setError("스터디 ID를 찾을 수 없습니다.");
+        setIsSubmitting(false);
+        return;
       }
-    } catch (error) {
-      setError(
-        "게시판 처리 중 오류 발생: " + (error.message || "알 수 없는 오류")
-      );
-    } finally {
+
+      // 컨테이너가 onSubmit 을 내려줬다면 위임 (테스트/재사용성을 위해)
+      if (onSubmit) {
+        const ok = await onSubmit(newPost, selectedFiles);
+        if (!ok) setIsSubmitting(false);
+        return;
+      }
+
+      const result = await createPost(studyId, newPost, selectedFiles);
+
+      if (!result.success) {
+        setError(result.message || "게시글 저장 중 오류가 발생했습니다.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (result.warning) {
+        setError(result.warning); // 업로드 실패 같은 경고는 에러 영역에 표시
+      }
+
+      // 성공 – caller 에게 알림 후 페이지 이동 처리
+      if (result.data?.postId) {
+        setTimeout(() => {
+          if (onCancel) onCancel(result.data.postId);
+        }, result.warning ? 1500 : 500);
+      } else {
+        setTimeout(() => {
+          if (onCancel) onCancel();
+        }, result.warning ? 1500 : 500);
+      }
+    } catch (err) {
+      console.error("[PostForm] 게시글 처리 오류:", err);
+      setError(err.message || "게시글 처리 중 오류 발생");
       setIsSubmitting(false);
     }
   };
 
-  // PostFormPage 스타일 적용
+  /* --------------------------- 스타일 (NoticeForm 재활용) --------------------------- */
   const styles = {
-    formContainer: {
-      width: "100%",
-    },
-    inputGroup: {
-      marginBottom: "24px",
-    },
-    label: {
-      display: "block",
-      fontWeight: "bold",
-      marginBottom: "8px",
-    },
-    input: {
-      width: "100%",
-      padding: "10px",
-      borderRadius: "6px",
-      border: "1px solid #ccc",
-      fontSize: "14px",
-    },
-    textarea: {
-      width: "100%",
-      minHeight: "200px",
-      padding: "10px",
-      borderRadius: "8px",
-      border: "1px solid #ccc",
-      resize: "none",
-      fontSize: "14px",
-    },
-    charCount: {
-      textAlign: "right",
-      fontSize: "12px",
-      color: "#888",
-      marginTop: "4px",
-    },
-    actionButtons: {
-      display: "flex",
-      padding: "24px 0",
-      gap: "12px",
-      justifyContent: "flex-end",
-    },
-    errorMessage: {
-      backgroundColor: "#fdecea",
-      color: "#e74c3c",
-      padding: "12px",
-      borderRadius: "6px",
-      marginBottom: "16px",
-    },
-    fileContainer: {
-      width: "100%",
-      overflow: "hidden",
-      boxSizing: "border-box",
-    },
-    fileCardContainer: {
-      display: "flex",
-      marginBottom: "16px",
-      overflowX: "auto",
-      overflowY: "hidden",
-      width: "100%",
-      maxWidth: "100%",
-      padding: "5px",
-      boxSizing: "border-box",
-    },
-    fileGroupTitle: {
-      marginBottom: "8px",
-      fontWeight: "500",
-      whiteSpace: "normal",
-    },
-  };
-
-  // 드래그 앤 드롭 영역 스타일
-  const dragDropStyles = {
-    dropZone: {
-      border: isDragging ? "2px dashed #e74c3c" : "2px dashed #ccc",
-      borderRadius: "6px",
-      padding: "20px",
-      textAlign: "center",
-      backgroundColor: isDragging ? "#fef2f2" : "#f8f9fa",
-      marginBottom: "16px",
-      transition: "all 0.2s ease",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "column",
-      width: "100%",
-    },
-    icon: {
-      fontSize: "24px",
-      marginBottom: "8px",
-      color: isDragging ? "#e74c3c" : "#666",
-    },
-    text: {
-      color: "#666",
-      fontSize: "12px",
-      textAlign: "center",
-      lineHeight: "1.5",
-    },
+    formContainer: { width: "100%" },
+    inputGroup: { marginBottom: "24px" },
+    label: { display: "block", fontWeight: "bold", marginBottom: "8px", color: "var(--textPrimary)" },
+    input: { width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid var(--border)", fontSize: "14px", backgroundColor: "var(--inputBackground)", color: "var(--textPrimary)" },
+    textarea: { width: "100%", minHeight: "200px", padding: "10px", borderRadius: "8px", border: "1px solid var(--border)", resize: "none", fontSize: "14px", backgroundColor: "var(--inputBackground)", color: "var(--textPrimary)" },
+    charCount: { textAlign: "right", fontSize: "12px", color: "var(--textSecondary)", marginTop: "4px" },
+    fileUploadRow: { display: "flex", justifyContent: "flex-end", marginTop: "8px", marginBottom: "32px" },
+    fileUploadButton: { backgroundColor: "var(--primary)", color: "#fff", border: "none", borderRadius: "6px", padding: "6px 12px", cursor: "pointer", fontSize: "14px" },
+    actionButtons: { display: "flex", justifyContent: "space-between", marginTop: "24px" },
+    leftButtons: { display: "flex", gap: "12px" },
+    errorMessage: { backgroundColor: "var(--errorBackground)", color: "var(--error)", padding: "12px", borderRadius: "6px", marginBottom: "16px" },
+    fileList: { marginTop: "8px", padding: "8px 12px", backgroundColor: "var(--cardBackground)", borderRadius: "4px", fontSize: "14px", border: "1px solid var(--border)" },
+    fileItem: { display: "flex", alignItems: "center", marginBottom: "4px", color: "var(--textPrimary)" },
+    fileIcon: { marginRight: "8px", color: "var(--textSecondary)" },
   };
 
   if (isLoading || isSubmitting) return <LoadingSpinner />;
@@ -335,13 +142,11 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       {error && <div style={styles.errorMessage}>{error}</div>}
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="title">
-          제목
-        </label>
+        <label style={styles.label} htmlFor="title">제목</label>
         <input
           id="title"
           style={styles.input}
-          placeholder="게시판 제목을 입력하세요"
+          placeholder="게시글 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
           required
@@ -349,124 +154,53 @@ const PostForm = ({ studyId, post = null, mode = "create", onFinish }) => {
       </div>
 
       <div style={styles.inputGroup}>
-        <label style={styles.label} htmlFor="content">
-          내용을 입력해주세요.
-        </label>
+        <label style={styles.label} htmlFor="content">내용을 입력해주세요.</label>
         <textarea
           id="content"
           style={styles.textarea}
-          placeholder="게시판 내용을 입력하세요"
+          placeholder="게시글 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div style={styles.charCount}>
-          {postContent.length}/{maxLength}
-        </div>
+        <div style={styles.charCount}>{postContent.length}/{maxLength}</div>
       </div>
 
-      {/* 파일 목록 표시 (기존 및 새 파일) */}
-      <div style={styles.fileContainer}>
-        {existingFiles.length > 0 && (
-          <div>
-            <div style={styles.fileGroupTitle}>기존 첨부 파일</div>
-            <div style={styles.fileCardContainer}>
-              {existingFiles.map((file) => (
-                <FileCard
-                  key={file.fileId}
-                  file={{
-                    name: file.fileName,
-                    type:
-                      file.fileUrl &&
-                      file.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i)
-                        ? "image/jpeg"
-                        : "application/octet-stream",
-                    size: file.fileSize,
-                  }}
-                  onDelete={() => handleRemoveExistingFile(file)}
-                />
-              ))}
+      {/* 파일 목록 */}
+      {selectedFiles.length > 0 && (
+        <div style={styles.fileList}>
+          {selectedFiles.map((file, idx) => (
+            <div key={idx} style={styles.fileItem}>
+              <span style={styles.fileIcon}>��</span>{file.name}
+              <span style={{ marginLeft: "10px", color: "var(--textSecondary)", fontSize: "12px" }}>({(file.size/1024).toFixed(1)} KB)</span>
+              <button type="button" onClick={() => handleRemoveFile(file.name)} style={{ marginLeft: "auto", color: "var(--error)", background: "none", border: "none", cursor: "pointer" }}>✕</button>
             </div>
-          </div>
-        )}
-
-        {selectedFiles.length > 0 && (
-          <div>
-            <div style={styles.fileGroupTitle}>첨부 파일</div>
-            <div style={styles.fileCardContainer}>
-              {selectedFiles.map((file, index) => (
-                <FileCard key={index} file={file} onDelete={handleRemoveFile} />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 드래그 앤 드롭 영역 */}
-      <div
-        style={dragDropStyles.dropZone}
-        onDragOver={handleDragOver}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-        onClick={() => document.getElementById("file-upload").click()}
-      >
-        <div style={dragDropStyles.icon}>
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M17 8L12 3L7 8"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M12 3V15"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          ))}
         </div>
-        <div style={dragDropStyles.text}>
-          파일의 주소나 놓기
-          <br />
-          클릭하여 추가하세요
-        </div>
-        <input
-          id="file-upload"
-          type="file"
-          multiple
-          onChange={handleFileChange}
-          style={{ display: "none" }}
-        />
+      )}
+
+      <div style={styles.fileUploadRow}>
+        <label htmlFor="file-upload" style={{ cursor: "pointer" }}>
+          <div style={styles.fileUploadButton}>파일 첨부</div>
+          <input id="file-upload" type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
+        </label>
       </div>
 
       <div style={styles.actionButtons}>
-        <Button type="submit" variant="upload" disabled={isSubmitting} />
-        <Button
-          type="button"
-          variant="back"
-          onClick={() => onFinish()}
-          disabled={isSubmitting}
-        />
+        <div style={styles.leftButtons}>
+          <Button type="submit" variant="upload" disabled={isSubmitting} />
+        </div>
+        <Button type="button" variant="back" onClick={onCancel} disabled={isSubmitting} />
       </div>
     </form>
   );
+};
+
+PostForm.propTypes = {
+  post: PropTypes.object,
+  onSubmit: PropTypes.func,
+  onCancel: PropTypes.func,
+  isLoading: PropTypes.bool,
 };
 
 export default PostForm;
