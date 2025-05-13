@@ -799,6 +799,7 @@ const AssignmentDetail = () => {
                     label="닫기"
                   />
                 </div>
+                <div></div>
               </>
             )
           )}
