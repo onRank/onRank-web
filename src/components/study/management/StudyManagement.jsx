@@ -444,11 +444,6 @@ function StudyManagement() {
               />
               {renderImagePreview()}
             </div>
-            {studyImageUrl && (
-              <div className="image-upload-hint">
-                현재 이미지가 표시됩니다. 변경하려면 새 이미지를 선택하세요.
-              </div>
-            )}
           </div>
 
           <div className="container">
@@ -519,7 +514,7 @@ function StudyManagement() {
             <div value={studyDescription} className="input" />
           </div>
 
-          <div className="image-container">
+          <div className="container">
             <div className="title">스터디 이미지</div>
             {renderStudyImage()}
           </div>

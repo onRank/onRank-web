@@ -10,7 +10,7 @@ function ManagementContainer() {
 
   return (
     <>
-      <div style={{ fontSize: "24px", fontWeight: "700", margin: "30px 0" }}>
+      <div style={{ fontSize: "24px", fontWeight: "700", margin: "30px" }}>
         관리
       </div>
 
@@ -19,7 +19,7 @@ function ManagementContainer() {
         style={{
           display: "flex",
           justifyContent: "flex-start",
-          margin: "2rem 0",
+          margin: "2rem 1rem",
         }}>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <Button

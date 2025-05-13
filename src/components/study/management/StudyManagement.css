@@ -6,7 +6,8 @@
   font-size: 20;
   font-weight: 700;
   margin: 0;
-  padding-bottom: 5px;
+  border-bottom: none;
+  padding-bottom: 15px;
   display: flex;
   align-items: center;
 }
