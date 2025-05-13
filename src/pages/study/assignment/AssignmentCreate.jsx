@@ -140,101 +140,99 @@ function AssignmentCreate() {
   };
   
   return (
-    <>
-      <h1 className="title">과제 추가</h1>
+    <div className="assignment-page">
+      <h1 className="page-title">과제 추가</h1>
       
-      <form className="form" onSubmit={handleSubmit}>
-        {error && (
-          <div className="error-message">{error}</div>
-        )}
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentTitle">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
-          </label>
-          <input
-            className="input"
-            id="assignmentTitle"
-            name="assignmentTitle"
-            value={formData.assignmentTitle}
-            onChange={handleChange}
-            placeholder="과제 제목을 입력하세요"
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentContent">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
-          </label>
-          <textarea
-            className="textarea"
-            id="assignmentContent"
-            name="assignmentContent"
-            value={formData.assignmentContent}
-            onChange={handleChange}
-            placeholder="과제 내용과 지시사항을 입력하세요"
-            rows={6}
-            required
-          />
-          <div className="char-count">{formData.assignmentContent.length}/10000</div>
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentDueDate">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>마감기한
-          </label>
-          <div className="date-picker-wrapper">
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="error-message">{error}</div>
+          )}
+          
+          <div className="form-field">
+            <label htmlFor="assignmentTitle">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
+            </label>
             <input
-              className="input"
-              id="assignmentDueDate"
-              name="assignmentDueDate"
-              type="datetime-local"
-              value={formData.assignmentDueDate}
+              id="assignmentTitle"
+              name="assignmentTitle"
+              value={formData.assignmentTitle}
               onChange={handleChange}
+              placeholder="과제 제목을 입력하세요"
               required
             />
           </div>
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentMaxPoint">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 포인트
-          </label>
-          <input
-            className="input"
-            id="assignmentMaxPoint"
-            name="assignmentMaxPoint"
-            type="number"
-            min="0"
-            value={formData.assignmentMaxPoint}
-            onChange={handleChange}
-          />
-        </div>
-        
-        {/* 파일 업로더 컴포넌트 사용 */}
-        <div className="form-group">
-          <label className="label">첨부파일 추가</label>
-          <FileUploader 
-            existingFiles={[]} 
-            onFileSelect={handleFileSelect}
-          />
-        </div>
-        
-        <div className="button-group" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-          <Button 
-            variant="upload" 
-            type="submit"
-            disabled={isLoading}
-          />
-          <Button 
-            variant="back" 
-            type="button"
-            onClick={handleCancel}
-          />
-        </div>
-      </form>
-    </>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentContent">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
+            </label>
+            <textarea
+              id="assignmentContent"
+              name="assignmentContent"
+              value={formData.assignmentContent}
+              onChange={handleChange}
+              placeholder="과제 내용과 지시사항을 입력하세요"
+              rows={6}
+              required
+            />
+            <div className="char-count">{formData.assignmentContent.length}/10000</div>
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentDueDate">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>마감기한
+            </label>
+            <div className="date-picker-wrapper">
+              <input
+                id="assignmentDueDate"
+                name="assignmentDueDate"
+                type="datetime-local"
+                value={formData.assignmentDueDate}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentMaxPoint">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 포인트
+            </label>
+            <input
+              id="assignmentMaxPoint"
+              name="assignmentMaxPoint"
+              type="number"
+              min="0"
+              value={formData.assignmentMaxPoint}
+              onChange={handleChange}
+            />
+          </div>
+          
+          {/* 파일 업로더 컴포넌트 사용 */}
+          <div className="form-field">
+            <label>첨부파일 추가</label>
+            <FileUploader 
+              existingFiles={[]} 
+              onFileSelect={handleFileSelect}
+            />
+          </div>
+          
+          <div className="button-container">
+            <Button 
+              variant="upload" 
+              type="submit"
+              disabled={isLoading}
+            />
+            <Button 
+              variant="back" 
+              type="button"
+              onClick={handleCancel}
+            />
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }
 

@@ -210,112 +210,101 @@ function AssignmentEdit() {
   }
   
   return (
-    <div className="container" style={{ padding: "20px", paddingBottom: "100px" }}>
-      <div className="header">
-        <h1 className="title">과제 수정</h1>
-        <Button 
-          variant="back" 
-          onClick={handleCancel} 
-          label="목록으로"
-        />
-      </div>
+    <div className="assignment-page">
+      <h1 className="page-title">과제 수정</h1>
       
-      <form className="form" onSubmit={handleSubmit} style={{ paddingBottom: "80px" }}>
-        {error && (
-          <div className="error-message">{error}</div>
-        )}
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentTitle">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>과제 제목
-          </label>
-          <input
-            className="input"
-            id="assignmentTitle"
-            name="assignmentTitle"
-            value={formData.assignmentTitle}
-            onChange={handleChange}
-            placeholder="과제 제목을 입력하세요"
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentContent">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
-          </label>
-          <textarea
-            className="textarea"
-            id="assignmentContent"
-            name="assignmentContent"
-            value={formData.assignmentContent}
-            onChange={handleChange}
-            placeholder="과제 내용과 지시사항을 입력하세요"
-            rows={6}
-            required
-          />
-          <div className="char-count">{formData.assignmentContent.length}/10000</div>
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentDueDate">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제출 기한
-          </label>
-          <input
-            className="input"
-            id="assignmentDueDate"
-            name="assignmentDueDate"
-            type="datetime-local"
-            value={formData.assignmentDueDate}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        
-        <div className="form-group">
-          <label className="label" htmlFor="assignmentMaxPoint">
-            <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 점수
-          </label>
-          <input
-            className="input"
-            id="assignmentMaxPoint"
-            name="assignmentMaxPoint"
-            type="number"
-            min="0"
-            value={formData.assignmentMaxPoint}
-            onChange={handleChange}
-          />
-        </div>
-        
-        {/* 통합 FileUploader 컴포넌트 사용 */}
-        <div className="form-group" style={{ marginBottom: "40px" }}>
-          <FileUploader
-            existingFiles={existingFiles.map(file => ({
-              fileId: file.fileId,
-              fileName: file.fileName,
-              fileUrl: file.fileUrl,
-              fileSize: file.fileSize
-            }))}
-            onFileSelect={handleFileSelect}
-            onExistingFileRemove={handleExistingFileRemove}
-          />
-        </div>
-        
-        <div className="button-group" style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "30px" }}>
-          <Button 
-            variant="submit" 
-            type="submit" 
-            label={isLoading ? "수정 중..." : "수정"}
-            disabled={isLoading}
-          />
-          <Button 
-            variant="back" 
-            onClick={handleCancel} 
-            label="취소"
-            type="button"
-          />
-        </div>
-      </form>
+      <div className="form-container">
+        <form onSubmit={handleSubmit}>
+          {error && (
+            <div className="error-message">{error}</div>
+          )}
+          
+          <div className="form-field">
+            <label htmlFor="assignmentTitle">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>과제 제목
+            </label>
+            <input
+              id="assignmentTitle"
+              name="assignmentTitle"
+              value={formData.assignmentTitle}
+              onChange={handleChange}
+              placeholder="과제 제목을 입력하세요"
+              required
+            />
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentContent">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>지시사항
+            </label>
+            <textarea
+              id="assignmentContent"
+              name="assignmentContent"
+              value={formData.assignmentContent}
+              onChange={handleChange}
+              placeholder="과제 내용과 지시사항을 입력하세요"
+              rows={6}
+              required
+            />
+            <div className="char-count">{formData.assignmentContent.length}/10000</div>
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentDueDate">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제출 기한
+            </label>
+            <input
+              id="assignmentDueDate"
+              name="assignmentDueDate"
+              type="datetime-local"
+              value={formData.assignmentDueDate}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="form-field">
+            <label htmlFor="assignmentMaxPoint">
+              <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>최대 점수
+            </label>
+            <input
+              id="assignmentMaxPoint"
+              name="assignmentMaxPoint"
+              type="number"
+              min="0"
+              value={formData.assignmentMaxPoint}
+              onChange={handleChange}
+            />
+          </div>
+          
+          {/* 통합 FileUploader 컴포넌트 사용 */}
+          <div className="form-field">
+            <FileUploader
+              existingFiles={existingFiles.map(file => ({
+                fileId: file.fileId,
+                fileName: file.fileName,
+                fileUrl: file.fileUrl,
+                fileSize: file.fileSize
+              }))}
+              onFileSelect={handleFileSelect}
+              onExistingFileRemove={handleExistingFileRemove}
+            />
+          </div>
+          
+          <div className="button-container">
+            <Button 
+              variant="submit" 
+              type="submit" 
+              disabled={isLoading}
+            />
+            <Button 
+              variant="back" 
+              onClick={handleCancel} 
+              type="button"
+            />
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
