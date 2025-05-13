@@ -3,7 +3,7 @@
   background-color: white;
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  z-index: 9999;
+  z-index: 99999;
   width: 200px;
   overflow: hidden;
   border: 1px solid black;
@@ -86,6 +86,7 @@
   width: 100%;
   text-align: left;
   cursor: pointer;
+  justify-content: flex-start;
 }
 
 .action-popup-button:hover {
@@ -105,8 +106,19 @@
   color: black;
 }
 
+.delete-button {
+  background: none !important;
+  color: black !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
 .delete-button .action-popup-text {
-  color: black;
+  color: black !important;
+}
+
+.delete-button .delete-icon svg path {
+  fill: black !important;
 }
 
 .action-popup-divider {
