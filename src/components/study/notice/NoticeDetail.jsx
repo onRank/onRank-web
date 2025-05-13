@@ -196,7 +196,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
         </div>
       )}
       
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem" }}>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem", paddingBottom: "10px" }}>
         <Button onClick={handleBack} variant="back" style={{ width: "auto", padding: "0 16px" }} />
       </div>
     </>
