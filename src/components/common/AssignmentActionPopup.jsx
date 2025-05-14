@@ -49,14 +49,31 @@ const AssignmentActionPopup = ({
   // Calculate popup position based on trigger element
   const calculatePosition = () => {
     if (!triggerRef.current) {
-      // Find the menu button that triggered this popup
-      const menuButton = document.activeElement;
-      if (menuButton) {
-        triggerRef.current = menuButton;
+      // First try to find the button that has our special marker
+      const possibleTriggers = document.querySelectorAll('button._popupTrigger, button[_popupTrigger], [_popupTrigger]');
+      if (possibleTriggers.length > 0) {
+        triggerRef.current = possibleTriggers[0];
       } else {
-        // If no trigger element found, position at center
-        setPopupStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
-        return;
+        // Try to find any button with the class "more-button" which is active
+        const moreButtons = document.querySelectorAll('.more-button');
+        for (const btn of moreButtons) {
+          if (document.activeElement === btn || btn.contains(document.activeElement)) {
+            triggerRef.current = btn;
+            break;
+          }
+        }
+        
+        // Fall back to the active element
+        if (!triggerRef.current) {
+          const menuButton = document.activeElement;
+          if (menuButton) {
+            triggerRef.current = menuButton;
+          } else {
+            // If no trigger element found, position at center
+            setPopupStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+            return;
+          }
+        }
       }
     }
 
@@ -97,8 +114,10 @@ const AssignmentActionPopup = ({
     // Make sure popup stays in viewport
     style.left = Math.max(10, Math.min(viewportWidth - popupWidth - 10, style.left));
     
-    // Set fixed position to make popup appear above all other elements
+    // Always set position to fixed to make popup appear above all other elements
+    // This ensures it's not constrained by any parent container's overflow settings
     style.position = 'fixed';
+    style.zIndex = 2147483647; // Maximum z-index value
     
     setPopupStyle(style);
   };
@@ -190,7 +209,7 @@ const AssignmentActionPopup = ({
   return createPortal(
     <div className={`action-popup ${position}`} 
          ref={popupRef} 
-         style={{...popupStyle, zIndex: 2147483647}}
+         style={{...popupStyle, zIndex: 2147483647, position: 'fixed'}}
          onClick={(e) => e.stopPropagation()}>
       <div className="action-popup-content">
         <button className="action-popup-close" 

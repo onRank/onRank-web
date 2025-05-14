@@ -117,6 +117,8 @@ function AssignmentList() {
       setActivePopup(null);
     } else {
       setActivePopup(assignmentId);
+      // Store the clicked button as the trigger reference for proper positioning
+      e.currentTarget._popupTrigger = true;
     }
   };
 
