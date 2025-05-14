@@ -20,7 +20,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     delete: "삭제",
     study: "스터디",
     member: "회원",
-    memberAdd: "+회원추가",
+    memberAdd: "+회원 추가",
     default: "확인",
   };
 

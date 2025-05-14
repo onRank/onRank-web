@@ -14,7 +14,7 @@
 
 .modal-content {
   background-color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   padding: 28px;
   width: 500px;
   max-width: 90%;
@@ -27,7 +27,7 @@
   align-items: center;
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #edf2f7;
+  border-bottom: 1px dashed #edf2f7;
 }
 
 .modal-header h3 {
@@ -50,6 +50,7 @@
   height: 32px;
   border-radius: 50%;
   transition: all 0.2s ease;
+  outline: none;
 }
 
 .close-button:hover {
@@ -132,7 +133,7 @@ form {
 /* 모달 액션 컨테이너 */
 .modal-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   gap: 16px;
   margin-top: 30px;
 }
@@ -179,13 +180,13 @@ form {
 
 /* 추가 버튼 스타일 */
 .submit-button {
-  background-color: #4285f4 !important;
-  color: white !important;
-  border-color: #4285f4 !important;
+  background-color: #fff !important;
+  color: #222 !important;
 }
 
 .submit-button:hover:not(:disabled) {
-  background-color: #3b78e7 !important;
+  background-color: #f5f5f5 !important;
+  color: #222 !important;
 }
 
 /* 비활성화된 버튼 */

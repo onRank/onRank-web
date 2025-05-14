@@ -188,13 +188,30 @@ function MemberManagement() {
     }
   };
 
+  // 휴대폰번호 포맷팅 함수
+  const formatPhoneNumber = (phoneNumber) => {
+    if (!phoneNumber || phoneNumber === "번호 없음") return "번호 없음";
+
+    // 숫자만 추출
+    const cleaned = phoneNumber.replace(/\D/g, "");
+
+    // 길이에 따라 형식 적용
+    if (cleaned.length === 11) {
+      return cleaned.replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3");
+    } else if (cleaned.length === 10) {
+      return cleaned.replace(/(\d{3})(\d{3})(\d{4})/, "$1-$2-$3");
+    }
+
+    return phoneNumber;
+  };
+
   // MemberCard에 맞는 데이터 변환 함수
   const toMemberCardProps = (member) => ({
     name: member.studentName || "이름 없음",
     email: member.studentEmail || "이메일 없음",
-    phone: member.studentPhoneNumber || "번호 없음",
-    university: member.studentSchool || "학교 없음",
-    department: member.studentDepartment || "학과 없음",
+    phone: formatPhoneNumber(member.studentPhoneNumber),
+    university: member.studentSchool || "학교 정보 없음",
+    department: member.studentDepartment || "학과 정보 없음",
   });
 
   return (
@@ -209,7 +226,7 @@ function MemberManagement() {
         <Button
           onClick={() => setShowAddMemberModal(true)}
           variant="memberAdd"
-          style={{ height: "30px" }}>
+          style={{ width: "85px", height: "34px" }}>
           <svg
             width="16"
             height="16"
