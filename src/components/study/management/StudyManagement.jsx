@@ -211,11 +211,9 @@ function StudyManagement() {
     return (
       <div
         style={{
-          border: "3px solid #FF0000",
           borderRadius: "8px",
-          padding: "15px",
           display: "inline-block",
-          backgroundColor: "#f0f0f0",
+          backgroundColor: "none",
           minHeight: "150px",
           minWidth: "200px",
           textAlign: "center",
