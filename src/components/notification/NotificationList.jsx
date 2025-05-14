@@ -81,10 +81,8 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
         if (err.message && (err.message.includes('Network Error') || err.message.includes('CORS'))) {
           try {
             console.log('fetch API로 직접 시도');
-            const apiBaseUrl = import.meta.env.PROD 
-              ? "https://onrank.kr" 
-              : import.meta.env.VITE_API_URL || "https://localhost:8080";
-              
+            const apiBaseUrl = import.meta.env.VITE_API_URL;
+
             const fetchUrl = `${apiBaseUrl}/notifications/${notification.notificationId}/read`;
             
             // 쿠키 포함 및 CORS 모드 설정

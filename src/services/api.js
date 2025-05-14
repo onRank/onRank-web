@@ -7,12 +7,13 @@ if (!import.meta.env.VITE_API_URL) {
 
 // API 인스턴스 정의
 export const api = axios.create({
-  baseURL: import.meta.env.PROD
-    ? "https://onrank.kr"
-    : import.meta.env.VITE_API_URL || "https://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL,
+
   timeout: 5000,
   withCredentials: true,
 });
+
+const cloudfrontUrl = import.meta.env.VITE_CLOUDFRONT_URL;
 
 // 요청 인터셉터 설정
 api.interceptors.request.use(
@@ -27,12 +28,11 @@ api.interceptors.request.use(
     );
 
     // S3/CloudFront URL인지 확인
-    const isExternalUrl = 
-      config.url && (
-        config.url.includes('amazonaws.com') || 
-        config.url.includes('s3.') ||
-        config.url.includes('cloudfront.net')
-      );
+    const isExternalUrl = config.url && (
+      config.url.includes('amazonaws.com') ||
+      config.url.includes('s3.') ||
+      (cloudfrontUrl && config.url.startsWith(cloudfrontUrl))
+    );
     
     // S3나 외부 도메인 요청에 대한 처리
     if (isExternalUrl) {
@@ -1541,12 +1541,7 @@ export const studyService = {
       // 네트워크 요청을 직접 fetch로도 시도
       try {
         console.log(`[StudyService] fetch API로 직접 요청 시도`);
-        const fetchUrl = `${
-          import.meta.env.PROD
-            ? "https://onrank.kr"
-            : import.meta.env.VITE_API_URL || "http://localhost:8080"
-        }/studies/${studyId}/attendances`;
-        console.log(`[StudyService] fetch 요청 URL: ${fetchUrl}`);
+        const fetchUrl = `${import.meta.env.VITE_API_URL}/studies/${studyId}/attendances`;
 
         const token = tokenUtils.getToken();
         const fetchResponse = await fetch(fetchUrl, {

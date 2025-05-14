@@ -26,7 +26,8 @@ function GoogleLoginButton() {
 
     // 순수한 OAuth 엔드포인트 호출 (파라미터 없음)
     console.log("[Auth] 구글 로그인 요청 - 최신 코드 확인용");
-    window.location.href = "https://onrank.kr/oauth2/authorization/google";
+    window.location.href = `${import.meta.env.VITE_API_URL}/oauth2/authorization/google`;
+
   };
 
   return (

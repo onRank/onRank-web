@@ -33,12 +33,14 @@ export const DEFAULT_IMAGE_SVG = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20widt
  */
 export const isS3Url = (url) => {
   if (!url || typeof url !== 'string') return false;
+  const cloudfrontUrl = import.meta.env.VITE_CLOUDFRONT_URL;
+
   
   return (
     url.includes('amazonaws.com') || 
     url.includes('s3.') || 
     url.includes('.s3.') ||
-    url.includes('cloudfront.net')
+    (cloudfrontUrl && url.startsWith(cloudfrontUrl))
   );
 };
 
