@@ -20,7 +20,7 @@ function ManagementMemberUpdatePopup({
         background: "#fff",
         border: "1px solid #222",
         borderRadius: 14,
-        minWidth: 220,
+        minWidth: 280,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         padding: 0,
         ...style,
