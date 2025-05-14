@@ -23,6 +23,7 @@ function ManagementMemberUpdatePopup({
         minWidth: 280,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         padding: 0,
+        transform: "translate(-100%, 0)",
         ...style,
       }}>
       {/* 헤더 */}
