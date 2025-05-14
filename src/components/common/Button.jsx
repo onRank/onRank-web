@@ -86,7 +86,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       width: "76px",
     },
     delete: {
-      backgroundColor: "#e74c3c",
+      backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
     },
