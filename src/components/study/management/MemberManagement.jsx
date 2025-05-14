@@ -190,11 +190,11 @@ function MemberManagement() {
 
   // MemberCard에 맞는 데이터 변환 함수
   const toMemberCardProps = (member) => ({
-    name: member.studentName || member.name || "이름 없음",
-    email: member.studentEmail || member.email || "이메일 없음",
-    phone: member.studentPhone || member.phone || "번호 없음",
-    university: member.university || member.school || "",
-    department: member.department || member.major || "",
+    name: member.studentName || "이름 없음",
+    email: member.studentEmail || "이메일 없음",
+    phone: member.studentPhoneNumber || "번호 없음",
+    university: member.studentSchool || "학교 없음",
+    department: member.studentDepartment || "학과 없음",
   });
 
   return (
