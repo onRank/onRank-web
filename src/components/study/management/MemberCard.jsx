@@ -4,8 +4,6 @@ import { FaUserCog } from "react-icons/fa";
 
 function MemberCard({ member, onOpenPermissionPopup }) {
   // member: { name, email, phone, university, department }
-  const [showMemberPermissionModal, setShowMemberPermissionModal] =
-    useState(false);
 
   // 역할 변경 처리 함수
   const handleRoleChange = async (memberId, newRole) => {
