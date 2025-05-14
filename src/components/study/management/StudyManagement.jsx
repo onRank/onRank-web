@@ -551,10 +551,8 @@ function StudyManagement() {
             <Button
               variant="delete"
               onClick={handleDelete}
-              style={{ width: 100 }}>
-              스터디 삭제
-            </Button>
-            /
+              style={{ width: 100 }}></Button>
+            스터디 삭제
             <Button variant="edit" onClick={handleEdit} />
           </div>
         </div>
