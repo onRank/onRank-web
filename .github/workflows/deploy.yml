@@ -32,10 +32,16 @@ jobs:
             echo "S3_PREFIX=main" >> $GITHUB_OUTPUT
             echo "DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
             echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_FRONTEND_URL=https://onrank.kr" >> $GITHUB_ENV
+            echo "VITE_CLOUDFRONT_URL=https://onrank.kr" >> $GITHUB_ENV
+            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "S3_PREFIX=develop" >> $GITHUB_OUTPUT
             echo "DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
             echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_FRONTEND_URL=https://dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_CLOUDFRONT_URL=https://dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
           fi
 
       - name: Build
