@@ -6,7 +6,6 @@ import MemberCard from "./MemberCard";
 import { managementService } from "../../../services/management";
 import "./MemberManagement.css";
 import Button from "../../common/Button";
-import ManagementMemberUpdatePopup from "../../common/ManagementMemberUpdatePopup";
 
 function MemberManagement() {
   const { studyId } = useParams();
@@ -18,6 +17,7 @@ function MemberManagement() {
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
   const [permissionPopupMemberId, setPermissionPopupMemberId] = useState(null);
   const [popupAnchor, setPopupAnchor] = useState(null);
+  const [popupPosition, setPopupPosition] = useState("bottom-right");
 
   // 멤버 목록 조회 함수
   const fetchMembers = async () => {
@@ -217,44 +217,6 @@ function MemberManagement() {
     department: member.studentDepartment || "학과 정보 없음",
   });
 
-  // 권한 팝업 열기 핸들러
-  const handleOpenPermissionPopup = (memberIdOrRect, maybeRect) => {
-    // memberIdOrRect: rect 또는 memberId
-    // maybeRect: rect 또는 undefined
-    if (
-      typeof memberIdOrRect === "object" &&
-      memberIdOrRect !== null &&
-      "left" in memberIdOrRect
-    ) {
-      // rect만 넘어온 경우 (MemberCard에서 rect만 넘김)
-      setPopupAnchor({
-        top: memberIdOrRect.top + window.scrollY,
-        left: memberIdOrRect.left + memberIdOrRect.width + window.scrollX + 8, // 오른쪽에 8px 여백
-      });
-      // memberId는 따로 받아야 하므로, 이 경우엔 memberId를 추가로 넘겨줘야 함
-      // 아래 map에서 콜백을 수정
-    } else {
-      // memberId와 rect가 모두 넘어온 경우
-      setPermissionPopupMemberId(memberIdOrRect);
-      if (maybeRect) {
-        setPopupAnchor({
-          top: maybeRect.top + window.scrollY,
-          left: maybeRect.left + maybeRect.width + window.scrollX + 8,
-        });
-      }
-    }
-  };
-  // 권한 팝업 닫기 핸들러
-  const handleClosePermissionPopup = () => {
-    setPermissionPopupMemberId(null);
-    setPopupAnchor(null);
-  };
-
-  // 팝업에 넘길 멤버 정보 찾기
-  const selectedMember = members.find(
-    (m) => m.memberId === permissionPopupMemberId
-  );
-
   return (
     <div className="member-management-container">
       <div
@@ -298,13 +260,8 @@ function MemberManagement() {
             <MemberCard
               key={member.memberId}
               member={toMemberCardProps(member)}
-              onOpenPermissionPopup={(rect) => {
-                setPermissionPopupMemberId(member.memberId);
-                setPopupAnchor({
-                  top: rect.top + window.scrollY,
-                  left: rect.left + rect.width + window.scrollX + 8, // 오른쪽에 8px 여백
-                });
-              }}
+              onRoleChange={handleRoleChange}
+              onDelete={handleDeleteMember}
             />
           ))
         )}
@@ -321,14 +278,6 @@ function MemberManagement() {
           studyId={studyId}
           onClose={() => setShowAddMemberModal(false)}
           onMemberAdded={handleMemberAdded}
-        />
-      )}
-      {/* 권한 설정 팝업 */}
-      {permissionPopupMemberId && selectedMember && (
-        <ManagementMemberUpdatePopup
-          member={selectedMember}
-          onClose={handleClosePermissionPopup}
-          anchorPosition={popupAnchor}
         />
       )}
     </div>

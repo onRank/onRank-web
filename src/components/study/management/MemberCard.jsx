@@ -1,8 +1,12 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import PropTypes from "prop-types";
 import { FaUserCog } from "react-icons/fa";
+import ManagementMemberUpdatePopup from "../../common/ManagementMemberUpdatePopup";
 
-function MemberCard({ member, onOpenPermissionPopup }) {
+function MemberCard({ member, onRoleChange, onDelete }) {
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState("bottom-right");
+  const [popupAnchor, setPopupAnchor] = useState(null);
   const iconRef = useRef(null);
 
   // member: { name, email, phone, university, department }
@@ -95,14 +99,31 @@ function MemberCard({ member, onOpenPermissionPopup }) {
     }
   };
 
+  // 아이콘 클릭 시 팝업 위치 계산 및 showPopup true
   const handleCogClick = () => {
     if (iconRef.current) {
       const rect = iconRef.current.getBoundingClientRect();
-      onOpenPermissionPopup(rect);
-    } else {
-      onOpenPermissionPopup();
+      // 아이템 위치에 따라 팝업 방향 결정 (예시: 아래쪽이 화면 끝에 가까우면 위로)
+      const windowHeight = window.innerHeight;
+      const popupHeight = 200;
+      let position = "bottom-right";
+      if (rect.bottom + popupHeight > windowHeight) {
+        position = "top-right";
+      }
+      setPopupPosition(position);
+      setPopupAnchor({
+        top:
+          position === "top-right"
+            ? rect.top + window.scrollY - popupHeight - 8
+            : rect.top + window.scrollY,
+        left: rect.left + rect.width + window.scrollX + 8,
+      });
+      setShowPopup(true);
     }
   };
+
+  // 팝업 닫기
+  const handleClosePopup = () => setShowPopup(false);
 
   return (
     <div
@@ -133,6 +154,15 @@ function MemberCard({ member, onOpenPermissionPopup }) {
           onClick={handleCogClick}
           style={{ cursor: "pointer" }}
         />
+        {showPopup && (
+          <ManagementMemberUpdatePopup
+            member={member}
+            onClose={handleClosePopup}
+            anchorPosition={popupAnchor}
+            onRoleChange={handleRoleChange}
+            onDelete={handleDeleteMember}
+          />
+        )}
       </div>
     </div>
   );
@@ -145,8 +175,10 @@ MemberCard.propTypes = {
     phone: PropTypes.string.isRequired,
     university: PropTypes.string.isRequired,
     department: PropTypes.string.isRequired,
+    memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
-  onOpenPermissionPopup: PropTypes.func.isRequired,
+  onRoleChange: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default MemberCard;
