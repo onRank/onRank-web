@@ -229,7 +229,7 @@ function MemberManagement() {
       // rect만 넘어온 경우 (MemberCard에서 rect만 넘김)
       setPopupAnchor({
         top: memberIdOrRect.top + window.scrollY,
-        left: memberIdOrRect.left + window.scrollX - 260, // 팝업 너비만큼 왼쪽으로
+        left: memberIdOrRect.left + memberIdOrRect.width + window.scrollX + 8, // 오른쪽에 8px 여백
       });
       // memberId는 따로 받아야 하므로, 이 경우엔 memberId를 추가로 넘겨줘야 함
       // 아래 map에서 콜백을 수정
@@ -239,7 +239,7 @@ function MemberManagement() {
       if (maybeRect) {
         setPopupAnchor({
           top: maybeRect.top + window.scrollY,
-          left: maybeRect.left + window.scrollX - 260,
+          left: maybeRect.left + maybeRect.width + window.scrollX + 8,
         });
       }
     }
@@ -302,7 +302,7 @@ function MemberManagement() {
                 setPermissionPopupMemberId(member.memberId);
                 setPopupAnchor({
                   top: rect.top + window.scrollY,
-                  left: rect.left + window.scrollX - 260,
+                  left: rect.left + rect.width + window.scrollX + 8, // 오른쪽에 8px 여백
                 });
               }}
             />
