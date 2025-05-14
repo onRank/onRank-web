@@ -223,8 +223,8 @@ function MemberManagement() {
   const handleOpenPermissionPopup = (member, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     setPopupPosition({
-      left: rect.left - 240, // 팝업 너비만큼 왼쪽
-      top: rect.top,
+      left: rect.left - 344, // 팝업 너비만큼 왼쪽
+      top: rect.top - 100,
     });
     setPermissionPopupMember(member);
   };
