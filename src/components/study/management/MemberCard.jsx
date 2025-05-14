@@ -122,14 +122,6 @@ function MemberCard({ member, onOpenPermissionPopup }) {
           style={{ cursor: "pointer" }}
         />
       </div>
-      {/* 권한 설정 모달 */}
-      {showMemberModal && (
-        <MemberAddModal
-          studyId={studyId}
-          onClose={() => showMemberPermissionModal(false)}
-          onMemberAdded={handleMemberAdded}
-        />
-      )}
     </div>
   );
 }
