@@ -32,7 +32,7 @@ const StudyNavigation = memo(({ activeTab }) => {
     { id: "과제", label: "과제", path: "assignments" },
     { id: "게시판", label: "게시판", path: "posts" },
     { id: "출석", label: "출석", path: "attendances" },
-    { id: "관리", label: "관리", path: "managements", requiredRole: true }, // 관리자만 볼 수 있는 탭
+    { id: "관리", label: "관리", path: "management", requiredRole: true }, // 관리자만 볼 수 있는 탭
   ];
 
   // 탭 클릭 핸들러
