@@ -117,11 +117,15 @@ function MemberCard({ member, onOpenPermissionPopup }) {
       </div>
       {/* 오른쪽: 아이콘 */}
       <div>
-        <FaUserCog
-          onClick={(e) => onOpenPermissionPopup(member, e)}
-          aria-label="메뉴 열기"
-          style={{ cursor: "pointer", fontSize: 20 }}
-        />
+        {member.role === "CREATOR" ? (
+          <div />
+        ) : (
+          <FaUserCog
+            onClick={(e) => onOpenPermissionPopup(member, e)}
+            aria-label="메뉴 열기"
+            style={{ cursor: "pointer", fontSize: 20 }}
+          />
+        )}
       </div>
     </div>
   );
