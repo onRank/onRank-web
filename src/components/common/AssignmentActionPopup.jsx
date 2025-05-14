@@ -49,30 +49,18 @@ const AssignmentActionPopup = ({
   // Calculate popup position based on trigger element
   const calculatePosition = () => {
     if (!triggerRef.current) {
-      // First try to find the button that has our special marker
-      const possibleTriggers = document.querySelectorAll('button._popupTrigger, button[_popupTrigger], [_popupTrigger]');
-      if (possibleTriggers.length > 0) {
-        triggerRef.current = possibleTriggers[0];
+      // Check for global reference first
+      if (window._lastAssignmentMenuButton) {
+        triggerRef.current = window._lastAssignmentMenuButton;
       } else {
-        // Try to find any button with the class "more-button" which is active
-        const moreButtons = document.querySelectorAll('.more-button');
-        for (const btn of moreButtons) {
-          if (document.activeElement === btn || btn.contains(document.activeElement)) {
-            triggerRef.current = btn;
-            break;
-          }
-        }
-        
-        // Fall back to the active element
-        if (!triggerRef.current) {
-          const menuButton = document.activeElement;
-          if (menuButton) {
-            triggerRef.current = menuButton;
-          } else {
-            // If no trigger element found, position at center
-            setPopupStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
-            return;
-          }
+        // Find the menu button that triggered this popup
+        const menuButton = document.activeElement;
+        if (menuButton) {
+          triggerRef.current = menuButton;
+        } else {
+          // If no trigger element found, position at center
+          setPopupStyle({ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' });
+          return;
         }
       }
     }
@@ -114,10 +102,8 @@ const AssignmentActionPopup = ({
     // Make sure popup stays in viewport
     style.left = Math.max(10, Math.min(viewportWidth - popupWidth - 10, style.left));
     
-    // Always set position to fixed to make popup appear above all other elements
-    // This ensures it's not constrained by any parent container's overflow settings
+    // Set fixed position to make popup appear above all other elements
     style.position = 'fixed';
-    style.zIndex = 2147483647; // Maximum z-index value
     
     setPopupStyle(style);
   };
@@ -125,11 +111,6 @@ const AssignmentActionPopup = ({
   // Handle clicks outside the popup to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Skip if clicking a more-button (let the toggle handler manage it)
-      if (event.target.closest('.more-button')) {
-        return;
-      }
-      
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         onClose();
       }
@@ -139,9 +120,6 @@ const AssignmentActionPopup = ({
       document.addEventListener('mousedown', handleClickOutside);
       window.addEventListener('resize', calculatePosition);
       window.addEventListener('scroll', calculatePosition);
-      
-      // Calculate position on first render
-      calculatePosition();
     }
     
     return () => {

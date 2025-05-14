@@ -112,13 +112,13 @@ function AssignmentList() {
 
   // 팝업 메뉴 표시/숨김
   const togglePopup = (e, assignmentId) => {
-    e.stopPropagation();
+    e.stopPropagation(); // 클릭 이벤트가 카드까지 전파되지 않도록 방지
     if (activePopup === assignmentId) {
       setActivePopup(null);
     } else {
       setActivePopup(assignmentId);
-      // Store the clicked button as the trigger reference for proper positioning
-      e.currentTarget._popupTrigger = true;
+      // Store the button reference for better positioning
+      window._lastAssignmentMenuButton = e.currentTarget;
     }
   };
 
@@ -266,16 +266,18 @@ function AssignmentList() {
               maxPoint={assignmentMaxPoint}
             />
           </div>
-          <button
-            className="more-button"
-            onClick={(e) => togglePopup(e, assignmentId)}>
-            <FiMoreVertical size={18} />
-          </button>
         </div>
         
-        {/* Popup rendered outside of actions-container - this is the key change */}
-        {activePopup === assignmentId && (
-          <div className="popup-wrapper" style={{ position: 'static', overflow: 'visible' }}>
+        {/* Notice-style menu container with popup */}
+        <div className="assignment-menu-container">
+          <button
+            className="assignment-menu-button"
+            onClick={(e) => togglePopup(e, assignmentId)}
+            aria-label="메뉴 열기">
+            <FiMoreVertical size={18} />
+          </button>
+          
+          {activePopup === assignmentId && (
             <AssignmentActionPopup
               show={activePopup === assignmentId}
               onClose={() => setActivePopup(null)}
@@ -284,8 +286,8 @@ function AssignmentList() {
               onDelete={() => handleDeleteAssignment(assignmentId)}
               position="bottom-right"
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
