@@ -222,9 +222,15 @@ function MemberManagement() {
   // 팝업 열기 핸들러 (아이콘 클릭 시)
   const handleOpenPermissionPopup = (member, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
+    const popupHeight = 320; // 팝업 예상 높이(px)
+    let top = rect.top;
+    if (top + popupHeight > window.innerHeight) {
+      top = window.innerHeight - popupHeight - 16;
+      if (top < 8) top = 8;
+    }
     setPopupPosition({
       left: rect.left,
-      top: rect.top,
+      top,
     });
     setPermissionPopupMember(member);
   };

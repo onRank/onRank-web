@@ -15,7 +15,7 @@ function ManagementMemberUpdatePopup({
   return (
     <div
       style={{
-        position: "absolute",
+        position: "fixed",
         zIndex: 1000,
         background: "#fff",
         border: "1px solid #222",
@@ -23,7 +23,7 @@ function ManagementMemberUpdatePopup({
         minWidth: 280,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
         padding: 0,
-        transform: "translate(-100%, 0)",
+        transform: "translate(-105%, 0)",
         ...style,
       }}>
       {/* 헤더 */}
