@@ -2,11 +2,14 @@ name: Deploy Frontend to S3
 
 on:
   push:
-    branches: [ develop ]
+    branches:
+      - develop
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -22,10 +25,21 @@ jobs:
           rm -f package-lock.json
           npm install
 
+      - name: Set env vars based on branch
+        id: set-vars
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "S3_PREFIX=main" >> $GITHUB_OUTPUT
+            echo "DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "S3_PREFIX=develop" >> $GITHUB_OUTPUT
+            echo "DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
+          fi
+
       - name: Build
         run: npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -35,7 +49,7 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy to S3
-        run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/develop --delete
+        run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/${{ steps.set-vars.outputs.S3_PREFIX }} --delete
 
       - name: Invalidate CloudFront cache
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        run: aws cloudfront create-invalidation --distribution-id ${{ steps.set-vars.outputs.DISTRIBUTION_ID }} --paths "/*"
