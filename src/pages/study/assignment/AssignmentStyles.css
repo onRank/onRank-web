@@ -223,9 +223,6 @@
   border-bottom: 1px solid #eee;
 }
 
-.file-item:last-child {
-  border-bottom: none;
-}
 
 .file-info-container {
   display: flex;
