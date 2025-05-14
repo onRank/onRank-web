@@ -8,6 +8,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  border: black;
   z-index: 1500 !important;
 }
 
@@ -15,7 +16,7 @@
   background-color: white;
   border-radius: 10px;
   padding: 28px;
-  width: 450px;
+  width: 500px;
   max-width: 90%;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
@@ -205,4 +206,4 @@ form {
 /* 모달 내 모든 요소에 border-box 적용 */
 .modal-content * {
   box-sizing: border-box !important;
-} 
+}

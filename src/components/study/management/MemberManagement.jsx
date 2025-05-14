@@ -206,7 +206,10 @@ function MemberManagement() {
           alignItems: "center",
           marginBottom: "10px",
         }}>
-        <Button onClick={() => setShowAddMemberModal(true)} variant="memberAdd">
+        <Button
+          onClick={() => setShowAddMemberModal(true)}
+          variant="memberAdd"
+          style={{ height: "30px" }}>
           <svg
             width="16"
             height="16"
@@ -224,7 +227,7 @@ function MemberManagement() {
           justifyContent: "flex-start",
           alignItems: "center",
         }}>
-        <h3 style={{ margin: 0 }}>회원 권한</h3>
+        <h3 style={{ margin: "20px 0" }}>회원 권한</h3>
       </div>
       {/* 회원 권한 회원 목록 */}
       <div>
