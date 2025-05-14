@@ -19,6 +19,7 @@ const styles = {
     marginBottom: "2rem 0",
     fontSize: "26px",
     fontWeight: "bold",
+    padding: "24px 0",
   },
   searchIcon: {
     marginRight: "8px",

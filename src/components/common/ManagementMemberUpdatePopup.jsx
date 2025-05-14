@@ -60,7 +60,8 @@ function ManagementMemberUpdatePopup({
         onMouseEnter={() => setHovered("HOST")}
         onMouseLeave={() => setHovered("")}
         style={{
-          padding: "13px 3px",
+          padding: "9px 3px",
+          margin: "4px 0",
           cursor: "pointer",
           color: currentRole === "HOST" ? "#222" : "#444",
           fontWeight: currentRole === "HOST" ? 600 : 400,
@@ -81,7 +82,8 @@ function ManagementMemberUpdatePopup({
         onMouseEnter={() => setHovered("PARTICIPANT")}
         onMouseLeave={() => setHovered("")}
         style={{
-          padding: "13px 3px",
+          padding: "9px 3px",
+          margin: "4px 0",
           cursor: "pointer",
           color: currentRole === "PARTICIPANT" ? "#222" : "#444",
           fontWeight: currentRole === "PARTICIPANT" ? 600 : 400,
@@ -106,7 +108,8 @@ function ManagementMemberUpdatePopup({
           display: "flex",
           alignItems: "center",
           gap: 8,
-          padding: "13px 3px",
+          padding: "9px 3px",
+          margin: "4px 0",
           cursor: "pointer",
           color: "#222",
           background: hovered === "DELETE" ? "#ededed" : "#fff",
