@@ -35,9 +35,9 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
         (response.studyName !== undefined || response.memberRole !== undefined)
       ) {
         setSuccess(
-          `'${response.studyName || "스터디"}'에 '${
-            response.memberRole || "PARTICIPANT"
-          }' 역할로 회원이 추가되었습니다.`
+          `'${
+            response.studyName || "스터디"
+          }'에 '${"PARTICIPANT"}' 역할로 회원이 추가되었습니다.`
         );
         setEmail("");
 

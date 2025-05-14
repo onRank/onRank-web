@@ -1,0 +1,18 @@
+.popup-content {
+  position: absolute; /* 부모 기준 */
+  top: 40px; /* 필요에 따라 조정 */
+  right: 0;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  border: 1px solid #e0e0e0;
+  z-index: 2000;
+  padding: 20px;
+}
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
