@@ -72,7 +72,10 @@ function MemberAddModal({ studyId, onClose, onMemberAdded }) {
       <div className="modal-content">
         <div className="modal-header">
           <h3>회원 추가</h3>
-          <button className="close-button" onClick={onClose}>
+          <button
+            className="close-button"
+            onClick={onClose}
+            style={{ outline: "none" }}>
             ×
           </button>
         </div>

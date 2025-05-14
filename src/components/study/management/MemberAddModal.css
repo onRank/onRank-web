@@ -50,7 +50,6 @@
   height: 32px;
   border-radius: 50%;
   transition: all 0.2s ease;
-  outline: none;
 }
 
 .close-button:hover {
@@ -139,10 +138,9 @@ form {
 
 /* 모든 버튼 공통 스타일 */
 .modal-button {
-  min-width: 120px !important;
+  width: 100px !important;
   height: 40px !important;
   line-height: 1 !important;
-  padding: 0 20px !important;
   border-radius: 4px !important;
   font-size: 14px !important;
   font-weight: 500 !important;
@@ -179,7 +177,6 @@ form {
 
 /* 추가 버튼 스타일 */
 .submit-button {
-  width: 0;
   background-color: #fff !important;
   color: #222 !important;
 }

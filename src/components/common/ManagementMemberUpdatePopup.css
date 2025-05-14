@@ -1,18 +1,62 @@
 .popup-content {
-  position: absolute; /* 부모 기준 */
-  top: 40px; /* 필요에 따라 조정 */
-  right: 0;
-  min-width: 260px;
+  position: absolute;
+  min-width: 240px;
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  border: 1px solid #e0e0e0;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
+  border: 1.5px solid #222;
   z-index: 2000;
-  padding: 20px;
+  padding: 20px 18px 14px 18px;
+  left: auto;
+  right: 100%; /* 기본적으로 오른쪽에 붙임, 필요시 left/top 조정 */
+  top: 0;
 }
+
 .popup-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+}
+
+.popup-header h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #222;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #2d3a2d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.close-button:hover {
+  background-color: #f7fafc;
+  color: #4a5568;
+}
+
+.popup-divider {
+  border: none;
+  border-top: 1px dashed #888;
+  margin: 10px 0;
+}
+
+.popup-item {
+  font-size: 16px;
+  color: #222;
+  padding: 6px 0 6px 0;
+  display: flex;
+  align-items: center;
 }
