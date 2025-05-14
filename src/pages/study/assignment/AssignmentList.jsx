@@ -271,8 +271,11 @@ function AssignmentList() {
             onClick={(e) => togglePopup(e, assignmentId)}>
             <FiMoreVertical size={18} />
           </button>
-
-          {activePopup === assignmentId && (
+        </div>
+        
+        {/* Popup rendered outside of actions-container - this is the key change */}
+        {activePopup === assignmentId && (
+          <div className="popup-wrapper" style={{ position: 'static', overflow: 'visible' }}>
             <AssignmentActionPopup
               show={activePopup === assignmentId}
               onClose={() => setActivePopup(null)}
@@ -281,8 +284,8 @@ function AssignmentList() {
               onDelete={() => handleDeleteAssignment(assignmentId)}
               position="bottom-right"
             />
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   };

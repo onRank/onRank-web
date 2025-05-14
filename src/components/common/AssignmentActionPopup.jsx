@@ -125,6 +125,11 @@ const AssignmentActionPopup = ({
   // Handle clicks outside the popup to close it
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Skip if clicking a more-button (let the toggle handler manage it)
+      if (event.target.closest('.more-button')) {
+        return;
+      }
+      
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         onClose();
       }
@@ -134,6 +139,9 @@ const AssignmentActionPopup = ({
       document.addEventListener('mousedown', handleClickOutside);
       window.addEventListener('resize', calculatePosition);
       window.addEventListener('scroll', calculatePosition);
+      
+      // Calculate position on first render
+      calculatePosition();
     }
     
     return () => {
