@@ -1,14 +1,14 @@
 .popup-content {
   position: absolute;
   min-width: 240px;
+  max-width: 320px;
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.13);
   border: 1.5px solid #222;
   z-index: 2000;
   padding: 20px 18px 14px 18px;
-  left: auto;
-  right: 100%; /* 기본적으로 오른쪽에 붙임, 필요시 left/top 조정 */
+  left: 0;
   top: 0;
 }
 

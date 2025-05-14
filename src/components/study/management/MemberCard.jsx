@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useRef } from "react";
 import PropTypes from "prop-types";
 import { FaUserCog } from "react-icons/fa";
 
 function MemberCard({ member, onOpenPermissionPopup }) {
+  const iconRef = useRef(null);
+
   // member: { name, email, phone, university, department }
 
   // 역할 변경 처리 함수
@@ -93,6 +95,15 @@ function MemberCard({ member, onOpenPermissionPopup }) {
     }
   };
 
+  const handleCogClick = () => {
+    if (iconRef.current) {
+      const rect = iconRef.current.getBoundingClientRect();
+      onOpenPermissionPopup(rect);
+    } else {
+      onOpenPermissionPopup();
+    }
+  };
+
   return (
     <div
       className="member-card"
@@ -118,7 +129,8 @@ function MemberCard({ member, onOpenPermissionPopup }) {
       {/* 오른쪽: 아이콘 */}
       <div>
         <FaUserCog
-          onClick={onOpenPermissionPopup}
+          ref={iconRef}
+          onClick={handleCogClick}
           style={{ cursor: "pointer" }}
         />
       </div>

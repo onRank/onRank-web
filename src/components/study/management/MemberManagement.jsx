@@ -17,6 +17,7 @@ function MemberManagement() {
   const [processingMemberId, setProcessingMemberId] = useState(null);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
   const [permissionPopupMemberId, setPermissionPopupMemberId] = useState(null);
+  const [popupAnchor, setPopupAnchor] = useState(null);
 
   // 멤버 목록 조회 함수
   const fetchMembers = async () => {
@@ -217,12 +218,36 @@ function MemberManagement() {
   });
 
   // 권한 팝업 열기 핸들러
-  const handleOpenPermissionPopup = (memberId) => {
-    setPermissionPopupMemberId(memberId);
+  const handleOpenPermissionPopup = (memberIdOrRect, maybeRect) => {
+    // memberIdOrRect: rect 또는 memberId
+    // maybeRect: rect 또는 undefined
+    if (
+      typeof memberIdOrRect === "object" &&
+      memberIdOrRect !== null &&
+      "left" in memberIdOrRect
+    ) {
+      // rect만 넘어온 경우 (MemberCard에서 rect만 넘김)
+      setPopupAnchor({
+        top: memberIdOrRect.top + window.scrollY,
+        left: memberIdOrRect.left + window.scrollX - 260, // 팝업 너비만큼 왼쪽으로
+      });
+      // memberId는 따로 받아야 하므로, 이 경우엔 memberId를 추가로 넘겨줘야 함
+      // 아래 map에서 콜백을 수정
+    } else {
+      // memberId와 rect가 모두 넘어온 경우
+      setPermissionPopupMemberId(memberIdOrRect);
+      if (maybeRect) {
+        setPopupAnchor({
+          top: maybeRect.top + window.scrollY,
+          left: maybeRect.left + window.scrollX - 260,
+        });
+      }
+    }
   };
   // 권한 팝업 닫기 핸들러
   const handleClosePermissionPopup = () => {
     setPermissionPopupMemberId(null);
+    setPopupAnchor(null);
   };
 
   // 팝업에 넘길 멤버 정보 찾기
@@ -273,9 +298,13 @@ function MemberManagement() {
             <MemberCard
               key={member.memberId}
               member={toMemberCardProps(member)}
-              onOpenPermissionPopup={() =>
-                handleOpenPermissionPopup(member.memberId)
-              }
+              onOpenPermissionPopup={(rect) => {
+                setPermissionPopupMemberId(member.memberId);
+                setPopupAnchor({
+                  top: rect.top + window.scrollY,
+                  left: rect.left + window.scrollX - 260,
+                });
+              }}
             />
           ))
         )}
@@ -299,7 +328,7 @@ function MemberManagement() {
         <ManagementMemberUpdatePopup
           member={selectedMember}
           onClose={handleClosePermissionPopup}
-          // onSave, onRoleChange 등 필요한 콜백 추가 가능
+          anchorPosition={popupAnchor}
         />
       )}
     </div>
