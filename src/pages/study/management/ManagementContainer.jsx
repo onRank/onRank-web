@@ -16,7 +16,6 @@ function ManagementContainer() {
           fontSize: "24px",
           fontWeight: "700",
           margin: "1rem",
-          padding: "0 1rem",
         }}>
         관리
       </div>
