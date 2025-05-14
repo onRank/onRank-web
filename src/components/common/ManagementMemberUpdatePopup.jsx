@@ -20,9 +20,9 @@ function ManagementMemberUpdatePopup({
         background: "#fff",
         border: "1px solid #222",
         borderRadius: 14,
-        minWidth: 280,
+        minWidth: 300,
         boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        padding: 0,
+        padding: "0 35px",
         transform: "translate(-105%, 0)",
         ...style,
       }}>
@@ -32,7 +32,7 @@ function ManagementMemberUpdatePopup({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "18px 18px 0 18px",
+          padding: "18px 0 0",
         }}>
         <span style={{ fontWeight: 500, fontSize: 18 }}>권한 설정</span>
         <button
@@ -49,12 +49,12 @@ function ManagementMemberUpdatePopup({
         </button>
       </div>
       {/* 구분선 */}
-      <div style={{ borderBottom: "1px dotted #222", margin: "10px 0 0 0" }} />
+      <div style={{ borderBottom: "3px dotted #222", margin: "10px 0 0 0" }} />
       {/* 권한 선택 */}
       <div
         onClick={() => onChangeRole && onChangeRole("HOST")}
         style={{
-          padding: "16px 18px 16px 18px",
+          padding: "16px 3px",
           cursor: "pointer",
           color: currentRole === "HOST" ? "#222" : "#444",
           fontWeight: currentRole === "HOST" ? 600 : 400,
@@ -62,11 +62,11 @@ function ManagementMemberUpdatePopup({
         }}>
         관리자
       </div>
-      <div style={{ borderBottom: "1px dotted #222", margin: 0 }} />
+      <div style={{ borderBottom: "3px dotted #222", margin: 0 }} />
       <div
         onClick={() => onChangeRole && onChangeRole("PARTICIPANT")}
         style={{
-          padding: "16px 18px 16px 18px",
+          padding: "16px 3px",
           cursor: "pointer",
           color: currentRole === "PARTICIPANT" ? "#222" : "#444",
           fontWeight: currentRole === "PARTICIPANT" ? 600 : 400,
@@ -74,7 +74,7 @@ function ManagementMemberUpdatePopup({
         }}>
         참여자
       </div>
-      <div style={{ borderBottom: "1px dotted #222", margin: 0 }} />
+      <div style={{ borderBottom: "3px dotted #222", margin: 0 }} />
       {/* 삭제 */}
       <div
         onClick={onDelete}
@@ -82,7 +82,7 @@ function ManagementMemberUpdatePopup({
           display: "flex",
           alignItems: "center",
           gap: 8,
-          padding: "16px 18px 16px 18px",
+          padding: "16px 3px",
           cursor: "pointer",
           color: "#222",
         }}>
