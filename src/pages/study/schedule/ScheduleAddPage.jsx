@@ -41,7 +41,7 @@ function ScheduleAddPage({ onCancel }) {
     const handleBeforeUnload = () => {
       const token = tokenUtils.getToken();
       if (!token) {
-        window.location.href = `https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`;
+        window.location.href = `${import.meta.env.VITE_CLOUDFRONT_URL}/studies/${studyId}/schedules`;
         return null;
       }
     };
@@ -51,7 +51,7 @@ function ScheduleAddPage({ onCancel }) {
     // 컴포넌트 마운트 시에도 토큰 체크
     const token = tokenUtils.getToken();
     if (!token) {
-      window.location.href = `https://d37q7cndbbsph5.cloudfront.net/studies/${studyId}/schedules`;
+      window.location.href = `${import.meta.env.VITE_CLOUDFRONT_URL}/studies/${studyId}/schedules`;
     }
 
     return () => {
