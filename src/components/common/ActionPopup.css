@@ -151,4 +151,16 @@
 .action-popup-close:focus {
   outline: none !important;
   box-shadow: none !important;
+}
+
+.grade-icon {  
+  font-weight: bold;
+}
+
+.grade-button .action-popup-text {
+  color: black;
+}
+
+.grade-button .grade-icon svg path {
+  fill: black;
 } 

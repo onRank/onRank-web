@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useTheme } from "../../../contexts/ThemeContext";
 import useStudyRole from "../../../hooks/useStudyRole";
@@ -12,6 +12,7 @@ import {
 } from "react-icons/fi";
 import Button from "../../../components/common/Button";
 import ScoreDisplay from "../../../components/common/ScoreDisplay";
+import AssignmentActionPopup from "../../../components/common/AssignmentActionPopup";
 import "./AssignmentList.css";
 
 function AssignmentList() {
@@ -22,7 +23,6 @@ function AssignmentList() {
   const navigate = useNavigate();
   const { colors } = useTheme();
   const [activePopup, setActivePopup] = useState(null);
-  const popupRef = useRef(null);
 
   // useStudyRole 훅 사용 - 권한 체크
   const { memberRole, isManager } = useStudyRole();
@@ -119,20 +119,6 @@ function AssignmentList() {
       setActivePopup(assignmentId);
     }
   };
-
-  // 외부 클릭시 팝업 닫기
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (popupRef.current && !popupRef.current.contains(event.target)) {
-        setActivePopup(null);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   // 컴포넌트 마운트 시 과제 목록 로드
   useEffect(() => {
@@ -285,35 +271,14 @@ function AssignmentList() {
           </button>
 
           {activePopup === assignmentId && (
-            <div className="popup-menu" ref={popupRef}>
-              <div
-                className="popup-menu-item"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleGradeAssignment(assignmentId, e);
-                }}>
-                <FiCheckSquare size={16} color="#16191f" />
-                <span>채점</span>
-              </div>
-              <div
-                className="popup-menu-item"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleEditAssignment(assignmentId, e);
-                }}>
-                <FiEdit2 size={16} color="#16191f" />
-                <span>수정</span>
-              </div>
-              <div
-                className="popup-menu-item"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteAssignment(assignmentId);
-                }}>
-                <FiTrash2 size={16} color="#16191f" />
-                <span>삭제</span>
-              </div>
-            </div>
+            <AssignmentActionPopup
+              show={activePopup === assignmentId}
+              onClose={() => setActivePopup(null)}
+              onGrade={(e) => handleGradeAssignment(assignmentId, e)}
+              onEdit={(e) => handleEditAssignment(assignmentId, e)}
+              onDelete={() => handleDeleteAssignment(assignmentId)}
+              position="bottom-right"
+            />
           )}
         </div>
       </div>
