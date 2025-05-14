@@ -5,6 +5,7 @@ import MemberAddModal from "./MemberAddModal";
 import MemberCard from "./MemberCard";
 import { managementService } from "../../../services/management";
 import "./MemberManagement.css";
+import Button from "../../common/Button";
 
 function MemberManagement() {
   const { studyId } = useParams();
