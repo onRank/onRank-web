@@ -118,8 +118,9 @@ function MemberCard({ member, onOpenPermissionPopup }) {
       {/* 오른쪽: 아이콘 */}
       <div>
         <FaUserCog
-          onClick={onOpenPermissionPopup}
-          style={{ cursor: "pointer" }}
+          onClick={(e) => onOpenPermissionPopup(member, e)}
+          aria-label="메뉴 열기"
+          style={{ cursor: "pointer", fontSize: 20 }}
         />
       </div>
     </div>
@@ -130,9 +131,11 @@ MemberCard.propTypes = {
   member: PropTypes.shape({
     name: PropTypes.string.isRequired,
     email: PropTypes.string.isRequired,
-    phone: PropTypes.string.isRequired,
-    university: PropTypes.string.isRequired,
-    department: PropTypes.string.isRequired,
+    phone: PropTypes.string,
+    university: PropTypes.string,
+    department: PropTypes.string,
+    role: PropTypes.string,
+    memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }).isRequired,
   onOpenPermissionPopup: PropTypes.func.isRequired,
 };

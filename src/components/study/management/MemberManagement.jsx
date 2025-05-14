@@ -16,7 +16,8 @@ function MemberManagement() {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [processingMemberId, setProcessingMemberId] = useState(null);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
-  const [permissionPopupMemberId, setPermissionPopupMemberId] = useState(null);
+  const [permissionPopupMember, setPermissionPopupMember] = useState(null);
+  const [popupPosition, setPopupPosition] = useState({ left: 0, top: 0 });
 
   // 멤버 목록 조회 함수
   const fetchMembers = async () => {
@@ -214,21 +215,23 @@ function MemberManagement() {
     phone: formatPhoneNumber(member.studentPhoneNumber),
     university: member.studentSchool || "학교 정보 없음",
     department: member.studentDepartment || "학과 정보 없음",
+    role: member.memberRole,
+    memberId: member.memberId,
   });
 
-  // 권한 팝업 열기 핸들러
-  const handleOpenPermissionPopup = (memberId) => {
-    setPermissionPopupMemberId(memberId);
+  // 팝업 열기 핸들러 (아이콘 클릭 시)
+  const handleOpenPermissionPopup = (member, event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    setPopupPosition({
+      left: rect.left - 240, // 팝업 너비만큼 왼쪽
+      top: rect.top,
+    });
+    setPermissionPopupMember(member);
   };
-  // 권한 팝업 닫기 핸들러
+  // 팝업 닫기 핸들러
   const handleClosePermissionPopup = () => {
-    setPermissionPopupMemberId(null);
+    setPermissionPopupMember(null);
   };
-
-  // 팝업에 넘길 멤버 정보 찾기
-  const selectedMember = members.find(
-    (m) => m.memberId === permissionPopupMemberId
-  );
 
   return (
     <div className="member-management-container">
@@ -273,9 +276,7 @@ function MemberManagement() {
             <MemberCard
               key={member.memberId}
               member={toMemberCardProps(member)}
-              onOpenPermissionPopup={() =>
-                handleOpenPermissionPopup(member.memberId)
-              }
+              onOpenPermissionPopup={handleOpenPermissionPopup}
             />
           ))
         )}
@@ -295,11 +296,15 @@ function MemberManagement() {
         />
       )}
       {/* 권한 설정 팝업 */}
-      {permissionPopupMemberId && selectedMember && (
+      {permissionPopupMember && (
         <ManagementMemberUpdatePopup
-          member={selectedMember}
+          member={permissionPopupMember}
           onClose={handleClosePermissionPopup}
-          // onSave, onRoleChange 등 필요한 콜백 추가 가능
+          onChangeRole={(role) =>
+            handleRoleChange(permissionPopupMember.memberId, role)
+          }
+          onDelete={() => handleDeleteMember(permissionPopupMember.memberId)}
+          style={{ left: popupPosition.left, top: popupPosition.top }}
         />
       )}
     </div>

@@ -1,101 +1,92 @@
-import React, { useState } from "react";
+import React from "react";
 import PropTypes from "prop-types";
 import { FaTrashAlt } from "react-icons/fa";
 
-function ManagementMemberUpdatePopup({ member, onClose }) {
-  const [role, setRole] = useState(member?.role || "참여자");
-
+function ManagementMemberUpdatePopup({
+  member,
+  onClose,
+  onChangeRole,
+  onDelete,
+  style,
+}) {
   if (!member) return null;
+  const currentRole = member.role;
+
   return (
     <div
-      className="modal-overlay"
       style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.1)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
+        position: "absolute",
         zIndex: 1000,
+        background: "#fff",
+        border: "1px solid #222",
+        borderRadius: 14,
+        minWidth: 220,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+        padding: 0,
+        ...style,
       }}>
+      {/* 헤더 */}
       <div
-        className="modal-content"
         style={{
-          background: "#fff",
-          borderRadius: 16,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          padding: 24,
-          minWidth: 280,
-          minHeight: 220,
-          border: "1px solid #ddd",
-          position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "18px 18px 0 18px",
         }}>
-        <div
-          className="modal-header"
+        <span style={{ fontWeight: 500, fontSize: 18 }}>권한 설정</span>
+        <button
+          onClick={onClose}
           style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: "1px dotted #bbb",
-            paddingBottom: 8,
-          }}>
-          <h3 style={{ margin: 0, fontSize: 20, fontWeight: 500 }}>
-            권한 설정
-          </h3>
-          <button
-            className="close-button"
-            onClick={onClose}
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 20,
-              cursor: "pointer",
-            }}>
-            ×
-          </button>
-        </div>
-        <div style={{ margin: "20px 0 0 0" }}>
-          <div
-            onClick={() => setRole("관리자")}
-            style={{
-              padding: "16px 0",
-              borderBottom: "1px dotted #bbb",
-              cursor: "pointer",
-              color: role === "관리자" ? "#222" : "#666",
-              fontWeight: role === "관리자" ? 600 : 400,
-            }}>
-            관리자
-          </div>
-          <div
-            onClick={() => setRole("참여자")}
-            style={{
-              padding: "16px 0",
-              borderBottom: "1px dotted #bbb",
-              cursor: "pointer",
-              color: role === "참여자" ? "#222" : "#666",
-              fontWeight: role === "참여자" ? 600 : 400,
-            }}>
-            참여자
-          </div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "16px 0 0 0",
-              cursor: "pointer",
-              color: "#222",
-            }}
-            onClick={() => {
-              /* 삭제 기능 구현 필요 */
-            }}>
-            <FaTrashAlt style={{ fontSize: 18 }} />
-            <span>삭제</span>
-          </div>
-        </div>
+            background: "none",
+            border: "none",
+            fontSize: 20,
+            cursor: "pointer",
+            color: "#222",
+          }}
+          aria-label="닫기">
+          ×
+        </button>
+      </div>
+      {/* 구분선 */}
+      <div style={{ borderBottom: "1px dotted #222", margin: "10px 0 0 0" }} />
+      {/* 권한 선택 */}
+      <div
+        onClick={() => onChangeRole && onChangeRole("HOST")}
+        style={{
+          padding: "16px 18px 16px 18px",
+          cursor: "pointer",
+          color: currentRole === "HOST" ? "#222" : "#444",
+          fontWeight: currentRole === "HOST" ? 600 : 400,
+          background: currentRole === "HOST" ? "#f7f7f7" : "#fff",
+        }}>
+        관리자
+      </div>
+      <div style={{ borderBottom: "1px dotted #222", margin: 0 }} />
+      <div
+        onClick={() => onChangeRole && onChangeRole("PARTICIPANT")}
+        style={{
+          padding: "16px 18px 16px 18px",
+          cursor: "pointer",
+          color: currentRole === "PARTICIPANT" ? "#222" : "#444",
+          fontWeight: currentRole === "PARTICIPANT" ? 600 : 400,
+          background: currentRole === "PARTICIPANT" ? "#f7f7f7" : "#fff",
+        }}>
+        참여자
+      </div>
+      <div style={{ borderBottom: "1px dotted #222", margin: 0 }} />
+      {/* 삭제 */}
+      <div
+        onClick={onDelete}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "16px 18px 16px 18px",
+          cursor: "pointer",
+          color: "#222",
+        }}>
+        <FaTrashAlt style={{ fontSize: 20 }} />
+        <span>삭제</span>
       </div>
     </div>
   );
@@ -104,6 +95,9 @@ function ManagementMemberUpdatePopup({ member, onClose }) {
 ManagementMemberUpdatePopup.propTypes = {
   member: PropTypes.object,
   onClose: PropTypes.func.isRequired,
+  onChangeRole: PropTypes.func,
+  onDelete: PropTypes.func,
+  style: PropTypes.object,
 };
 
 export default ManagementMemberUpdatePopup;
