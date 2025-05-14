@@ -13,12 +13,12 @@ import {
   isImageFile,
   getFilePreviewUrl,
 } from "../../../utils/fileUtils";
-import './AssignmentStyles.css';
+import "./AssignmentStyles.css";
 
 const AssignmentDetail = () => {
   const { studyId, assignmentId } = useParams();
   console.log("[AssignmentDetail] URL 파라미터:", { studyId, assignmentId });
-  
+
   const navigate = useNavigate();
   const [assignment, setAssignment] = useState(null);
   const [memberContext, setMemberContext] = useState(null);
@@ -45,14 +45,19 @@ const AssignmentDetail = () => {
   useEffect(() => {
     const fetchAssignmentDetail = async () => {
       if (!studyId || !assignmentId) {
-        console.error("[AssignmentDetail] studyId 또는 assignmentId가 없음:", { studyId, assignmentId });
+        console.error("[AssignmentDetail] studyId 또는 assignmentId가 없음:", {
+          studyId,
+          assignmentId,
+        });
         return;
       }
 
       setIsLoading(true);
       setError(null);
 
-      console.log(`[AssignmentDetail] 과제 상세 정보 조회 시작: studyId=${studyId}, assignmentId=${assignmentId}`);
+      console.log(
+        `[AssignmentDetail] 과제 상세 정보 조회 시작: studyId=${studyId}, assignmentId=${assignmentId}`
+      );
 
       try {
         const response = await assignmentService.getAssignmentById(
@@ -129,103 +134,138 @@ const AssignmentDetail = () => {
 
       // 파일 업로드 관련 데이터 준비
       const newFiles = files; // 새로 추가한 파일들
-      
+
       let response;
-      
+
       if (isResubmitting) {
         // 재제출 모드: PUT 요청, remainingFileIds + newFileNames 사용
         console.log("[AssignmentDetail] 과제 재제출 준비");
-        
+
         // 새로 추가한 파일 이름 목록 생성
-        const newFileNames = newFiles.map(file => file.name);
-        
+        const newFileNames = newFiles.map((file) => file.name);
+
         // API 문서 형식에 맞게 데이터 구성
         const resubmissionData = {
           submissionContent: submissionContent,
           remainingFileIds: remainingFileIds, // 사용자가 선택한 유지할 기존 파일 ID 목록
-          newFileNames: newFileNames // 새로 제출할 파일 이름 목록
+          newFileNames: newFileNames, // 새로 제출할 파일 이름 목록
         };
-        
+
         console.log("[AssignmentDetail] 재제출 데이터:", resubmissionData);
-        console.log("[AssignmentDetail] 첨부 파일:", newFiles.map(f => `${f.name} (${formatFileSize(f.size)})`));
+        console.log(
+          "[AssignmentDetail] 첨부 파일:",
+          newFiles.map((f) => `${f.name} (${formatFileSize(f.size)})`)
+        );
         console.log("[AssignmentDetail] 유지 파일 ID:", remainingFileIds);
-        
+
         // 재제출 API 호출
         response = await assignmentService.resubmitAssignment(
           studyId,
           assignmentId,
           resubmissionData
         );
-        
+
         console.log("[AssignmentDetail] 재제출 응답:", response);
       } else {
         // 신규 제출 모드: POST 요청, fileNames 사용
         console.log("[AssignmentDetail] 과제 신규 제출 준비");
-        
+
         // 파일명 배열 생성
         const fileNames = newFiles.map((file) => file.name);
-        
+
         const formattedData = {
           submissionContent: submissionContent,
           fileNames: fileNames,
         };
-        
+
         console.log("[AssignmentDetail] 제출 데이터:", formattedData);
-        console.log("[AssignmentDetail] 첨부 파일:", newFiles.map(f => `${f.name} (${formatFileSize(f.size)})`));
-        
+        console.log(
+          "[AssignmentDetail] 첨부 파일:",
+          newFiles.map((f) => `${f.name} (${formatFileSize(f.size)})`)
+        );
+
         // 신규 제출 API 호출
         response = await assignmentService.submitAssignment(
           studyId,
           assignmentId,
           formattedData
         );
-        
+
         console.log("[AssignmentDetail] 제출 응답:", response);
       }
-      
+
       // 파일 업로드 처리 (기존 로직 유지)
       if (newFiles.length > 0 && response) {
-        console.log("[AssignmentDetail] 파일 업로드 시작, 파일 개수:", newFiles.length);
-        
+        console.log(
+          "[AssignmentDetail] 파일 업로드 시작, 파일 개수:",
+          newFiles.length
+        );
+
         try {
           // 파일 업로드 상태 트래킹을 위한 초기 상태 설정
-          setUploadStatus(newFiles.map(file => ({
-            fileName: file.name,
-            progress: 0,
-            status: 'uploading'
-          })));
-          
+          setUploadStatus(
+            newFiles.map((file) => ({
+              fileName: file.name,
+              progress: 0,
+              status: "uploading",
+            }))
+          );
+
           // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-          const uploadResults = await handleFileUploadWithS3(response, newFiles, 'uploadUrl');
+          const uploadResults = await handleFileUploadWithS3(
+            response,
+            newFiles,
+            "uploadUrl"
+          );
           console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
-          
+
           // 업로드 실패 발생 시 경고
-          const failedUploads = uploadResults.filter(result => !result.success);
+          const failedUploads = uploadResults.filter(
+            (result) => !result.success
+          );
           if (failedUploads.length > 0) {
-            console.warn("[AssignmentDetail] 일부 파일 업로드 실패:", failedUploads);
+            console.warn(
+              "[AssignmentDetail] 일부 파일 업로드 실패:",
+              failedUploads
+            );
             setError("일부 파일 업로드에 실패했습니다. 다시 시도해 주세요.");
             return; // 성공 메시지 표시하지 않음
           }
-          
+
           // 모든 파일 업로드 성공 시 상태 업데이트
-          setUploadStatus(newFiles.map(file => ({
-            fileName: file.name,
-            progress: 100,
-            status: 'success'
-          })));
+          setUploadStatus(
+            newFiles.map((file) => ({
+              fileName: file.name,
+              progress: 100,
+              status: "success",
+            }))
+          );
         } catch (uploadErr) {
           console.error("[AssignmentDetail] 파일 업로드 중 오류:", uploadErr);
-          setError(`파일 업로드 중 오류가 발생했습니다: ${uploadErr.message || '알 수 없는 오류'}`);
+          setError(
+            `파일 업로드 중 오류가 발생했습니다: ${
+              uploadErr.message || "알 수 없는 오류"
+            }`
+          );
           return; // 성공 메시지 표시하지 않음
         }
       }
 
-      alert(isResubmitting ? "과제가 성공적으로 재제출되었습니다." : "과제가 성공적으로 제출되었습니다.");
-      navigate(`/studies/${studyId}/assignment`);
+      alert(
+        isResubmitting
+          ? "과제가 성공적으로 재제출되었습니다."
+          : "과제가 성공적으로 제출되었습니다."
+      );
+      navigate(`/studies/${studyId}/assignments`);
     } catch (err) {
-      console.error(isResubmitting ? "[AssignmentDetail] 과제 재제출 실패:" : "[AssignmentDetail] 과제 제출 실패:", err);
+      console.error(
+        isResubmitting
+          ? "[AssignmentDetail] 과제 재제출 실패:"
+          : "[AssignmentDetail] 과제 제출 실패:",
+        err
+      );
       setError(
-        `과제 ${isResubmitting ? '재' : ''}제출에 실패했습니다: ${
+        `과제 ${isResubmitting ? "재" : ""}제출에 실패했습니다: ${
           err.message || "알 수 없는 오류가 발생했습니다."
         }`
       );
@@ -236,13 +276,13 @@ const AssignmentDetail = () => {
   };
 
   const handleBack = () => {
-    navigate(`/studies/${studyId}/assignment`);
+    navigate(`/studies/${studyId}/assignments`);
   };
 
   // 재제출 모드 활성화
   const handleResubmit = () => {
     setIsResubmitting(true);
-    
+
     // 기존 제출 내용 불러오기
     if (assignment && assignment.submissionContent) {
       setSubmissionContent(assignment.submissionContent);
@@ -251,18 +291,24 @@ const AssignmentDetail = () => {
       setSubmissionContent("");
       setCharCount(0);
     }
-    
+
     // 기존 제출 파일 정보 설정 (나중에 재제출시 remainingFileIds로 사용)
-    if (assignment && assignment.submissionFiles && assignment.submissionFiles.length > 0) {
+    if (
+      assignment &&
+      assignment.submissionFiles &&
+      assignment.submissionFiles.length > 0
+    ) {
       // 기존 파일 정보 저장
       setExistingFiles(assignment.submissionFiles);
       // 모든 기존 파일 ID를 유지 목록에 추가
-      setRemainingFileIds(assignment.submissionFiles.map(file => file.fileId));
+      setRemainingFileIds(
+        assignment.submissionFiles.map((file) => file.fileId)
+      );
     } else {
       setExistingFiles([]);
       setRemainingFileIds([]);
     }
-    
+
     setFiles([]);
     setUploadStatus([]);
   };
@@ -281,9 +327,9 @@ const AssignmentDetail = () => {
   // 기존 파일 제거 처리
   const handleRemoveExistingFile = (fileId) => {
     // remainingFileIds에서 해당 파일 ID 제거
-    setRemainingFileIds(prev => prev.filter(id => id !== fileId));
+    setRemainingFileIds((prev) => prev.filter((id) => id !== fileId));
     // UI에서도 제거 (선택적)
-    setExistingFiles(prev => prev.filter(file => file.fileId !== fileId));
+    setExistingFiles((prev) => prev.filter((file) => file.fileId !== fileId));
   };
 
   // 파일 업로드 상태 확인
@@ -304,7 +350,9 @@ const AssignmentDetail = () => {
     return (
       <div className="error-container">
         <div>{error}</div>
-        <button className="back-button" onClick={handleBack}>목록으로 돌아가기</button>
+        <button className="back-button" onClick={handleBack}>
+          목록으로 돌아가기
+        </button>
       </div>
     );
   }
@@ -372,8 +420,7 @@ const AssignmentDetail = () => {
               <button
                 className="remove-file-button"
                 onClick={() => handleRemoveExistingFile(file.fileId)}
-                type="button"
-              >
+                type="button">
                 ✕
               </button>
             </div>
@@ -390,16 +437,25 @@ const AssignmentDetail = () => {
               {files.map((file, index) => {
                 const fileStatus = getUploadStatusForFile(file.name);
                 return (
-                  <div className="file-item" key={index} data-status={fileStatus.status}>
+                  <div
+                    className="file-item"
+                    key={index}
+                    data-status={fileStatus.status}>
                     <div className="file-icon">{getFileIcon(file.name)}</div>
                     <div className="file-info">
                       <div className="file-name">{file.name}</div>
                       <div className="file-info-row">
-                        <span className="file-size">{formatFileSize(file.size)}</span>
+                        <span className="file-size">
+                          {formatFileSize(file.size)}
+                        </span>
                         {fileStatus.status === "uploading" &&
                           fileStatus.progress > 0 && (
                             <div className="file-upload-progress">
-                              <div className="file-progress-bar" style={{width: `${fileStatus.progress}%`}}></div>
+                              <div
+                                className="file-progress-bar"
+                                style={{
+                                  width: `${fileStatus.progress}%`,
+                                }}></div>
                             </div>
                           )}
                         {fileStatus.status === "error" && (
@@ -415,8 +471,7 @@ const AssignmentDetail = () => {
                         setFiles(files.filter((_, i) => i !== index))
                       }
                       disabled={isUploading}
-                      type="button"
-                    >
+                      type="button">
                       ✕
                     </button>
                     {isImageFile(file) && (
@@ -428,8 +483,7 @@ const AssignmentDetail = () => {
                           window.open(previewUrl);
                         }}
                         title="이미지 미리보기"
-                        type="button"
-                      >
+                        type="button">
                         👁️
                       </button>
                     )}
@@ -454,8 +508,7 @@ const AssignmentDetail = () => {
                     height="24"
                     viewBox="0 0 24 24"
                     fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
+                    xmlns="http://www.w3.org/2000/svg">
                     <path
                       d="M12 18V6"
                       stroke="#6c757d"
@@ -509,7 +562,9 @@ const AssignmentDetail = () => {
         {/* 전체 업로드 진행률 */}
         {isUploading && (
           <div className="progress-container">
-            <div className="progress-bar" style={{width: `${uploadProgress}%`}}></div>
+            <div
+              className="progress-bar"
+              style={{ width: `${uploadProgress}%` }}></div>
             <div className="progress-text">{uploadProgress}% 업로드 중...</div>
           </div>
         )}
@@ -524,8 +579,10 @@ const AssignmentDetail = () => {
           variant="submit"
           onClick={handleSubmit}
           disabled={
-            isLoading || 
-            (files.length === 0 && submissionContent.trim() === "" && remainingFileIds.length === 0)
+            isLoading ||
+            (files.length === 0 &&
+              submissionContent.trim() === "" &&
+              remainingFileIds.length === 0)
           }
           label={isResubmitting ? "다시 제출" : "제출"}
         />
@@ -556,17 +613,25 @@ const AssignmentDetail = () => {
   return (
     <div className="container">
       <div className="header">
-        <button className="back-button" onClick={handleBack}>← 목록으로</button>
+        <button className="back-button" onClick={handleBack}>
+          ← 목록으로
+        </button>
         <h1 className="title">{assignment.assignmentTitle}</h1>
       </div>
-      
+
       <div className="assignment-info-header">
         <div className="assignment-status-section">
           <div className="page-status">{getPageTitle()}</div>
-          <div className="due-date">마감: {formatDate(assignment.assignmentDueDate)}</div>
+          <div className="due-date">
+            마감: {formatDate(assignment.assignmentDueDate)}
+          </div>
         </div>
-        <ScoreDisplay 
-          score={assignment.submissionStatus === "SCORED" ? assignment.submissionScore : null}
+        <ScoreDisplay
+          score={
+            assignment.submissionStatus === "SCORED"
+              ? assignment.submissionScore
+              : null
+          }
           maxPoint={assignment.assignmentMaxPoint}
         />
       </div>
@@ -586,17 +651,18 @@ const AssignmentDetail = () => {
                   {assignment.assignmentFiles.map((file, index) => (
                     <div className="file-download-item" key={index}>
                       <div className="file-info-row">
-                        <div className="file-icon">{getFileIcon(file.fileName)}</div>
+                        <div className="file-icon">
+                          {getFileIcon(file.fileName)}
+                        </div>
                         <div className="file-details">
                           <div className="file-name">{file.fileName}</div>
                         </div>
                         {isImageFile(file.fileName) && file.fileUrl && (
-                          <button 
+                          <button
                             className="preview-button"
-                            onClick={() => window.open(file.fileUrl, '_blank')}
+                            onClick={() => window.open(file.fileUrl, "_blank")}
                             title="이미지 미리보기"
-                            type="button"
-                          >
+                            type="button">
                             미리보기
                           </button>
                         )}
@@ -605,14 +671,17 @@ const AssignmentDetail = () => {
                           onClick={() =>
                             downloadFile(file.fileUrl, file.fileName)
                           }
-                          type="button"
-                        >
+                          type="button">
                           다운로드
                         </button>
                       </div>
                       {isImageFile(file.fileName) && file.fileUrl && (
                         <div className="image-preview-container">
-                          <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                          <img
+                            className="image-preview-full"
+                            src={file.fileUrl}
+                            alt={file.fileName}
+                          />
                         </div>
                       )}
                     </div>
@@ -654,47 +723,54 @@ const AssignmentDetail = () => {
               )}
 
               {/* 제출 파일 표시 */}
-              {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
-                <div className="files-container">
-                  <h3 className="section-subtitle">제출 파일</h3>
-                  <div className="files-list">
-                    {assignment.submissionFiles.map((file, index) => (
-                      <div className="file-download-item" key={index}>
-                        <div className="file-info-row">
-                          <div className="file-icon">{getFileIcon(file.fileName)}</div>
-                          <div className="file-details">
-                            <div className="file-name">{file.fileName}</div>
+              {assignment.submissionFiles &&
+                assignment.submissionFiles.length > 0 && (
+                  <div className="files-container">
+                    <h3 className="section-subtitle">제출 파일</h3>
+                    <div className="files-list">
+                      {assignment.submissionFiles.map((file, index) => (
+                        <div className="file-download-item" key={index}>
+                          <div className="file-info-row">
+                            <div className="file-icon">
+                              {getFileIcon(file.fileName)}
+                            </div>
+                            <div className="file-details">
+                              <div className="file-name">{file.fileName}</div>
+                            </div>
+                            {isImageFile(file.fileName) && file.fileUrl && (
+                              <button
+                                className="preview-button"
+                                onClick={() =>
+                                  window.open(file.fileUrl, "_blank")
+                                }
+                                title="이미지 미리보기"
+                                type="button">
+                                미리보기
+                              </button>
+                            )}
+                            <button
+                              className="download-button"
+                              onClick={() =>
+                                downloadFile(file.fileUrl, file.fileName)
+                              }
+                              type="button">
+                              다운로드
+                            </button>
                           </div>
                           {isImageFile(file.fileName) && file.fileUrl && (
-                            <button 
-                              className="preview-button"
-                              onClick={() => window.open(file.fileUrl, '_blank')}
-                              title="이미지 미리보기"
-                              type="button"
-                            >
-                              미리보기
-                            </button>
+                            <div className="image-preview-container">
+                              <img
+                                className="image-preview-full"
+                                src={file.fileUrl}
+                                alt={file.fileName}
+                              />
+                            </div>
                           )}
-                          <button
-                            className="download-button"
-                            onClick={() =>
-                              downloadFile(file.fileUrl, file.fileName)
-                            }
-                            type="button"
-                          >
-                            다운로드
-                          </button>
                         </div>
-                        {isImageFile(file.fileName) && file.fileUrl && (
-                          <div className="image-preview-container">
-                            <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {/* 코멘트 섹션 (있을 경우에만 표시) */}
               {assignment.submissionComment && (
@@ -707,8 +783,8 @@ const AssignmentDetail = () => {
               )}
 
               <div className="buttons-row">
-                <Button 
-                  variant="reSubmit" 
+                <Button
+                  variant="reSubmit"
                   onClick={handleResubmit}
                   label="다시 제출"
                 />
@@ -735,47 +811,54 @@ const AssignmentDetail = () => {
                 )}
 
                 {/* 제출 파일 표시 */}
-                {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
-                  <div className="files-container">
-                    <h3 className="section-subtitle">제출 파일</h3>
-                    <div className="files-list">
-                      {assignment.submissionFiles.map((file, index) => (
-                        <div className="file-download-item" key={index}>
-                          <div className="file-info-row">
-                            <div className="file-icon">{getFileIcon(file.fileName)}</div>
-                            <div className="file-details">
-                              <div className="file-name">{file.fileName}</div>
+                {assignment.submissionFiles &&
+                  assignment.submissionFiles.length > 0 && (
+                    <div className="files-container">
+                      <h3 className="section-subtitle">제출 파일</h3>
+                      <div className="files-list">
+                        {assignment.submissionFiles.map((file, index) => (
+                          <div className="file-download-item" key={index}>
+                            <div className="file-info-row">
+                              <div className="file-icon">
+                                {getFileIcon(file.fileName)}
+                              </div>
+                              <div className="file-details">
+                                <div className="file-name">{file.fileName}</div>
+                              </div>
+                              {isImageFile(file.fileName) && file.fileUrl && (
+                                <button
+                                  className="preview-button"
+                                  onClick={() =>
+                                    window.open(file.fileUrl, "_blank")
+                                  }
+                                  title="이미지 미리보기"
+                                  type="button">
+                                  미리보기
+                                </button>
+                              )}
+                              <button
+                                className="download-button"
+                                onClick={() =>
+                                  downloadFile(file.fileUrl, file.fileName)
+                                }
+                                type="button">
+                                다운로드
+                              </button>
                             </div>
                             {isImageFile(file.fileName) && file.fileUrl && (
-                              <button 
-                                className="preview-button"
-                                onClick={() => window.open(file.fileUrl, '_blank')}
-                                title="이미지 미리보기"
-                                type="button"
-                              >
-                                미리보기
-                              </button>
+                              <div className="image-preview-container">
+                                <img
+                                  className="image-preview-full"
+                                  src={file.fileUrl}
+                                  alt={file.fileName}
+                                />
+                              </div>
                             )}
-                            <button
-                              className="download-button"
-                              onClick={() =>
-                                downloadFile(file.fileUrl, file.fileName)
-                              }
-                              type="button"
-                            >
-                              다운로드
-                            </button>
                           </div>
-                          {isImageFile(file.fileName) && file.fileUrl && (
-                            <div className="image-preview-container">
-                              <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
                 {/* 코멘트 섹션 (있을 경우에만 표시) */}
                 {assignment.submissionComment && (
@@ -788,16 +871,12 @@ const AssignmentDetail = () => {
                 )}
 
                 <div className="buttons-row">
-                  <Button 
-                    variant="reSubmit" 
+                  <Button
+                    variant="reSubmit"
                     onClick={handleResubmit}
                     label="다시 제출"
                   />
-                  <Button 
-                    variant="back" 
-                    onClick={handleBack}
-                    label="닫기"
-                  />
+                  <Button variant="back" onClick={handleBack} label="닫기" />
                 </div>
               </>
             )

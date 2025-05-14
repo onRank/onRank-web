@@ -55,12 +55,12 @@ function AssignmentList() {
 
   // 과제 보기
   const handleViewAssignment = (assignmentId) => {
-    navigate(`/studies/${studyId}/assignment/${assignmentId}`);
+    navigate(`/studies/${studyId}/assignments/${assignmentId}`);
   };
 
   // 과제 생성 페이지로 이동
   const handleCreateAssignment = () => {
-    navigate(`/studies/${studyId}/assignment/create`);
+    navigate(`/studies/${studyId}/assignments/create`);
   };
 
   // 과제 수정 페이지로 이동
@@ -71,7 +71,7 @@ function AssignmentList() {
     console.log(
       `[AssignmentList] 과제 수정 페이지로 이동: studyId=${studyId}, assignmentId=${assignmentId}`
     );
-    navigate(`/studies/${studyId}/assignment/${assignmentId}/edit`);
+    navigate(`/studies/${studyId}/assignments/${assignmentId}/edit`);
     setActivePopup(null);
   };
 
@@ -83,7 +83,7 @@ function AssignmentList() {
     console.log(
       `[AssignmentList] 과제 채점 페이지로 이동: studyId=${studyId}, assignmentId=${assignmentId}`
     );
-    navigate(`/studies/${studyId}/assignment/${assignmentId}/submissions`);
+    navigate(`/studies/${studyId}/assignments/${assignmentId}/submissions`);
     setActivePopup(null);
   };
 
@@ -267,7 +267,7 @@ function AssignmentList() {
             />
           </div>
         </div>
-        
+
         {/* Notice-style menu container with popup */}
         <div className="assignment-menu-container">
           <button
@@ -276,7 +276,7 @@ function AssignmentList() {
             aria-label="메뉴 열기">
             <FiMoreVertical size={18} />
           </button>
-          
+
           {activePopup === assignmentId && (
             <AssignmentActionPopup
               show={activePopup === assignmentId}

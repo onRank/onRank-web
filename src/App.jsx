@@ -511,27 +511,27 @@ function AppContent() {
                       element={<StudyDetailPage />}
                     />
                     <Route
-                      path="assignment"
+                      path="assignments"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route
-                      path="assignment/create"
+                      path="assignments/create"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route
-                      path="assignment/:assignmentId"
+                      path="assignments/:assignmentId"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route
-                      path="assignment/:assignmentId/submissions"
+                      path="assignments/:assignmentId/submissions"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route
-                      path="assignment/:assignmentId/submissions/:submissionId"
+                      path="assignments/:assignmentId/submissions/:submissionId"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route
-                      path="assignment/:assignmentId/edit"
+                      path="assignments/:assignmentId/edit"
                       element={<StudyDetailPage activeTab="과제" />}
                     />
                     <Route

@@ -155,10 +155,10 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
     const pathMap = {
       공지사항: "notices",
       일정: "schedules",
-      과제: "assignment",
+      과제: "assignments",
       게시판: "posts",
       출석: "attendances",
-      관리: "management",
+      관리: "managements",
     };
     return pathMap[tab] || "";
   };
