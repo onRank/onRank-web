@@ -118,7 +118,7 @@ function MemberCard({ member, onOpenPermissionPopup }) {
       {/* 오른쪽: 아이콘 */}
       <div>
         {member.role === "CREATOR" ? (
-          <div />
+          <div style={{ width: 20 }} />
         ) : (
           <FaUserCog
             onClick={(e) => onOpenPermissionPopup(member, e)}

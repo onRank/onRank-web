@@ -15,8 +15,8 @@ function ManagementContainer() {
           maxWidth: "800px",
           fontSize: "24px",
           fontWeight: "700",
-          margin: "30px auto",
-          padding: "0 20px",
+          margin: "1rem",
+          padding: "0 1rem",
         }}>
         관리
       </div>
@@ -27,8 +27,8 @@ function ManagementContainer() {
           maxWidth: "800px",
           display: "flex",
           justifyContent: "flex-start",
-          margin: "2rem auto",
-          padding: "0 30px",
+          margin: "2rem",
+          padding: "0",
         }}>
         <div style={{ display: "flex", gap: "0.5rem" }}>
           <Button
