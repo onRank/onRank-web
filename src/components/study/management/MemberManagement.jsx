@@ -6,6 +6,7 @@ import MemberCard from "./MemberCard";
 import { managementService } from "../../../services/management";
 import "./MemberManagement.css";
 import Button from "../../common/Button";
+import ManagementMemberUpdatePopup from "../../common/ManagementMemberUpdatePopup";
 
 function MemberManagement() {
   const { studyId } = useParams();
@@ -15,6 +16,7 @@ function MemberManagement() {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [processingMemberId, setProcessingMemberId] = useState(null);
   const [statusMessage, setStatusMessage] = useState({ text: "", type: "" });
+  const [permissionPopupMemberId, setPermissionPopupMemberId] = useState(null);
 
   // 멤버 목록 조회 함수
   const fetchMembers = async () => {
@@ -214,6 +216,20 @@ function MemberManagement() {
     department: member.studentDepartment || "학과 정보 없음",
   });
 
+  // 권한 팝업 열기 핸들러
+  const handleOpenPermissionPopup = (memberId) => {
+    setPermissionPopupMemberId(memberId);
+  };
+  // 권한 팝업 닫기 핸들러
+  const handleClosePermissionPopup = () => {
+    setPermissionPopupMemberId(null);
+  };
+
+  // 팝업에 넘길 멤버 정보 찾기
+  const selectedMember = members.find(
+    (m) => m.memberId === permissionPopupMemberId
+  );
+
   return (
     <div className="member-management-container">
       <div
@@ -257,6 +273,9 @@ function MemberManagement() {
             <MemberCard
               key={member.memberId}
               member={toMemberCardProps(member)}
+              onOpenPermissionPopup={() =>
+                handleOpenPermissionPopup(member.memberId)
+              }
             />
           ))
         )}
@@ -273,6 +292,14 @@ function MemberManagement() {
           studyId={studyId}
           onClose={() => setShowAddMemberModal(false)}
           onMemberAdded={handleMemberAdded}
+        />
+      )}
+      {/* 권한 설정 팝업 */}
+      {permissionPopupMemberId && selectedMember && (
+        <ManagementMemberUpdatePopup
+          member={selectedMember}
+          onClose={handleClosePermissionPopup}
+          // onSave, onRoleChange 등 필요한 콜백 추가 가능
         />
       )}
     </div>
