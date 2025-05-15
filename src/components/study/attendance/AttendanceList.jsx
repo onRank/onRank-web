@@ -83,11 +83,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     <div>
       <h2
         style={{
-          fontSize: "20px",
+          fontSize: "18px",
           fontWeight: "bold",
           marginBottom: "1rem",
         }}>
-        출석 일정
+        출석 현황
       </h2>
 
       {safeAttendances.length === 0 ? (
@@ -114,12 +114,24 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
             <thead>
               <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
                 <th
-                  style={{ padding: "1rem", textAlign: "left", width: "70%" }}>
+                  style={{ padding: "1rem", textAlign: "left", width: "60%" }}>
                   일정
                 </th>
                 <th
-                  style={{ padding: "1rem", textAlign: "right", width: "30%" }}>
+                  style={{
+                    padding: "1rem",
+                    textAlign: "center",
+                    width: "25%",
+                  }}>
                   출석 상태
+                </th>
+                <th
+                  style={{
+                    padding: "1rem",
+                    textAlign: "center",
+                    width: "15%",
+                  }}>
+                  {/* 더보기/수정 */}
                 </th>
               </tr>
             </thead>
@@ -146,17 +158,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                           "일정명 없음"}
                       </div>
                     </td>
-                    <td style={{ padding: "1rem", textAlign: "right" }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "flex-end",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                        }}>
-                        {isHost && renderEditIcon(attendance)}
-                        {renderStatus(attendance)}
-                      </div>
+                    <td style={{ padding: "1rem", textAlign: "center" }}>
+                      {renderStatus(attendance)}
+                    </td>
+                    <td style={{ padding: "1rem", textAlign: "center" }}>
+                      {isHost && renderEditIcon(attendance)}
                     </td>
                   </tr>
                 );

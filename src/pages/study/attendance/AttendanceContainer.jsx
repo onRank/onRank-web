@@ -160,7 +160,7 @@ function AttendanceContainer() {
                 boxShadow: "0 2px 8px #f5f5f5",
               }}>
               <span style={{ fontSize: "1rem", fontWeight: 500 }}>출석</span>
-              <span style={{ fontSize: "1.3rem", marginTop: "0.5rem" }}>
+              <span style={{ fontSize: "1.3rem", marginTop: "22px" }}>
                 {statistics.present}
               </span>
             </div>
@@ -184,8 +184,8 @@ function AttendanceContainer() {
               </span>
               <span
                 style={{
-                  fontSize: "1.3rem",
-                  marginTop: "22px",
+                  fontSize: "1rem",
+                  marginTop: "29px",
                   color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.late}
@@ -211,8 +211,8 @@ function AttendanceContainer() {
               </span>
               <span
                 style={{
-                  fontSize: "1.3rem",
-                  marginTop: "22px",
+                  fontSize: "1rem",
+                  marginTop: "29px",
                   color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.unknown}
@@ -238,8 +238,8 @@ function AttendanceContainer() {
               </span>
               <span
                 style={{
-                  fontSize: "1.3rem",
-                  marginTop: "22px",
+                  fontSize: "1rem",
+                  marginTop: "29px",
                   color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.absent}
