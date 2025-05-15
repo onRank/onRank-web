@@ -110,10 +110,8 @@ function AttendanceContainer() {
   if (error) return <div>{error}</div>;
 
   return (
-    <div style={{ padding: "1rem", marginTop: "1rem" }}>
-      <h1 className="page-title" style={{ padding: "1rem" }}>
-        출석
-      </h1>
+    <div style={{ padding: "0 1rem", marginTop: "1rem" }}>
+      <h1 className="page-title">출석</h1>
 
       <div style={{ marginBottom: "2rem" }}>
         <div
@@ -130,8 +128,8 @@ function AttendanceContainer() {
           {/* 차트 배치 - 가운데 정렬 */}
           <div
             style={{
-              width: "240px",
-              height: "240px",
+              width: "270px",
+              height: "270px",
               marginRight: "4rem",
             }}>
             <AttendanceChart attendances={attendances} />
@@ -143,17 +141,17 @@ function AttendanceContainer() {
               display: "grid",
               gridTemplateColumns: "repeat(2, 1fr)",
               gridTemplateRows: "repeat(2, 1fr)",
-              gap: "1rem",
-              marginLeft: "1rem",
-              width: "220px",
+              gap: "0.5rem",
+              margin: "auto 0",
+              width: "275px",
             }}>
             {/* 출석 */}
             <div
               style={{
                 border: "2px solid #E50011",
-                borderRadius: "12px",
-                padding: "1.2rem",
-                background: "#fff",
+                borderRadius: "16px",
+                padding: "0.8rem",
+                background: "rgba(238, 4, 24, 0.05)",
                 color: "#E50011",
                 fontWeight: "bold",
                 display: "flex",
@@ -169,10 +167,10 @@ function AttendanceContainer() {
             {/* 지각 */}
             <div
               style={{
-                border: "1.5px solid #ccc",
-                borderRadius: "12px",
-                padding: "1.2rem",
-                background: "#fff",
+                border: "1.5px solid rgba(0, 0, 0, 1)",
+                borderRadius: "16px",
+                padding: "0.8rem",
+                background: "rgba(0, 0, 0, 0.05)",
                 color: "#007BFF",
                 fontWeight: "bold",
                 display: "flex",
@@ -187,8 +185,8 @@ function AttendanceContainer() {
               <span
                 style={{
                   fontSize: "1.3rem",
-                  marginTop: "0.5rem",
-                  color: "#007BFF",
+                  marginTop: "22px",
+                  color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.late}
               </span>
@@ -196,10 +194,10 @@ function AttendanceContainer() {
             {/* 미인증 */}
             <div
               style={{
-                border: "1.5px solid #ccc",
-                borderRadius: "12px",
-                padding: "1.2rem",
-                background: "#fff",
+                border: "1.5px solid rgba(0, 0, 0, 1)",
+                borderRadius: "16px",
+                padding: "0.8rem",
+                background: "rgba(0, 0, 0, 0.05)",
                 color: "#999",
                 fontWeight: "bold",
                 display: "flex",
@@ -214,8 +212,8 @@ function AttendanceContainer() {
               <span
                 style={{
                   fontSize: "1.3rem",
-                  marginTop: "0.5rem",
-                  color: "#999",
+                  marginTop: "22px",
+                  color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.unknown}
               </span>
@@ -223,10 +221,10 @@ function AttendanceContainer() {
             {/* 결석 */}
             <div
               style={{
-                border: "1.5px solid #ccc",
-                borderRadius: "12px",
-                padding: "1.2rem",
-                background: "#fff",
+                border: "1.5px solid rgba(0, 0, 0, 1)",
+                borderRadius: "16px",
+                padding: "0.8rem",
+                background: "rgba(0, 0, 0, 0.05)",
                 color: "#000",
                 fontWeight: "bold",
                 display: "flex",
@@ -241,8 +239,8 @@ function AttendanceContainer() {
               <span
                 style={{
                   fontSize: "1.3rem",
-                  marginTop: "0.5rem",
-                  color: "#000",
+                  marginTop: "22px",
+                  color: "rgba(0, 0, 0, 1)",
                 }}>
                 {statistics.absent}
               </span>
