@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useNavigate } from "react";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
 import { managementService } from "../../../services/management";
@@ -8,6 +8,7 @@ import Button from "../../common/Button";
 import "./StudyManagement.css";
 
 function StudyManagement() {
+  const navigate = useNavigate();
   const { studyId } = useParams();
   const [isEditing, setIsEditing] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -112,6 +113,7 @@ function StudyManagement() {
       setIsDeleting(true);
       deleteStudy();
     }
+    navigate("/studies");
   };
 
   // 스터디 삭제 API 호출

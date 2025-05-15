@@ -159,7 +159,7 @@ function AttendanceContainer() {
                 padding: "0.8rem",
               }}>
               <span style={{ fontSize: "1rem", fontWeight: 500 }}>출석</span>
-              <span style={{ fontSize: "0.8rem", marginTop: "22px" }}>
+              <span style={{ fontSize: "1rem", marginTop: "29px" }}>
                 {statistics.present}
               </span>
             </div>

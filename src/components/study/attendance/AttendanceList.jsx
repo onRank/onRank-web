@@ -114,22 +114,34 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
             <thead>
               <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
                 <th
-                  style={{ padding: "1rem", textAlign: "left", width: "60%" }}>
+                  style={{
+                    padding: "0.5rem",
+                    textAlign: "left",
+                    width: "30%",
+                  }}>
                   일정
                 </th>
                 <th
                   style={{
-                    padding: "1rem",
+                    padding: "0.5rem",
                     textAlign: "center",
-                    width: "25%",
+                    width: "45%",
                   }}>
                   출석 상태
                 </th>
                 <th
                   style={{
-                    padding: "1rem",
+                    padding: "0.5rem",
                     textAlign: "center",
                     width: "15%",
+                  }}>
+                  {/* 더보기/수정 */}
+                </th>
+                <th
+                  style={{
+                    padding: "0.5rem",
+                    textAlign: "center",
+                    width: "10%",
                   }}>
                   {/* 더보기/수정 */}
                 </th>
