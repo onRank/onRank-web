@@ -154,9 +154,56 @@ api.interceptors.response.use(
   async (error) => {
     // 401 에러 처리 (토큰 만료 등)
     if (error.response && error.response.status === 401) {
-      // 토큰 재발급 로직 등 여기에 추가
-      console.log("[API] 401 에러 발생, 토큰 재발급 필요");
+      console.log("[API] 401 에러 발생, 토큰 재발급 시도");
+      
+      // 재발급 요청이 /auth/reissue인 경우 무한 루프 방지
+      if (error.config.url === '/auth/reissue') {
+        console.log("[API] /auth/reissue 자체에서 401 발생, 재시도 중단");
+        return Promise.reject(error);
+      }
+      
+      try {
+        // 기존 액세스 토큰 제거
+        localStorage.removeItem("accessToken");
+        console.log("[API] 만료된 액세스 토큰 제거");
+        
+        // 토큰 재발급 요청
+        const response = await api.get("/auth/reissue", {
+          withCredentials: true, // HttpOnly 쿠키의 리프레시 토큰을 사용하기 위한 옵션
+        });
+        
+        const newToken = response.headers["authorization"] || response.headers["Authorization"];
+        
+        if (newToken) {
+          console.log("[API] 토큰 재발급 성공, 새 토큰 저장");
+          await tokenUtils.setToken(newToken);
+          
+          // 실패했던 원래 요청 재시도
+          const originalRequest = error.config;
+          
+          // 재시도 요청에 새 토큰 설정
+          originalRequest.headers["Authorization"] = newToken.startsWith("Bearer ")
+            ? newToken
+            : `Bearer ${newToken}`;
+            
+          console.log("[API] 원래 요청 재시도:", originalRequest.url);
+          
+          // axios 인스턴스로 직접 요청 (인터셉터 무한 루프 방지)
+          return axios(originalRequest);
+        } else {
+          console.log("[API] 토큰 재발급 응답에 새 토큰이 없음");
+        }
+      } catch (refreshError) {
+        console.error("[API] 토큰 재발급 실패:", refreshError);
+        
+        // 재발급 실패 시 로그인 페이지로 리다이렉트 고려
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+          console.log("[API] 인증 실패, 로그인 페이지로 이동");
+          window.location.href = '/login';
+        }
+      }
     }
+    
     return Promise.reject(error);
   }
 );
@@ -249,11 +296,10 @@ export const tokenUtils = {
           const tokenPayload = JSON.parse(atob(token.split(".")[1]));
           const expirationTime = tokenPayload.exp * 1000;
 
-          // 토큰이 만료됐거나 5분 이내 만료 예정이면 null 반환 (재발급 유도)
-          if (Date.now() >= expirationTime - 300000) {
-            // 5분 = 300,000ms
+          // 토큰이 만료되었을 때만 null 반환 (정확히 만료 시점에 재발급 유도)
+          if (Date.now() >= expirationTime) {
             console.log(
-              "[Token Debug] Token expired or expiring soon, will request new token"
+              "[Token Debug] Token expired, will request new token"
             );
             return null;
           }
@@ -499,8 +545,8 @@ export const tokenUtils = {
       const payload = JSON.parse(jsonPayload);
       const expirationTime = payload.exp * 1000; // 밀리초로 변환
 
-      // 현재 시간과 비교 (5분 이내로 만료라면 미리 갱신 유도)
-      return Date.now() < expirationTime - 300000;
+      // 현재 시간과 비교 (정확히 만료됐을 때만 무효로 판단)
+      return Date.now() < expirationTime;
     } catch (error) {
       console.error("[Token Debug] Token validation error:", error);
       return false;
