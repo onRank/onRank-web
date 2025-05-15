@@ -273,7 +273,7 @@ function AppContent() {
             // 새로운 요청을 보내 서버 측 세션 상태 확인
             const statusCheckUrl = `${
               import.meta.env.VITE_API_URL || "http://localhost:8080"
-            }/auth/validate`;
+            }/auth/reissue`;
             fetch(statusCheckUrl, {
               method: "GET",
               credentials: "include", // 쿠키 포함
