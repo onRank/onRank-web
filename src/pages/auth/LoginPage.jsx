@@ -36,7 +36,7 @@ function LoginPage() {
   return (
     <div style={styles.container} className="login-container">
       <div style={styles.logoContainer}>
-        <img src="/new-logo.png" alt="ONRANK Logo" style={styles.logo} />
+        <img src="new-logo.png" alt="ONRANK Logo" style={styles.logo} />
         <div style={styles.brandName}>onRank</div>
       </div>
 

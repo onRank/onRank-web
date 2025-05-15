@@ -93,7 +93,7 @@ const Header = () => {
         }}
       >
         <img
-          src="/new-logo.png"
+          src="new-logo.png"
           alt="onRank 로고"
           style={{ height: "32px", cursor: "pointer" }}
         />
