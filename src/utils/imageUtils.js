@@ -2,6 +2,7 @@
  * 이미지 URL 관련 유틸리티 함수
  */
 import axios from 'axios';
+import { isS3Url as isS3UrlFromUtils, toCdnPath } from './urlUtils';
 
 /**
  * 이미지 URL을 직접 사용하는 대신 이미지를 div 배경으로 표시하는 스타일을 생성
@@ -32,16 +33,8 @@ export const DEFAULT_IMAGE_SVG = 'data:image/svg+xml;charset=UTF-8,%3Csvg%20widt
  * @returns {boolean} S3 URL 여부
  */
 export const isS3Url = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  const cloudfrontUrl = import.meta.env.VITE_CLOUDFRONT_URL;
-
-  
-  return (
-    url.includes('amazonaws.com') || 
-    url.includes('s3.') || 
-    url.includes('.s3.') ||
-    (cloudfrontUrl && url.startsWith(cloudfrontUrl))
-  );
+  // urlUtils.js에서 가져온 함수 사용
+  return isS3UrlFromUtils(url);
 };
 
 /**
@@ -61,17 +54,21 @@ export const handleImageError = (e, imageInfo = '') => {
   const isFromS3 = isS3Url(imageInfo);
   
   if (isFromS3) {
-    console.log(`[이미지 로딩 실패] S3 이미지 로드 실패, CORS 문제일 수 있음: ${imageInfo}`);
+    console.log(`[이미지 로딩 실패] S3 이미지 로드 실패: ${imageInfo}`);
     
-    // CORS 문제 원인 로깅을 유지 (디버깅용)
+    // S3 URL을 CloudFront 경로로 변환 시도
     try {
-      console.log(`[이미지 디버그] URL 구조: ${new URL(imageInfo).hostname}`);
-      console.log(`[이미지 디버그] 현재 crossOrigin 설정: ${e.target.crossOrigin}`);
+      const cdnPath = toCdnPath(imageInfo);
+      
+      // 원본 URL과 변환된 URL이 다르면 변환된 URL로 다시 시도
+      if (cdnPath !== imageInfo) {
+        console.log(`[이미지 로딩] CloudFront 경로로 변환하여 재시도: ${cdnPath}`);
+        e.target.src = cdnPath;
+        return; // 여기서 종료하여 기본 이미지로 교체하지 않음
+      }
     } catch (err) {
-      console.log(`[이미지 디버그] URL 파싱 실패: ${err.message}`);
+      console.log(`[이미지 로딩] URL 변환 실패: ${err.message}`);
     }
-    
-    // 마지막 시도 로직 제거 - retry 시도 없이 바로 기본 이미지로 대체
   } else {
     console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
   }
