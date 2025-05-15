@@ -80,81 +80,13 @@ const assignmentService = {
     try {
       console.log(`[AssignmentService] 과제 생성 요청: ${studyId}`);
 
-      // FormData 객체인 경우 파일 처리를 위해 추출
+      // FormData 객체인 경우 새 접근 방식 사용
       if (assignmentData instanceof FormData) {
-        console.log(
-          "[AssignmentService] FormData 객체 감지, preSignedURL 방식으로 처리"
-        );
-
-        // FormData에서 파일들과 다른 데이터 추출
-        const files = [];
-        const formDataObj = {};
-
-        // FormData 객체에서 파일과 다른 필드 추출
-        for (const [key, value] of assignmentData.entries()) {
-          if (value instanceof File) {
-            files.push(value);
-          } else {
-            formDataObj[key] = value;
-          }
-        }
-
-        console.log("[AssignmentService] 추출된 데이터:", formDataObj);
-        console.log("[AssignmentService] 추출된 파일 수:", files.length);
-        console.log("[AssignmentService] 추출된 파일:", files.map(f => f.name));
-
-        // 1. 파일 이름 배열 만들기
-        const fileNames = files.map((file) => file.name);
-
-        // 2. 기본 데이터 준비 (파일명 포함)
-        const requestData = {
-          assignmentTitle: formDataObj.assignmentTitle,
-          assignmentContent: formDataObj.assignmentContent,
-          assignmentDueDate: formDataObj.assignmentDueDate,
-          assignmentMaxPoint: parseInt(formDataObj.assignmentMaxPoint, 10),
-          fileNames: fileNames,
-        };
-
-        // 3. API 호출하여 과제 생성 및 preSignedURL 받기
-        const response = await api.post(
-          `/studies/${studyId}/assignments`,
-          requestData,
-          {
-            withCredentials: true,
-          }
-        );
-
-        console.log(
-          "[AssignmentService] 과제 생성 성공, 응답 데이터:",
-          JSON.stringify(response.data, null, 2)
-        );
-
-        // 4. 파일 업로드 처리
-        if (files.length > 0 && response.data) {
-          console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", files.length);
-          
-          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-          const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
-          console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
-          
-          // 업로드 실패 발생 시 경고
-          const failedUploads = uploadResults.filter(result => !result.success);
-          if (failedUploads.length > 0) {
-            console.warn("[AssignmentService] 일부 파일 업로드 실패:", failedUploads);
-          }
-        } else {
-          console.warn(
-            "[AssignmentService] 업로드할 파일이 없거나 응답 데이터가 없음"
-          );
-        }
-
-        // 스터디 컨텍스트 정보 업데이트
-        studyContextService.updateFromApiResponse(studyId, response.data);
-
-        return response.data;
+        console.log("[AssignmentService] FormData 객체가 더 이상 지원되지 않습니다. JSON 방식을 사용하세요.");
+        throw new Error("FormData 방식이 더 이상 지원되지 않습니다. 파일과 메타데이터를 별도로 처리하는 방식을 사용하세요.");
       }
 
-      // 일반 JSON 객체인 경우 기존 로직 사용
+      // 일반 JSON 객체 방식 - 기존 로직 개선
       // 요청 데이터 검증
       if (!assignmentData.assignmentTitle) {
         throw new Error("과제 제목은 필수 항목입니다.");
@@ -182,8 +114,11 @@ const assignmentService = {
       };
 
       console.log("[AssignmentService] 요청 데이터:", requestData);
-      console.log("[AssignmentService] 파일 객체 확인:", assignmentData.files);
+      
+      // 파일 객체들 임시 저장 (업로드에 사용)
+      const files = assignmentData.files || [];
 
+      // API 호출하여 과제 생성 및 preSignedURL 받기
       const response = await api.post(
         `/studies/${studyId}/assignments`,
         requestData,
@@ -194,19 +129,19 @@ const assignmentService = {
 
       console.log("[AssignmentService] 과제 생성 성공:", JSON.stringify(response.data, null, 2));
 
-      // 파일 객체가 있고 응답에 uploadUrl이 있는 경우 파일 업로드
-      if (assignmentData.files && assignmentData.files.length > 0) {
-        console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", assignmentData.files.length);
-        console.log("[AssignmentService] 파일 목록:", assignmentData.files.map(f => f.name));
+      // 파일 업로드 처리 - 실제 파일이 있는 경우
+      if (files.length > 0 && response.data) {
+        console.log("[AssignmentService] 파일 업로드 시작, 파일 개수:", files.length);
         
         // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-        const uploadResults = await handleFileUploadWithS3(response.data, assignmentData.files, 'uploadUrl');
+        const uploadResults = await handleFileUploadWithS3(response.data, files, 'uploadUrl');
         console.log("[AssignmentService] 파일 업로드 결과:", uploadResults);
         
         // 업로드 실패 발생 시 경고
         const failedUploads = uploadResults.filter(result => !result.success);
         if (failedUploads.length > 0) {
           console.warn("[AssignmentService] 일부 파일 업로드 실패:", failedUploads);
+          response.data.warning = "일부 파일 업로드에 실패했습니다.";
         }
       }
 

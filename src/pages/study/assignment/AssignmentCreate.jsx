@@ -4,7 +4,7 @@ import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
 import Button from "../../../components/common/Button";
 import FileUploader from "../../../components/common/FileUploader";
-import { formatFileSize } from "../../../utils/fileUtils";
+import { formatFileSize, handleFileUploadWithS3 } from "../../../utils/fileUtils";
 import "./AssignmentStyles.css";
 import "../../../styles/notice.css";
 
@@ -86,56 +86,55 @@ function AssignmentCreate() {
         attachedFiles.map((file) => `${file.name} (${file.size} bytes)`)
       );
 
-      // FormData 객체 생성 (파일 업로드를 위해)
-      const requestFormData = new FormData();
-
-      // 필수 필드 추가
-      requestFormData.append("assignmentTitle", formData.assignmentTitle);
-      requestFormData.append("assignmentContent", formData.assignmentContent);
-      requestFormData.append(
-        "assignmentMaxPoint",
-        formData.assignmentMaxPoint.toString()
-      );
-
       // ISO 형식으로 날짜 변환
       const dueDateISO = new Date(formData.assignmentDueDate).toISOString();
-      requestFormData.append("assignmentDueDate", dueDateISO);
+      
+      // 요청 데이터 구성 - JSON 형식으로 변경
+      const assignmentData = {
+        assignmentTitle: formData.assignmentTitle,
+        assignmentContent: formData.assignmentContent,
+        assignmentDueDate: dueDateISO,
+        assignmentMaxPoint: formData.assignmentMaxPoint,
+        fileNames: attachedFiles.map(file => file.name), // 파일 이름 배열만 전송
+        files: attachedFiles, // 실제 파일 객체 추가
+      };
 
-      // 파일 이름 추가 (각각 별도로 추가)
-      attachedFiles.forEach((file) => {
-        requestFormData.append("fileNames", file.name);
-      });
+      console.log("[AssignmentCreate] 과제 생성 요청 구성 완료:", assignmentData);
 
-      // 파일 객체 추가
-      attachedFiles.forEach((file) => {
-        // 'files' 키로 모든 파일 추가 (서버 처리 방식에 맞게)
-        requestFormData.append("files", file);
-      });
+      // 과제 생성 API 호출 (JSON 형식 사용) - FormData 대신 JSON
+      const response = await assignmentService.createAssignment(studyId, assignmentData);
+      
+      console.log("[AssignmentCreate] 과제 생성 응답:", response);
 
-      console.log("[AssignmentCreate] 과제 생성 요청 구성 완료:");
-      console.log(" - 제목:", formData.assignmentTitle);
-      console.log(" - 마감기한:", dueDateISO);
-      console.log(" - 최대 포인트:", formData.assignmentMaxPoint);
-      console.log(" - 파일 개수:", attachedFiles.length);
-
-      // FormData 내용 확인
-      for (const [key, value] of requestFormData.entries()) {
-        if (value instanceof File) {
-          console.log(
-            ` - ${key}: ${value.name} (${formatFileSize(value.size)})`
-          );
-        } else {
-          console.log(` - ${key}: ${value}`);
+      // 파일이 있는 경우, 파일 업로드 처리
+      if (attachedFiles.length > 0) {
+        console.log("[AssignmentCreate] 파일 업로드 시작");
+        
+        try {
+          // handleFileUploadWithS3 함수 사용하여 파일 업로드
+          const uploadResults = await handleFileUploadWithS3(response, attachedFiles, "uploadUrl");
+          
+          console.log("[AssignmentCreate] 파일 업로드 결과:", uploadResults);
+          
+          // 업로드 실패 체크
+          const failedUploads = uploadResults.filter(result => !result.success);
+          if (failedUploads.length > 0) {
+            console.warn("[AssignmentCreate] 일부 파일 업로드 실패:", failedUploads);
+            alert("과제는 생성되었으나, 일부 파일 업로드에 실패했습니다.");
+          } else {
+            alert("과제가 성공적으로 업로드되었습니다.");
+          }
+        } catch (uploadErr) {
+          console.error("[AssignmentCreate] 파일 업로드 중 오류:", uploadErr);
+          alert("과제는 생성되었으나, 파일 업로드 중 오류가 발생했습니다.");
         }
+      } else {
+        alert("과제가 성공적으로 업로드되었습니다.");
       }
-
-      // 과제 업로드 API 호출 (FormData 객체 사용)
-      await assignmentService.createAssignment(studyId, requestFormData);
-
-      alert("과제가 성공적으로 업로드되었습니다.");
+      
       navigate(`/studies/${studyId}/assignments`); // 목록 페이지로 이동
     } catch (err) {
-      console.error("과제 업로드 실패:", err);
+      console.error("[AssignmentCreate] 과제 업로드 실패:", err);
       setError(
         `과제 업로드에 실패했습니다: ${
           err.message || "알 수 없는 오류가 발생했습니다."
