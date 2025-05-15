@@ -18,26 +18,33 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   // 마우스 오버 상태 관리
   const [hoveredId, setHoveredId] = useState(null);
 
-  // 출석 상태 표시 함수 (아이콘만)
-  const renderStatusIconOnly = (attendance) => {
+  // 출석 상태 표시 함수
+  const renderStatus = (attendance) => {
     const status = attendance.attendanceStatus || "UNKNOWN";
     const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
+
     return (
       <div
         style={{
-          width: "28px",
-          height: "28px",
-          borderRadius: "50%",
-          backgroundColor: "#fff",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          color: styles.color,
-          border: styles.border || "1.5px solid #eee",
-          fontSize: "1.3rem",
-          margin: "0 auto",
+          gap: "0.5rem",
         }}>
-        {styles.icon}
+        <div
+          style={{
+            width: "24px",
+            height: "24px",
+            borderRadius: "50%",
+            backgroundColor: styles.color,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "white",
+            border: styles.border,
+          }}>
+          {styles.icon}
+        </div>
+        <span style={{ color: styles.color }}>{getStatusText(status)}</span>
       </div>
     );
   };
@@ -76,11 +83,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     <div>
       <h2
         style={{
-          fontSize: "18px",
+          fontSize: "20px",
           fontWeight: "bold",
-          marginBottom: "2rem",
+          marginBottom: "1rem",
         }}>
-        출석 현황
+        출석 일정
       </h2>
 
       {safeAttendances.length === 0 ? (
@@ -98,38 +105,20 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
         <div
           style={{
             backgroundColor: "#FFFFFF",
-            borderRadius: "12px",
+            borderRadius: "8px",
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
-            border: "1.5px solid #f2f2f2",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
           }}>
           {/* 출석 일정 목록 */}
-          <table
-            style={{
-              width: "100%",
-              borderCollapse: "separate",
-              borderSpacing: 0,
-            }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1.5px solid #f2f2f2" }}>
+              <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
                 <th
-                  style={{
-                    padding: "1rem 0.5rem",
-                    textAlign: "left",
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    color: "#222",
-                  }}>
+                  style={{ padding: "1rem", textAlign: "left", width: "70%" }}>
                   일정
                 </th>
                 <th
-                  style={{
-                    padding: "1rem 0.5rem",
-                    textAlign: "center",
-                    fontWeight: 600,
-                    fontSize: "1rem",
-                    color: "#222",
-                  }}>
+                  style={{ padding: "1rem", textAlign: "right", width: "30%" }}>
                   출석 상태
                 </th>
               </tr>
@@ -146,32 +135,28 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 return (
                   <tr
                     key={attendance.attendanceId}
-                    style={{ borderBottom: "1px solid #f7f7f7" }}
+                    style={{ borderBottom: "1px solid #e5e5e5" }}
                     onMouseEnter={() => setHoveredId(attendance.attendanceId)}
                     onMouseLeave={() => setHoveredId(null)}>
-                    <td style={{ padding: "1.1rem 0.5rem" }}>
-                      <div
-                        style={{
-                          fontWeight: 700,
-                          fontSize: "1rem",
-                          color: "#222",
-                        }}>
-                        {formattedDate}
-                      </div>
-                      <div
-                        style={{
-                          color: "#888",
-                          fontSize: "0.95rem",
-                          marginTop: "0.15rem",
-                        }}>
+                    <td style={{ padding: "1rem" }}>
+                      <div style={{ fontWeight: "bold" }}>{formattedDate}</div>
+                      <div style={{ color: "#666", marginTop: "0.25rem" }}>
                         {attendance.scheduleTitle ||
                           attendance.title ||
                           "일정명 없음"}
                       </div>
                     </td>
-                    <td
-                      style={{ padding: "1.1rem 0.5rem", textAlign: "center" }}>
-                      {renderStatusIconOnly(attendance)}
+                    <td style={{ padding: "1rem", textAlign: "right" }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "flex-end",
+                          alignItems: "center",
+                          gap: "0.5rem",
+                        }}>
+                        {isHost && renderEditIcon(attendance)}
+                        {renderStatus(attendance)}
+                      </div>
                     </td>
                   </tr>
                 );
