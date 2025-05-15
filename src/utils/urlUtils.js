@@ -1,28 +1,22 @@
 // utils/urlUtils.js
 
 /**
- * S3 URL을 CloudFront 경로로 변환하는 유틸리티 함수
+ * 1) S3 정적 URL을 CloudFront 경로(/study…, /notice…)로 변환
+ * 2) 프리사인 URL(?X-Amz-…) 은 그대로 두어 서명이 깨지지 않게 함
  */
 
-// S3 URL 패턴 정규식
-const S3_URL_PATTERN = /^https?:\/\/onrank-file-bucket\.s3\.ap-northeast-2\.amazonaws\.com\/(.+)$/i;
+const S3_URL_RE = /^https?:\/\/onrank-file-bucket\.s3\.ap-northeast-2\.amazonaws\.com\/(.+)$/i;
 
-/**
- * S3 URL인지 확인하는 함수
- * @param {string} url - 확인할 URL
- * @returns {boolean} S3 URL 여부
- */
-export const isS3Url = (url) => {
-  if (!url || typeof url !== 'string') return false;
-  return S3_URL_PATTERN.test(url);
-};
+// 프리사인 URL 여부 검사 ─ 서명 파라미터가 포함돼 있으면 True
+const isPresigned = (u = '') =>
+  /[?&]X-Amz-Algorithm=/.test(u) || /[?&]X-Amz-Signature=/.test(u);
 
-/**
- * S3 URL을 CloudFront 경로로 변환하는 함수
- * @param {string} url - 변환할 URL
- * @returns {string} 변환된 URL (S3 URL이 아니면 원래 URL 반환)
- */
+/** 주어진 문자열이 S3 버킷 정적 URL인가?  */
+export const isS3Url = (url) => S3_URL_RE.test(url);
+
+/** S3 URL → /study/…, /notice/… 경로로, 프리사인은 그대로 반환 */
 export const toCdnPath = (url) => {
-  if (!url || typeof url !== 'string') return url;
-  return isS3Url(url) ? `/${url.replace(S3_URL_PATTERN, '$1')}` : url;
+  if (typeof url !== 'string' || !url) return url;
+  if (isPresigned(url)) return url;                 // 예외: 프리사인 URL
+  return isS3Url(url) ? `/${url.replace(S3_URL_RE, '$1')}` : url;
 };
