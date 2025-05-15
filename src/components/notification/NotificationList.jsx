@@ -163,20 +163,12 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
   const getImageUrl = (url) => {
     if (!url) return DEFAULT_IMAGE_SVG;
     
-    // URL 유효성 검사
-    try {
-      new toCdnPath(url);
-      
-      // S3 이미지인 경우 로깅
-      if (isS3Url(url)) {
-        console.log(`[NotificationList] S3 이미지 URL 감지: ${url.substring(0, 50)}...`);
-      }
-      
-      return url;
-    } catch (e) {
-      console.error(`[NotificationList] 잘못된 URL 형식: ${url}`);
-      return DEFAULT_IMAGE_SVG;
+    // S3 이미지인 경우 로깅
+    if (isS3Url(url)) {
+      console.log(`[NotificationList] S3 이미지 URL 감지: ${url.substring(0, 50)}...`);
     }
+    
+    return toCdnPath(url) || DEFAULT_IMAGE_SVG;
   };
 
   // S3 이미지 로딩 에러 처리 전용 핸들러
