@@ -63,8 +63,7 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
       );
       setNotifications(updatedNotifications);
       
-      // 알림 카운터 업데이트를 위한 이벤트 발생 및 콜백 호출
-      window.dispatchEvent(new Event('notification-read'));
+      // 알림 카운터 업데이트를 위한 콜백 호출
       if (onNotificationRead) {
         onNotificationRead();
       }
