@@ -213,6 +213,9 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
             className={`notification-item ${!notification.read ? 'unread' : ''}`}
             onClick={() => handleNotificationClick(notification)}
           >
+            {!notification.read && (
+              <div className="notification-unread-dot"></div>
+            )}
             {notification.studyImageUrl && (
               <div className="notification-image">
                 <img 

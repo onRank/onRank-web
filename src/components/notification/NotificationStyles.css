@@ -29,6 +29,18 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+/* 읽지 않은 알림 표시 점 */
+.notification-unread-dot {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #ee0418; /* 테마 컬러 (Badge와 일치) */
+}
+
 /* 알림 드롭다운 스타일 */
 .notification-dropdown {
   position: absolute;
@@ -83,6 +95,7 @@
   transition: background-color 0.2s;
   gap: 16px;
   align-items: flex-start;
+  position: relative;
 }
 
 .notification-item:hover {
