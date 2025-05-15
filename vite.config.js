@@ -1,19 +1,24 @@
 import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react";
 
-// https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // 현재 mode (development, production 등)에 따라 .env 값 로드
   const env = loadEnv(mode, process.cwd());
+
+  // 브랜치별 경로 설정: CloudFront가 S3의 /main 또는 /develop을 서빙하므로 base 필요
+  let basePath = "/";
+  if (env.VITE_CLOUDFRONT_URL?.includes("dev.onrank.kr")) {
+    basePath = "/develop/";
+  } else if (env.VITE_CLOUDFRONT_URL?.includes("onrank.kr")) {
+    basePath = "/main/";
+  }
 
   return {
     plugins: [react()],
+    base: basePath, // ✅ 추가: 브랜치에 맞는 정적 파일 base 경로 지정
     server: {
       port: 3000,
     },
     publicDir: "public",
-
-    // GitHub Actions에서 주입된 환경변수를 Vite 번들에 명시적으로 삽입
     define: {
       'import.meta.env.VITE_API_URL': JSON.stringify(env.VITE_API_URL),
       'import.meta.env.VITE_FRONTEND_URL': JSON.stringify(env.VITE_FRONTEND_URL),
