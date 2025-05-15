@@ -21,6 +21,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     study: "스터디",
     member: "회원",
     memberAdd: "+회원 추가",
+    studyDelete: "스터디 삭제",
     default: "확인",
   };
 
@@ -115,6 +116,12 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       color: "#fff",
       border: "none",
       minWidth: "84px",
+    },
+    studyDelete: {
+      backgroundColor: "#ee0418",
+      color: "#fff",
+      border: "none",
+      width: " 100px",
     },
     default: {
       backgroundColor: "#f2f2f2",

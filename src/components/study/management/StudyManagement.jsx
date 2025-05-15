@@ -548,12 +548,7 @@ function StudyManagement() {
           </div>
 
           <div className="button-container">
-            <Button
-              variant="delete"
-              onClick={handleDelete}
-              style={{ width: 100 }}>
-              스터디 삭제
-            </Button>
+            <Button variant="studyDelete" onClick={handleDelete} />
             <Button variant="edit" onClick={handleEdit} />
           </div>
         </div>
