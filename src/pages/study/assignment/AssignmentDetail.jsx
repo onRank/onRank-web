@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import assignmentService from "../../../services/assignment";
 import Button from "../../../components/common/Button";
 import ScoreDisplay from "../../../components/common/ScoreDisplay";
+import FileUploader from "../../../components/common/FileUploader";
 import {
   formatFileSize,
   getFileIcon,
@@ -100,8 +101,8 @@ const AssignmentDetail = () => {
     fetchAssignmentDetail();
   }, [studyId, assignmentId]);
 
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+  // FileUploader에서 선택된 파일 처리
+  const handleFileSelect = (selectedFiles) => {
     if (selectedFiles && selectedFiles.length > 0) {
       console.log(
         "파일 선택:",
@@ -324,12 +325,17 @@ const AssignmentDetail = () => {
     setUploadStatus([]);
   };
 
-  // 기존 파일 제거 처리
+  // 기존 파일 제거 처리 - FileUploader와 함께 사용
   const handleRemoveExistingFile = (fileId) => {
     // remainingFileIds에서 해당 파일 ID 제거
     setRemainingFileIds((prev) => prev.filter((id) => id !== fileId));
-    // UI에서도 제거 (선택적)
+    // UI에서도 제거
     setExistingFiles((prev) => prev.filter((file) => file.fileId !== fileId));
+  };
+  
+  // 새로 추가된 파일 제거 처리 - FileUploader와 함께 사용
+  const handleFileRemove = (fileName) => {
+    setFiles((prev) => prev.filter((file) => file.name !== fileName));
   };
 
   // 파일 업로드 상태 확인
@@ -402,173 +408,30 @@ const AssignmentDetail = () => {
         </div>
       </div>
 
-      {/* 재제출 시 기존 파일 표시 */}
-      {isResubmitting && existingFiles.length > 0 && (
-        <div className="file-list">
-          {existingFiles.map((file) => (
-            <div className="file-item" key={file.fileId}>
-              <div className="file-info-container">
-                {isImageFile(file.fileName) && file.fileUrl && (
-                  <div className="image-preview">
-                    <img src={file.fileUrl} alt={file.fileName} />
-                  </div>
-                )}
-                <div className="file-info">
-                  <span className="file-name">{file.fileName}</span>
-                </div>
-              </div>
-              <button
-                className="remove-file-button"
-                onClick={() => handleRemoveExistingFile(file.fileId)}
-                type="button">
-                ✕
-              </button>
-            </div>
-          ))}
+      {/* 재제출 시 기존 파일은 FileUploader 컴포넌트에서 처리됨 */}
+
+      {/* 파일 첨부 영역 - FileUploader 컴포넌트 사용 */}
+      <FileUploader
+        existingFiles={isResubmitting ? existingFiles.map(file => ({
+          fileId: file.fileId,
+          fileName: file.fileName,
+          fileUrl: file.fileUrl
+        })) : []}
+        onFileSelect={handleFileSelect}
+        onFileRemove={handleFileRemove}
+        onExistingFileRemove={handleRemoveExistingFile}
+        isDisabled={isUploading}
+      />
+
+      {/* 전체 업로드 진행률 */}
+      {isUploading && (
+        <div className="progress-container">
+          <div
+            className="progress-bar"
+            style={{ width: `${uploadProgress}%` }}></div>
+          <div className="progress-text">{uploadProgress}% 업로드 중...</div>
         </div>
       )}
-
-      {/* 파일 첨부 영역 */}
-      <div className="attachment-section">
-        <h3 className="section-subtitle">첨부파일</h3>
-        <div className="file-upload-container">
-          {files.length > 0 ? (
-            <div className="file-list">
-              {files.map((file, index) => {
-                const fileStatus = getUploadStatusForFile(file.name);
-                return (
-                  <div
-                    className="file-item"
-                    key={index}
-                    data-status={fileStatus.status}>
-                    <div className="file-icon">{getFileIcon(file.name)}</div>
-                    <div className="file-info">
-                      <div className="file-name">{file.name}</div>
-                      <div className="file-info-row">
-                        <span className="file-size">
-                          {formatFileSize(file.size)}
-                        </span>
-                        {fileStatus.status === "uploading" &&
-                          fileStatus.progress > 0 && (
-                            <div className="file-upload-progress">
-                              <div
-                                className="file-progress-bar"
-                                style={{
-                                  width: `${fileStatus.progress}%`,
-                                }}></div>
-                            </div>
-                          )}
-                        {fileStatus.status === "error" && (
-                          <div className="file-error-message">
-                            {fileStatus.message}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <button
-                      className="remove-file-button"
-                      onClick={() =>
-                        setFiles(files.filter((_, i) => i !== index))
-                      }
-                      disabled={isUploading}
-                      type="button">
-                      ✕
-                    </button>
-                    {isImageFile(file) && (
-                      <button
-                        className="preview-icon-button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          const previewUrl = URL.createObjectURL(file);
-                          window.open(previewUrl);
-                        }}
-                        title="이미지 미리보기"
-                        type="button">
-                        👁️
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="file-upload-box">
-              <label className="file-input-label">
-                <input
-                  className="file-input"
-                  type="file"
-                  onChange={handleFileChange}
-                  multiple
-                  accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
-                  disabled={isUploading}
-                />
-                <div className="upload-icon">
-                  <svg
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg">
-                    <path
-                      d="M12 18V6"
-                      stroke="#6c757d"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                    <path
-                      d="M7 11L12 6L17 11"
-                      stroke="#6c757d"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M20 18H4"
-                      stroke="#6c757d"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-                <div className="upload-text">
-                  파일을 클릭하여 추가하거나
-                  <br />
-                  여기에 드래그하세요
-                </div>
-              </label>
-            </div>
-          )}
-
-          {files.length > 0 && (
-            <div className="add-more-files-button">
-              <label className="file-input-label">
-                <input
-                  className="file-input"
-                  type="file"
-                  onChange={(e) => {
-                    const newFiles = Array.from(e.target.files);
-                    setFiles([...files, ...newFiles]);
-                  }}
-                  multiple
-                  accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
-                  disabled={isUploading}
-                />
-                + 파일 추가
-              </label>
-            </div>
-          )}
-        </div>
-
-        {/* 전체 업로드 진행률 */}
-        {isUploading && (
-          <div className="progress-container">
-            <div
-              className="progress-bar"
-              style={{ width: `${uploadProgress}%` }}></div>
-            <div className="progress-text">{uploadProgress}% 업로드 중...</div>
-          </div>
-        )}
-      </div>
 
       {/* 에러 메시지 */}
       {error && <div className="error-message">{error}</div>}

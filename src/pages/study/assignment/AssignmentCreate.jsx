@@ -225,7 +225,6 @@ function AssignmentCreate() {
 
         {/* 파일 업로더 컴포넌트 사용 */}
         <div className="form-field">
-          <label>첨부파일 추가</label>
           <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
         </div>
 

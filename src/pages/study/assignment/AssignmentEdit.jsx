@@ -278,7 +278,7 @@ function AssignmentEdit() {
 
         <div className="form-field">
           <label htmlFor="assignmentDueDate">
-            <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>제출
+            <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>마감
             기한
           </label>
           <input
@@ -294,7 +294,7 @@ function AssignmentEdit() {
         <div className="form-field">
           <label htmlFor="assignmentMaxPoint">
             <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>최대
-            점수
+            포인트
           </label>
           <input
             id="assignmentMaxPoint"
