@@ -4,6 +4,7 @@ import { studyService } from "../../../services/api";
 import AttendanceList from "../../../components/study/attendance/AttendanceList";
 import AttendanceChart from "../../../components/study/attendance/AttendanceChart";
 import useStudyRole from "../../../hooks/useStudyRole";
+import styles from "./AttendanceContainer.module.css";
 
 /**
  * 출석 컨테이너 컴포넌트
@@ -147,101 +148,69 @@ function AttendanceContainer() {
             }}>
             {/* 출석 */}
             <div
+              className={`${styles["stat-box"]} ${styles["stat-present"]}`}
               style={{
-                border: "2px solid #E50011",
-                borderRadius: "16px",
-                padding: "0.8rem",
-                background: "rgba(238, 4, 24, 0.05)",
-                color: "#E50011",
                 fontWeight: "bold",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
                 boxShadow: "0 2px 8px #f5f5f5",
+                borderRadius: "16px",
+                padding: "0.8rem",
               }}>
               <span style={{ fontSize: "1rem", fontWeight: 500 }}>출석</span>
-              <span style={{ fontSize: "1.3rem", marginTop: "22px" }}>
+              <span style={{ fontSize: "0.8rem", marginTop: "22px" }}>
                 {statistics.present}
               </span>
             </div>
             {/* 지각 */}
             <div
+              className={`${styles["stat-box"]} ${styles["stat-late"]}`}
               style={{
-                border: "1.5px solid rgba(0, 0, 0, 1)",
-                borderRadius: "16px",
-                padding: "0.8rem",
-                background: "rgba(0, 0, 0, 0.05)",
-                color: "#007BFF",
                 fontWeight: "bold",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
                 boxShadow: "0 2px 8px #f5f5f5",
+                borderRadius: "16px",
+                padding: "0.8rem",
               }}>
-              <span
-                style={{ fontSize: "1rem", fontWeight: 500, color: "#333" }}>
-                지각
-              </span>
-              <span
-                style={{
-                  fontSize: "1rem",
-                  marginTop: "29px",
-                  color: "rgba(0, 0, 0, 1)",
-                }}>
+              <span style={{ fontSize: "1rem", fontWeight: 500 }}>지각</span>
+              <span style={{ fontSize: "1rem", marginTop: "29px" }}>
                 {statistics.late}
               </span>
             </div>
             {/* 미인증 */}
             <div
+              className={`${styles["stat-box"]} ${styles["stat-unknown"]}`}
               style={{
-                border: "1.5px solid rgba(0, 0, 0, 1)",
-                borderRadius: "16px",
-                padding: "0.8rem",
-                background: "rgba(0, 0, 0, 0.05)",
-                color: "#999",
                 fontWeight: "bold",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
                 boxShadow: "0 2px 8px #f5f5f5",
+                borderRadius: "16px",
+                padding: "0.8rem",
               }}>
-              <span
-                style={{ fontSize: "1rem", fontWeight: 500, color: "#333" }}>
-                미인증
-              </span>
-              <span
-                style={{
-                  fontSize: "1rem",
-                  marginTop: "29px",
-                  color: "rgba(0, 0, 0, 1)",
-                }}>
+              <span style={{ fontSize: "1rem", fontWeight: 500 }}>미인증</span>
+              <span style={{ fontSize: "1rem", marginTop: "29px" }}>
                 {statistics.unknown}
               </span>
             </div>
             {/* 결석 */}
             <div
+              className={`${styles["stat-box"]} ${styles["stat-absent"]}`}
               style={{
-                border: "1.5px solid rgba(0, 0, 0, 1)",
-                borderRadius: "16px",
-                padding: "0.8rem",
-                background: "rgba(0, 0, 0, 0.05)",
-                color: "#000",
                 fontWeight: "bold",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "flex-start",
                 boxShadow: "0 2px 8px #f5f5f5",
+                borderRadius: "16px",
+                padding: "0.8rem",
               }}>
-              <span
-                style={{ fontSize: "1rem", fontWeight: 500, color: "#333" }}>
-                결석
-              </span>
-              <span
-                style={{
-                  fontSize: "1rem",
-                  marginTop: "29px",
-                  color: "rgba(0, 0, 0, 1)",
-                }}>
+              <span style={{ fontSize: "1rem", fontWeight: 500 }}>결석</span>
+              <span style={{ fontSize: "1rem", marginTop: "29px" }}>
                 {statistics.absent}
               </span>
             </div>

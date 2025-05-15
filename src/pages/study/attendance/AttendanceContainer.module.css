@@ -1,0 +1,31 @@
+.stat-box {
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  cursor: pointer;
+}
+
+.stat-present {
+  border: 2px solid #e50011;
+  background: rgba(238, 4, 24, 0.05);
+  color: #e50011;
+}
+.stat-present:hover {
+  border-color: #b8000d;
+  background: rgba(238, 4, 24, 0.12);
+  color: #b8000d;
+}
+
+/* 지각, 미인증, 결석은 모두 동일한 스타일 */
+.stat-late,
+.stat-unknown,
+.stat-absent {
+  border: 1.5px solid #bbb;
+  background: #f7f7f7;
+  color: #222;
+}
+.stat-late:hover,
+.stat-unknown:hover,
+.stat-absent:hover {
+  border-color: #888;
+  background: #ededed;
+  color: #111;
+}
