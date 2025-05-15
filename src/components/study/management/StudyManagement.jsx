@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef, useNavigate } from "react";
+import {useState, useEffect, useRef } from "react";
+import {useNavigate} from "react-router-dom";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
 import { managementService } from "../../../services/management";
