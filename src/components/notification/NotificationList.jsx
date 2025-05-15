@@ -4,6 +4,7 @@ import notificationService from '../../services/notification';
 import { DEFAULT_IMAGE_SVG, handleImageError, isS3Url } from '../../utils/imageUtils';
 import './NotificationStyles.css';
 import PropTypes from 'prop-types';
+import { toCdnPath } from '../../utils/urlUtils';
 
 /**
  * 알림 목록 컴포넌트
@@ -164,7 +165,7 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
     
     // URL 유효성 검사
     try {
-      new URL(url); // URL 유효성 체크
+      new toCdnPath(url);
       
       // S3 이미지인 경우 로깅
       if (isS3Url(url)) {
