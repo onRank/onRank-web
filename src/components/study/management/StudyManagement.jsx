@@ -1,5 +1,5 @@
-import {useState, useEffect, useRef } from "react";
-import {useNavigate} from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useParams } from "react-router-dom";
 import { managementService } from "../../../services/management";
@@ -115,6 +115,7 @@ function StudyManagement() {
       deleteStudy();
     }
     navigate("/studies");
+    window.location.reload();
   };
 
   // 스터디 삭제 API 호출
