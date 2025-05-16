@@ -15,16 +15,17 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
 
   // 관리자 권한 (CREATOR / HOST)
   const isAdmin = memberRole === "CREATOR" || memberRole === "HOST";
-  
+
   // 게시글 작성자인지 확인 - post.memberId와 현재 사용자의 memberId 비교
-  const isPostCreator = post.memberId === (post.currentMemberId || post.memberContext?.memberId);
-  
+  const isPostCreator =
+    post.memberId === (post.currentMemberId || post.memberContext?.memberId);
+
   // 메뉴를 보여줄지 결정 - 관리자이거나 작성자인 경우에만
   const showMenu = isAdmin || isPostCreator;
 
   // 파일 첨부 여부 확인
-  const hasFiles = 
-    (post.files && post.files.length > 0) || 
+  const hasFiles =
+    (post.files && post.files.length > 0) ||
     (post.fileUrls && post.fileUrls.length > 0);
 
   // 아이템 위치에 따라 팝업 위치 결정
@@ -62,15 +63,16 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
 
   // 일관된 필드명 처리
   const title = post.postTitle || post.title || post.boardTitle || "제목 없음";
-  const createdAt = post.postCreatedAt || post.createdAt || new Date().toISOString();
+  const createdAt =
+    post.postCreatedAt || post.createdAt || new Date().toISOString();
 
   return (
     <div onClick={onClick} className="post-item">
       <div className="post-content-block">
-        <div className="post-date">게시: {formatDateYMD(createdAt)}</div>
-        <h2 className="post-title">
-          {title}
-        </h2>
+        <div className="post-date">
+          게시: {formatDateYMD(createdAt)} 작성자: {post.postWritenBy}
+        </div>
+        <h2 className="post-title">{title}</h2>
       </div>
 
       {showMenu && (
@@ -108,13 +110,13 @@ PostListItem.propTypes = {
     fileUrls: PropTypes.array,
     memberId: PropTypes.number,
     currentMemberId: PropTypes.number,
-    memberContext: PropTypes.object
+    memberContext: PropTypes.object,
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   index: PropTypes.number,
-  totalItems: PropTypes.number
+  totalItems: PropTypes.number,
 };
 
-export default PostListItem; 
+export default PostListItem;

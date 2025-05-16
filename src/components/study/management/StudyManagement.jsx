@@ -105,17 +105,17 @@ function StudyManagement() {
   };
 
   // 삭제 처리
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (
       window.confirm(
         "정말로 이 스터디를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
       )
     ) {
       setIsDeleting(true);
-      deleteStudy();
+      await deleteStudy();
+      navigate("/studies");
+      window.location.reload();
     }
-    navigate("/studies");
-    window.location.reload();
   };
 
   // 스터디 삭제 API 호출
