@@ -118,6 +118,13 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     padding: "0.5rem",
                     textAlign: "left",
                     width: "30%",
+                  }}
+                />
+                <th
+                  style={{
+                    padding: "0.5rem",
+                    textAlign: "center",
+                    width: "45%",
                   }}>
                   일정
                 </th>
@@ -125,17 +132,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   style={{
                     padding: "0.5rem",
                     textAlign: "center",
-                    width: "45%",
-                  }}>
-                  출석 상태
-                </th>
-                <th
-                  style={{
-                    padding: "0.5rem",
-                    textAlign: "center",
                     width: "15%",
                   }}>
-                  {/* 더보기/수정 */}
+                  출석 상태
                 </th>
                 <th
                   style={{
@@ -153,7 +152,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   attendance.scheduleId || attendance.attendanceId;
                 const formattedDate = formatDateTime(
                   attendance.scheduleStartingAt,
-                  "yyyy년 MM월 dd일 HH:mm"
+                  "yyyy.MM.dd"
                 );
 
                 return (
@@ -163,7 +162,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     onMouseEnter={() => setHoveredId(attendance.attendanceId)}
                     onMouseLeave={() => setHoveredId(null)}>
                     <td style={{ padding: "1rem" }}>
-                      <div style={{ fontWeight: "bold" }}>{formattedDate}</div>
+                      <div style={{ fontSize: "14px" }}>{formattedDate}</div>
+                    </td>
+                    <td style={{ padding: "1rem", textAlign: "center" }}>
                       <div style={{ color: "#666", marginTop: "0.25rem" }}>
                         {attendance.scheduleTitle ||
                           attendance.title ||
