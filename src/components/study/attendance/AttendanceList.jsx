@@ -45,7 +45,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           }}>
           {styles.icon}
         </div>
-        <span style={{ color: styles.color }}>{getStatusText(status)}</span>
+        <span style={{ color: styles.color }} />
       </div>
     );
   };
@@ -62,7 +62,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           width: "24px",
           height: "24px",
           borderRadius: "50%",
-          backgroundColor: "#f5f5f5",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -70,8 +69,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           textDecoration: "none",
           fontSize: "14px",
           marginRight: "8px",
-          opacity: isHovered ? 1 : 0,
-          transition: "opacity 0.2s ease",
           zIndex: 10,
         }}
         title="출석 상세">
@@ -116,30 +113,36 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
               <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
                 <th
                   style={{
-                    padding: "0.5rem",
+                    padding: "0.3rem 0.5rem",
                     textAlign: "left",
                     width: "30%",
                   }}
                 />
                 <th
                   style={{
-                    padding: "0.5rem",
+                    padding: "0.3rem 0.5rem",
                     textAlign: "left",
                     width: "45%",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#333333",
                   }}>
                   일정
                 </th>
                 <th
                   style={{
-                    padding: "0.5rem",
+                    padding: "0.3rem 0.5rem",
                     textAlign: "center",
                     width: "15%",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#333333",
                   }}>
                   출석 상태
                 </th>
                 <th
                   style={{
-                    padding: "0.5rem",
+                    padding: "0.3rem 0.5rem",
                     textAlign: "left",
                     width: "10%",
                   }}>
