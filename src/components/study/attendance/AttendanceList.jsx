@@ -6,6 +6,7 @@ import {
   getStatusIcon,
   STATUS_STYLES,
 } from "../../../utils/attendanceUtils";
+import { HiOutlineDotsVertical } from "react-icons/hi";
 
 /**
  * 출석 목록 컴포넌트
@@ -74,7 +75,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           zIndex: 10,
         }}
         title="출석 상세">
-        ✎
+        <HiOutlineDotsVertical />
       </Link>
     );
   };
@@ -123,7 +124,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 <th
                   style={{
                     padding: "0.5rem",
-                    textAlign: "center",
+                    textAlign: "left",
                     width: "45%",
                   }}>
                   일정
@@ -139,7 +140,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 <th
                   style={{
                     padding: "0.5rem",
-                    textAlign: "center",
+                    textAlign: "left",
                     width: "10%",
                   }}>
                   {/* 더보기/수정 */}
@@ -161,20 +162,25 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     style={{ borderBottom: "1px solid #e5e5e5" }}
                     onMouseEnter={() => setHoveredId(attendance.attendanceId)}
                     onMouseLeave={() => setHoveredId(null)}>
-                    <td style={{ padding: "1rem" }}>
+                    <td style={{ padding: "1rem 2rem" }}>
                       <div style={{ fontSize: "14px" }}>{formattedDate}</div>
                     </td>
-                    <td style={{ padding: "1rem", textAlign: "center" }}>
-                      <div style={{ color: "#666", marginTop: "0.25rem" }}>
+                    <td style={{ padding: "1rem 0.5rem", textAlign: "left" }}>
+                      <div style={{ color: "#666" }}>
                         {attendance.scheduleTitle ||
                           attendance.title ||
                           "일정명 없음"}
                       </div>
                     </td>
-                    <td style={{ padding: "1rem", textAlign: "center" }}>
+                    <td style={{ padding: "1rem 0.5rem", textAlign: "center" }}>
                       {renderStatus(attendance)}
                     </td>
-                    <td style={{ padding: "1rem", textAlign: "center" }}>
+                    <td
+                      style={{
+                        padding: "1rem 0.5rem",
+                        display: "flex",
+                        justifyContent: "flex-end",
+                      }}>
                       {isHost && renderEditIcon(attendance)}
                     </td>
                   </tr>
