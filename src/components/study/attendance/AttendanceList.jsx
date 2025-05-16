@@ -119,14 +119,14 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 }}>
                 <th
                   style={{
-                    padding: "0.3rem 0.5rem",
+                    padding: "0.5rem",
                     textAlign: "left",
                     width: "30%",
                   }}
                 />
                 <th
                   style={{
-                    padding: "0.3rem 0.5rem",
+                    padding: "0.5rem",
                     textAlign: "left",
                     width: "45%",
                     fontSize: "14px",
@@ -137,7 +137,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 </th>
                 <th
                   style={{
-                    padding: "0.3rem 0.5rem",
+                    padding: "0.5rem",
                     textAlign: "center",
                     width: "15%",
                     fontSize: "14px",
@@ -148,7 +148,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 </th>
                 <th
                   style={{
-                    padding: "0.3rem 0.5rem",
+                    padding: "0.5rem",
                     textAlign: "left",
                     width: "10%",
                   }}>
