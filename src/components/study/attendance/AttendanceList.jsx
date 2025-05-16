@@ -29,7 +29,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
         style={{
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
           gap: "0.5rem",
+          width: "100%",
         }}>
         <div
           style={{
@@ -110,7 +112,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
           {/* 출석 일정 목록 */}
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
+              <tr
+                style={{
+                  borderBottom: "1px solid #e5e5e5",
+                  backgroundColor: "#fff",
+                }}>
                 <th
                   style={{
                     padding: "0.3rem 0.5rem",
@@ -169,13 +175,13 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                       <div style={{ fontSize: "14px" }}>{formattedDate}</div>
                     </td>
                     <td style={{ padding: "1rem 0.5rem", textAlign: "left" }}>
-                      <div style={{ color: "#666" }}>
+                      <div style={{ color: "#666", fontSize: "14px" }}>
                         {attendance.scheduleTitle ||
                           attendance.title ||
                           "일정명 없음"}
                       </div>
                     </td>
-                    <td style={{ padding: "1rem 0.5rem", textAlign: "center" }}>
+                    <td style={{ padding: "1rem 0.5rem" }}>
                       {renderStatus(attendance)}
                     </td>
                     <td
