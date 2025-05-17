@@ -209,7 +209,7 @@ function AssignmentCreate() {
           </label>
           <div 
             className="date-picker-wrapper" 
-            onClick={() => document.getElementById('assignmentDueDate').focus()}
+            onClick={() => document.getElementById('assignmentDueDate').showPicker()}
             style={{ cursor: 'pointer' }}
           >
             <input
@@ -219,6 +219,7 @@ function AssignmentCreate() {
               value={formData.assignmentDueDate}
               onChange={handleChange}
               required
+              style={{ cursor: 'pointer' }}
             />
           </div>
         </div>
