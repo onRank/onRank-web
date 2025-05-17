@@ -166,12 +166,8 @@ function StudyManagement() {
     let statusColor = "";
 
     switch (studyStatus) {
-      case "PREPARING":
-        statusText = "준비 중";
-        statusColor = "#2196F3";
-        break;
       case "PROGRESS":
-        statusText = "진행 중";
+        statusText = "진행중";
         statusColor = "#4CAF50";
         break;
       case "COMPLETED":

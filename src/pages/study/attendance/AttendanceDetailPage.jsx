@@ -147,11 +147,11 @@ function AttendanceDetailPage() {
             <div
               style={{
                 background: "#fff",
-                paddingTop: "1rem",
                 borderRadius: "12px",
-                border: "1px solid #eee",
+                border: "1px solid #f5f5f5",
                 padding: 0,
                 overflow: "hidden",
+                boxShadow: "none",
               }}>
               <table
                 style={{
@@ -213,10 +213,11 @@ function AttendanceDetailPage() {
                             color: "#222",
                             textAlign: "center",
                             borderBottomLeftRadius: isLast ? "12px" : 0,
+                            background: "#fff",
                           }}>
                           {attendance.studentName}
                         </td>
-                        <td />
+                        <td style={{ background: "#fff" }} />
                         <td
                           style={{
                             padding: "1rem 0.5rem",
@@ -224,6 +225,7 @@ function AttendanceDetailPage() {
                             alignItems: "center",
                             justifyContent: "center",
                             borderBottomRightRadius: isLast ? "12px" : 0,
+                            background: "#fff",
                           }}>
                           {renderStatusIcon(attendance.attendanceStatus, (e) =>
                             handleOpenStatusPopup(attendance.attendanceId, e)
