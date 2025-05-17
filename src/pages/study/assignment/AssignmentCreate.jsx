@@ -38,6 +38,18 @@ function AssignmentCreate() {
   // 입력값 변경 처리
   const handleChange = (e) => {
     const { name, value, type } = e.target;
+    
+    // 포인트 제한 추가 - 1,000,000 이하만 허용
+    if (name === 'assignmentMaxPoint') {
+      const numValue = parseInt(value, 10);
+      if (numValue > 1000000) {
+        setError('최대 포인트는 1,000,000 이하여야 합니다.');
+        return;
+      } else {
+        setError(null);
+      }
+    }
+    
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? parseInt(value, 10) : value,
@@ -195,7 +207,11 @@ function AssignmentCreate() {
             <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>
             마감기한
           </label>
-          <div className="date-picker-wrapper">
+          <div 
+            className="date-picker-wrapper" 
+            onClick={() => document.getElementById('assignmentDueDate').focus()}
+            style={{ cursor: 'pointer' }}
+          >
             <input
               id="assignmentDueDate"
               name="assignmentDueDate"
@@ -217,6 +233,7 @@ function AssignmentCreate() {
             name="assignmentMaxPoint"
             type="number"
             min="0"
+            max="1000000"
             value={formData.assignmentMaxPoint}
             onChange={handleChange}
           />
