@@ -244,11 +244,12 @@ function UserInfoForm() {
 
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>
+          <label style={{ fontWeight: 500 }}>
             이름 <span className="required">(필수)</span>
           </label>
           <input
             type="text"
+            style={{ width: "40%" }}
             value={formData.studentName}
             onChange={(e) =>
               setFormData({
@@ -262,11 +263,12 @@ function UserInfoForm() {
         </div>
 
         <div className="form-group">
-          <label>
+          <label style={{ fontWeight: 500 }}>
             전화번호 <span className="required">(필수)</span>
           </label>
           <input
             type="tel"
+            style={{ width: "40%" }}
             value={formData.studentPhoneNumber}
             onChange={(e) => {
               // 숫자만 입력 가능하도록
@@ -284,12 +286,13 @@ function UserInfoForm() {
         </div>
 
         <div className="form-section">
-          <h3>소속(선택)</h3>
+          <h3 style={{ fontSize: 18 }}>소속(선택)</h3>
 
           <div className="form-group">
             <label>학교</label>
             <input
               type="text"
+              style={{ width: "40%" }}
               value={formData.studentSchool}
               onChange={(e) =>
                 setFormData({
@@ -305,6 +308,7 @@ function UserInfoForm() {
             <label>학과</label>
             <input
               type="text"
+              style={{ width: "40%" }}
               value={formData.studentDepartment}
               onChange={(e) =>
                 setFormData({
@@ -317,15 +321,16 @@ function UserInfoForm() {
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
+          variant="complete"
           className="submit-button"
+          style={{ display: "flex", justifyContent: "flex-end" }}
           disabled={
             !formData.studentName.trim() ||
             !/^[0-9]{11}$/.test(formData.studentPhoneNumber)
-          }>
-          완료
-        </button>
+          }
+        />
       </form>
     </div>
   );
