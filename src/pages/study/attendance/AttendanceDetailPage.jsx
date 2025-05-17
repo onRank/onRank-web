@@ -13,11 +13,36 @@ import {
 } from "../../../utils/attendanceUtils";
 import useStudyRole from "../../../hooks/useStudyRole";
 import Button from "../../../components/common/Button";
+import AttendanceStatusPopup from "../../../components/common/AttendanceStatusPopup";
 
 /**
  * 출석 상세 페이지
  * 특정 출석 일정에 대한 상세 정보를 보여주는 페이지
  */
+
+// 출석 상태 아이콘 렌더링 함수 (AttendanceList와 동일하게)
+const renderStatusIcon = (status, onClick) => {
+  const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
+  return (
+    <div
+      style={{
+        width: "24px",
+        height: "24px",
+        borderRadius: "50%",
+        backgroundColor: styles.background,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: styles.color,
+        border: styles.border,
+        cursor: onClick ? "pointer" : "default",
+      }}
+      onClick={onClick}>
+      {styles.icon}
+    </div>
+  );
+};
+
 function AttendanceDetailPage() {
   const { studyId, scheduleId } = useParams();
   const navigate = useNavigate();
@@ -26,9 +51,10 @@ function AttendanceDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isHost, setIsHost] = useState(false);
-  const [scheduleTitle, setScheduleTitle] = useState("");
-  const [scheduleStartingAt, setScheduleStartingAt] = useState("");
-  const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [openPopup, setOpenPopup] = useState({
+    open: false,
+    attendanceId: null,
+  });
   const { isManager, updateMemberRoleFromResponse } = useStudyRole();
 
   const fetchAttendanceDetails = async () => {
@@ -46,8 +72,6 @@ function AttendanceDetailPage() {
 
       if (response.data && Array.isArray(response.data)) {
         setAttendanceDetails(response.data);
-        setScheduleTitle(response.scheduleTitle);
-        setScheduleStartingAt(response.scheduleStartingAt);
         setIsHost(isManager);
       } else {
         setError("출석 데이터 형식이 올바르지 않습니다.");
@@ -63,7 +87,7 @@ function AttendanceDetailPage() {
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
       await studyService.updateAttendance(studyId, attendanceId, newStatus);
-      setOpenDropdownId(null);
+      setOpenPopup({ open: false, attendanceId: null });
       fetchAttendanceDetails();
     } catch (error) {
       console.error("출석 상태 변경 실패:", error);
@@ -73,14 +97,6 @@ function AttendanceDetailPage() {
   useEffect(() => {
     fetchAttendanceDetails();
   }, [studyId, scheduleId]);
-
-  const toggleDropdown = (attendanceId) => {
-    if (openDropdownId === attendanceId) {
-      setOpenDropdownId(null);
-    } else {
-      setOpenDropdownId(attendanceId);
-    }
-  };
 
   return (
     <div style={{ display: "flex", minHeight: "100vh" }}>
@@ -96,9 +112,11 @@ function AttendanceDetailPage() {
           ) : (
             <div
               style={{
-                backgroundColor: "none",
-                borderRadius: "8px",
-                padding: "1rem",
+                background: "#fff",
+                borderRadius: "12px",
+                border: "1px solid #eee",
+                padding: 0,
+                overflow: "hidden",
               }}>
               <table
                 style={{
@@ -106,44 +124,35 @@ function AttendanceDetailPage() {
                   borderCollapse: "separate",
                   borderSpacing: 0,
                   borderRadius: "12px",
+                  background: "#fff",
+                  boxShadow: "none",
                   overflow: "hidden",
                 }}>
                 <thead>
-                  <tr
-                    style={{
-                      borderBottom: "1px solid #e5e5e5",
-                      backgroundColor: "#fff",
-                    }}>
+                  <tr>
                     <th
                       style={{
-                        padding: "0.5rem",
-                        textAlign: "center",
-                        width: "30%",
-                        fontSize: "14px",
-                        fontWeight: "400",
-                        color: "#333333",
-                        backgroundColor: "#fff",
+                        padding: "18px 0",
+                        textAlign: "left",
+                        fontSize: "15px",
+                        fontWeight: 400,
+                        color: "#222",
+                        background: "#fff",
                         borderTopLeftRadius: "12px",
+                        borderBottom: "1px solid #f0f0f0",
                       }}>
                       이름
                     </th>
                     <th
                       style={{
-                        padding: "0.5rem",
-                        width: "40%",
-                        backgroundColor: "#fff",
-                      }}
-                    />
-                    <th
-                      style={{
-                        padding: "0.5rem",
+                        padding: "18px 0",
                         textAlign: "center",
-                        width: "30%",
-                        fontSize: "14px",
-                        fontWeight: "400",
-                        color: "#333333",
-                        backgroundColor: "#fff",
+                        fontSize: "15px",
+                        fontWeight: 400,
+                        color: "#222",
+                        background: "#fff",
                         borderTopRightRadius: "12px",
+                        borderBottom: "1px solid #f0f0f0",
                       }}>
                       출석 상태
                     </th>
@@ -155,182 +164,60 @@ function AttendanceDetailPage() {
                     return (
                       <tr
                         key={attendance.attendanceId}
-                        style={{ borderBottom: "1px solid #e5e5e5" }}>
+                        style={{
+                          borderBottom: isLast ? "none" : "1px solid #f0f0f0",
+                          background: "#fff",
+                        }}>
                         <td
                           style={{
-                            padding: "1rem",
-                            fontSize: "14px",
-                            textAlign: "center",
-                            ...(isLast
-                              ? { borderBottomLeftRadius: "12px" }
-                              : {}),
+                            padding: "22px 0",
+                            fontSize: "15px",
+                            color: "#222",
+                            textAlign: "left",
+                            borderBottomLeftRadius: isLast ? "12px" : 0,
                           }}>
                           {attendance.studentName}
                         </td>
-                        <td style={{ padding: "1rem" }} />
                         <td
                           style={{
-                            padding: "1rem",
+                            padding: "22px 0",
                             textAlign: "center",
-                            ...(isLast
-                              ? { borderBottomRightRadius: "12px" }
-                              : {}),
+                            borderBottomRightRadius: isLast ? "12px" : 0,
                           }}>
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              gap: "1rem",
-                              position: "relative",
-                            }}>
-                            <div
-                              style={{
-                                width: "24px",
-                                height: "24px",
-                                borderRadius: "50%",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                color: "#666",
-                                textDecoration: "none",
-                                fontSize: "14px",
-                                marginRight: "8px",
-                                cursor: "pointer",
-                                zIndex: 10,
-                              }}
-                              onClick={() =>
-                                toggleDropdown(attendance.attendanceId)
-                              }>
-                              {STATUS_STYLES[attendance.attendanceStatus].icon}
-                            </div>
-
-                            {/* 드롭다운 메뉴 */}
-                            {openDropdownId === attendance.attendanceId && (
-                              <div
-                                style={{
-                                  position: "absolute",
-                                  top: "100%",
-                                  right: "0",
-                                  backgroundColor: "white",
-                                  boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-                                  borderRadius: "4px",
-                                  padding: "0.5rem",
-                                  display: "flex",
-                                  gap: "0.5rem",
-                                  zIndex: 10,
-                                }}>
-                                <div
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      attendance.attendanceId,
-                                      "PRESENT"
-                                    )
-                                  }
-                                  style={{
-                                    width: "36px",
-                                    height: "36px",
-                                    borderRadius: "50%",
-                                    backgroundColor:
-                                      STATUS_STYLES["PRESENT"].background,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: STATUS_STYLES["PRESENT"].color,
-                                    cursor: "pointer",
-                                    border: `1px solid ${STATUS_STYLES["PRESENT"].color}`,
-                                  }}
-                                  title="출석">
-                                  {STATUS_STYLES["PRESENT"].icon}
-                                </div>
-                                <div
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      attendance.attendanceId,
-                                      "LATE"
-                                    )
-                                  }
-                                  style={{
-                                    width: "36px",
-                                    height: "36px",
-                                    borderRadius: "50%",
-                                    backgroundColor:
-                                      STATUS_STYLES["LATE"].background,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: STATUS_STYLES["LATE"].color,
-                                    cursor: "pointer",
-                                    border: `1px solid ${STATUS_STYLES["LATE"].color}`,
-                                  }}
-                                  title="지각">
-                                  {STATUS_STYLES["LATE"].icon}
-                                </div>
-                                <div
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      attendance.attendanceId,
-                                      "ABSENT"
-                                    )
-                                  }
-                                  style={{
-                                    width: "36px",
-                                    height: "36px",
-                                    borderRadius: "50%",
-                                    backgroundColor:
-                                      STATUS_STYLES["ABSENT"].background,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: STATUS_STYLES["ABSENT"].color,
-                                    cursor: "pointer",
-                                    border: `1px solid ${STATUS_STYLES["ABSENT"].color}`,
-                                  }}
-                                  title="결석">
-                                  {STATUS_STYLES["ABSENT"].icon}
-                                </div>
-                                <div
-                                  onClick={() =>
-                                    handleStatusChange(
-                                      attendance.attendanceId,
-                                      "UNKNOWN"
-                                    )
-                                  }
-                                  style={{
-                                    width: "36px",
-                                    height: "36px",
-                                    borderRadius: "50%",
-                                    backgroundColor:
-                                      STATUS_STYLES["UNKNOWN"].background,
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: STATUS_STYLES["UNKNOWN"].color,
-                                    cursor: "pointer",
-                                    border: `1px solid ${STATUS_STYLES["UNKNOWN"].color}`,
-                                  }}
-                                  title="미정">
-                                  {STATUS_STYLES["UNKNOWN"].icon}
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                          {renderStatusIcon(attendance.attendanceStatus, () =>
+                            setOpenPopup({
+                              open: true,
+                              attendanceId: attendance.attendanceId,
+                            })
+                          )}
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
+              <AttendanceStatusPopup
+                open={openPopup.open}
+                onClose={() =>
+                  setOpenPopup({ open: false, attendanceId: null })
+                }
+                onSelect={(status) =>
+                  handleStatusChange(openPopup.attendanceId, status)
+                }
+                renderStatusIcon={renderStatusIcon}
+                getStatusText={getStatusText}
+              />
               <div
                 style={{
                   display: "flex",
                   alignContent: "center",
                   justifyContent: "flex-end",
-                  marginTop: "2rem",
+                  padding: "0 0.5rem",
+                  marginTop: "3rem",
                 }}>
                 <Button
                   variant="back"
-                  onClick={() => navigate(`/studies/${studyId}/attendance`)}
+                  onClick={() => navigate(`/studies/${studyId}/attendances`)}
                 />
               </div>
             </div>
