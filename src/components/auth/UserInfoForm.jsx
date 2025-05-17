@@ -238,8 +238,8 @@ function UserInfoForm() {
   };
 
   return (
-    <div className="oauth-add-container" style={{ width: "900px" }}>
-      <h2>회원정보 입력</h2>
+    <div className="oauth-add-container" style={{ maxWidth: "900px" }}>
+      <h2 style={{ marginBottom: "3rem" }}>회원정보 입력</h2>
 
       {error && <div className="error-message">{error}</div>}
 
@@ -326,7 +326,6 @@ function UserInfoForm() {
           <Button
             type="submit"
             variant="complete"
-            className="submit-button"
             disabled={
               !formData.studentName.trim() ||
               !/^[0-9]{11}$/.test(formData.studentPhoneNumber)
