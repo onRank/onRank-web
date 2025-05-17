@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 
 function AttendanceStatusPopup({
   open,
@@ -6,18 +7,26 @@ function AttendanceStatusPopup({
   onSelect,
   renderStatusIcon,
   getStatusText,
+  style,
 }) {
   if (!open) return null;
+  const statusList = [
+    { key: "PRESENT", label: "출석" },
+    { key: "LATE", label: "지각" },
+    { key: "ABSENT", label: "결석" },
+    { key: "UNKNOWN", label: "미인증" },
+  ];
+
   return (
     <div
       style={{
         position: "fixed",
+        zIndex: 1000,
         left: 0,
         top: 0,
         width: "100vw",
         height: "100vh",
         background: "rgba(0,0,0,0.2)",
-        zIndex: 1000,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -25,39 +34,78 @@ function AttendanceStatusPopup({
       <div
         style={{
           background: "#fff",
-          borderRadius: 12,
-          padding: 32,
-          minWidth: 260,
-          boxShadow: "0 2px 16px rgba(0,0,0,0.15)",
+          border: "1px solid #222",
+          borderRadius: 18,
+          minWidth: 220,
+          minHeight: 320,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          padding: "0 0 0 0",
+          position: "relative",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-start",
+          ...style,
         }}>
-        <h4 style={{ margin: 0, marginBottom: 16 }}>출석 상태 변경</h4>
-        <div style={{ display: "flex", gap: "1.5rem", marginBottom: 16 }}>
-          {["PRESENT", "LATE", "ABSENT", "UNKNOWN"].map((status) => (
-            <div
-              key={status}
-              style={{ cursor: "pointer", textAlign: "center" }}
-              onClick={() => onSelect(status)}>
-              {renderStatusIcon(status)}
-              <div style={{ fontSize: 12, marginTop: 4 }}>
-                {getStatusText(status)}
-              </div>
-            </div>
-          ))}
-        </div>
+        {/* X 버튼 */}
         <button
           onClick={onClose}
           style={{
-            padding: "6px 18px",
-            borderRadius: 6,
-            border: "1px solid #eee",
-            background: "#fafafa",
+            position: "absolute",
+            top: 18,
+            right: 18,
+            background: "none",
+            border: "none",
+            fontSize: 22,
             cursor: "pointer",
-          }}>
-          닫기
+            color: "#222",
+            padding: 0,
+            zIndex: 2,
+          }}
+          aria-label="닫기">
+          ×
         </button>
+        {/* 상태 선택 영역 */}
+        <div style={{ padding: "38px 0 0 0", width: "100%" }}>
+          {statusList.map((status, idx) => (
+            <React.Fragment key={status.key}>
+              {idx !== 0 && (
+                <div
+                  style={{ borderBottom: "2px dotted #888", margin: "0 24px" }}
+                />
+              )}
+              <div
+                onClick={() => onSelect(status.key)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 16,
+                  padding: "18px 32px",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  color: "#222",
+                  background: "#fff",
+                  transition: "background 0.15s",
+                }}>
+                {renderStatusIcon(status.key)}
+                <span style={{ fontSize: 18 }}>
+                  {getStatusText(status.key)}
+                </span>
+              </div>
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+
+AttendanceStatusPopup.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onSelect: PropTypes.func.isRequired,
+  renderStatusIcon: PropTypes.func.isRequired,
+  getStatusText: PropTypes.func.isRequired,
+  style: PropTypes.object,
+};
 
 export default AttendanceStatusPopup;

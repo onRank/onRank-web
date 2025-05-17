@@ -20,25 +20,35 @@ import AttendanceStatusPopup from "../../../components/common/AttendanceStatusPo
  * 특정 출석 일정에 대한 상세 정보를 보여주는 페이지
  */
 
-// 출석 상태 아이콘 렌더링 함수 (AttendanceList와 동일하게)
+// 출석 상태 아이콘 렌더링 함수
 const renderStatusIcon = (status, onClick) => {
   const styles = STATUS_STYLES[status] || STATUS_STYLES.UNKNOWN;
+
   return (
     <div
       style={{
-        width: "24px",
-        height: "24px",
-        borderRadius: "50%",
-        backgroundColor: styles.background,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        color: styles.color,
-        border: styles.border,
-        cursor: onClick ? "pointer" : "default",
-      }}
-      onClick={onClick}>
-      {styles.icon}
+        gap: "0.5rem",
+        width: "100%",
+      }}>
+      <div
+        style={{
+          width: "24px",
+          height: "24px",
+          borderRadius: "50%",
+          backgroundColor: styles.color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "white",
+          border: styles.border,
+        }}
+        onClick={onClick}>
+        {styles.icon}
+      </div>
+      <span style={{ color: styles.color }} />
     </div>
   );
 };
@@ -54,8 +64,34 @@ function AttendanceDetailPage() {
   const [openPopup, setOpenPopup] = useState({
     open: false,
     attendanceId: null,
+    popupStyle: {},
   });
   const { isManager, updateMemberRoleFromResponse } = useStudyRole();
+
+  // 팝업 위치 계산 함수
+  const handleOpenStatusPopup = (attendanceId, event) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const popupWidth = 240; // 예상 팝업 너비(px)
+    const popupHeight = 320; // 예상 팝업 높이(px)
+    let left = rect.left - popupWidth - 12; // 아이콘 왼쪽에 위치
+    let top = rect.top;
+    // 화면 밖으로 나가지 않게 보정
+    if (left < 8) left = 8;
+    if (top + popupHeight > window.innerHeight) {
+      top = window.innerHeight - popupHeight - 16;
+      if (top < 8) top = 8;
+    }
+    setOpenPopup({
+      open: true,
+      attendanceId,
+      popupStyle: {
+        position: "fixed",
+        left,
+        top,
+        zIndex: 1000,
+      },
+    });
+  };
 
   const fetchAttendanceDetails = async () => {
     try {
@@ -87,7 +123,7 @@ function AttendanceDetailPage() {
   const handleStatusChange = async (attendanceId, newStatus) => {
     try {
       await studyService.updateAttendance(studyId, attendanceId, newStatus);
-      setOpenPopup({ open: false, attendanceId: null });
+      setOpenPopup({ open: false, attendanceId: null, popupStyle: {} });
       fetchAttendanceDetails();
     } catch (error) {
       console.error("출석 상태 변경 실패:", error);
@@ -113,6 +149,7 @@ function AttendanceDetailPage() {
             <div
               style={{
                 background: "#fff",
+                paddingTop: "1rem",
                 borderRadius: "12px",
                 border: "1px solid #eee",
                 padding: 0,
@@ -132,8 +169,9 @@ function AttendanceDetailPage() {
                   <tr>
                     <th
                       style={{
-                        padding: "18px 0",
-                        textAlign: "left",
+                        padding: "0.5rem",
+                        width: "30%",
+                        textAlign: "center",
                         fontSize: "15px",
                         fontWeight: 400,
                         color: "#222",
@@ -143,9 +181,11 @@ function AttendanceDetailPage() {
                       }}>
                       이름
                     </th>
+                    <th style={{ width: "40%" }} />
                     <th
                       style={{
-                        padding: "18px 0",
+                        padding: "0.5rem",
+                        width: "30%",
                         textAlign: "center",
                         fontSize: "15px",
                         fontWeight: 400,
@@ -170,7 +210,7 @@ function AttendanceDetailPage() {
                         }}>
                         <td
                           style={{
-                            padding: "22px 0",
+                            padding: "1rem 0.5rem",
                             fontSize: "15px",
                             color: "#222",
                             textAlign: "left",
@@ -178,17 +218,17 @@ function AttendanceDetailPage() {
                           }}>
                           {attendance.studentName}
                         </td>
+                        <td />
                         <td
                           style={{
-                            padding: "22px 0",
-                            textAlign: "center",
+                            padding: "1rem 0.5rem",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                             borderBottomRightRadius: isLast ? "12px" : 0,
                           }}>
-                          {renderStatusIcon(attendance.attendanceStatus, () =>
-                            setOpenPopup({
-                              open: true,
-                              attendanceId: attendance.attendanceId,
-                            })
+                          {renderStatusIcon(attendance.attendanceStatus, (e) =>
+                            handleOpenStatusPopup(attendance.attendanceId, e)
                           )}
                         </td>
                       </tr>
@@ -199,29 +239,34 @@ function AttendanceDetailPage() {
               <AttendanceStatusPopup
                 open={openPopup.open}
                 onClose={() =>
-                  setOpenPopup({ open: false, attendanceId: null })
+                  setOpenPopup({
+                    open: false,
+                    attendanceId: null,
+                    popupStyle: {},
+                  })
                 }
                 onSelect={(status) =>
                   handleStatusChange(openPopup.attendanceId, status)
                 }
                 renderStatusIcon={renderStatusIcon}
                 getStatusText={getStatusText}
+                style={openPopup.popupStyle}
               />
-              <div
-                style={{
-                  display: "flex",
-                  alignContent: "center",
-                  justifyContent: "flex-end",
-                  padding: "0 0.5rem",
-                  marginTop: "3rem",
-                }}>
-                <Button
-                  variant="back"
-                  onClick={() => navigate(`/studies/${studyId}/attendances`)}
-                />
-              </div>
             </div>
           )}
+          <div
+            style={{
+              display: "flex",
+              alignContent: "center",
+              justifyContent: "flex-end",
+              padding: "0 0.5rem",
+              marginTop: "3rem",
+            }}>
+            <Button
+              variant="back"
+              onClick={() => navigate(`/studies/${studyId}/attendances`)}
+            />
+          </div>
         </div>
       </div>
     </div>
