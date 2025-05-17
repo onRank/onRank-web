@@ -37,7 +37,7 @@ function AttendanceStatusPopup({
           border: "1px solid #222",
           borderRadius: 18,
           minWidth: 220,
-          minHeight: 320,
+          minHeight: "fit-content",
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           padding: "0 0 0 0",
           position: "relative",
@@ -66,7 +66,7 @@ function AttendanceStatusPopup({
           ×
         </button>
         {/* 상태 선택 영역 */}
-        <div style={{ padding: "38px 0 0 15px", width: "100%" }}>
+        <div style={{ padding: "38px 0 15px", width: "100%" }}>
           {statusList.map((status, idx) => (
             <React.Fragment key={status.key}>
               {idx !== 0 && (
