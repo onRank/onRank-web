@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { authService, tokenUtils } from "../../services/api";
+import Button from "../common/Button";
 
 function UserInfoForm() {
   const navigate = useNavigate();
