@@ -70,10 +70,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
       const rect = event.currentTarget.getBoundingClientRect();
       const popupWidth = 280;
       const popupHeight = 140;
-      let left = rect.right + 12;
+      let left = rect.left - popupWidth - 12;
       let top = rect.top;
-      if (left + popupWidth > window.innerWidth)
-        left = window.innerWidth - popupWidth - 8;
+      if (left < 8) left = 8;
       if (top + popupHeight > window.innerHeight) {
         top = window.innerHeight - popupHeight - 16;
         if (top < 8) top = 8;
