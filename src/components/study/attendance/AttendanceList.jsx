@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   formatDateTime,
   getStatusText,
@@ -7,6 +7,7 @@ import {
   STATUS_STYLES,
 } from "../../../utils/attendanceUtils";
 import { HiOutlineDotsVertical } from "react-icons/hi";
+import AttendanceEditPopup from "../../../components/common/AttendanceEditPopup";
 
 /**
  * 출석 목록 컴포넌트
@@ -18,6 +19,13 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
 
   // 마우스 오버 상태 관리
   const [hoveredId, setHoveredId] = useState(null);
+
+  const navigate = useNavigate();
+  const [editPopup, setEditPopup] = useState({
+    open: false,
+    attendanceId: null,
+    popupStyle: {},
+  });
 
   // 출석 상태 표시 함수
   const renderStatus = (attendance) => {
@@ -57,25 +65,68 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
     const isHovered = hoveredId === attendance.attendanceId;
 
+    // 팝업 열기 핸들러
+    const handleOpenEditPopup = (event) => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      const popupWidth = 280;
+      const popupHeight = 140;
+      let left = rect.right + 12;
+      let top = rect.top;
+      if (left + popupWidth > window.innerWidth)
+        left = window.innerWidth - popupWidth - 8;
+      if (top + popupHeight > window.innerHeight) {
+        top = window.innerHeight - popupHeight - 16;
+        if (top < 8) top = 8;
+      }
+      setEditPopup({
+        open: true,
+        attendanceId: scheduleId,
+        popupStyle: {
+          position: "fixed",
+          left,
+          top,
+          zIndex: 1000,
+        },
+      });
+    };
+
+    // 팝업에서 수정 버튼 클릭 시 url 이동
+    const handleEdit = () => {
+      navigate(`/studies/${studyId}/attendances/${scheduleId}`);
+      setEditPopup({ open: false, attendanceId: null, popupStyle: {} });
+    };
+
     return (
-      <Link
-        to={`/studies/${studyId}/attendances/${scheduleId}`}
-        style={{
-          width: "24px",
-          height: "24px",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#666",
-          textDecoration: "none",
-          fontSize: "14px",
-          marginRight: "8px",
-          zIndex: 10,
-        }}
-        title="출석 상세">
-        <HiOutlineDotsVertical />
-      </Link>
+      <>
+        <span
+          style={{
+            width: "24px",
+            height: "24px",
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#666",
+            fontSize: "14px",
+            marginRight: "8px",
+            zIndex: 10,
+            cursor: "pointer",
+          }}
+          title="출석 상세"
+          onClick={handleOpenEditPopup}>
+          <HiOutlineDotsVertical />
+        </span>
+        {editPopup.open && editPopup.attendanceId === scheduleId && (
+          <AttendanceEditPopup
+            open={editPopup.open}
+            onClose={() =>
+              setEditPopup({ open: false, attendanceId: null, popupStyle: {} })
+            }
+            onEdit={handleEdit}
+            style={editPopup.popupStyle}
+          />
+        )}
+      </>
     );
   };
 

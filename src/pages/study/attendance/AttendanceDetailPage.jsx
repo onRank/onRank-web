@@ -14,8 +14,6 @@ import {
 import useStudyRole from "../../../hooks/useStudyRole";
 import Button from "../../../components/common/Button";
 import AttendanceStatusPopup from "../../../components/common/AttendanceStatusPopup";
-import { HiOutlineDotsVertical } from "react-icons/hi";
-import AttendanceEditPopup from "../../../components/common/AttendanceEditPopup";
 
 /**
  * 출석 상세 페이지
@@ -61,11 +59,6 @@ function AttendanceDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isHost, setIsHost] = useState(false);
-  const [editPopup, setEditPopup] = useState({
-    open: false,
-    attendanceId: null,
-    popupStyle: {},
-  });
   const [openPopup, setOpenPopup] = useState({
     open: false,
     attendanceId: null,
@@ -73,20 +66,20 @@ function AttendanceDetailPage() {
   });
   const { isManager, updateMemberRoleFromResponse } = useStudyRole();
 
-  // 점3개 아이콘 클릭 시 EditPopup 위치 계산
-  const handleOpenEditPopup = (attendanceId, event) => {
+  // 팝업 위치 계산 함수
+  const handleOpenStatusPopup = (attendanceId, event) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    const popupWidth = 280; // EditPopup 예상 너비
-    const popupHeight = 140;
-    let left = rect.right + 12;
+    const popupWidth = 240; // 예상 팝업 너비(px)
+    const popupHeight = 320; // 예상 팝업 높이(px)
+    let left = rect.left - popupWidth - 12; // 아이콘 왼쪽에 위치
     let top = rect.top;
-    if (left + popupWidth > window.innerWidth)
-      left = window.innerWidth - popupWidth - 8;
+    // 화면 밖으로 나가지 않게 보정
+    if (left < 8) left = 8;
     if (top + popupHeight > window.innerHeight) {
       top = window.innerHeight - popupHeight - 16;
       if (top < 8) top = 8;
     }
-    setEditPopup({
+    setOpenPopup({
       open: true,
       attendanceId,
       popupStyle: {
@@ -96,16 +89,6 @@ function AttendanceDetailPage() {
         zIndex: 1000,
       },
     });
-  };
-
-  // EditPopup에서 수정 버튼 클릭 시 상태 변경 팝업 띄우기
-  const handleEditPopupEdit = () => {
-    setOpenPopup({
-      open: true,
-      attendanceId: editPopup.attendanceId,
-      popupStyle: editPopup.popupStyle,
-    });
-    setEditPopup({ open: false, attendanceId: null, popupStyle: {} });
   };
 
   const fetchAttendanceDetails = async () => {
@@ -254,31 +237,12 @@ function AttendanceDetailPage() {
                           {renderStatusIcon(attendance.attendanceStatus, (e) =>
                             handleOpenStatusPopup(attendance.attendanceId, e)
                           )}
-                          <span
-                            style={{ marginLeft: 12, cursor: "pointer" }}
-                            onClick={(e) =>
-                              handleOpenEditPopup(attendance.attendanceId, e)
-                            }>
-                            <HiOutlineDotsVertical size={22} />
-                          </span>
                         </td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-              <AttendanceEditPopup
-                open={editPopup.open}
-                onClose={() =>
-                  setEditPopup({
-                    open: false,
-                    attendanceId: null,
-                    popupStyle: {},
-                  })
-                }
-                onEdit={handleEditPopupEdit}
-                style={editPopup.popupStyle}
-              />
               <AttendanceStatusPopup
                 open={openPopup.open}
                 onClose={() =>
