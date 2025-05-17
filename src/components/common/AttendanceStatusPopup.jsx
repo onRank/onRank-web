@@ -60,12 +60,13 @@ function AttendanceStatusPopup({
             color: "#222",
             padding: 0,
             zIndex: 2,
+            outline: "none",
           }}
           aria-label="닫기">
           ×
         </button>
         {/* 상태 선택 영역 */}
-        <div style={{ padding: "38px 0 0 0", width: "100%" }}>
+        <div style={{ padding: "38px 0 0 15px", width: "100%" }}>
           {statusList.map((status, idx) => (
             <React.Fragment key={status.key}>
               {idx !== 0 && (
@@ -78,8 +79,8 @@ function AttendanceStatusPopup({
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 16,
-                  padding: "18px 32px",
+                  gap: 10,
+                  padding: "12px 32px",
                   cursor: "pointer",
                   fontSize: 18,
                   color: "#222",

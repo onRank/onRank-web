@@ -62,7 +62,7 @@ export const getStatusText = (status) => {
       return "지각";
     case "UNKNOWN":
     default:
-      return "미정";
+      return "미인증";
   }
 };
 

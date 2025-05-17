@@ -29,9 +29,6 @@ const renderStatusIcon = (status, onClick) => {
       style={{
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        gap: "0.5rem",
-        width: "100%",
       }}>
       <div
         style={{
@@ -44,6 +41,7 @@ const renderStatusIcon = (status, onClick) => {
           justifyContent: "center",
           color: "white",
           border: styles.border,
+          cursor: "pointer",
         }}
         onClick={onClick}>
         {styles.icon}
@@ -138,8 +136,8 @@ function AttendanceDetailPage() {
     <div style={{ display: "flex", minHeight: "100vh" }}>
       <div style={{ display: "flex", gap: "2rem", width: "100%" }}>
         <StudySidebarContainer activeTab="출석" />
-        <div style={{ flex: 1 }}>
-          <h2 style={{ padding: "0 1rem", marginTop: "1rem" }}>출석 수정</h2>
+        <div style={{ flex: 1, padding: "0 1rem", marginTop: "1rem" }}>
+          <h2 style={{ marginBottom: "1rem" }}>출석 수정</h2>
           {/* 여기에 출석 상세 컴포넌트 */}
           {isLoading ? (
             <LoadingSpinner />
@@ -213,7 +211,7 @@ function AttendanceDetailPage() {
                             padding: "1rem 0.5rem",
                             fontSize: "15px",
                             color: "#222",
-                            textAlign: "left",
+                            textAlign: "center",
                             borderBottomLeftRadius: isLast ? "12px" : 0,
                           }}>
                           {attendance.studentName}
