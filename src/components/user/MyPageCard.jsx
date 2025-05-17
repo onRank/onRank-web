@@ -48,19 +48,15 @@ function MyPageCard({ icon, name, onClick }) {
   return (
     <div style={styles.card} onClick={onClick}>
       <span style={styles.iconBox}>
-        {icon ? (
-          <img src={icon} alt={name} style={styles.image} />
-        ) : (
-          <span style={styles.icon}>
-            <FaBookReader
-              style={{
-                display: "block",
-                alignContent: "center",
-                justifyContent: "center",
-              }}
-            />
-          </span>
-        )}
+        <span style={styles.icon}>
+          <FaBookReader
+            style={{
+              display: "block",
+              alignContent: "center",
+              justifyContent: "center",
+            }}
+          />
+        </span>
       </span>
       <span style={styles.name}>{name}</span>
     </div>
