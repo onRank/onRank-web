@@ -56,9 +56,14 @@ const SubmissionList = () => {
   }, [studyId, assignmentId, isManager, navigate]);
 
   // 제출물 상세 페이지로 이동
-  const handleViewSubmission = (submissionId) => {
+  const handleViewSubmission = (submission) => {
+    // 미제출 상태인 경우 상세 페이지로 이동하지 않음
+    if (submission.submissionStatus === "NOTSUBMITTED") {
+      return;
+    }
+    
     navigate(
-      `/studies/${studyId}/assignments/${assignmentId}/submissions/${submissionId}`
+      `/studies/${studyId}/assignments/${assignmentId}/submissions/${submission.submissionId}`
     );
   };
 
@@ -133,8 +138,8 @@ const SubmissionList = () => {
             {submissions.map((submission) => (
               <div
                 key={submission.submissionId}
-                className="submission-item"
-                onClick={() => handleViewSubmission(submission.submissionId)}>
+                className={`submission-item ${submission.submissionStatus === "NOTSUBMITTED" ? "not-submitted" : ""}`}
+                onClick={() => handleViewSubmission(submission)}>
                 <div className="member-info">
                   <div className="name-email-container">
                     <div className="member-name">{submission.memberName}</div>
