@@ -459,12 +459,10 @@ const AssignmentDetail = () => {
               remainingFileIds.length === 0)
           }
           label={isResubmitting ? "다시 제출" : "제출"}
-          className="equal-width-button"
         />
         <Button
           variant="back"
           onClick={isResubmitting ? handleCancelResubmit : handleBack}
-          className="equal-width-button"
         />
       </div>
     </>
@@ -512,56 +510,55 @@ const AssignmentDetail = () => {
         {/* 1. 지시사항 섹션 */}
         <div className="instruction-section">
           <h2 className="section-title">지시사항</h2>
-          <div className="instruction-content">
-            <p className="instruction-text">{assignment.assignmentContent}</p>
+          <p className="description">{assignment.assignmentContent}</p>
 
-            {/* 첨부 파일 목록 (assignmentFiles) */}
-            {assignment.assignmentFiles &&
-              assignment.assignmentFiles.length > 0 && (
-                <div className="instruction-files">
-                  <h3 className="files-title">첨부파일</h3>
-                  <div className="files-list">
-                    {assignment.assignmentFiles.map((file, index) => (
-                      <div className="file-item" key={index}>
-                        <div className="file-info">
-                          <div className="file-icon">
-                            {getFileIcon(file.fileName)}
-                          </div>
+          {/* 첨부 파일 목록 (assignmentFiles) */}
+          {assignment.assignmentFiles &&
+            assignment.assignmentFiles.length > 0 && (
+              <div className="files-container">
+                <h3 className="section-subtitle">첨부파일</h3>
+                <div className="files-list">
+                  {assignment.assignmentFiles.map((file, index) => (
+                    <div className="file-download-item" key={index}>
+                      <div className="file-info-row">
+                        <div className="file-icon">
+                          {getFileIcon(file.fileName)}
+                        </div>
+                        <div className="file-details">
                           <div className="file-name">{file.fileName}</div>
-                          <div className="file-actions">
-                            {isImageFile(file.fileName) && file.fileUrl && (
-                              <button
-                                className="preview-button"
-                                onClick={() => window.open(file.fileUrl, "_blank")}
-                                title="이미지 미리보기"
-                                type="button">
-                                미리보기
-                              </button>
-                            )}
-                            <button
-                              className="download-button"
-                              onClick={() =>
-                                downloadFile(file.fileUrl, file.fileName)
-                              }
-                              type="button">
-                              다운로드
-                            </button>
-                          </div>
                         </div>
                         {isImageFile(file.fileName) && file.fileUrl && (
-                          <div className="image-preview">
-                            <img
-                              src={file.fileUrl}
-                              alt={file.fileName}
-                            />
-                          </div>
+                          <button
+                            className="preview-button"
+                            onClick={() => window.open(file.fileUrl, "_blank")}
+                            title="이미지 미리보기"
+                            type="button">
+                            미리보기
+                          </button>
                         )}
+                        <button
+                          className="download-button"
+                          onClick={() =>
+                            downloadFile(file.fileUrl, file.fileName)
+                          }
+                          type="button">
+                          다운로드
+                        </button>
                       </div>
-                    ))}
-                  </div>
+                      {isImageFile(file.fileName) && file.fileUrl && (
+                        <div className="image-preview-container">
+                          <img
+                            className="image-preview-full"
+                            src={file.fileUrl}
+                            alt={file.fileName}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
-          </div>
+              </div>
+            )}
         </div>
 
         {/* 2. 제출물 섹션 - 상태에 따라 다른 UI */}
@@ -598,35 +595,38 @@ const AssignmentDetail = () => {
                   <h3 className="files-title">제출 파일</h3>
                   <div className="files-list">
                     {assignment.submissionFiles.map((file, index) => (
-                      <div className="file-item" key={index}>
-                        <div className="file-info">
+                      <div className="file-download-item" key={index}>
+                        <div className="file-info-row">
                           <div className="file-icon">
                             {getFileIcon(file.fileName)}
                           </div>
-                          <div className="file-name">{file.fileName}</div>
-                          <div className="file-actions">
-                            {isImageFile(file.fileName) && file.fileUrl && (
-                              <button
-                                className="preview-button"
-                                onClick={() => window.open(file.fileUrl, "_blank")}
-                                title="이미지 미리보기"
-                                type="button">
-                                미리보기
-                              </button>
-                            )}
-                            <button
-                              className="download-button"
-                              onClick={() =>
-                                downloadFile(file.fileUrl, file.fileName)
-                              }
-                              type="button">
-                              다운로드
-                            </button>
+                          <div className="file-details">
+                            <div className="file-name">{file.fileName}</div>
                           </div>
+                          {isImageFile(file.fileName) && file.fileUrl && (
+                            <button
+                              className="preview-button"
+                              onClick={() =>
+                                window.open(file.fileUrl, "_blank")
+                              }
+                              title="이미지 미리보기"
+                              type="button">
+                              미리보기
+                            </button>
+                          )}
+                          <button
+                            className="download-button"
+                            onClick={() =>
+                              downloadFile(file.fileUrl, file.fileName)
+                            }
+                            type="button">
+                            다운로드
+                          </button>
                         </div>
                         {isImageFile(file.fileName) && file.fileUrl && (
-                          <div className="image-preview">
+                          <div className="image-preview-container">
                             <img
+                              className="image-preview-full"
                               src={file.fileUrl}
                               alt={file.fileName}
                             />
@@ -640,9 +640,8 @@ const AssignmentDetail = () => {
               
               {/* 재제출 버튼 - 마감 기한이 지난 경우 숨김 */}
               {!isAssignmentExpired() && (
-                <div className="action-buttons">
-                  <Button variant="resubmit" onClick={handleResubmit} className="equal-width-button" />
-                  <Button variant="back" onClick={handleBack} className="equal-width-button" />
+                <div className="button-container resubmit-container">
+                  <Button variant="resubmit" onClick={handleResubmit} />
                 </div>
               )}
             </>
@@ -667,39 +666,42 @@ const AssignmentDetail = () => {
                 {/* 제출 파일 표시 */}
                 {assignment.submissionFiles &&
                   assignment.submissionFiles.length > 0 && (
-                    <div className="submission-files">
-                      <h3 className="files-title">제출 파일</h3>
+                    <div className="files-container">
+                      <h3 className="section-subtitle">제출 파일</h3>
                       <div className="files-list">
                         {assignment.submissionFiles.map((file, index) => (
-                          <div className="file-item" key={index}>
-                            <div className="file-info">
+                          <div className="file-download-item" key={index}>
+                            <div className="file-info-row">
                               <div className="file-icon">
                                 {getFileIcon(file.fileName)}
                               </div>
-                              <div className="file-name">{file.fileName}</div>
-                              <div className="file-actions">
-                                {isImageFile(file.fileName) && file.fileUrl && (
-                                  <button
-                                    className="preview-button"
-                                    onClick={() => window.open(file.fileUrl, "_blank")}
-                                    title="이미지 미리보기"
-                                    type="button">
-                                    미리보기
-                                  </button>
-                                )}
-                                <button
-                                  className="download-button"
-                                  onClick={() =>
-                                    downloadFile(file.fileUrl, file.fileName)
-                                  }
-                                  type="button">
-                                  다운로드
-                                </button>
+                              <div className="file-details">
+                                <div className="file-name">{file.fileName}</div>
                               </div>
+                              {isImageFile(file.fileName) && file.fileUrl && (
+                                <button
+                                  className="preview-button"
+                                  onClick={() =>
+                                    window.open(file.fileUrl, "_blank")
+                                  }
+                                  title="이미지 미리보기"
+                                  type="button">
+                                  미리보기
+                                </button>
+                              )}
+                              <button
+                                className="download-button"
+                                onClick={() =>
+                                  downloadFile(file.fileUrl, file.fileName)
+                                }
+                                type="button">
+                                다운로드
+                              </button>
                             </div>
                             {isImageFile(file.fileName) && file.fileUrl && (
-                              <div className="image-preview">
+                              <div className="image-preview-container">
                                 <img
+                                  className="image-preview-full"
                                   src={file.fileUrl}
                                   alt={file.fileName}
                                 />
@@ -714,26 +716,20 @@ const AssignmentDetail = () => {
                 {/* 코멘트 섹션 (있을 경우에만 표시) */}
                 {assignment.submissionComment && (
                   <div className="feedback-section">
-                    <h3 className="feedback-title">코멘트</h3>
+                    <h3 className="section-subtitle">코멘트</h3>
                     <div className="feedback-content">
                       {assignment.submissionComment}
                     </div>
                   </div>
                 )}
 
-                <div className="action-buttons">
+                <div className="buttons-row">
                   <Button
                     variant="reSubmit"
                     onClick={handleResubmit}
                     label="다시 제출"
-                    className="equal-width-button"
                   />
-                  <Button 
-                    variant="back" 
-                    onClick={handleBack} 
-                    label="닫기"
-                    className="equal-width-button" 
-                  />
+                  <Button variant="back" onClick={handleBack} label="닫기" />
                 </div>
               </>
             )
