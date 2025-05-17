@@ -2,7 +2,6 @@
 .notification-icon-container {
   position: relative;
   display: inline-block;
-  z-index: 3000;
 }
 
 .notification-icon {
@@ -42,18 +41,14 @@
   background-color: #ee0418; /* 테마 컬러 (Badge와 일치) */
 }
 
-/* 알림 드롭다운 스타일 */
+/* 알림 드롭다운 스타일 - Portal 방식 */
 .notification-dropdown {
-  position: absolute;
-  top: 100%;
-  right: 0;
   background: white;
   width: 400px;
   max-height: 600px;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  z-index: 35000;
-  overflow: visible;
+  overflow: hidden;
   border: 1px solid #eaeaea;
 }
 
