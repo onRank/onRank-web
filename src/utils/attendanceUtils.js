@@ -1,6 +1,10 @@
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
 import { formatDate as dateUtilsFormatDate } from "./dateUtils";
+import { FaCheck } from "react-icons/fa";
+import { FaQuestion } from "react-icons/fa";
+import { FaXmark } from "react-icons/fa6";
+import { FaMinus } from "react-icons/fa";
 
 /**
  * 출석 상태 스타일 정의
@@ -10,25 +14,25 @@ export const STATUS_STYLES = {
     color: "#E50011",
     background: "rgba(229, 0, 17, 0.1)",
     border: "1px solid #E50011",
-    icon: "O",
+    icon: <FaCheck />,
   },
   ABSENT: {
     color: "#000",
     background: "rgba(0, 0, 0, 0.1)",
     border: "1px solid #000",
-    icon: "X",
+    icon: <FaXmark />,
   },
   LATE: {
-    color: "#007BFF",
-    background: "rgba(0, 123, 255, 0.1)",
-    border: "1px solid #007BFF",
-    icon: "△",
+    color: "#000",
+    background: "rgba(0, 0, 0, 0.1)",
+    border: "1px solid #000",
+    icon: <FaMinus />,
   },
   UNKNOWN: {
-    color: "#999",
-    background: "rgba(153, 153, 153, 0.1)",
-    border: "1px solid #999",
-    icon: "?",
+    color: "#000",
+    background: "rgba(0, 0, 0, 0.1)",
+    border: "1px solid #000",
+    icon: <FaQuestion />,
   },
 };
 

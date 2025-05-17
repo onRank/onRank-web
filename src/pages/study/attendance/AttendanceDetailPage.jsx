@@ -101,7 +101,11 @@ function AttendanceDetailPage() {
               }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ borderBottom: "1px solid #e5e5e5" }}>
+                  <tr
+                    style={{
+                      borderBottom: "1px solid #e5e5e5",
+                      backgroundColor: "#fff",
+                    }}>
                     <th
                       style={{
                         padding: "0.5rem",
@@ -110,23 +114,26 @@ function AttendanceDetailPage() {
                         fontSize: "14px",
                         fontWeight: "500",
                         color: "#333333",
+                        backgroundColor: "#fff",
                       }}>
                       이름
                     </th>
                     <th
                       style={{
                         padding: "0.5rem",
-                        width: "50%",
+                        width: "40%",
+                        backgroundColor: "#fff",
                       }}
                     />
                     <th
                       style={{
                         padding: "0.5rem",
                         textAlign: "center",
-                        width: "20%",
+                        width: "30%",
                         fontSize: "14px",
                         fontWeight: "500",
                         color: "#333333",
+                        backgroundColor: "#fff",
                       }}>
                       출석 상태
                     </th>
@@ -137,15 +144,21 @@ function AttendanceDetailPage() {
                     <tr
                       key={attendance.attendanceId}
                       style={{ borderBottom: "1px solid #e5e5e5" }}>
-                      <td style={{ padding: "1rem", fontSize: "14px" }}>
+                      <td
+                        style={{
+                          padding: "1rem",
+                          fontSize: "14px",
+                          textAlign: "center",
+                        }}>
                         {attendance.studentName}
                       </td>
                       <td style={{ padding: "1rem" }} />
-                      <td style={{ padding: "1rem" }}>
+                      <td style={{ padding: "1rem", textAlign: "center" }}>
                         <div
                           style={{
-                            display: "inline-flex",
+                            display: "flex",
                             alignItems: "center",
+                            justifyContent: "center",
                             gap: "1rem",
                             position: "relative",
                           }}>
