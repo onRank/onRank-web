@@ -104,17 +104,22 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
       ) : (
         <div
           style={{
-            backgroundColor: "#FFFFFF",
+            backgroundColor: "#fff",
             borderRadius: "8px",
             overflow: "hidden",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            boxShadow: "none",
           }}>
           {/* 출석 일정 목록 */}
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table
+            style={{
+              width: "100%",
+              borderCollapse: "collapse",
+              background: "#fff",
+            }}>
             <thead>
               <tr
                 style={{
-                  borderBottom: "1px solid #e5e5e5",
+                  borderBottom: "1px solid #eee",
                   backgroundColor: "#fff",
                 }}>
                 <th
@@ -157,31 +162,48 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
               </tr>
             </thead>
             <tbody>
-              {safeAttendances.map((attendance) => {
+              {safeAttendances.map((attendance, idx) => {
                 const scheduleId =
                   attendance.scheduleId || attendance.attendanceId;
                 const formattedDate = formatDateTime(
                   attendance.scheduleStartingAt,
                   "yyyy.MM.dd"
                 );
+                const isLast = idx === safeAttendances.length - 1;
 
                 return (
                   <tr
                     key={attendance.attendanceId}
-                    style={{ borderBottom: "1px solid #e5e5e5" }}
+                    style={{ background: "#fff" }}
                     onMouseEnter={() => setHoveredId(attendance.attendanceId)}
                     onMouseLeave={() => setHoveredId(null)}>
-                    <td style={{ padding: "1rem 2rem" }}>
+                    <td
+                      style={{
+                        padding: "1rem 2rem",
+                        borderBottom: isLast ? "none" : "1px solid #eee",
+                        background: "#fff",
+                      }}>
                       <div style={{ fontSize: "14px" }}>{formattedDate}</div>
                     </td>
-                    <td style={{ padding: "1rem 0.5rem", textAlign: "left" }}>
+                    <td
+                      style={{
+                        padding: "1rem 0.5rem",
+                        textAlign: "left",
+                        borderBottom: isLast ? "none" : "1px solid #eee",
+                        background: "#fff",
+                      }}>
                       <div style={{ color: "#666", fontSize: "14px" }}>
                         {attendance.scheduleTitle ||
                           attendance.title ||
                           "일정명 없음"}
                       </div>
                     </td>
-                    <td style={{ padding: "1rem 0.5rem" }}>
+                    <td
+                      style={{
+                        padding: "1rem 0.5rem",
+                        borderBottom: isLast ? "none" : "1px solid #eee",
+                        background: "#fff",
+                      }}>
                       {renderStatus(attendance)}
                     </td>
                     <td
@@ -189,6 +211,8 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                         padding: "1rem 0.5rem",
                         display: "flex",
                         justifyContent: "flex-end",
+                        borderBottom: isLast ? "none" : "1px solid #eee",
+                        background: "#fff",
                       }}>
                       {isHost && renderEditIcon(attendance)}
                     </td>
