@@ -692,8 +692,13 @@ const AssignmentDetail = () => {
               
               {/* 재제출 버튼 - 마감 기한이 지난 경우 숨김 */}
               {!isAssignmentExpired() && (
-                <div className="button-container resubmit-container">
-                  <Button variant="resubmit" onClick={handleResubmit} />
+                <div className="buttons-row">
+                  <Button
+                    variant="reSubmit"
+                    onClick={handleResubmit}
+                    label="다시 제출"
+                  />
+                  <Button variant="back" onClick={handleBack} label="닫기" />
                 </div>
               )}
             </>
