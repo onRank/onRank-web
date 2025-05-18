@@ -23,35 +23,32 @@ function MemberCard({ member, onChangeRole, onDelete }) {
 
   const roleButtonGroupStyle = {
     display: "flex",
-    gap: 8,
+    gap: 14,
     border: "2px solid #222",
-    borderRadius: "16px",
-    padding: "8px 16px",
+    borderRadius: "8px",
+    padding: "8px 4px",
     background: "#fff",
     boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
     alignItems: "center",
   };
 
   const participantBtnStyle = {
-    border:
-      member.role === "PARTICIPANT"
-        ? "2.5px solid #ee0418"
-        : "2px solid #ee0418",
     background: member.role === "PARTICIPANT" ? "#ee0418" : "#fff",
-    boxShadow:
-      member.role === "PARTICIPANT" ? "2px 4px 0 #ee0418" : "2px 4px 0 #ee0418",
+    padding: "9px 13px",
+    border: "1.7px solid #000",
+    borderRadius: "11px",
   };
 
   const hostBtnStyle = {
-    border: member.role === "HOST" ? "2.5px solid #222" : "2px solid #222",
+    padding: "9px 13px",
     background: member.role === "HOST" ? "#222" : "#fff",
-    boxShadow: member.role === "HOST" ? "2px 4px 0 #222" : "2px 4px 0 #222",
+    border: "1.7px solid #000",
+    borderRadius: "11px",
   };
 
   const deleteBtnStyle = {
-    border: "2px solid #222",
     background: "#fff",
-    boxShadow: "2px 4px 0 #222",
+    padding: "0 17px",
   };
 
   // 생성자는 버튼 비활성화
@@ -81,7 +78,7 @@ function MemberCard({ member, onChangeRole, onDelete }) {
       </div>
       {/* 오른쪽: 역할/삭제 버튼 */}
       {!isCreator && (
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 10, height: "54px" }}>
           <div style={roleButtonGroupStyle}>
             <button
               style={participantBtnStyle}
