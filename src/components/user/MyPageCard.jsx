@@ -5,7 +5,7 @@ function MyPageCard({ icon, name, studyStatus, onClick }) {
     card: {
       display: "flex",
       alignItems: "center",
-      gap: 16,
+      gap: 10,
       borderRadius: 8,
       background: "none",
       padding: "0 4px",
@@ -18,8 +18,9 @@ function MyPageCard({ icon, name, studyStatus, onClick }) {
     iconBox: {
       width: 40,
       height: 40,
-      border: "1.0px solid #222",
-      borderRadius: 12,
+      border:
+        studyStatus === "PROGRESS" ? "1.0px solid #ee0418" : "1.0px solid #222",
+      borderRadius: 10,
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -28,7 +29,7 @@ function MyPageCard({ icon, name, studyStatus, onClick }) {
     },
     icon: {
       fontSize: 23,
-      color: "#222",
+      color: studyStatus === "PROGRESS" ? "#ee0418" : "#222",
       display: "block",
     },
     image: {
@@ -43,7 +44,6 @@ function MyPageCard({ icon, name, studyStatus, onClick }) {
       fontWeight: 700,
       borderRadius: 6,
       padding: "3px 12px",
-      marginRight: 8,
       display: "inline-block",
       color: studyStatus === "PROGRESS" ? "#fff" : "#fff",
       backgroundColor: studyStatus === "PROGRESS" ? "#ee0418" : "#222",
@@ -52,7 +52,7 @@ function MyPageCard({ icon, name, studyStatus, onClick }) {
     name: {
       fontSize: 16,
       fontWeight: 400,
-      color: "#222",
+      color: studyStatus === "PROGRESS" ? "#ee0418" : "#222",
     },
   };
 

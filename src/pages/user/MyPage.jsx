@@ -8,6 +8,7 @@ import { FaUserPen } from "react-icons/fa6";
 import MyPageCard from "../../components/user/MyPageCard";
 import { mypageService } from "../../services/mypage";
 import Button from "../../components/common/Button";
+import MyPageEditForm from "../../components/user/MyPageEditForm";
 
 const styles = {
   wrapper: {
@@ -121,7 +122,7 @@ function MyPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [myPageData, setMyPageData] = useState(null);
-  const [isEdit, setIsEdit] = useState(false);
+  const [isEditting, setIsEditting] = useState(false);
 
   useEffect(() => {
     const fetchMyPage = async () => {
@@ -176,26 +177,27 @@ function MyPage() {
     return phoneNumber;
   };
 
-  // const handleEditButtonClick = async () => {
-  //   const response = await mypageService.editMypage(myPageData.studentId);
-  //   if (response.status === 200) {
-  //       setIsEdit(true);
-  //   }
-  // };
-
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!myPageData)
     return <ErrorMessage message="마이페이지 정보를 불러올 수 없습니다." />;
 
-  // 진행중인 스터디만, studyId 오름차순 정렬
-  const studyList = (myPageData.studyList || [])
-    .filter((study) => study.studyStatus === "PROGRESS")
-    .sort((a, b) => a.studyId - b.studyId);
+  // studyId 오름차순 정렬
+  const studyList = (myPageData.studyList || []).sort(
+    (a, b) => a.studyId - b.studyId
+  );
+
+  // 수정하기 버튼 클릭 시
+  const handleEditButtonClick = () => {
+    setIsEditting(true);
+  };
+
+  if (isEditting) {
+    return <MyPageEditForm />;
+  }
 
   return (
     <div style={styles.wrapper}>
-      {/* <Header /> */}
       <div style={styles.container}>
         {/* 상단 중앙 타이틀 */}
         <div style={styles.titleRow}>
@@ -229,7 +231,7 @@ function MyPage() {
               <Button
                 variant="edit"
                 label="수정하기"
-                // onClick={handleEditButtonClick}
+                onClick={handleEditButtonClick}
                 style={{ width: 75, fontSize: 12 }}
               />
             </div>
