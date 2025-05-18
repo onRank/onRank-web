@@ -1,4 +1,3 @@
-// vite.config.js
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -8,6 +7,12 @@ export default defineConfig(() => {
   const frontendURL = process.env.VITE_FRONTEND_URL || "";
   const cloudfrontURL = process.env.VITE_CLOUDFRONT_URL || "";
   const mswEnabled = process.env.VITE_MSW_ENABLED || "false";
+
+  // ✅ 로그 추가: GitHub Actions 환경변수가 실제 반영되었는지 확인
+  console.log("🔥 VITE_API_URL:", apiUrl);
+  console.log("🔥 VITE_FRONTEND_URL:", frontendURL);
+  console.log("🔥 VITE_CLOUDFRONT_URL:", cloudfrontURL);
+  console.log("🔥 VITE_MSW_ENABLED:", mswEnabled);
 
   let basePath = "/";
   if (frontendURL.includes("dev.onrank.kr")) {
