@@ -21,6 +21,42 @@ function MemberCard({ member, onChangeRole, onDelete }) {
     }
   };
 
+  const roleButtonGroupStyle = {
+    display: "flex",
+    gap: 8,
+    border: "2px solid #222",
+    borderRadius: "16px",
+    padding: "8px 16px",
+    background: "#fff",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+    alignItems: "center",
+  };
+
+  const participantBtnStyle = {
+    ...baseButtonStyle,
+    border:
+      member.role === "PARTICIPANT"
+        ? "2.5px solid #ee0418"
+        : "2px solid #ee0418",
+    background: member.role === "PARTICIPANT" ? "#ee0418" : "#fff",
+    boxShadow:
+      member.role === "PARTICIPANT" ? "2px 4px 0 #ee0418" : "2px 4px 0 #ee0418",
+  };
+
+  const hostBtnStyle = {
+    ...baseButtonStyle,
+    border: member.role === "HOST" ? "2.5px solid #222" : "2px solid #222",
+    background: member.role === "HOST" ? "#222" : "#fff",
+    boxShadow: member.role === "HOST" ? "2px 4px 0 #222" : "2px 4px 0 #222",
+  };
+
+  const deleteBtnStyle = {
+    ...baseButtonStyle,
+    border: "2px solid #222",
+    background: "#fff",
+    boxShadow: "2px 4px 0 #222",
+  };
+
   // 생성자는 버튼 비활성화
   const isCreator = member.role === "CREATOR";
 
@@ -47,26 +83,32 @@ function MemberCard({ member, onChangeRole, onDelete }) {
         <div>{member.department}</div>
       </div>
       {/* 오른쪽: 역할/삭제 버튼 */}
-      <div style={{ display: "flex", gap: 8 }}>
-        <button
-          title="참여자로 변경"
-          disabled={isCreator || member.role === "PARTICIPANT"}
-          onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
-          <FaUserCheck style={{ color: "#222" }} />
-        </button>
-        <button
-          title="관리자로 변경"
-          disabled={isCreator || member.role === "HOST"}
-          onClick={() => onChangeRole(member.memberId, "HOST")}>
-          <FaUserCog style={{ color: "#222" }} />
-        </button>
-        <button
-          title="삭제"
-          disabled={isCreator}
-          onClick={() => onDelete(member.memberId)}>
-          <FaUserSlash style={{ color: "#222" }} />
-        </button>
-      </div>
+      {!isCreator && (
+        <div style={{ display: "flex", gap: 8 }}>
+          <div style={roleButtonGroupStyle}>
+            <button
+              style={participantBtnStyle}
+              title="참여자로 변경"
+              disabled={member.role === "PARTICIPANT"}
+              onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
+              <FaUserCheck style={{ color: "#222" }} />
+            </button>
+            <button
+              style={hostBtnStyle}
+              title="관리자로 변경"
+              disabled={member.role === "HOST"}
+              onClick={() => onChangeRole(member.memberId, "HOST")}>
+              <FaUserCog style={{ color: "#222" }} />
+            </button>
+          </div>
+          <button
+            style={deleteBtnStyle}
+            title="삭제"
+            onClick={() => onDelete(member.memberId)}>
+            <FaUserSlash style={{ color: "#222" }} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
