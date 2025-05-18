@@ -30,7 +30,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await mypageService.editMypage({
+      const response = await mypageService.editMyPage({
         ...myPageData,
         ...formData,
       });
@@ -71,6 +71,10 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
     titleIcon: {
       fontSize: 32,
     },
+    titleText: {
+      fontWeight: 700,
+      fontSize: 28,
+    },
     buttonRow: {
       display: "flex",
       justifyContent: "flex-end",
@@ -105,9 +109,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label style={{ fontWeight: 500 }}>
-              이름 <span className="required">(필수)</span>
-            </label>
+            <label style={{ fontWeight: 500 }}>이름</label>
             <input
               type="text"
               style={{ width: "40%" }}
@@ -124,9 +126,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
           </div>
 
           <div className="form-group">
-            <label style={{ fontWeight: 500 }}>
-              전화번호 <span className="required">(필수)</span>
-            </label>
+            <label style={{ fontWeight: 500 }}>전화번호</label>
             <input
               type="tel"
               style={{ width: "40%" }}
@@ -186,20 +186,16 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
             <Button
               type="button"
               variant="back"
-              label="취소"
+              label="닫기"
               onClick={onCancel}
-              style={{ minWidth: 75, fontSize: 12 }}
               disabled={loading}
             />
             <Button
-              type="submit"
+              type="button"
               variant="complete"
-              label="저장"
-              disabled={
-                !formData.studentName.trim() ||
-                !/^[0-9]{11}$/.test(formData.studentPhoneNumber) ||
-                loading
-              }
+              label="완료"
+              onClick={handleSubmit}
+              disabled={loading}
             />
           </div>
         </form>

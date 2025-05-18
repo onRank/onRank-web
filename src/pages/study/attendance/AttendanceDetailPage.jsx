@@ -137,7 +137,7 @@ function AttendanceDetailPage() {
       <div style={{ display: "flex", gap: "2rem", width: "100%" }}>
         <StudySidebarContainer activeTab="출석" />
         <div style={{ flex: 1, padding: "0 1rem", marginTop: "1rem" }}>
-          <h2 style={{ marginBottom: "1rem" }}>출석 수정</h2>
+          <h2 style={{ marginBottom: "1rem" }}>출결 관리</h2>
           {/* 여기에 출석 상세 컴포넌트 */}
           {isLoading ? (
             <LoadingSpinner />
