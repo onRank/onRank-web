@@ -4,17 +4,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd());
 
-  // 기본 base 경로 설정
-  let basePath = "/";
-
-  // 개발 서버일 경우만 /develop/로 변경
-  if (env.VITE_CLOUDFRONT_URL?.includes("dev.onrank.kr")) {
-    basePath = "/develop/";
-  }
+  const basePath =
+    env.VITE_FRONTEND_URL?.includes("dev.onrank.kr") ? "/develop/" : "/";
 
   return {
-    base: basePath,
     plugins: [react()],
+    base: basePath,
     server: {
       port: 3000,
     },
