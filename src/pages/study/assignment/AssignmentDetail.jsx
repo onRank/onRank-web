@@ -438,7 +438,7 @@ const AssignmentDetail = () => {
               submissionContent.trim() === "" &&
               remainingFileIds.length === 0)
           }
-          label={isResubmitting ? "다시 제출" : "제출"}
+          label={isResubmitting ? "저장" : "제출"}
         />
         <Button
           variant="back"
