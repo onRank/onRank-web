@@ -11,14 +11,13 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [popupPosition, setPopupPosition] = useState("bottom-right");
   const menuRef = useRef(null);
-  const { memberRole } = usePost();
+  const { memberRole, currentUserName } = usePost();
 
   // 관리자 권한 (CREATOR / HOST)
   const isAdmin = memberRole === "CREATOR" || memberRole === "HOST";
 
-  // 게시글 작성자인지 확인 - post.memberId와 현재 사용자의 memberId 비교
-  const isPostCreator =
-    post.memberId === (post.currentMemberId || post.memberContext?.memberId);
+  // 게시글 작성자인지 확인 - 현재 사용자 이름과 게시글 작성자 이름 비교
+  const isPostCreator = currentUserName && post.postWritenBy === currentUserName;
 
   // 메뉴를 보여줄지 결정 - 관리자이거나 작성자인 경우에만
   const showMenu = isAdmin || isPostCreator;

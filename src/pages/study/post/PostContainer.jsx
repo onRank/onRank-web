@@ -166,15 +166,13 @@ const PostInnerContainer = ({ onSubPageChange }) => {
     <div>
       <h1 className="page-title">게시판</h1>
 
-      {isManager && (
-        <div className="add-section-box">
-          <div>
-            <div className="add-section-title">게시글 추가</div>
-            <div className="add-section-description">새로운 게시글을 추가해주세요.</div>
-          </div>
-          <Button variant="add" onClick={navigateToAdd} />
+      <div className="add-section-box">
+        <div>
+          <div className="add-section-title">게시글 추가</div>
+          <div className="add-section-description">새로운 게시글을 추가해주세요.</div>
         </div>
-      )}
+        <Button variant="add" onClick={navigateToAdd} />
+      </div>
 
       {isLoading ? (
         <div className="loading-message">로딩중...</div>

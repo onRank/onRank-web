@@ -17,6 +17,7 @@ export function PostProvider({ children }) {
   const [error, setError] = useState(null);
   const { studyId } = useParams();
   const [memberRole, setMemberRole] = useState(null);
+  const [currentUserName, setCurrentUserName] = useState(null);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   // 게시글 목록 불러오기 - useCallback 먼저 선언
@@ -31,11 +32,19 @@ export function PostProvider({ children }) {
       
       // memberContext에서 역할 정보 추출
       if (response && typeof response === "object") {
-        if (response.memberContext && response.memberContext.memberRole) {
-          setMemberRole(response.memberContext.memberRole);
-        } else {
-          // 역할 정보가 없을 경우 기본값 설정
-          setMemberRole("PARTICIPANT");
+        if (response.memberContext) {
+          // 회원 역할 설정
+          if (response.memberContext.memberRole) {
+            setMemberRole(response.memberContext.memberRole);
+          } else {
+            // 역할 정보가 없을 경우 기본값 설정
+            setMemberRole("PARTICIPANT");
+          }
+          
+          // 현재 사용자 이름 설정
+          if (response.memberContext.memberName) {
+            setCurrentUserName(response.memberContext.memberName);
+          }
         }
       }
       
@@ -89,9 +98,14 @@ export function PostProvider({ children }) {
     try {
       const response = await postService.getPostById(studyId, postId);
 
-      // Extract member role if present
-      if (response.memberContext && response.memberContext.memberRole) {
-        setMemberRole(response.memberContext.memberRole);
+      // Extract member role and name if present
+      if (response.memberContext) {
+        if (response.memberContext.memberRole) {
+          setMemberRole(response.memberContext.memberRole);
+        }
+        if (response.memberContext.memberName) {
+          setCurrentUserName(response.memberContext.memberName);
+        }
       }
 
       if (response.success) {
@@ -247,6 +261,7 @@ export function PostProvider({ children }) {
         isLoading,
         error,
         memberRole,
+        currentUserName,
         getPosts,
         getPostById,
         createPost,

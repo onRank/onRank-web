@@ -642,7 +642,7 @@ const AssignmentDetail = () => {
                 <div className="buttons-row">
                   <Button
                     variant="reSubmit"
-                    className="reSubmit-button"
+                    className="reSubmit"
                     onClick={handleResubmit}
                     label="다시 제출"
                   />
@@ -731,7 +731,7 @@ const AssignmentDetail = () => {
                 <div className="buttons-row">
                   <Button
                     variant="reSubmit"
-                    className="reSubmit-button"
+                    className="reSubmit"
                     onClick={handleResubmit}
                     label="제출"
                   />
