@@ -213,75 +213,13 @@ const AssignmentDetail = () => {
             }))
           );
 
-          // URL 추출을 위한 키 목록 (여러 가능한 키 이름 시도)
-          const urlKeys = ['uploadUrl', 'presignedUrl', 'url', 'fileUrl'];
-          let uploadResults = null;
-          let uploadSuccess = false;
-
-          // 각 키 이름으로 시도
-          for (const key of urlKeys) {
-            console.log(`[AssignmentDetail] '${key}' 키로 업로드 URL 검색 시도`);
-            
-            try {
-              // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-              uploadResults = await handleFileUploadWithS3(response, newFiles, key);
-              
-              // 성공한 업로드가 있는지 확인
-              const successCount = uploadResults.filter(result => result.success).length;
-              if (successCount > 0) {
-                console.log(`[AssignmentDetail] '${key}' 키 사용 성공: ${successCount}/${newFiles.length} 파일 업로드됨`);
-                uploadSuccess = true;
-                break; // 성공했으므로 루프 종료
-              }
-            } catch (keyError) {
-              console.warn(`[AssignmentDetail] '${key}' 키 사용 시도 중 오류:`, keyError);
-              // 다음 키로 계속 시도
-            }
-          }
-
-          // 모든 키를 시도했으나 성공하지 못한 경우, 수동 업로드 시도
-          if (!uploadSuccess) {
-            console.log("[AssignmentDetail] 모든 키 시도 실패, 수동 업로드 시도");
-            
-            // API 응답에서 직접 업로드 URL 추출 시도
-            let uploadUrls = [];
-            
-            // 다양한 응답 구조 확인
-            if (response.uploadUrls && Array.isArray(response.uploadUrls)) {
-              uploadUrls = response.uploadUrls;
-            } else if (response.data && response.data.uploadUrls && Array.isArray(response.data.uploadUrls)) {
-              uploadUrls = response.data.uploadUrls;
-            } else if (response.data && Array.isArray(response.data)) {
-              // data 배열에서 URL 찾기 시도
-              uploadUrls = response.data
-                .filter(item => item && typeof item === 'object')
-                .map(item => item.uploadUrl || item.presignedUrl || item.url)
-                .filter(url => url);
-            }
-            
-            if (uploadUrls.length > 0) {
-              // 수동으로 각 파일 업로드
-              uploadResults = await Promise.all(
-                newFiles.map((file, idx) => {
-                  if (idx < uploadUrls.length) {
-                    // Content-Type 없이 간단한 PUT 요청
-                    return manualUploadToS3(uploadUrls[idx], file);
-                  }
-                  return { fileName: file.name, success: false, message: '업로드 URL 부족' };
-                })
-              );
-              
-              // 성공 여부 확인
-              uploadSuccess = uploadResults.some(result => result.success);
-            }
-          }
-
-          // 최종 결과 확인
-          if (!uploadSuccess) {
-            console.error("[AssignmentDetail] 모든 업로드 시도 실패");
-            setError("파일 업로드에 실패했습니다. 다시 시도해 주세요.");
-            return;
-          }
+          // API 응답 구조 확인 및 로깅
+          console.log("[AssignmentDetail] API 응답 구조:", response);
+          
+          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+          // AssignmentCreate와 동일한 방식으로 처리
+          const uploadResults = await handleFileUploadWithS3(response, newFiles, "uploadUrl");
+          console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
 
           // 업로드 실패 발생 시 경고
           const failedUploads = uploadResults.filter(
