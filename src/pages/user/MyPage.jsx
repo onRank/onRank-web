@@ -76,8 +76,8 @@ const styles = {
     marginBottom: 4,
   },
   profileSchool: {
-    fontWeight: 400,
-    fontSize: 18,
+    color: "#888",
+    fontSize: 15,
     marginBottom: 4,
   },
   profileSchoolId: {
@@ -248,6 +248,7 @@ function MyPage() {
                   study.file?.fileName === null ? null : study.file?.fileUrl
                 }
                 name={study.studyName}
+                studyStatus={study.studyStatus}
                 onClick={() => navigate(`/studies/${study.studyId}`)}
               />
             ))}

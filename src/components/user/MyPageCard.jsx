@@ -1,6 +1,6 @@
 import { FaBookReader } from "react-icons/fa";
 
-function MyPageCard({ icon, name, onClick }) {
+function MyPageCard({ icon, name, studyStatus, onClick }) {
   const styles = {
     card: {
       display: "flex",
@@ -38,12 +38,26 @@ function MyPageCard({ icon, name, onClick }) {
       borderRadius: 8,
       display: "block",
     },
+    badge: {
+      fontSize: 13,
+      fontWeight: 700,
+      borderRadius: 6,
+      padding: "3px 12px",
+      marginRight: 8,
+      display: "inline-block",
+      color: studyStatus === "PROGRESS" ? "#fff" : "#fff",
+      backgroundColor: studyStatus === "PROGRESS" ? "#ee0418" : "#222",
+      border: studyStatus === "PROGRESS" ? "none" : "none",
+    },
     name: {
       fontSize: 16,
       fontWeight: 400,
       color: "#222",
     },
   };
+
+  // 상태 텍스트
+  const statusLabel = studyStatus === "PROGRESS" ? "진행중" : "완료";
 
   return (
     <div style={styles.card} onClick={onClick}>
@@ -58,6 +72,7 @@ function MyPageCard({ icon, name, onClick }) {
           />
         </span>
       </span>
+      <span style={styles.badge}>{statusLabel}</span>
       <span style={styles.name}>{name}</span>
     </div>
   );
