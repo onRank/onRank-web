@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaUserPen } from "react-icons/fa";
+import { FaUserPen } from "react-icons/fa6";
 import { mypageService } from "../../services/mypage";
 import Button from "../common/Button";
 
