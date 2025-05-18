@@ -35,8 +35,8 @@ function MemberCard({ member, onChangeRole, onDelete }) {
   // 역할 버튼 스타일 함수
   const getRoleBtnStyle = (selected) => ({
     padding: "9px 13px",
-    background: selected ? "#ee0418" : "#fff",
-    border: selected ? "2.5px solid #ee0418" : "1.7px solid #000",
+    backgroundColor: selected ? "#ee0418" : "#fff",
+    border: selected ? "1.7px solid #000" : "none",
     borderRadius: "11px",
     transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
   });
@@ -79,14 +79,12 @@ function MemberCard({ member, onChangeRole, onDelete }) {
             <button
               style={getRoleBtnStyle(member.role === "PARTICIPANT")}
               title="참여자로 변경"
-              disabled={member.role === "PARTICIPANT"}
               onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
               <FaUserCheck style={{ color: "#222" }} />
             </button>
             <button
               style={getRoleBtnStyle(member.role === "HOST")}
               title="관리자로 변경"
-              disabled={member.role === "HOST"}
               onClick={() => onChangeRole(member.memberId, "HOST")}>
               <FaUserCog style={{ color: "#222" }} />
             </button>
