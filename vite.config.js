@@ -8,7 +8,7 @@ export default defineConfig(({ mode }) => {
   let basePath = "/";
   if (env.VITE_CLOUDFRONT_URL?.includes("dev.onrank.kr")) {
     basePath = "/develop/";
-  } else if (env.VITE_CLOUDFRONT_URL === "https://onrank.kr") {
+  } else if (env.VITE_CLOUDFRONT_URL?.includes("onrank.kr")) {
     basePath = "/main/";
   }
 
