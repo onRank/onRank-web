@@ -33,7 +33,6 @@ function MemberCard({ member, onChangeRole, onDelete }) {
   };
 
   const participantBtnStyle = {
-    ...baseButtonStyle,
     border:
       member.role === "PARTICIPANT"
         ? "2.5px solid #ee0418"
@@ -44,14 +43,12 @@ function MemberCard({ member, onChangeRole, onDelete }) {
   };
 
   const hostBtnStyle = {
-    ...baseButtonStyle,
     border: member.role === "HOST" ? "2.5px solid #222" : "2px solid #222",
     background: member.role === "HOST" ? "#222" : "#fff",
     boxShadow: member.role === "HOST" ? "2px 4px 0 #222" : "2px 4px 0 #222",
   };
 
   const deleteBtnStyle = {
-    ...baseButtonStyle,
     border: "2px solid #222",
     background: "#fff",
     boxShadow: "2px 4px 0 #222",
