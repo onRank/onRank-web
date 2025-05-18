@@ -107,9 +107,9 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} style={{ width: "100%" }}>
           <div className="form-group">
-            <label style={{ fontWeight: 500 }}>이름</label>
+            <label style={{ fontWeight: 500, fontSize: 16 }}>이름</label>
             <input
               type="text"
               style={{ width: "40%" }}
@@ -126,7 +126,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
           </div>
 
           <div className="form-group">
-            <label style={{ fontWeight: 500 }}>전화번호</label>
+            <label style={{ fontWeight: 500, fontSize: 16 }}>전화번호</label>
             <input
               type="tel"
               style={{ width: "40%" }}
@@ -150,7 +150,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
             <h3 style={{ fontSize: 18 }}>소속(선택)</h3>
 
             <div className="form-group">
-              <label>학교</label>
+              <label style={{ fontWeight: 500, fontSize: 16 }}>학교</label>
               <input
                 type="text"
                 style={{ width: "40%" }}
@@ -166,7 +166,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
             </div>
 
             <div className="form-group">
-              <label>학과</label>
+              <label style={{ fontWeight: 500, fontSize: 16 }}>학과</label>
               <input
                 type="text"
                 style={{ width: "40%" }}

@@ -193,7 +193,15 @@ function MyPage() {
   };
 
   if (isEditting) {
-    return <MyPageEditForm />;
+    return (
+      <MyPageEditForm
+        myPageData={myPageData}
+        onCancel={() => setIsEditting(false)}
+        onSuccess={() => {
+          setIsEditting(false);
+        }}
+      />
+    );
   }
 
   return (
