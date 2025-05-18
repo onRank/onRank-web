@@ -213,13 +213,75 @@ const AssignmentDetail = () => {
             }))
           );
 
-          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-          const uploadResults = await handleFileUploadWithS3(
-            response,
-            newFiles,
-            "uploadUrl"
-          );
-          console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
+          // URL 추출을 위한 키 목록 (여러 가능한 키 이름 시도)
+          const urlKeys = ['uploadUrl', 'presignedUrl', 'url', 'fileUrl'];
+          let uploadResults = null;
+          let uploadSuccess = false;
+
+          // 각 키 이름으로 시도
+          for (const key of urlKeys) {
+            console.log(`[AssignmentDetail] '${key}' 키로 업로드 URL 검색 시도`);
+            
+            try {
+              // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
+              uploadResults = await handleFileUploadWithS3(response, newFiles, key);
+              
+              // 성공한 업로드가 있는지 확인
+              const successCount = uploadResults.filter(result => result.success).length;
+              if (successCount > 0) {
+                console.log(`[AssignmentDetail] '${key}' 키 사용 성공: ${successCount}/${newFiles.length} 파일 업로드됨`);
+                uploadSuccess = true;
+                break; // 성공했으므로 루프 종료
+              }
+            } catch (keyError) {
+              console.warn(`[AssignmentDetail] '${key}' 키 사용 시도 중 오류:`, keyError);
+              // 다음 키로 계속 시도
+            }
+          }
+
+          // 모든 키를 시도했으나 성공하지 못한 경우, 수동 업로드 시도
+          if (!uploadSuccess) {
+            console.log("[AssignmentDetail] 모든 키 시도 실패, 수동 업로드 시도");
+            
+            // API 응답에서 직접 업로드 URL 추출 시도
+            let uploadUrls = [];
+            
+            // 다양한 응답 구조 확인
+            if (response.uploadUrls && Array.isArray(response.uploadUrls)) {
+              uploadUrls = response.uploadUrls;
+            } else if (response.data && response.data.uploadUrls && Array.isArray(response.data.uploadUrls)) {
+              uploadUrls = response.data.uploadUrls;
+            } else if (response.data && Array.isArray(response.data)) {
+              // data 배열에서 URL 찾기 시도
+              uploadUrls = response.data
+                .filter(item => item && typeof item === 'object')
+                .map(item => item.uploadUrl || item.presignedUrl || item.url)
+                .filter(url => url);
+            }
+            
+            if (uploadUrls.length > 0) {
+              // 수동으로 각 파일 업로드
+              uploadResults = await Promise.all(
+                newFiles.map((file, idx) => {
+                  if (idx < uploadUrls.length) {
+                    // Content-Type 없이 간단한 PUT 요청
+                    return manualUploadToS3(uploadUrls[idx], file);
+                  }
+                  return { fileName: file.name, success: false, message: '업로드 URL 부족' };
+                })
+              );
+              
+              // 성공 여부 확인
+              uploadSuccess = uploadResults.some(result => result.success);
+            }
+          }
+
+          // 최종 결과 확인
+          if (!uploadSuccess) {
+            console.error("[AssignmentDetail] 모든 업로드 시도 실패");
+            setError("파일 업로드에 실패했습니다. 다시 시도해 주세요.");
+            return;
+          }
 
           // 업로드 실패 발생 시 경고
           const failedUploads = uploadResults.filter(
@@ -357,6 +419,58 @@ const AssignmentDetail = () => {
     const dueDate = new Date(assignment.assignmentDueDate);
     
     return now > dueDate;
+  };
+
+  // 수동 S3 업로드 함수 추가 (파일 끝 부분에 추가)
+  const manualUploadToS3 = async (uploadUrl, file) => {
+    try {
+      console.log(`[AssignmentDetail] 수동 업로드 시작: ${file.name}`);
+      
+      // 간단한 PUT 요청 (헤더 최소화)
+      const response = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      
+      console.log(`[AssignmentDetail] 수동 업로드 응답:`, {
+        status: response.status,
+        statusText: response.statusText
+      });
+      
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          errorText = await response.text();
+        } catch (e) {
+          errorText = '응답 상세 정보를 가져올 수 없음';
+        }
+        
+        console.error(`[AssignmentDetail] 수동 업로드 실패 상세:`, errorText);
+        return {
+          fileName: file.name,
+          success: false,
+          message: `업로드 실패: ${response.status} ${response.statusText}`
+        };
+      }
+      
+      // 성공 시 URL 반환
+      const fileUrl = uploadUrl.split('?')[0];
+      return {
+        fileName: file.name,
+        success: true,
+        message: '파일이 성공적으로 업로드되었습니다.',
+        url: fileUrl
+      };
+    } catch (error) {
+      console.error(`[AssignmentDetail] 수동 업로드 중 예외 발생:`, error);
+      return {
+        fileName: file.name,
+        success: false,
+        message: `업로드 중 오류: ${error.message}`
+      };
+    }
   };
 
   if (isLoading && !assignment) {
