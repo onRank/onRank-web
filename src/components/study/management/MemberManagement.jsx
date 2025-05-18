@@ -270,16 +270,16 @@ function MemberManagement() {
           alignItems: "center",
         }}>
         <h3 style={{ margin: "20px 0" }}>회원 권한</h3>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-          }}>
-          <div style={{ fontSize: "14px" }}>참여자</div>
-          <div style={{ fontSize: "14px" }}>관리자</div>
-          <div style={{ fontSize: "14px" }}>삭제</div>
-        </div>
+      </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: "10px",
+        }}>
+        <div style={{ fontSize: "12px" }}>참여자</div>
+        <div style={{ fontSize: "12px" }}>관리자</div>
+        <div style={{ fontSize: "12px" }}>삭제</div>
       </div>
       {/* 회원 권한 회원 목록 */}
       <div>
@@ -292,7 +292,8 @@ function MemberManagement() {
             <MemberCard
               key={member.memberId}
               member={toMemberCardProps(member)}
-              onOpenPermissionPopup={handleOpenPermissionPopup}
+              onChangeRole={handleRoleChange}
+              onDelete={handleDeleteMember}
             />
           ))
         )}
