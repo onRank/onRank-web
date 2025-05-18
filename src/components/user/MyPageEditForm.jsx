@@ -109,7 +109,9 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
 
         <form onSubmit={handleSubmit} style={{ width: "100%" }}>
           <div className="form-group">
-            <label style={{ fontWeight: 500, fontSize: 16 }}>이름</label>
+            <label style={{ fontWeight: 500, fontSize: 16, marginTop: "2rem" }}>
+              이름
+            </label>
             <input
               type="text"
               style={{ width: "40%" }}
@@ -146,8 +148,20 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
             />
           </div>
 
+          <div className="form-group">
+            <label style={{ fontWeight: 500, fontSize: 16 }}>Email</label>
+            <input
+              type="text"
+              style={{ width: "40%" }}
+              value={formData.studentEmail}
+              readOnly
+              placeholder="이메일을 입력해주세요"
+              required
+            />
+          </div>
+
           <div className="form-section">
-            <h3 style={{ fontSize: 18 }}>소속(선택)</h3>
+            <h3 style={{ fontSize: 18, marginBottom: "1rem" }}>소속(선택)</h3>
 
             <div className="form-group">
               <label style={{ fontWeight: 500, fontSize: 16 }}>학교</label>
