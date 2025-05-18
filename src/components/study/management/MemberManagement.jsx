@@ -219,26 +219,6 @@ function MemberManagement() {
     memberId: member.memberId,
   });
 
-  // 팝업 열기 핸들러 (아이콘 클릭 시)
-  const handleOpenPermissionPopup = (member, event) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const popupHeight = 320; // 팝업 예상 높이(px)
-    let top = rect.top;
-    if (top + popupHeight > window.innerHeight) {
-      top = window.innerHeight - popupHeight - 16;
-      if (top < 8) top = 8;
-    }
-    setPopupPosition({
-      left: rect.left,
-      top,
-    });
-    setPermissionPopupMember(member);
-  };
-  // 팝업 닫기 핸들러
-  const handleClosePermissionPopup = () => {
-    setPermissionPopupMember(null);
-  };
-
   return (
     <div className="member-management-container">
       <div
@@ -269,7 +249,7 @@ function MemberManagement() {
           justifyContent: "flex-start",
           alignItems: "center",
         }}>
-        <h3 style={{ margin: "20px 0" }}>회원 권한</h3>
+        <h3 style={{ margin: "20px 0 0" }}>회원 권한</h3>
       </div>
       <div
         style={{
@@ -310,18 +290,6 @@ function MemberManagement() {
           studyId={studyId}
           onClose={() => setShowAddMemberModal(false)}
           onMemberAdded={handleMemberAdded}
-        />
-      )}
-      {/* 권한 설정 팝업 */}
-      {permissionPopupMember && (
-        <ManagementMemberUpdatePopup
-          member={permissionPopupMember}
-          onClose={handleClosePermissionPopup}
-          onChangeRole={(role) =>
-            handleRoleChange(permissionPopupMember.memberId, role)
-          }
-          onDelete={() => handleDeleteMember(permissionPopupMember.memberId)}
-          style={{ left: popupPosition.left, top: popupPosition.top }}
         />
       )}
     </div>

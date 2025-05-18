@@ -21,45 +21,6 @@ function MemberCard({ member, onChangeRole, onDelete }) {
     }
   };
 
-  // 버튼 스타일
-  const buttonStyle = {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 22,
-    marginLeft: 8,
-    boxShadow: "2px 4px 0 rgb(0,0,0)",
-    border: "1.5px solid #ccc",
-    background: "#fff",
-    cursor: "pointer",
-    transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
-  };
-
-  const participantBtn = {
-    ...buttonStyle,
-    background: member.role === "PARTICIPANT" ? "#ee0418" : "#fff",
-    color: member.role === "PARTICIPANT" ? "#fff" : "#ee0418",
-    border:
-      member.role === "PARTICIPANT"
-        ? "1.5px solid #ee0418"
-        : "1.5px solid #ee0418",
-  };
-  const hostBtn = {
-    ...buttonStyle,
-    background: member.role === "HOST" ? "#222" : "#fff",
-    color: member.role === "HOST" ? "#fff" : "#222",
-    border: member.role === "HOST" ? "1.5px solid #222" : "1.5px solid #222",
-  };
-  const deleteBtn = {
-    ...buttonStyle,
-    background: "#fff",
-    color: "#222",
-    border: "1.5px solid #222",
-  };
-
   // 생성자는 버튼 비활성화
   const isCreator = member.role === "CREATOR";
 
@@ -92,21 +53,21 @@ function MemberCard({ member, onChangeRole, onDelete }) {
           title="참여자로 변경"
           disabled={isCreator || member.role === "PARTICIPANT"}
           onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
-          <FaUserCheck />
+          <FaUserCheck style={{ color: "#222" }} />
         </button>
         <button
           style={hostBtn}
           title="관리자로 변경"
           disabled={isCreator || member.role === "HOST"}
           onClick={() => onChangeRole(member.memberId, "HOST")}>
-          <FaUserCog />
+          <FaUserCog style={{ color: "#222" }} />
         </button>
         <button
           style={deleteBtn}
           title="삭제"
           disabled={isCreator}
           onClick={() => onDelete(member.memberId)}>
-          <FaUserSlash />
+          <FaUserSlash style={{ color: "#222" }} />
         </button>
       </div>
     </div>
