@@ -216,8 +216,7 @@ const AssignmentDetail = () => {
           // API 응답 구조 확인 및 로깅
           console.log("[AssignmentDetail] API 응답 구조:", response);
           
-          // handleFileUploadWithS3 함수 사용 - 여러 파일 한번에 처리
-          // AssignmentCreate와 동일한 방식으로 처리
+          // handleFileUploadWithS3 함수 사용 - AssignmentCreate.jsx와 동일한 방식으로 처리
           const uploadResults = await handleFileUploadWithS3(response, newFiles, "uploadUrl");
           console.log("[AssignmentDetail] 파일 업로드 결과:", uploadResults);
 
@@ -359,77 +358,6 @@ const AssignmentDetail = () => {
     return now > dueDate;
   };
 
-  // 수동 S3 업로드 함수 추가 (파일 끝 부분에 추가)
-  const manualUploadToS3 = async (uploadUrl, file) => {
-    try {
-      console.log(`[AssignmentDetail] 수동 업로드 시작: ${file.name}`);
-      
-      // 간단한 PUT 요청 (헤더 최소화)
-      const response = await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      
-      console.log(`[AssignmentDetail] 수동 업로드 응답:`, {
-        status: response.status,
-        statusText: response.statusText
-      });
-      
-      if (!response.ok) {
-        let errorText = '';
-        try {
-          errorText = await response.text();
-        } catch (e) {
-          errorText = '응답 상세 정보를 가져올 수 없음';
-        }
-        
-        console.error(`[AssignmentDetail] 수동 업로드 실패 상세:`, errorText);
-        return {
-          fileName: file.name,
-          success: false,
-          message: `업로드 실패: ${response.status} ${response.statusText}`
-        };
-      }
-      
-      // 성공 시 URL 반환
-      const fileUrl = uploadUrl.split('?')[0];
-      return {
-        fileName: file.name,
-        success: true,
-        message: '파일이 성공적으로 업로드되었습니다.',
-        url: fileUrl
-      };
-    } catch (error) {
-      console.error(`[AssignmentDetail] 수동 업로드 중 예외 발생:`, error);
-      return {
-        fileName: file.name,
-        success: false,
-        message: `업로드 중 오류: ${error.message}`
-      };
-    }
-  };
-
-  if (isLoading && !assignment) {
-    return <div className="loading-message">과제 정보를 불러오는 중...</div>;
-  }
-
-  if (error && !assignment) {
-    return (
-      <div className="error-container">
-        <div>{error}</div>
-        <button className="back-button" onClick={handleBack}>
-          목록으로 돌아가기
-        </button>
-      </div>
-    );
-  }
-
-  if (!assignment) {
-    return <div className="error-container">과제 정보를 찾을 수 없습니다.</div>;
-  }
-
   // 일자 포맷 함수
   const formatDate = (dateString) => {
     if (!dateString) return "날짜 정보 없음";
@@ -535,6 +463,25 @@ const AssignmentDetail = () => {
         return "";
     }
   };
+
+  if (isLoading && !assignment) {
+    return <div className="loading-message">과제 정보를 불러오는 중...</div>;
+  }
+
+  if (error && !assignment) {
+    return (
+      <div className="error-container">
+        <div>{error}</div>
+        <button className="back-button" onClick={handleBack}>
+          목록으로 돌아가기
+        </button>
+      </div>
+    );
+  }
+
+  if (!assignment) {
+    return <div className="error-container">과제 정보를 찾을 수 없습니다.</div>;
+  }
 
   return (
     <div className="assignment-container">
@@ -784,7 +731,7 @@ const AssignmentDetail = () => {
                   <Button
                     variant="reSubmit"
                     onClick={handleResubmit}
-                    label="다시 제출"
+                    label="제출"
                   />
                   <Button variant="back" onClick={handleBack} label="닫기" />
                 </div>
