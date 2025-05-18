@@ -68,10 +68,14 @@ function MemberCard({ member, onChangeRole, onDelete }) {
         <div style={{ color: "#888", fontSize: 14 }}>{member.phone}</div>
       </div>
       {/* 가운데: 학교, 학과 */}
-      <div style={{ color: "#888", fontSize: 14, minWidth: 100 }}>
-        <div>{member.university}</div>
-        <div>{member.department}</div>
-      </div>
+      {!isCreator ? (
+        <div style={{ color: "#888", fontSize: 14, minWidth: 100 }}>
+          <div>{member.university}</div>
+          <div>{member.department}</div>
+        </div>
+      ) : (
+        <div style={{ color: "#888", fontSize: 14, minWidth: 100 }} />
+      )}
       {/* 오른쪽: 역할/삭제 버튼 */}
       {!isCreator && (
         <div style={{ display: "flex", gap: 10, height: "54px" }}>

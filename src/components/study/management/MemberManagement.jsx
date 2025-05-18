@@ -254,7 +254,8 @@ function MemberManagement() {
         style={{
           display: "flex",
           justifyContent: "flex-end",
-          gap: "10px",
+          gap: "30px",
+          marginRight: "18px",
         }}>
         <div style={{ fontSize: "12px" }}>참여자</div>
         <div style={{ fontSize: "12px" }}>관리자</div>
