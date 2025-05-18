@@ -18,6 +18,7 @@ function StudiesPage() {
   const [pageInitialized, setPageInitialized] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [activeFilter, setActiveFilter] = useState("all");
+  const [filteredStudies, setFilteredStudies] = useState([]);
 
   // URL 쿼리 파라미터에서 토큰 확인 및 처리
   useEffect(() => {
@@ -149,6 +150,19 @@ function StudiesPage() {
 
     fetchStudies();
   }, [navigate, pageInitialized, dataLoaded]);
+
+  // 필터링된 스터디 목록 업데이트
+  useEffect(() => {
+    if (!studies) return;
+
+    let filtered = studies;
+    if (activeFilter === "progressing") {
+      filtered = studies.filter((study) => study.studyStatus === "PROGRESS");
+    } else if (activeFilter === "done") {
+      filtered = studies.filter((study) => study.studyStatus === "COMPLETED");
+    }
+    setFilteredStudies(filtered);
+  }, [studies, activeFilter]);
 
   // 토큰에서 사용자 정보 추출 (백업 방법)
   const extractUserInfoFromToken = () => {
@@ -299,12 +313,24 @@ function StudiesPage() {
               color: activeFilter === "progressing" ? "#333" : "#333",
             }}
           />
+          <Button
+            variant="done"
+            label="종료"
+            isActive={activeFilter === "done"}
+            onClick={() =>
+              setActiveFilter(activeFilter === "done" ? null : "done")
+            }
+            style={{
+              backgroundColor: activeFilter === "done" ? "#F3F3F3" : "#fff",
+              color: activeFilter === "done" ? "#333" : "#333",
+            }}
+          />
         </div>
       </div>
 
       {/* 스터디 목록 그리드 */}
-      {studies.length > 0 ? (
-        <StudyList studies={studies} />
+      {filteredStudies.length > 0 ? (
+        <StudyList studies={filteredStudies} />
       ) : (
         <div
           style={{
@@ -315,10 +341,18 @@ function StudiesPage() {
             margin: "1rem 0",
           }}>
           <h3 style={{ marginBottom: "1rem", color: "#495057" }}>
-            등록된 스터디가 없습니다
+            {activeFilter === "all"
+              ? "등록된 스터디가 없습니다"
+              : activeFilter === "progressing"
+              ? "진행중인 스터디가 없습니다"
+              : "종료된 스터디가 없습니다"}
           </h3>
           <p style={{ color: "#6c757d", marginBottom: "1.5rem" }}>
-            참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다.
+            {activeFilter === "all"
+              ? "참여할 수 있는 스터디가 없거나 아직 스터디에 참여하지 않았습니다."
+              : activeFilter === "progressing"
+              ? "현재 진행중인 스터디가 없습니다."
+              : "종료된 스터디가 없습니다."}
           </p>
         </div>
       )}

@@ -6,7 +6,7 @@ import MemberCard from "./MemberCard";
 import { managementService } from "../../../services/management";
 import "./MemberManagement.css";
 import Button from "../../common/Button";
-import ManagementMemberUpdatePopup from "../../common/ManagementMemberUpdatePopup";
+import ManagementMemberUpdatePopup from "../../study/management/ManagementMemberUpdatePopup";
 
 function MemberManagement() {
   const { studyId } = useParams();

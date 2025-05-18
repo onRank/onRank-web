@@ -7,7 +7,7 @@ import {
   STATUS_STYLES,
 } from "../../../utils/attendanceUtils";
 import { HiOutlineDotsVertical } from "react-icons/hi";
-import AttendanceEditPopup from "../../../components/common/AttendanceEditPopup";
+import AttendanceEditPopup from "../../../components/study/attendance/AttendanceEditPopup";
 
 /**
  * 출석 목록 컴포넌트

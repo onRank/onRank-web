@@ -13,7 +13,7 @@ import {
 } from "../../../utils/attendanceUtils";
 import useStudyRole from "../../../hooks/useStudyRole";
 import Button from "../../../components/common/Button";
-import AttendanceStatusPopup from "../../../components/common/AttendanceStatusPopup";
+import AttendanceStatusPopup from "../../../components/study/attendance/AttendanceStatusPopup";
 
 /**
  * 출석 상세 페이지

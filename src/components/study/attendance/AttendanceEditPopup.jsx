@@ -24,7 +24,7 @@ function AttendanceEditPopup({ open, onClose, onEdit, style }) {
           background: "#fff",
           border: "1px solid #222",
           borderRadius: 18,
-          minWidth: 280,
+          minWidth: 220,
           minHeight: "fit-content",
           boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
           padding: "2px",

@@ -22,6 +22,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     member: "회원",
     memberAdd: "+회원 추가",
     studyDelete: "스터디 삭제",
+    done: "종료",
     default: "확인",
   };
 
@@ -123,6 +124,11 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       border: "none",
       width: " 100px",
     },
+    done: {
+      backgroundColor: "#fff",
+      color: "#333",
+      border: "1px solid #ccc",
+    },
     default: {
       backgroundColor: "#f2f2f2",
       color: "#333",
@@ -130,7 +136,8 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     },
   };
 
-  const isFilterButton = variant === "all" || variant === "progressing";
+  const isFilterButton =
+    variant === "all" || variant === "progressing" || variant === "done";
 
   let buttonStyle = {
     borderRadius: "10px",
