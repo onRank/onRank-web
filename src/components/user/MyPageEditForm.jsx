@@ -19,6 +19,7 @@ function MyPageEditForm({ myPageData, onCancel, onSuccess }) {
       setFormData({
         studentName: myPageData.studentName || "",
         studentPhoneNumber: myPageData.studentPhoneNumber || "",
+        studentEmail: myPageData.studentEmail || "",
         studentSchool: myPageData.studentSchool || "",
         studentDepartment: myPageData.studentDepartment || "",
       });
