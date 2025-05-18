@@ -1,35 +1,28 @@
-import { defineConfig, loadEnv } from "vite";
+// vite.config.js
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd());
+export default defineConfig(() => {
+  // GitHub Actions에서 주입한 환경변수들 사용 (process.env.*)
+  const apiUrl = process.env.VITE_API_URL || "http://localhost:8080";
+  const frontendURL = process.env.VITE_FRONTEND_URL || "";
+  const cloudfrontURL = process.env.VITE_CLOUDFRONT_URL || "";
+  const mswEnabled = process.env.VITE_MSW_ENABLED || "false";
 
-  // 기본값
   let basePath = "/";
-  let apiUrl = env.VITE_API_URL;
-  const frontendURL = env.VITE_FRONTEND_URL;
-
-  // 명확한 환경 감지: env에서 전달된 URL 기준
-  if (frontendURL === "https://dev.onrank.kr") {
+  if (frontendURL.includes("dev.onrank.kr")) {
     basePath = "/develop/";
-    apiUrl = "https://api-dev.onrank.kr";
-  } else if (frontendURL === "https://onrank.kr") {
-    basePath = "/";
-    apiUrl = "https://api.onrank.kr";
   }
 
   return {
     plugins: [react()],
     base: basePath,
-    server: {
-      port: 3000,
-    },
-    publicDir: "public",
+    server: { port: 3000 },
     define: {
-      'import.meta.env.VITE_API_URL': JSON.stringify(apiUrl),
-      'import.meta.env.VITE_FRONTEND_URL': JSON.stringify(frontendURL),
-      'import.meta.env.VITE_CLOUDFRONT_URL': JSON.stringify(env.VITE_CLOUDFRONT_URL),
-      'import.meta.env.VITE_MSW_ENABLED': JSON.stringify(env.VITE_MSW_ENABLED),
+      "import.meta.env.VITE_API_URL": JSON.stringify(apiUrl),
+      "import.meta.env.VITE_FRONTEND_URL": JSON.stringify(frontendURL),
+      "import.meta.env.VITE_CLOUDFRONT_URL": JSON.stringify(cloudfrontURL),
+      "import.meta.env.VITE_MSW_ENABLED": JSON.stringify(mswEnabled),
     },
   };
 });
