@@ -595,7 +595,7 @@ function AppContent() {
             }
           />
         </Routes>
-        {showHeader && <ThemeToggle />}
+        {/* {showHeader && <ThemeToggle />} */}
       </ThemeWrapper>
     ),
     [location.pathname]
