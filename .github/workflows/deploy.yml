@@ -44,6 +44,14 @@ jobs:
             echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
           fi
 
+      - name: 🔍 Show env vars
+        run: |
+          echo "⚙️ VITE_API_URL = $VITE_API_URL"
+          echo "⚙️ VITE_FRONTEND_URL = $VITE_FRONTEND_URL"
+
+      - name: ❌ Clean old dist
+        run: rm -rf dist
+
       - name: Build
         run: npm run build
 
@@ -59,4 +67,3 @@ jobs:
 
       - name: Invalidate CloudFront cache
         run: aws cloudfront create-invalidation --distribution-id ${{ steps.set-vars.outputs.DISTRIBUTION_ID }} --paths "/*"
- 
