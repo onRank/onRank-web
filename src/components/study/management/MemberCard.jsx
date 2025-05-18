@@ -49,21 +49,18 @@ function MemberCard({ member, onChangeRole, onDelete }) {
       {/* 오른쪽: 역할/삭제 버튼 */}
       <div style={{ display: "flex", gap: 8 }}>
         <button
-          style={participantBtn}
           title="참여자로 변경"
           disabled={isCreator || member.role === "PARTICIPANT"}
           onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
           <FaUserCheck style={{ color: "#222" }} />
         </button>
         <button
-          style={hostBtn}
           title="관리자로 변경"
           disabled={isCreator || member.role === "HOST"}
           onClick={() => onChangeRole(member.memberId, "HOST")}>
           <FaUserCog style={{ color: "#222" }} />
         </button>
         <button
-          style={deleteBtn}
           title="삭제"
           disabled={isCreator}
           onClick={() => onDelete(member.memberId)}>
