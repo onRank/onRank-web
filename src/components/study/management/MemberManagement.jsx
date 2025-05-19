@@ -250,17 +250,19 @@ function MemberManagement() {
         }}>
         <h3 style={{ margin: "20px 0 0" }}>회원 권한</h3>
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: "30px",
-          marginRight: "18px",
-        }}>
-        <div style={{ fontSize: "12px" }}>참여자</div>
-        <div style={{ fontSize: "12px" }}>관리자</div>
-        <div style={{ fontSize: "12px" }}>삭제</div>
-      </div>
+      {members.length >= 2 && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: "30px",
+            marginRight: "18px",
+          }}>
+          <div style={{ fontSize: "12px" }}>참여자</div>
+          <div style={{ fontSize: "12px" }}>관리자</div>
+          <div style={{ fontSize: "12px" }}>삭제</div>
+        </div>
+      )}
       {/* 회원 권한 회원 목록 */}
       <div>
         {members.length === 0 ? (

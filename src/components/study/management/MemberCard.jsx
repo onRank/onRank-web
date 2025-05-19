@@ -68,16 +68,12 @@ function MemberCard({ member, onChangeRole, onDelete }) {
         <div style={{ color: "#888", fontSize: 14 }}>{member.phone}</div>
       </div>
       {/* 가운데: 학교, 학과 */}
-      {!isCreator ? (
-        <div style={{ color: "#888", fontSize: 14, minWidth: 100 }}>
-          <div>{member.university}</div>
-          <div>{member.department}</div>
-        </div>
-      ) : (
-        <div style={{ color: "#888", fontSize: 14, minWidth: 100 }} />
-      )}
+      <div style={{ color: "#888", fontSize: 14, minWidth: 100 }}>
+        <div>{member.university}</div>
+        <div>{member.department}</div>
+      </div>
       {/* 오른쪽: 역할/삭제 버튼 */}
-      {!isCreator && (
+      {!isCreator ? (
         <div style={{ display: "flex", gap: 10, height: "54px" }}>
           <div style={roleButtonGroupStyle}>
             <button
@@ -99,6 +95,20 @@ function MemberCard({ member, onChangeRole, onDelete }) {
             onClick={() => onDelete(member.memberId)}>
             <FaUserSlash style={{ color: "#222" }} />
           </button>
+        </div>
+      ) : (
+        <div style={{ display: "flex", gap: 10, height: "54px" }}>
+          <div style={roleButtonGroupStyle}>
+            <div style={getRoleBtnStyle(member.role === "PARTICIPANT")}>
+              <FaUserCheck style={{ color: "#222" }} />
+            </div>
+            <div style={getRoleBtnStyle(member.role === "HOST")}>
+              <FaUserCog style={{ color: "#222" }} />
+            </div>
+          </div>
+          <div style={deleteBtnStyle}>
+            <FaUserSlash style={{ color: "#222" }} />
+          </div>
         </div>
       )}
     </div>
