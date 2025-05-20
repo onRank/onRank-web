@@ -253,7 +253,7 @@ function AssignmentCreate() {
           <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
         </div>
 
-        <div className="button-container">
+        <div className="buttons-row">
           <Button variant="upload" type="submit" disabled={isLoading} />
           <Button variant="back" type="button" onClick={handleCancel} />
         </div>
