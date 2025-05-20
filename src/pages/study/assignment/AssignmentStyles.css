@@ -539,12 +539,18 @@
   margin-top: 20px;
 }
 
-/* Remove the previous equal width button styles */
+/* Make all buttons in the buttons-row have equal width */
+.buttons-row button {
+  min-width: 80px;
+  width: 80px; /* Set a fixed width for all buttons */
+}
+
+/* Remove the previous special styling for specific button variants */
 /* Instead, style just the submit and reSubmit buttons to match the close button */
 .buttons-row button[variant="submit"], 
 .buttons-row button[variant="reSubmit"],
 .buttons-row button[variant="store"] {
-  width: auto;
+  width: 80px; /* Force same width as other buttons */
 }
 
 .submit-button, .resubmit-button {
