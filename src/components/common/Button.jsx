@@ -79,7 +79,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       backgroundColor: "#fff",
       color: "#333",
       border: "1px solid #ccc",
-      width: "100px",
+      width: "75px",
     },
     addFiles: {
       backgroundColor: "#ee0418",

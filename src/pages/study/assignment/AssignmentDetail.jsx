@@ -535,8 +535,9 @@ const AssignmentDetail = () => {
         {/* 1. 지시사항 토글 섹션 */}
         <div className="toggle-section">
           <div className="toggle-header" onClick={toggleInstructions}>
-            <span className="toggle-icon">{isInstructionsOpen ? '▽' : '▷'}</span>
             <h2 className="toggle-title">지시사항</h2>
+            <span className="toggle-icon">{isInstructionsOpen ? '▽' : '▷'}</span>
+            
           </div>
           
           {isInstructionsOpen && (
@@ -597,8 +598,9 @@ const AssignmentDetail = () => {
         {/* 2. 제출물 토글 섹션 */}
         <div className="toggle-section">
           <div className="toggle-header" onClick={toggleSubmission}>
-            <span className="toggle-icon">{isSubmissionOpen ? '▽' : '▷'}</span>
             <h2 className="toggle-title">제출물</h2>
+            <span className="toggle-icon">{isSubmissionOpen ? '▽' : '▷'}</span>
+           
           </div>
           
           {isSubmissionOpen && (
