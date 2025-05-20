@@ -237,6 +237,77 @@ const SubmissionDetail = () => {
     navigate(`/studies/${studyId}/assignments/${assignmentId}/submissions`);
   };
 
+  // 파일 아이템 렌더링 함수
+  const renderFileItem = (file, index) => {
+    // 다양한 형태의 파일 객체 처리
+    let fileUrl = "";
+    let fileName = "";
+    
+    // File 객체인 경우
+    if (file instanceof File) {
+      fileUrl = URL.createObjectURL(file);
+      fileName = file.name;
+    }
+    // fileUrl과 fileName을 직접 가진 객체
+    else if (file.fileUrl && file.fileName) {
+      fileUrl = file.fileUrl;
+      fileName = file.fileName;
+    }
+    // url과 name을 가진 객체
+    else if (file.url && file.name) {
+      fileUrl = file.url;
+      fileName = file.name;
+    }
+    // 다른 형태 처리
+    else if (typeof file === "object") {
+      if (file.fileName) fileName = file.fileName;
+      if (file.fileUrl) fileUrl = file.fileUrl;
+    }
+
+    if (!fileUrl || !fileName) {
+      console.error("파일 형식을 처리할 수 없음:", file);
+      return null;
+    }
+
+    // 이미지 파일 여부 확인
+    const isImage = isImageFile(fileName);
+
+    return (
+      <div key={index} className="file-item">
+        <div className="file-info-row">
+          <div className="file-icon">{getFileIcon(fileName)}</div>
+          <div className="file-details">
+            <div className="file-name">{fileName}</div>
+          </div>
+          <div className="file-actions">
+            {isImage && (
+              <button
+                className="preview-button"
+                onClick={() => window.open(fileUrl, "_blank")}
+                title="이미지 미리보기">
+                미리보기
+              </button>
+            )}
+            <button
+              className="download-button"
+              onClick={() => handleDownload(fileUrl, fileName)}>
+              다운로드
+            </button>
+          </div>
+        </div>
+        {isImage && (
+          <div className="image-preview-container">
+            <img
+              className="image-preview-thumbnail"
+              src={fileUrl}
+              alt={fileName}
+            />
+          </div>
+        )}
+      </div>
+    );
+  };
+
   // 날짜 포맷팅 함수
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -305,7 +376,7 @@ const SubmissionDetail = () => {
           <div className="toggle-header" onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}>
             <h2 className="toggle-title">지시사항</h2>
             <span className="toggle-icon">
-              {isInstructionsOpen ? <IoChevronUp /> : <IoChevronDown />}
+              {isInstructionsOpen ? "▲" : "▼"}
             </span>
           </div>
           
@@ -334,7 +405,7 @@ const SubmissionDetail = () => {
           <div className="toggle-header" onClick={() => setIsSubmissionOpen(!isSubmissionOpen)}>
             <h2 className="toggle-title">제출물</h2>
             <span className="toggle-icon">
-              {isSubmissionOpen ? <IoChevronUp /> : <IoChevronDown />}
+              {isSubmissionOpen ? "▲" : "▼"}
             </span>
           </div>
           
@@ -367,7 +438,7 @@ const SubmissionDetail = () => {
               )}
               
               {/* 채점 섹션 */}
-              <div className="submission-content">
+              <div className="grading-section-container">
                 <h3 className="section-title">채점하기</h3>
 
                 <div className="max-point-info">
