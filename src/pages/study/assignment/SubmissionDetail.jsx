@@ -381,9 +381,6 @@ const SubmissionDetail = () => {
   return (
     <div className="submission-detail-container">
       <header className="submission-detail-header">
-        <button className="back-button" onClick={handleCancel}>
-          ← 목록으로
-        </button>
         <h1 className="title">
           {submission.memberName}{" "}
           <span className="email">{submission.memberEmail}</span>
