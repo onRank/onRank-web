@@ -320,8 +320,8 @@ function AssignmentEdit() {
           />
         </div>
 
-        <div className="button-container">
-          <Button variant="submit" type="submit" disabled={isLoading} />
+        <div className="buttons-row">
+          <Button variant="store" type="submit" disabled={isLoading} />
           <Button variant="back" onClick={handleCancel} type="button" />
         </div>
       </form>

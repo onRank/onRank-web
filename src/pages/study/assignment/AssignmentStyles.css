@@ -542,7 +542,8 @@
 /* Remove the previous equal width button styles */
 /* Instead, style just the submit and reSubmit buttons to match the close button */
 .buttons-row button[variant="submit"], 
-.buttons-row button[variant="reSubmit"] {
+.buttons-row button[variant="reSubmit"],
+.buttons-row button[variant="store"] {
   width: auto;
 }
 
@@ -1031,4 +1032,16 @@
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+
+/* Add space between deadline time and status */
+.deadline-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Add gap between deadline time and D-day text */
+  align-items: center;
+}
+
+.deadline-days {
+  margin-left: 8px; /* Additional left margin for D-day text */
 } 
