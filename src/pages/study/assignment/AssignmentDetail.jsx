@@ -537,7 +537,6 @@ const AssignmentDetail = () => {
           <div className="toggle-header" onClick={toggleInstructions}>
             <h2 className="toggle-title">지시사항</h2>
             <span className="toggle-icon">{isInstructionsOpen ? '▽' : '▷'}</span>
-            
           </div>
           
           {isInstructionsOpen && (
@@ -600,7 +599,6 @@ const AssignmentDetail = () => {
           <div className="toggle-header" onClick={toggleSubmission}>
             <h2 className="toggle-title">제출물</h2>
             <span className="toggle-icon">{isSubmissionOpen ? '▽' : '▷'}</span>
-           
           </div>
           
           {isSubmissionOpen && (
@@ -617,7 +615,9 @@ const AssignmentDetail = () => {
                 )
               ) : assignment.submissionStatus === "SUBMITTED" ? (
                 <>
-                  <p className="submitted-message">제출이 완료되었습니다.</p>
+                  <div className="submission-date">
+                    제출: {formatDate(assignment.submissionDate)}
+                  </div>
                   
                   {/* 제출된 내용 표시 */}
                   <div className="submitted-content">
