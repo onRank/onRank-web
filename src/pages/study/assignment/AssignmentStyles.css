@@ -539,6 +539,13 @@
   margin-top: 20px;
 }
 
+/* Equal width buttons styles */
+.buttons-row button {
+  min-width: 80px;
+  width: auto;
+  max-width: 120px;
+}
+
 .submit-button, .resubmit-button {
   padding: 8px 16px;
   background-color: #dc3545;
@@ -737,9 +744,11 @@
 
 /* New Assignment Detail UI */
 .assignment-container {
-  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0; /* Remove padding */
   margin: 0 auto;
-  padding: 20px;
 }
 
 .assignment-header {
@@ -781,6 +790,22 @@
   border-radius: 4px;
   color: #000;
   align-self: flex-start;
+}
+
+/* Assignment status color variants */
+.status-notsubmitted {
+  color: #6c757d; /* Gray for not submitted */
+  background-color: #f8f9fa;
+}
+
+.status-submitted {
+  color: #000000; /* Black for submitted */
+  background-color: #f8f9fa;
+}
+
+.status-scored {
+  color: #ee0418; /* Theme red color for scored */
+  background-color: #f8f9fa;
 }
 
 .assignment-content {

@@ -98,8 +98,16 @@ function AssignmentCreate() {
         attachedFiles.map((file) => `${file.name} (${file.size} bytes)`)
       );
 
-      // ISO 형식으로 날짜 변환
-      const dueDateISO = new Date(formData.assignmentDueDate).toISOString();
+      // 날짜 변환 - 로컬 시간대 보존
+      const dueDate = new Date(formData.assignmentDueDate);
+      // getTimezoneOffset()은 분 단위로 현지 시간과 UTC의 차이를 반환
+      // UTC로 변환되는 것을 방지하기 위해 오프셋만큼 시간 조정
+      const offsetMs = dueDate.getTimezoneOffset() * 60 * 1000;
+      const localDate = new Date(dueDate.getTime() - offsetMs);
+      const dueDateISO = localDate.toISOString();
+      
+      console.log("[AssignmentCreate] 원본 마감일:", formData.assignmentDueDate);
+      console.log("[AssignmentCreate] 변환된 마감일:", dueDateISO);
       
       // 요청 데이터 구성 - JSON 형식으로 변경
       const assignmentData = {

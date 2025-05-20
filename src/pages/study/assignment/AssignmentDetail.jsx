@@ -221,7 +221,7 @@ const AssignmentDetail = () => {
         console.log("[AssignmentDetail] 제출 응답:", response);
       }
 
-      // 파일 업로드 처리 (기존 로직 유지)
+      // 파일 업로드 처리 - AssignmentCreate.jsx 방식과 일치시킴
       if (newFiles.length > 0 && response) {
         console.log(
           "[AssignmentDetail] 파일 업로드 시작, 파일 개수:",
@@ -513,7 +513,7 @@ const AssignmentDetail = () => {
       <div className="assignment-header">
         <div className="title-and-status">
           <h1 className="assignment-title">{assignment.assignmentTitle}</h1>
-          <div className="assignment-status">{getPageTitle()}</div>
+          <div className={`assignment-status status-${assignment.submissionStatus ? assignment.submissionStatus.toLowerCase() : 'notsubmitted'}`}>{getPageTitle()}</div>
         </div>
         
         <div className="points-and-deadline">
@@ -676,7 +676,6 @@ const AssignmentDetail = () => {
                     <div className="buttons-row">
                       <Button
                         variant="reSubmit"
-                        className="reSubmit"
                         onClick={handleResubmit}
                         label="다시 제출"
                       />
@@ -764,9 +763,8 @@ const AssignmentDetail = () => {
                     <div className="buttons-row">
                       <Button
                         variant="reSubmit"
-                        className="reSubmit"
                         onClick={handleResubmit}
-                        label="제출"
+                        label="다시 제출"
                       />
                       <Button variant="back" onClick={handleBack} label="닫기" />
                     </div>
