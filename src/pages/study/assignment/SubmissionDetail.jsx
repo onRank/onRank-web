@@ -465,7 +465,7 @@ const SubmissionDetail = () => {
                 <div className="submission-files">
                   <h3 className="files-title">제출 파일</h3>
                   <div className="files-list">
-                  {assignment.submissionFiles.map((file, index) => (
+                  {submission.submissionFiles.map((file, index) => (
                           <div className="file-download-item" key={index}>
                             <div className="file-info-row">
                               <div className="file-icon">
