@@ -73,13 +73,13 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
       backgroundColor: "#ee0418",
       color: "#fff",
       border: "none",
-      minWidth: "84px",
+      width: "64px",
     },
     reSubmit: {
       backgroundColor: "#fff",
       color: "#333",
       border: "1px solid #ccc",
-      minWidth: "84px",
+      width: "64px",
     },
     addFiles: {
       backgroundColor: "#ee0418",

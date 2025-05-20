@@ -500,9 +500,13 @@ const SubmissionDetail = () => {
           />
         </div>
 
-        <div className="buttons-container">
-          <Button variant="store" type="submit" disabled={isLoading} />
-          <Button variant="back" type="button" onClick={handleCancel} />
+        <div className="submission-detail-actions">
+          <Button variant="back" onClick={handleCancel} />
+          <Button
+            variant="store"
+            onClick={handleSaveGrade}
+            disabled={isSubmitting || scoreError}
+          />
         </div>
       </div>
     </div>

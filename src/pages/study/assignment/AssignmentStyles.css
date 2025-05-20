@@ -77,32 +77,11 @@
   text-align: right;
 }
 
-/* Apply the same styling to both button-container and buttons-row for consistency */
 .button-container {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 20px;
-}
-
-/* Make all buttons in the button containers have equal width */
-.buttons-row button,
-.button-container button {
-  min-width: 80px;
-  width: 80px; /* Set a fixed width for all buttons */
-}
-
-/* Remove the previous special styling for specific button variants */
-/* Instead, style all button variants consistently */
-.buttons-row button[variant="submit"], 
-.buttons-row button[variant="reSubmit"],
-.buttons-row button[variant="store"],
-.buttons-row button[variant="upload"],
-.button-container button[variant="submit"],
-.button-container button[variant="reSubmit"],
-.button-container button[variant="store"],
-.button-container button[variant="upload"] {
-  width: 80px; /* Force same width as other buttons */
 }
 
 /* 폼 관련 */
@@ -560,18 +539,12 @@
   margin-top: 20px;
 }
 
-/* Make all buttons in the buttons-row have equal width */
-.buttons-row button {
-  min-width: 80px;
-  width: 80px; /* Set a fixed width for all buttons */
-}
-
-/* Remove the previous special styling for specific button variants */
+/* Remove the previous equal width button styles */
 /* Instead, style just the submit and reSubmit buttons to match the close button */
 .buttons-row button[variant="submit"], 
 .buttons-row button[variant="reSubmit"],
 .buttons-row button[variant="store"] {
-  width: 80px; /* Force same width as other buttons */
+  width: auto;
 }
 
 .submit-button, .resubmit-button {
