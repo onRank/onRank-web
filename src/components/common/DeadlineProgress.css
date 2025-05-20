@@ -1,26 +1,32 @@
 .deadline-progress-container {
   width: 100%;
-  margin-bottom: 16px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .deadline-info {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-size: 14px;
   color: #333;
+  width: 100%;
 }
 
 .deadline-days {
   font-weight: bold;
+  color: #dc3545;
 }
 
 .deadline-progress-bar {
-  height: 8px;
+  height: 4px;
   background-color: #e9ecef;
-  border-radius: 4px;
+  border-radius: 2px;
   overflow: hidden;
   position: relative;
+  width: 150px;
 }
 
 .deadline-progress-fill {
@@ -28,6 +34,6 @@
   background-color: #dc3545;
   transition: width 0.3s ease;
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
 } 

@@ -743,33 +743,44 @@
 }
 
 .assignment-header {
-  margin-bottom: 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title-and-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.points-and-deadline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
 }
 
 .assignment-title {
   font-size: 16px;
   font-weight: bold;
-  margin-bottom: 16px;
+  margin-bottom: 0;
   color: #000;
 }
 
 .assignment-deadline {
-  margin-bottom: 16px;
-}
-
-.assignment-status-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  margin-bottom: 0;
 }
 
 .assignment-status {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   padding: 6px 12px;
   background-color: #f8f9fa;
   border-radius: 4px;
-  color: #dc3545;
+  color: #000;
+  align-self: flex-start;
 }
 
 .assignment-content {

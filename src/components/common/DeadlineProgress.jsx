@@ -4,7 +4,7 @@ import './DeadlineProgress.css';
 const DeadlineProgress = ({ dueDate }) => {
   // Calculate progress percentage
   const calculateProgress = () => {
-    if (!dueDate) return 100;
+    if (!dueDate) return 0; // If no due date, return 0 (no progress)
     
     const now = new Date();
     const deadlineDate = new Date(dueDate);
@@ -50,11 +50,22 @@ const DeadlineProgress = ({ dueDate }) => {
     }
   };
 
+  // Calculate D-day 
+  const calculateDDay = () => {
+    if (!dueDate) return "D-?";
+    
+    const now = new Date();
+    const deadlineDate = new Date(dueDate);
+    const diffDays = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+    
+    return diffDays < 0 ? "마감됨" : `D-${diffDays}`;
+  };
+
   return (
     <div className="deadline-progress-container">
       <div className="deadline-info">
         <span>마감: {formatDate(dueDate)}</span>
-        <span className="deadline-days">D-{Math.ceil((new Date(dueDate) - new Date()) / (1000 * 60 * 60 * 24))}</span>
+        <span className="deadline-days">{calculateDDay()}</span>
       </div>
       <div className="deadline-progress-bar">
         <div 

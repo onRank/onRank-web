@@ -486,14 +486,12 @@ const AssignmentDetail = () => {
   return (
     <div className="assignment-container">
       <div className="assignment-header">
-        <h1 className="assignment-title">{assignment.assignmentTitle}</h1>
-        
-        <div className="assignment-deadline">
-          <DeadlineProgress dueDate={assignment.assignmentDueDate} />
+        <div className="title-and-status">
+          <h1 className="assignment-title">{assignment.assignmentTitle}</h1>
+          <div className="assignment-status">{getPageTitle()}</div>
         </div>
         
-        <div className="assignment-status-row">
-          <div className="assignment-status">{getPageTitle()}</div>
+        <div className="points-and-deadline">
           <ScoreDisplay
             score={
               assignment.submissionStatus === "SCORED"
@@ -502,6 +500,9 @@ const AssignmentDetail = () => {
             }
             maxPoint={assignment.assignmentMaxPoint}
           />
+          <div className="assignment-deadline">
+            <DeadlineProgress dueDate={assignment.assignmentDueDate} />
+          </div>
         </div>
       </div>
 
