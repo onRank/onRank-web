@@ -42,6 +42,10 @@ const AssignmentDetail = () => {
   // 업로드 진행 상태 추적
   const [uploadStatus, setUploadStatus] = useState([]);
 
+  // 토글 상태 관리
+  const [isInstructionsOpen, setIsInstructionsOpen] = useState(true);
+  const [isSubmissionOpen, setIsSubmissionOpen] = useState(true);
+
   const MAX_CHAR_COUNT = 10000;
 
   useEffect(() => {
@@ -87,6 +91,18 @@ const AssignmentDetail = () => {
           };
 
           setAssignment(assignmentData);
+          
+          // 제출 상태에 따라 초기 토글 상태 설정
+          if (assignmentData.submissionStatus === "NOTSUBMITTED") {
+            // 미제출 상태: 지시사항, 제출물 모두 열림
+            setIsInstructionsOpen(true);
+            setIsSubmissionOpen(true);
+          } else {
+            // 제출완료 또는 채점완료: 제출물만 열림
+            setIsInstructionsOpen(false);
+            setIsSubmissionOpen(true);
+          }
+          
         } else {
           console.error("[AssignmentDetail] 과제 데이터가 없습니다:", response);
           setError("과제 정보를 불러오는데 실패했습니다.");
@@ -101,6 +117,15 @@ const AssignmentDetail = () => {
 
     fetchAssignmentDetail();
   }, [studyId, assignmentId]);
+
+  // 토글 핸들러
+  const toggleInstructions = () => {
+    setIsInstructionsOpen(!isInstructionsOpen);
+  };
+
+  const toggleSubmission = () => {
+    setIsSubmissionOpen(!isSubmissionOpen);
+  };
 
   // FileUploader에서 선택된 파일 처리
   const handleFileSelect = (selectedFiles) => {
@@ -507,173 +532,100 @@ const AssignmentDetail = () => {
       </div>
 
       <div className="assignment-content">
-        {/* 1. 지시사항 섹션 */}
-        <div className="instruction-section">
-          <h2 className="section-title">지시사항</h2>
-          <p className="description">{assignment.assignmentContent}</p>
+        {/* 1. 지시사항 토글 섹션 */}
+        <div className="toggle-section">
+          <div className="toggle-header" onClick={toggleInstructions}>
+            <h2 className="toggle-title">지시사항</h2>
+            <span className="toggle-icon">{isInstructionsOpen ? '▼' : '▶'}</span>
+          </div>
+          
+          {isInstructionsOpen && (
+            <div className="toggle-content">
+              <p className="description">{assignment.assignmentContent}</p>
 
-          {/* 첨부 파일 목록 (assignmentFiles) */}
-          {assignment.assignmentFiles &&
-            assignment.assignmentFiles.length > 0 && (
-              <div className="files-container">
-                <h3 className="section-subtitle">첨부파일</h3>
-                <div className="files-list">
-                  {assignment.assignmentFiles.map((file, index) => (
-                    <div className="file-download-item" key={index}>
-                      <div className="file-info-row">
-                        <div className="file-icon">
-                          {getFileIcon(file.fileName)}
-                        </div>
-                        <div className="file-details">
-                          <div className="file-name">{file.fileName}</div>
-                        </div>
-                        {isImageFile(file.fileName) && file.fileUrl && (
-                          <button
-                            className="preview-button"
-                            onClick={() => window.open(file.fileUrl, "_blank")}
-                            title="이미지 미리보기"
-                            type="button">
-                            미리보기
-                          </button>
-                        )}
-                        <button
-                          className="download-button"
-                          onClick={() =>
-                            downloadFile(file.fileUrl, file.fileName)
-                          }
-                          type="button">
-                          다운로드
-                        </button>
-                      </div>
-                      {isImageFile(file.fileName) && file.fileUrl && (
-                        <div className="image-preview-container">
-                          <img
-                            className="image-preview-full"
-                            src={file.fileUrl}
-                            alt={file.fileName}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-        </div>
-
-        {/* 2. 제출물 섹션 - 상태에 따라 다른 UI */}
-        <div className="submission-section">
-          {isResubmitting ? (
-            <>
-              <h2 className="section-title">제출물</h2>
-              {renderSubmissionForm()}
-            </>
-          ) : assignment.submissionStatus === "NOTSUBMITTED" ? (
-            <>
-              <h2 className="section-title">제출물</h2>
-              {isAssignmentExpired() ? (
-                <div className="expired-message">
-                  과제 제출 기한이 지났습니다.
-                </div>
-              ) : (
-                renderSubmissionForm()
-              )}
-            </>
-          ) : assignment.submissionStatus === "SUBMITTED" ? (
-            <>
-              <h2 className="section-title">제출물</h2>
-              <p className="submitted-message">제출이 완료되었습니다.</p>
-              
-              {/* 제출된 내용 표시 */}
-              <div className="submitted-content">
-                <p>{assignment.submissionContent}</p>
-              </div>
-              
-              {/* 제출 파일 목록 */}
-              {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
-                <div className="submission-files">
-                  <h3 className="files-title">제출 파일</h3>
-                  <div className="files-list">
-                    {assignment.submissionFiles.map((file, index) => (
-                      <div className="file-download-item" key={index}>
-                        <div className="file-info-row">
-                          <div className="file-icon">
-                            {getFileIcon(file.fileName)}
-                          </div>
-                          <div className="file-details">
-                            <div className="file-name">{file.fileName}</div>
+              {/* 첨부 파일 목록 (assignmentFiles) */}
+              {assignment.assignmentFiles &&
+                assignment.assignmentFiles.length > 0 && (
+                  <div className="files-container">
+                    <h3 className="section-subtitle">첨부파일</h3>
+                    <div className="files-list">
+                      {assignment.assignmentFiles.map((file, index) => (
+                        <div className="file-download-item" key={index}>
+                          <div className="file-info-row">
+                            <div className="file-icon">
+                              {getFileIcon(file.fileName)}
+                            </div>
+                            <div className="file-details">
+                              <div className="file-name">{file.fileName}</div>
+                            </div>
+                            {isImageFile(file.fileName) && file.fileUrl && (
+                              <button
+                                className="preview-button"
+                                onClick={() => window.open(file.fileUrl, "_blank")}
+                                title="이미지 미리보기"
+                                type="button">
+                                미리보기
+                              </button>
+                            )}
+                            <button
+                              className="download-button"
+                              onClick={() =>
+                                downloadFile(file.fileUrl, file.fileName)
+                              }
+                              type="button">
+                              다운로드
+                            </button>
                           </div>
                           {isImageFile(file.fileName) && file.fileUrl && (
-                            <button
-                              className="preview-button"
-                              onClick={() =>
-                                window.open(file.fileUrl, "_blank")
-                              }
-                              title="이미지 미리보기"
-                              type="button">
-                              미리보기
-                            </button>
+                            <div className="image-preview-container">
+                              <img
+                                className="image-preview-full"
+                                src={file.fileUrl}
+                                alt={file.fileName}
+                              />
+                            </div>
                           )}
-                          <button
-                            className="download-button"
-                            onClick={() =>
-                              downloadFile(file.fileUrl, file.fileName)
-                            }
-                            type="button">
-                            다운로드
-                          </button>
                         </div>
-                        {isImageFile(file.fileName) && file.fileUrl && (
-                          <div className="image-preview-container">
-                            <img
-                              className="image-preview-full"
-                              src={file.fileUrl}
-                              alt={file.fileName}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* 재제출 버튼 - 마감 기한이 지난 경우 숨김 */}
-              {!isAssignmentExpired() && (
-                <div className="buttons-row">
-                  <Button
-                    variant="reSubmit"
-                    className="reSubmit"
-                    onClick={handleResubmit}
-                    label="다시 제출"
-                  />
-                  <Button variant="back" onClick={handleBack} label="닫기" />
-                </div>
-              )}
-            </>
-          ) : (
-            assignment.submissionStatus === "SCORED" && (
-              <>
-                <h2 className="section-title">제출물</h2>
-                <div className="submission-date">
-                  제출: {formatDate(assignment.submissionDate)}
-                </div>
-
-                {/* 제출 내용 표시 */}
-                {assignment.submissionContent && (
-                  <div className="submission-content">
-                    <h3 className="content-title">제출 내용</h3>
-                    <div className="content-text">
-                      {assignment.submissionContent}
+                      ))}
                     </div>
                   </div>
                 )}
+            </div>
+          )}
+        </div>
 
-                {/* 제출 파일 표시 */}
-                {assignment.submissionFiles &&
-                  assignment.submissionFiles.length > 0 && (
-                    <div className="files-container">
-                      <h3 className="section-subtitle">제출 파일</h3>
+        {/* 2. 제출물 토글 섹션 */}
+        <div className="toggle-section">
+          <div className="toggle-header" onClick={toggleSubmission}>
+            <h2 className="toggle-title">제출물</h2>
+            <span className="toggle-icon">{isSubmissionOpen ? '▼' : '▶'}</span>
+          </div>
+          
+          {isSubmissionOpen && (
+            <div className="toggle-content">
+              {isResubmitting ? (
+                renderSubmissionForm()
+              ) : assignment.submissionStatus === "NOTSUBMITTED" ? (
+                isAssignmentExpired() ? (
+                  <div className="expired-message">
+                    과제 제출 기한이 지났습니다.
+                  </div>
+                ) : (
+                  renderSubmissionForm()
+                )
+              ) : assignment.submissionStatus === "SUBMITTED" ? (
+                <>
+                  <p className="submitted-message">제출이 완료되었습니다.</p>
+                  
+                  {/* 제출된 내용 표시 */}
+                  <div className="submitted-content">
+                    <p>{assignment.submissionContent}</p>
+                  </div>
+                  
+                  {/* 제출 파일 목록 */}
+                  {assignment.submissionFiles && assignment.submissionFiles.length > 0 && (
+                    <div className="submission-files">
+                      <h3 className="files-title">제출 파일</h3>
                       <div className="files-list">
                         {assignment.submissionFiles.map((file, index) => (
                           <div className="file-download-item" key={index}>
@@ -718,28 +670,110 @@ const AssignmentDetail = () => {
                       </div>
                     </div>
                   )}
-
-                {/* 코멘트 섹션 (있을 경우에만 표시) */}
-                {assignment.submissionComment && (
-                  <div className="feedback-section">
-                    <h3 className="section-subtitle">코멘트</h3>
-                    <div className="feedback-content">
-                      {assignment.submissionComment}
+                  
+                  {/* 재제출 버튼 - 마감 기한이 지난 경우 숨김 */}
+                  {!isAssignmentExpired() && (
+                    <div className="buttons-row">
+                      <Button
+                        variant="reSubmit"
+                        className="reSubmit"
+                        onClick={handleResubmit}
+                        label="다시 제출"
+                      />
+                      <Button variant="back" onClick={handleBack} label="닫기" />
                     </div>
-                  </div>
-                )}
+                  )}
+                </>
+              ) : (
+                assignment.submissionStatus === "SCORED" && (
+                  <>
+                    <div className="submission-date">
+                      제출: {formatDate(assignment.submissionDate)}
+                    </div>
 
-                <div className="buttons-row">
-                  <Button
-                    variant="reSubmit"
-                    className="reSubmit"
-                    onClick={handleResubmit}
-                    label="제출"
-                  />
-                  <Button variant="back" onClick={handleBack} label="닫기" />
-                </div>
-              </>
-            )
+                    {/* 제출 내용 표시 */}
+                    {assignment.submissionContent && (
+                      <div className="submission-content">
+                        <h3 className="content-title">제출 내용</h3>
+                        <div className="content-text">
+                          {assignment.submissionContent}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 제출 파일 표시 */}
+                    {assignment.submissionFiles &&
+                      assignment.submissionFiles.length > 0 && (
+                        <div className="files-container">
+                          <h3 className="section-subtitle">제출 파일</h3>
+                          <div className="files-list">
+                            {assignment.submissionFiles.map((file, index) => (
+                              <div className="file-download-item" key={index}>
+                                <div className="file-info-row">
+                                  <div className="file-icon">
+                                    {getFileIcon(file.fileName)}
+                                  </div>
+                                  <div className="file-details">
+                                    <div className="file-name">{file.fileName}</div>
+                                  </div>
+                                  {isImageFile(file.fileName) && file.fileUrl && (
+                                    <button
+                                      className="preview-button"
+                                      onClick={() =>
+                                        window.open(file.fileUrl, "_blank")
+                                      }
+                                      title="이미지 미리보기"
+                                      type="button">
+                                      미리보기
+                                    </button>
+                                  )}
+                                  <button
+                                    className="download-button"
+                                    onClick={() =>
+                                      downloadFile(file.fileUrl, file.fileName)
+                                    }
+                                    type="button">
+                                    다운로드
+                                  </button>
+                                </div>
+                                {isImageFile(file.fileName) && file.fileUrl && (
+                                  <div className="image-preview-container">
+                                    <img
+                                      className="image-preview-full"
+                                      src={file.fileUrl}
+                                      alt={file.fileName}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* 코멘트 섹션 (있을 경우에만 표시) */}
+                    {assignment.submissionComment && (
+                      <div className="feedback-section">
+                        <h3 className="section-subtitle">코멘트</h3>
+                        <div className="feedback-content">
+                          {assignment.submissionComment}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="buttons-row">
+                      <Button
+                        variant="reSubmit"
+                        className="reSubmit"
+                        onClick={handleResubmit}
+                        label="제출"
+                      />
+                      <Button variant="back" onClick={handleBack} label="닫기" />
+                    </div>
+                  </>
+                )
+              )}
+            </div>
           )}
         </div>
       </div>
