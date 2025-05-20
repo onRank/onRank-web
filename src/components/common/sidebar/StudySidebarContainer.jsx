@@ -104,7 +104,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "0.85rem 1.2rem",
+          padding: "0.85rem 0.8rem",
           margin: "0.75rem auto",
           backgroundColor: "#fff",
           borderRadius: "8px",
@@ -120,7 +120,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
 
         <IoChevronForward
           size={16}
-          style={{ margin: "0 0.75rem", color: "#000" }}
+          style={{ margin: "0 0.3rem", color: "#000" }}
         />
 
         {activeTab && (
@@ -130,6 +130,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
               color: subPage ? "#333" : "#FF0000",
               fontWeight: subPage ? "normal" : "bold",
               textDecoration: "none",
+              fontSize: activeTab.length > 4 ? "0.9rem" : "1rem",
             }}>
             {activeTab}
           </Link>
@@ -139,9 +140,13 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
           <>
             <IoChevronForward
               size={16}
-              style={{ margin: "0 0.75rem", color: "#000" }}
+              style={{ margin: "0 0.3rem", color: "#000" }}
             />
-            <span style={{ color: "#FF0000", fontWeight: "bold" }}>
+            <span style={{ 
+              color: "#FF0000", 
+              fontWeight: "bold",
+              fontSize: subPage.length > 4 ? "0.9rem" : "1rem",
+            }}>
               {subPage}
             </span>
           </>
