@@ -447,11 +447,11 @@ const SubmissionDetail = () => {
           {isSubmissionOpen && (
             <div className="toggle-content">
               <div className="submission-date">
-                제출: {formatDate(submission.submissionCreatedAt)}
+                제출: {submission ? formatDate(submission.submissionCreatedAt) : ''}
               </div>
               
               {/* 제출된 내용 표시 */}
-              {submission.submissionContent && (
+              {submission && submission.submissionContent && (
                 <div className="submission-content-section">
                   <h3 className="content-title">제출 내용</h3>
                   <div className="content-text">
@@ -461,11 +461,11 @@ const SubmissionDetail = () => {
               )}
               
               {/* 제출 파일 목록 */}
-              {submission.submissionFiles && submission.submissionFiles.length > 0 && (
+              {submission && submission.submissionFiles && submission.submissionFiles.length > 0 && (
                 <div className="submission-files">
                   <h3 className="files-title">제출 파일</h3>
                   <div className="files-list">
-                  {submission.submissionFiles.map((file, index) => (
+                  {(submission.submissionFiles || []).map((file, index) => (
                           <div className="file-download-item" key={index}>
                             <div className="file-info-row">
                               <div className="file-icon">
