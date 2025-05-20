@@ -49,11 +49,12 @@
   font-size: 14px;
   color: #6c757d;
   margin-bottom: 6px;
+  margin-right:6px;
 }
 
 .assignment-title {
   margin: 0 0 0.5rem 0;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 500;
 }
 

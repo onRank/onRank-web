@@ -774,7 +774,7 @@
 }
 
 .assignment-status {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   padding: 6px 12px;
   background-color: #f8f9fa;
@@ -979,6 +979,7 @@
   padding: 8px 0;
   border-bottom: 1px solid #e9ecef;
   transition: all 0.3s ease;
+  font-weight: 600;
 }
 
 .toggle-header:hover {
