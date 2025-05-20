@@ -376,7 +376,7 @@ const SubmissionDetail = () => {
           <div className="toggle-header" onClick={() => setIsInstructionsOpen(!isInstructionsOpen)}>
             <h2 className="toggle-title">지시사항</h2>
             <span className="toggle-icon">
-              {isInstructionsOpen ? "▲" : "▼"}
+              {isInstructionsOpen ?'▽' : '▷'}
             </span>
           </div>
           
@@ -386,16 +386,51 @@ const SubmissionDetail = () => {
 
               {/* 첨부 파일 목록 (assignmentFiles) */}
               {assignment.assignmentFiles &&
-                assignment.assignmentFiles.length > 0 && (
-                  <div className="files-container">
-                    <h3 className="section-subtitle">첨부파일</h3>
-                    <div className="files-list">
-                      {assignment.assignmentFiles.map((file, index) => 
-                        renderFileItem(file, index)
-                      )}
+                  assignment.assignmentFiles.length > 0 && (
+                    <div className="files-container">
+                      <h3 className="section-subtitle">첨부파일</h3>
+                      <div className="files-list">
+                        {assignment.assignmentFiles.map((file, index) => (
+                          <div className="file-download-item" key={index}>
+                            <div className="file-info-row">
+                              <div className="file-icon">
+                                {getFileIcon(file.fileName)}
+                              </div>
+                              <div className="file-details">
+                                <div className="file-name">{file.fileName}</div>
+                              </div>
+                              {isImageFile(file.fileName) && file.fileUrl && (
+                                <button
+                                  className="preview-button"
+                                  onClick={() => window.open(file.fileUrl, "_blank")}
+                                  title="이미지 미리보기"
+                                  type="button">
+                                  미리보기
+                                </button>
+                              )}
+                              <button
+                                className="download-button"
+                                onClick={() =>
+                                  downloadFile(file.fileUrl, file.fileName)
+                                }
+                                type="button">
+                                다운로드
+                              </button>
+                            </div>
+                            {isImageFile(file.fileName) && file.fileUrl && (
+                              <div className="image-preview-container">
+                                <img
+                                  className="image-preview-full"
+                                  src={file.fileUrl}
+                                  alt={file.fileName}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
             </div>
           )}
         </div>
@@ -405,7 +440,7 @@ const SubmissionDetail = () => {
           <div className="toggle-header" onClick={() => setIsSubmissionOpen(!isSubmissionOpen)}>
             <h2 className="toggle-title">제출물</h2>
             <span className="toggle-icon">
-              {isSubmissionOpen ? "▲" : "▼"}
+              {isSubmissionOpen ? '▽' : '▷'}
             </span>
           </div>
           
@@ -430,9 +465,46 @@ const SubmissionDetail = () => {
                 <div className="submission-files">
                   <h3 className="files-title">제출 파일</h3>
                   <div className="files-list">
-                    {submission.submissionFiles.map((file, index) => 
-                      renderFileItem(file, index)
-                    )}
+                  {assignment.submissionFiles.map((file, index) => (
+                          <div className="file-download-item" key={index}>
+                            <div className="file-info-row">
+                              <div className="file-icon">
+                                {getFileIcon(file.fileName)}
+                              </div>
+                              <div className="file-details">
+                                <div className="file-name">{file.fileName}</div>
+                              </div>
+                              {isImageFile(file.fileName) && file.fileUrl && (
+                                <button
+                                  className="preview-button"
+                                  onClick={() =>
+                                    window.open(file.fileUrl, "_blank")
+                                  }
+                                  title="이미지 미리보기"
+                                  type="button">
+                                  미리보기
+                                </button>
+                              )}
+                              <button
+                                className="download-button"
+                                onClick={() =>
+                                  downloadFile(file.fileUrl, file.fileName)
+                                }
+                                type="button">
+                                다운로드
+                              </button>
+                            </div>
+                            {isImageFile(file.fileName) && file.fileUrl && (
+                              <div className="image-preview-container">
+                                <img
+                                  className="image-preview-full"
+                                  src={file.fileUrl}
+                                  alt={file.fileName}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        ))}
                   </div>
                 </div>
               )}
