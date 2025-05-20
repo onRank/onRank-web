@@ -1,39 +1,4 @@
-.submission-detail-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-.submission-detail-header {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1.5rem;
-}
-
-.back-button {
-  align-self: flex-start;
-  background: none;
-  border: none;
-  color: #666;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 5px 0;
-  margin-bottom: 15px;
-}
-
-.back-button:hover {
-  color: #000;
-}
-
-.title {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0;
-  padding-bottom: 5px;
-  display: flex;
-  align-items: center;
-}
+/* SubmissionDetail 추가 스타일 - AssignmentStyles.css에 없는 것만 유지 */
 
 .email {
   font-size: 16px;
@@ -42,136 +7,82 @@
   color: #666;
 }
 
-.submission-time {
+/* 채점 입력 폼 영역 스타일 */
+.max-point-info {
   font-size: 14px;
   color: #666;
-  margin: 5px 0 0 0;
+  margin-bottom: 15px;
 }
 
-/* 지시사항 토글 섹션 */
-.instructions-section {
+.score-input-section, .comment-input-section {
+  margin-bottom: 15px;
+}
+
+.score-input-section label, .comment-input-section label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.score-input-section input {
+  width: 100%;
+  max-width: 200px;
+  padding: 8px 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  margin-bottom: 20px;
-  overflow: hidden;
-  background-color: #fff;
+  font-size: 16px;
 }
 
-.instructions-toggle {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 15px;
-  background-color: #f9f9f9;
-  cursor: pointer;
-  border-bottom: 1px solid #eee;
+.score-error {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 5px;
 }
 
-.toggle-header {
-  display: ruby;
-  justify-content: space-between;
-  align-items: center;
+.comment-input-section textarea {
   width: 100%;
-}
-
-.toggle-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0;
-  color: #333;
-  margin-right: 10px;
-
-}
-
-.toggle-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #666;
-  font-size: 20px;
-}
-
-.instructions-content {
-  padding: 15px;
-  background-color: #fff;
-}
-
-.instructions-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 10px 0;
-  color: #333;
-}
-
-.instructions-text {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
   font-size: 14px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  margin-bottom: 15px;
-  color: #444;
+  resize: vertical;
+  min-height: 100px;
 }
 
-.instructions-files {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px dashed #eee;
-}
-
-.files-title {
-  font-size: 15px;
-  font-weight: 500;
-  margin-bottom: 15px;
-  color: #333;
-  display: flex;
-  align-items: center;
-}
-
-.file-icon {
-  margin-right: 6px;
+/* 추가된 상태 스타일 */
+.submission-loading {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
   color: #666;
-  font-size: 18px;
 }
 
-/* 파일 목록 스타일 */
-.file-list, .files-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.submission-error {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #dc3545;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  margin: 20px 0;
 }
 
-/* AssignmentDetail.jsx 스타일과 유사하게 변경 */
-.file-item {
+/* 채점 섹션 컨테이너 */
+.grading-section-container {
+  margin-top: 30px;
+  padding: 20px;
   background-color: #f9f9f9;
-  border: 1px solid #eee;
   border-radius: 4px;
-  margin-bottom: 10px;
-  overflow: hidden;
 }
 
-.file-info-row {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-}
-
-.file-icon {
-  margin-right: 10px;
-  font-size: 20px;
-  color: #666;
-}
-
+/* 파일 아이템 렌더링을 위한 추가 스타일 */
 .file-preview {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   overflow: hidden;
   margin-right: 10px;
-  border: 1px solid #eee;
   border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  background-color: #fff;
 }
 
 .file-preview img {
@@ -180,195 +91,10 @@
   object-fit: cover;
 }
 
-.file-details {
-  flex-grow: 1;
-  margin-right: 10px;
-  overflow: hidden;
-}
-
-.file-name {
-  font-size: 14px;
-  color: #333;
-  word-break: break-all;
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.file-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.preview-button, .download-button {
-  padding: 7px 12px;
-  font-size: 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  white-space: nowrap;
-  font-weight: 500;
-  min-width: 70px;
-  text-align: center;
-  border: none;
-}
-
-.preview-button {
-  background-color: #e7f5ff;
-  color: #0c63e4;
-}
-
-.download-button {
-  background-color: #f1f3f5;
-  color: #495057;
-}
-
-.preview-button:hover {
-  background-color: #d0e8ff;
-}
-
-.download-button:hover {
-  background-color: #e9ecef;
-}
-
-/* 이미지 미리보기 컨테이너 */
-.image-preview-container {
-  padding: 0;
-  text-align: center;
-  background-color: #f5f5f5;
-  border-top: 1px solid #eee;
-  max-height: 200px;
-  overflow: hidden;
-}
-
 .image-preview-thumbnail {
   max-width: 100%;
-  max-height: 200px;
+  max-height: 300px;
   object-fit: contain;
-}
-
-/* 학생 제출물 섹션 */
-.student-submission-section {
-  margin-bottom: 25px;
-  border: 1px solid #ddd;
   border-radius: 4px;
-  overflow: hidden;
+  margin-top: 10px;
 }
-
-.section-header {
-  padding: 12px 15px;
-  background-color: #f9f9f9;
-  border-bottom: 1px solid #eee;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0;
-  color: #333;
-}
-
-.submission-content-wrapper {
-  padding: 15px;
-  background-color: #fff;
-}
-
-.submission-content-box {
-  margin-bottom: 15px;
-}
-
-.submission-content-text {
-  font-size: 14px;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  color: #444;
-}
-
-.submission-files-section {
-  margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px dashed #eee;
-}
-
-/* 채점 섹션 */
-.grading-section {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: #fff;
-}
-
-.grading-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin: 0 0 15px 0;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #eee;
-  color: #333;
-}
-
-.max-point-info {
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #666;
-}
-
-.score-input-section, .comment-input-section {
-  margin-bottom: 20px;
-}
-
-.score-input-section label, .comment-input-section label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  color: #333;
-}
-
-.score-input-section input {
-  width: 100%;
-  max-width: 200px;
-  padding: 8px 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.score-error {
-  color: #dc3545;
-  font-size: 12px;
-  margin-top: 5px;
-}
-
-.comment-input-section textarea {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-  resize: vertical;
-  min-height: 80px;
-}
-
-.submission-detail-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.submission-loading {
-  text-align: center;
-  padding: 40px;
-  color: #6c757d;
-}
-
-.submission-error {
-  padding: 20px;
-  margin: 20px 0;
-  background-color: #f8d7da;
-  border-radius: 4px;
-  color: #dc3545;
-} 

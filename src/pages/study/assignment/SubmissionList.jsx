@@ -5,6 +5,7 @@ import assignmentService from "../../../services/assignment";
 import Button from "../../../components/common/Button";
 import ScoreDisplay from "../../../components/common/ScoreDisplay";
 import "./SubmissionList.css";
+import "./AssignmentStyles.css"; // AssignmentDetail 스타일 공유
 
 const SubmissionList = () => {
   const { studyId, assignmentId } = useParams();
@@ -83,7 +84,7 @@ const SubmissionList = () => {
     const hours = String(date.getHours()).padStart(2, "0");
     const minutes = String(date.getMinutes()).padStart(2, "0");
 
-    return `제출: ${year}.${month}.${day} ${hours}:${minutes}PM`;
+    return `제출: ${year}.${month}.${day} ${hours}:${minutes}`;
   };
 
   // 제출 상태를 한글로 변환하는 함수
@@ -107,70 +108,90 @@ const SubmissionList = () => {
 
   if (isLoading) {
     return (
-      <div className="submission-loading">제출물 목록을 불러오는 중...</div>
+      <div className="loading-message">제출물 목록을 불러오는 중...</div>
     );
   }
 
   if (error) {
-    return <div className="submission-error">{error}</div>;
+    return (
+      <div className="error-container">
+        <div>{error}</div>
+        <button className="back-button" onClick={handleBack}>
+          목록으로 돌아가기
+        </button>
+      </div>
+    );
   }
 
   return (
-    <div className="submission-container">
-      <header className="submission-header">
-        <h1 className="title">{assignment.assignmentTitle || "과제"} - 채점</h1>
-      </header>
-
-      <div className="submission-list-wrapper">
-        <div className="submission-list-header">
-          <div className="header-item name">이름</div>
-          <div className="header-item status">상태</div>
-          <div className="header-item score">점수</div>
+    <div className="assignment-container">
+      <div className="assignment-header">
+        <div className="title-and-status">
+          <h1 className="assignment-title">{assignment.assignmentTitle || "과제"}</h1>
+          <div className="assignment-status">채점 관리</div>
         </div>
-
-        {submissions.length === 0 ? (
-          <div className="empty-submissions">제출된 과제가 없습니다.</div>
-        ) : (
-          <div className="submission-items">
-            {submissions.map((submission) => (
-              <div
-                key={submission.submissionId}
-                className={`submission-item ${submission.submissionStatus === "NOTSUBMITTED" ? "not-submitted" : ""}`}
-                onClick={() => handleViewSubmission(submission)}>
-                <div className="member-info">
-                  <div className="name-email-container">
-                    <div className="member-name">{submission.memberName}</div>
-                    <div className="member-email">{submission.memberEmail}</div>
-                  </div>
-                  <div className="submission-date">
-                    {formatDate(submission.submissionCreatedAt)}
-                  </div>
-                </div>
-
-                <div className="submission-right">
-                  <div className="status-text">
-                    {getStatusText(
-                      submission.submissionStatus,
-                      submission.submissionScore
-                    )}
-                  </div>
-
-                  <div className="submission-score">
-                    <ScoreDisplay
-                      score={submission.submissionScore}
-                      maxPoint={assignment.assignmentMaxPoint}
-                      className="submission-score-display"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      <div className="submission-actions">
-        <Button variant="back" onClick={handleBack} />
+      <div className="assignment-content">
+        <div className="toggle-section">
+          <div className="toggle-header">
+            <h2 className="toggle-title">제출 목록</h2>
+          </div>
+          
+          <div className="toggle-content">
+            <div className="submission-list-wrapper">
+              <div className="submission-list-header">
+                <div className="header-item name">이름</div>
+                <div className="header-item status">상태</div>
+                <div className="header-item score">점수</div>
+              </div>
+
+              {submissions.length === 0 ? (
+                <div className="empty-submissions">제출된 과제가 없습니다.</div>
+              ) : (
+                <div className="submission-items">
+                  {submissions.map((submission) => (
+                    <div
+                      key={submission.submissionId}
+                      className={`submission-item ${submission.submissionStatus === "NOTSUBMITTED" ? "not-submitted" : ""}`}
+                      onClick={() => handleViewSubmission(submission)}>
+                      <div className="member-info">
+                        <div className="name-email-container">
+                          <div className="member-name">{submission.memberName}</div>
+                          <div className="member-email">{submission.memberEmail}</div>
+                        </div>
+                        <div className="submission-date">
+                          {formatDate(submission.submissionCreatedAt)}
+                        </div>
+                      </div>
+
+                      <div className="submission-right">
+                        <div className={`status-tag status-${submission.submissionStatus ? submission.submissionStatus.toLowerCase() : 'notsubmitted'}`}>
+                          {getStatusText(
+                            submission.submissionStatus,
+                            submission.submissionScore
+                          )}
+                        </div>
+
+                        <div className="submission-score">
+                          <ScoreDisplay
+                            score={submission.submissionScore}
+                            maxPoint={assignment.assignmentMaxPoint}
+                            className="submission-score-display"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="buttons-row">
+          <Button variant="back" onClick={handleBack} />
+        </div>
       </div>
     </div>
   );
