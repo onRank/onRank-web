@@ -35,10 +35,10 @@ export function PostProvider({ children }) {
         if (response.memberContext) {
           // 회원 역할 설정
           if (response.memberContext.memberRole) {
-            setMemberRole(response.memberContext.memberRole);
-          } else {
-            // 역할 정보가 없을 경우 기본값 설정
-            setMemberRole("PARTICIPANT");
+          setMemberRole(response.memberContext.memberRole);
+        } else {
+          // 역할 정보가 없을 경우 기본값 설정
+          setMemberRole("PARTICIPANT");
           }
           
           // 현재 사용자 이름 설정
@@ -101,7 +101,7 @@ export function PostProvider({ children }) {
       // Extract member role and name if present
       if (response.memberContext) {
         if (response.memberContext.memberRole) {
-          setMemberRole(response.memberContext.memberRole);
+        setMemberRole(response.memberContext.memberRole);
         }
         if (response.memberContext.memberName) {
           setCurrentUserName(response.memberContext.memberName);

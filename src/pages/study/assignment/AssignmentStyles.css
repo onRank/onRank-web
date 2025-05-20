@@ -539,11 +539,11 @@
   margin-top: 20px;
 }
 
-/* Equal width buttons styles */
-.buttons-row button {
-  min-width: 80px;
+/* Remove the previous equal width button styles */
+/* Instead, style just the submit and reSubmit buttons to match the close button */
+.buttons-row button[variant="submit"], 
+.buttons-row button[variant="reSubmit"] {
   width: auto;
-  max-width: 120px;
 }
 
 .submit-button, .resubmit-button {

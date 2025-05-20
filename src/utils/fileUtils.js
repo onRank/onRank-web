@@ -188,17 +188,6 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
     // 프리사인드 URL에서 Content-Type 추출
     let contentType = file.type || "application/octet-stream";
     
-    // 기본 요청 옵션
-    const requestOptions = {
-      method: 'PUT',
-      body: file,
-      mode: 'cors',
-      credentials: 'omit', // 중요: 인증 정보 전송 안함
-      headers: {
-        'Content-Type': contentType
-      }
-    };
-    
     // URL에서 Content-Type 파라미터가 있는지 확인
     try {
       const urlObj = new URL(uploadUrl);
@@ -215,60 +204,94 @@ export const uploadFileToS3 = async (uploadUrl, file) => {
       if (params.has("Content-Type")) {
         contentType = params.get("Content-Type");
         console.log(`[uploadFileToS3] 프리사인드 URL에서 추출한 Content-Type 사용: ${contentType}`);
-        requestOptions.headers['Content-Type'] = contentType;
       }
     } catch (urlError) {
       console.warn("[uploadFileToS3] URL 파싱 실패, 파일 타입 사용:", urlError);
     }
     
     console.log(`[uploadFileToS3] 파일 업로드 요청 설정:`, {
-      method: requestOptions.method,
-      headers: requestOptions.headers,
-      credentials: requestOptions.credentials,
-      mode: requestOptions.mode,
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
       fileType: file.type,
       fileName: file.name,
       fileSize: formatFileSize(file.size)
     });
     
-    // fetch API 사용하여 업로드 시도
-    console.log(`[uploadFileToS3] 업로드 요청 전송 중...`);
-    const response = await fetch(uploadUrl, requestOptions);
-    
-    // 응답 로깅
-    console.log(`[uploadFileToS3] 응답 상태:`, {
-      status: response.status,
-      statusText: response.statusText,
-      ok: response.ok
-    });
-    
-    if (!response.ok) {
-      // 실패 시 응답 상세 정보 수집
-      let errorDetails;
-      try {
-        errorDetails = await response.text();
-        console.error('[uploadFileToS3] 응답 상세 정보:', errorDetails);
-      } catch (textError) {
-        errorDetails = '응답 상세 정보를 읽을 수 없음';
+    // axios를 사용하여 업로드 - 바이너리 데이터 처리가 더 안정적임
+    try {
+      const axios = window.axios || require('axios');
+      
+      const response = await axios.put(uploadUrl, file, {
+        headers: {
+          'Content-Type': contentType
+        }
+      });
+      
+      console.log(`[uploadFileToS3] axios 응답 상태:`, {
+        status: response.status,
+        statusText: response.statusText
+      });
+      
+      // S3 업로드 URL로부터 다운로드 URL 가져오기
+      const fileUrl = uploadUrl.split('?')[0];
+      console.log(`[uploadFileToS3] 파일 업로드 성공: ${file.name} -> ${fileUrl}`);
+      
+      return {
+        success: true,
+        message: '파일이 성공적으로 업로드되었습니다.',
+        url: fileUrl
+      };
+    } catch (axiosError) {
+      console.error('[uploadFileToS3] axios 업로드 실패:', axiosError);
+      
+      // axios 업로드 실패 시 fetch로 대체 시도
+      console.log('[uploadFileToS3] fetch API로 대체 시도...');
+      
+      const requestOptions = {
+        method: 'PUT',
+        body: file,
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': contentType
+        }
+      };
+      
+      const fetchResponse = await fetch(uploadUrl, requestOptions);
+      
+      // 응답 로깅
+      console.log(`[uploadFileToS3] fetch 응답 상태:`, {
+        status: fetchResponse.status,
+        statusText: fetchResponse.statusText,
+        ok: fetchResponse.ok
+      });
+      
+      if (!fetchResponse.ok) {
+        let errorDetails;
+        try {
+          errorDetails = await fetchResponse.text();
+          console.error('[uploadFileToS3] 응답 상세 정보:', errorDetails);
+        } catch (textError) {
+          errorDetails = '응답 상세 정보를 읽을 수 없음';
+        }
+        
+        return { 
+          success: false, 
+          message: `파일 업로드 실패: ${fetchResponse.status} ${fetchResponse.statusText}`,
+          error: errorDetails
+        };
       }
       
-      return { 
-        success: false, 
-        message: `파일 업로드 실패: ${response.status} ${response.statusText}`,
-        error: errorDetails
+      // S3 업로드 URL로부터 다운로드 URL 가져오기
+      const fileUrl = uploadUrl.split('?')[0];
+      console.log(`[uploadFileToS3] 파일 업로드 성공 (fetch 사용): ${file.name} -> ${fileUrl}`);
+      
+      return {
+        success: true,
+        message: '파일이 성공적으로 업로드되었습니다.',
+        url: fileUrl
       };
     }
-    
-    // S3 업로드 URL로부터 다운로드 URL 가져오기
-    // 일반적으로 사전 서명된 PUT URL에서 쿼리 파라미터를 제거하면 다운로드 URL을 얻을 수 있음
-    const fileUrl = uploadUrl.split('?')[0];
-    console.log(`[uploadFileToS3] 파일 업로드 성공: ${file.name} -> ${fileUrl}`);
-    
-    return {
-      success: true,
-      message: '파일이 성공적으로 업로드되었습니다.',
-      url: fileUrl
-    };
   } catch (error) {
     console.error('[uploadFileToS3] 파일 업로드 중 예외 발생:', error);
     return {
