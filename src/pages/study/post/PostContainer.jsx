@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import PropTypes from "prop-types";
-import { usePost, PostProvider } from "../../../components/study/post/PostProvider";
+import {
+  usePost,
+  PostProvider,
+} from "../../../components/study/post/PostProvider";
 import PostList from "../../../components/study/post/PostList";
 import PostDetail from "../../../components/study/post/PostDetail";
 import PostForm from "../../../components/study/post/PostForm";
@@ -68,7 +71,8 @@ const PostInnerContainer = ({ onSubPageChange }) => {
   // 네비게이션 유틸
   const navigateToList = () => navigate(`/studies/${studyId}/posts`);
   const navigateToAdd = () => navigate(`/studies/${studyId}/posts/add`);
-  const navigateToEdit = (id) => navigate(`/studies/${studyId}/posts/${id}/edit`);
+  const navigateToEdit = (id) =>
+    navigate(`/studies/${studyId}/posts/${id}/edit`);
   const navigateToDetail = (id) => navigate(`/studies/${studyId}/posts/${id}`);
 
   // CRUD 핸들러
@@ -149,7 +153,6 @@ const PostInnerContainer = ({ onSubPageChange }) => {
   if (isDetailPage && selectedPost) {
     return (
       <div>
-        <h1 className="page-title">게시글 상세</h1>
         <PostDetail
           studyId={studyId}
           postId={parseInt(postId, 10)}
@@ -166,13 +169,15 @@ const PostInnerContainer = ({ onSubPageChange }) => {
     <div>
       <h1 className="page-title">게시판</h1>
 
-        <div className="add-section-box">
-          <div>
-            <div className="add-section-title">게시글 추가</div>
-            <div className="add-section-description">새로운 게시글을 추가해주세요.</div>
+      <div className="add-section-box">
+        <div>
+          <div className="add-section-title">게시글 추가</div>
+          <div className="add-section-description">
+            새로운 게시글을 추가해주세요.
           </div>
-          <Button variant="add" onClick={navigateToAdd} />
         </div>
+        <Button variant="add" onClick={navigateToAdd} />
+      </div>
 
       {isLoading ? (
         <div className="loading-message">로딩중...</div>
@@ -207,16 +212,14 @@ export default function PostContainer({ onSubPageChange }) {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-        }}
-      >
+        }}>
         <div
           style={{
             width: "100%",
             position: "relative",
             padding: "0 1rem",
             marginTop: "1rem",
-          }}
-        >
+          }}>
           <PostInnerContainer onSubPageChange={onSubPageChange} />
         </div>
       </div>
@@ -226,4 +229,4 @@ export default function PostContainer({ onSubPageChange }) {
 
 PostContainer.propTypes = {
   onSubPageChange: PropTypes.func.isRequired,
-}; 
+};

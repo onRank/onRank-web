@@ -7,8 +7,6 @@ import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
 import FileUploader from "../../common/FileUploader";
 import "../../../styles/post.css";
-import "../../../styles/notice.css";
-
 
 /*
   PostForm – 게시글 작성 공통 컴포넌트
@@ -16,7 +14,12 @@ import "../../../styles/notice.css";
   • 모든 스터디 참여자가 글 작성 가능하므로 별도 권한 체크는 하지 않는다.
 */
 
-const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading }) => {
+const PostForm = ({
+  post = null,
+  onSubmit,
+  onCancel,
+  isLoading: propIsLoading,
+}) => {
   const { studyId } = useParams();
   const [postTitle, setPostTitle] = useState("");
   const [postContent, setPostContent] = useState("");
@@ -57,7 +60,7 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
 
     try {
       console.log("[PostForm] 게시글 생성 요청 준비, studyId:", studyId);
-      
+
       const newPost = {
         postTitle,
         postContent,
@@ -92,13 +95,19 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
 
       // 성공 – caller 에게 알림 후 페이지 이동 처리
       if (result.data?.postId) {
-        setTimeout(() => {
-          if (onCancel) onCancel(result.data.postId);
-        }, result.warning ? 1500 : 500);
+        setTimeout(
+          () => {
+            if (onCancel) onCancel(result.data.postId);
+          },
+          result.warning ? 1500 : 500
+        );
       } else {
-        setTimeout(() => {
-          if (onCancel) onCancel();
-        }, result.warning ? 1500 : 500);
+        setTimeout(
+          () => {
+            if (onCancel) onCancel();
+          },
+          result.warning ? 1500 : 500
+        );
       }
     } catch (err) {
       console.error("[PostForm] 게시글 처리 오류:", err);
@@ -110,16 +119,16 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
   if (isLoading || isSubmitting) return <LoadingSpinner />;
 
   return (
-    <form onSubmit={handleCreatePost} className="notice-form">
-      {error && <div className="notice-error-message">{error}</div>}
+    <form onSubmit={handleCreatePost} className="post-form">
+      {error && <div className="post-error-message">{error}</div>}
 
-      <div className="notice-input-group">
-        <label className="notice-label" htmlFor="title">
-          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
+      <div className="post-input-group">
+        <label className="post-label" htmlFor="title">
+          <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>제목
         </label>
         <input
           id="title"
-          className="notice-input"
+          className="post-input"
           placeholder="게시글 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
@@ -127,30 +136,50 @@ const PostForm = ({ post = null, onSubmit, onCancel, isLoading: propIsLoading })
         />
       </div>
 
-      <div className="notice-input-group">
-        <label className="notice-label" htmlFor="content">
-          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용
+      <div className="post-input-group">
+        <label className="post-label" htmlFor="content">
+          <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>내용
         </label>
-        <textarea
-          id="content"
-          className="notice-textarea"
-          placeholder="게시글 내용을 입력하세요"
-          value={postContent}
-          onChange={(e) => setPostContent(e.target.value)}
-          maxLength={maxLength}
-        />
-        <div className="notice-char-count">{postContent.length}/{maxLength}</div>
+        <div style={{ position: "relative" }}>
+          <textarea
+            id="content"
+            className="post-textarea"
+            placeholder="게시글 내용을 입력하세요"
+            value={postContent}
+            onChange={(e) => setPostContent(e.target.value)}
+            maxLength={maxLength}
+            style={{
+              paddingBottom: "32px",
+            }}
+          />
+          <div
+            className="post-char-count"
+            style={{
+              position: "absolute",
+              left: "16px",
+              bottom: "10px",
+              color: "#666",
+              fontSize: "12px",
+              background: "#fff",
+              padding: "0 4px",
+              pointerEvents: "none",
+            }}>
+            {postContent.length}/{maxLength}
+          </div>
+        </div>
       </div>
 
       {/* 공용 파일 업로더 컴포넌트 사용 */}
-      <FileUploader
-        existingFiles={[]}
-        onFileSelect={handleFileSelect}
-      />
+      <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
 
-      <div className="notice-action-buttons">
+      <div className="post-action-buttons">
         <Button type="submit" variant="upload" disabled={isSubmitting} />
-        <Button type="button" variant="back" onClick={onCancel} disabled={isSubmitting} />
+        <Button
+          type="button"
+          variant="back"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        />
       </div>
     </form>
   );
