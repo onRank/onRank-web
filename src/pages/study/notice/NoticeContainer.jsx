@@ -264,11 +264,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         }}>
         <div style={{ flex: 1 }}>
           <h1 className="page-title">
-            {isAddPage
-              ? "공지사항 추가"
-              : isEditPage
-              ? "공지사항 수정"
-              : "공지사항"}
+            {isAddPage ? "공지사항 추가" : isEditPage ? "공지사항 수정" : null}
           </h1>
           {renderContent()}
         </div>

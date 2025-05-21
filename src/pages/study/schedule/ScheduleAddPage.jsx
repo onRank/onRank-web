@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import { studyService } from '../../../services/api';
-import { tokenUtils } from '../../../utils/tokenUtils';
-import { useTheme } from '../../../contexts/ThemeContext';
-import TimeSelector from '../../../components/common/TimeSelector';
-import Button from '../../../components/common/Button';
-import PropTypes from 'prop-types';
-import './ScheduleAddPage.css';
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { studyService } from "../../../services/api";
+import { tokenUtils } from "../../../utils/tokenUtils";
+import { useTheme } from "../../../contexts/ThemeContext";
+import TimeSelector from "../../../components/common/TimeSelector";
+import Button from "../../../components/common/Button";
+import PropTypes from "prop-types";
+import "./ScheduleAddPage.css";
 
 function ScheduleAddPage({ onCancel }) {
   const { studyId } = useParams();
   const { colors } = useTheme();
-  
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('00:00');
-  const [content, setContent] = useState('');
+
+  const [title, setTitle] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("00:00");
+  const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  
+  const [error, setError] = useState("");
+
   // 일정 목록을 가져와서 회차 번호 계산
   useEffect(() => {
     const fetchSchedules = async () => {
@@ -32,48 +32,53 @@ function ScheduleAddPage({ onCancel }) {
         console.error("[ScheduleAddPage] 일정 목록 조회 실패:", error);
       }
     };
-    
+
     fetchSchedules();
   }, [studyId]);
-  
+
   // 새로고침 감지 및 리다이렉트 처리
   useEffect(() => {
     const handleBeforeUnload = () => {
       const token = tokenUtils.getToken();
       if (!token) {
-        window.location.href = `${import.meta.env.VITE_CLOUDFRONT_URL}/studies/${studyId}/schedules`;
+        window.location.href = `${
+          import.meta.env.VITE_CLOUDFRONT_URL
+        }/studies/${studyId}/schedules`;
         return null;
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     // 컴포넌트 마운트 시에도 토큰 체크
     const token = tokenUtils.getToken();
     if (!token) {
-      window.location.href = `${import.meta.env.VITE_CLOUDFRONT_URL}/studies/${studyId}/schedules`;
+      window.location.href = `${
+        import.meta.env.VITE_CLOUDFRONT_URL
+      }/studies/${studyId}/schedules`;
     }
 
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [studyId]);
-  
+
   // 폼 유효성 검증 - 제목, 날짜, 시간, 내용 모두 필수
-  const isFormValid = title.trim() !== '' && date !== '' && time !== '' && content.trim() !== '';
+  const isFormValid =
+    title.trim() !== "" && date !== "" && time !== "" && content.trim() !== "";
 
   // 일정 추가 제출
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!isFormValid) {
-      setError('제목, 날짜, 시간, 내용은 필수입니다.');
+      setError("제목, 날짜, 시간, 내용은 필수입니다.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    setError('');
-    
+    setError("");
+
     try {
       // API 요청 데이터 형식으로 변환
       const scheduleData = {
@@ -82,11 +87,11 @@ function ScheduleAddPage({ onCancel }) {
         date: date,
         time: time,
       };
-      
+
       // API 호출
       const result = await studyService.addSchedule(studyId, scheduleData);
       console.log("[ScheduleAddPage] 일정 추가 성공:", result);
-      
+
       // 성공 시 일정 목록 페이지로 이동
       if (onCancel) onCancel();
     } catch (error) {
@@ -110,20 +115,18 @@ function ScheduleAddPage({ onCancel }) {
 
   return (
     <div className="schedule-add-container">
-      <h2 className="schedule-add-title" style={{ color: colors.textPrimary }}>일정</h2>
-      <div className="schedule-add-form" style={{
-        backgroundColor: colors.cardBackground,
-        border: `1px solid ${colors.border}`
-      }}>
+      <div className="schedule-add-form">
         {error && (
-          <div className="schedule-error" style={{
-            backgroundColor: `${colors.error}20`,
-            color: colors.error
-          }}>
+          <div
+            className="schedule-error"
+            style={{
+              backgroundColor: `${colors.error}20`,
+              color: colors.error,
+            }}>
             {error}
           </div>
         )}
-        
+
         <div className="field-container">
           <h3 className="field-title" style={{ color: colors.textPrimary }}>
             <span className="required-mark">*</span>
@@ -138,7 +141,7 @@ function ScheduleAddPage({ onCancel }) {
             style={{
               border: `1px solid ${colors.border}`,
               backgroundColor: colors.inputBackground,
-              color: colors.textPrimary
+              color: colors.textPrimary,
             }}
             required
           />
@@ -149,10 +152,9 @@ function ScheduleAddPage({ onCancel }) {
             <span className="required-mark">*</span>
             날짜
           </h3>
-          <div 
+          <div
             className="date-picker-container"
-            onClick={() => document.getElementById('date-input').showPicker()}
-          >
+            onClick={() => document.getElementById("date-input").showPicker()}>
             <input
               id="date-input"
               type="date"
@@ -163,7 +165,7 @@ function ScheduleAddPage({ onCancel }) {
                 border: `1px solid ${colors.border}`,
                 backgroundColor: colors.inputBackground,
                 color: colors.textPrimary,
-                cursor: 'pointer'
+                cursor: "pointer",
               }}
               required
             />
@@ -175,10 +177,11 @@ function ScheduleAddPage({ onCancel }) {
             <span className="required-mark">*</span>
             시간
           </h3>
-          <TimeSelector 
+          <TimeSelector
             value={time}
             onChange={setTime}
             disabled={isSubmitting}
+            style={{ width: "45%" }}
           />
         </div>
 
@@ -187,46 +190,47 @@ function ScheduleAddPage({ onCancel }) {
             <span className="required-mark">*</span>
             내용
           </h3>
-          <div className="textarea-container">
-          <textarea
-            value={content}
+          <div className="textarea-container" style={{ position: "relative" }}>
+            <textarea
+              value={content}
               onChange={handleContentChange}
               placeholder="일정에 대한 설명을 입력하세요."
-              className="form-input"
-            style={{
-              border: `1px solid ${colors.border}`,
+              className="form-input-content"
+              style={{
+                border: `1px solid ${colors.border}`,
                 backgroundColor: colors.inputBackground,
                 color: colors.textPrimary,
-              minHeight: '200px',
-                resize: 'vertical'
-            }}
+                minHeight: "200px",
+                resize: "vertical",
+                paddingBottom: "32px",
+              }}
               maxLength={10000}
               required
-          />
-            <div className="char-counter" style={{ color: colors.textSecondary }}>
+            />
+            <div
+              className="char-counter"
+              style={{
+                position: "absolute",
+                right: "16px",
+                bottom: "10px",
+                color: colors.textSecondary,
+                fontSize: "13px",
+                background: "#fff",
+                padding: "0 4px",
+                pointerEvents: "none",
+              }}>
               {content.length}/10000
             </div>
           </div>
         </div>
 
         <div className="button-container">
-          <Button 
-            variant="upload" 
+          <Button
+            variant="upload"
             onClick={handleSubmit}
             disabled={!isFormValid || isSubmitting}
-            style={{
-              width: '84px', 
-              height: '40px',
-              opacity: isFormValid && !isSubmitting ? 1 : 0.5,
-              cursor: isFormValid && !isSubmitting ? 'pointer' : 'not-allowed'
-            }}
           />
-          <Button 
-            variant="back" 
-            label="취소" 
-            onClick={handleCancel}
-            style={{ width: '84px', height: '40px' }}
-          />
+          <Button variant="back" onClick={handleCancel} />
         </div>
       </div>
     </div>
@@ -234,7 +238,7 @@ function ScheduleAddPage({ onCancel }) {
 }
 
 ScheduleAddPage.propTypes = {
-  onCancel: PropTypes.func
+  onCancel: PropTypes.func,
 };
 
-export default ScheduleAddPage; 
+export default ScheduleAddPage;

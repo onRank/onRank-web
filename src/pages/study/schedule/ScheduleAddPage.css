@@ -10,10 +10,8 @@
 }
 
 .schedule-add-form {
-  border-radius: 8px;
-  padding: 2rem;
   max-width: 800px;
-  margin: 2rem auto;
+  height: fit-content;
 }
 
 .schedule-error {
@@ -40,10 +38,17 @@
 }
 
 .form-input {
+  width: 45%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+.form-input-content {
   width: 100%;
   padding: 0.75rem;
   border-radius: 4px;
-  font-size: 16px;
+  font-size: 15px;
 }
 
 .date-picker-container {
@@ -68,4 +73,5 @@
   justify-content: flex-end;
   gap: 1rem;
   margin-top: 2rem;
-} 
+  margin-bottom: 0;
+}

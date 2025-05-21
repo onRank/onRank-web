@@ -49,6 +49,13 @@
 }
 
 .form-input {
+  width: 45%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-input-content {
   width: 100%;
   padding: 0.75rem;
   border-radius: 4px;
@@ -73,4 +80,4 @@
   margin-top: 3rem;
   margin-bottom: 4rem;
   padding-bottom: 3rem;
-} 
+}
