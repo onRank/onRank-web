@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
+import { RiErrorWarningLine } from "react-icons/ri";
 
 function PointContainer({ title, icon, point, details }) {
   const [isHovered, setIsHovered] = useState(false);
@@ -44,6 +45,15 @@ function PointContainer({ title, icon, point, details }) {
     title: {
       fontWeight: "bold",
       fontSize: "20px",
+    },
+    warningIcon: {
+      position: "absolute",
+      top: 12,
+      right: 14,
+      fontSize: 20,
+      color: "#222",
+      cursor: "pointer",
+      zIndex: 2,
     },
     pointText: {
       fontSize: "14px",
@@ -102,6 +112,9 @@ function PointContainer({ title, icon, point, details }) {
       style={styles.container}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}>
+      <div style={warningIcon}>
+        <RiErrorWarningLine />
+      </div>
       <div style={styles.topRow}>
         <div style={styles.iconCircle}>{icon}</div>
         <div style={styles.title}>{title}</div>
