@@ -109,7 +109,6 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  width: 100%;
   min-height: 40px;
 }
 
@@ -147,10 +146,11 @@
 
 .menu-icon {
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px 0px 4px 26px;
   border-radius: 4px;
   background: none;
   border: none;
+  outline: none;
 }
 
 .dropdown-menu {

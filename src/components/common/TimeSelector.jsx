@@ -117,7 +117,7 @@ function TimeSelector({ value, onChange, disabled = false }) {
             position: "absolute",
             top: "100%",
             left: 0,
-            width: "100%",
+            width: "45%",
             border: `1px solid ${colors.border}`,
             borderRadius: "4px",
             backgroundColor: colors.cardBackground,

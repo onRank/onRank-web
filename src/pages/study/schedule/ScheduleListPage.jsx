@@ -195,6 +195,7 @@ function ScheduleListPage({
                     border: "1px solid black",
                     borderRadius: "8px",
                     display: "flex",
+                    justifyContent: "space-between",
                   }}>
                   {/* 일정 내용 */}
                   <div

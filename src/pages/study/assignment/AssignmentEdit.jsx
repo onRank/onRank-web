@@ -262,18 +262,55 @@ function AssignmentEdit() {
             <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>
             지시사항
           </label>
-          <textarea
-            id="assignmentContent"
-            name="assignmentContent"
-            value={formData.assignmentContent}
-            onChange={handleChange}
-            placeholder="과제 내용과 지시사항을 입력하세요"
-            rows={6}
-            required
-          />
-          <div className="char-count">
-            {formData.assignmentContent.length}/10000
+          <div style={{ position: "relative" }}>
+            <textarea
+              id="assignmentContent"
+              name="assignmentContent"
+              value={formData.assignmentContent}
+              onChange={handleChange}
+              placeholder="과제 내용과 지시사항을 입력하세요"
+              rows={6}
+              required
+              style={{
+                width: "100%",
+                padding: "10px 12px 32px 12px", // 하단 패딩 추가
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px",
+                resize: "vertical",
+                minHeight: "120px",
+              }}
+            />
+            <div
+              className="char-count"
+              style={{
+                position: "absolute",
+                left: "16px",
+                bottom: "10px",
+                color: "#666",
+                fontSize: "12px",
+                background: "#fff",
+                padding: "0 4px",
+                pointerEvents: "none",
+              }}>
+              {formData.assignmentContent.length}/10000
+            </div>
           </div>
+        </div>
+
+        {/* 통합 FileUploader 컴포넌트 사용 */}
+        <div className="form-field">
+          <FileUploader
+            existingFiles={existingFiles.map((file) => ({
+              fileId: file.fileId,
+              fileName: file.fileName,
+              fileUrl: file.fileUrl,
+              fileSize: file.fileSize,
+            }))}
+            onFileSelect={handleFileSelect}
+            onExistingFileRemove={handleExistingFileRemove}
+            style={{ width: "45%" }}
+          />
         </div>
 
         <div className="form-field">
@@ -303,20 +340,6 @@ function AssignmentEdit() {
             min="0"
             value={formData.assignmentMaxPoint}
             onChange={handleChange}
-          />
-        </div>
-
-        {/* 통합 FileUploader 컴포넌트 사용 */}
-        <div className="form-field">
-          <FileUploader
-            existingFiles={existingFiles.map((file) => ({
-              fileId: file.fileId,
-              fileName: file.fileName,
-              fileUrl: file.fileUrl,
-              fileSize: file.fileSize,
-            }))}
-            onFileSelect={handleFileSelect}
-            onExistingFileRemove={handleExistingFileRemove}
           />
         </div>
 
