@@ -38,6 +38,7 @@ function MemberCard({ member, onChangeRole, onDelete }) {
     backgroundColor: selected ? "#ee0418" : "#fff",
     border: selected ? "1.7px solid #000" : "none",
     borderRadius: "11px",
+    outline: "none",
     transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
   });
 
