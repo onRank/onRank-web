@@ -55,7 +55,7 @@
 
 /* 타임라인 세로선 스타일 추가 */
 .timeline-container::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 10px;
   bottom: 10px;
@@ -80,7 +80,7 @@
 
 /* 타임라인 점 스타일 추가 */
 .schedule-item-wrapper::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 24px;
   left: -30px;
@@ -99,7 +99,7 @@
   position: relative;
   border: 1px solid black;
   border-radius: 12px;
-  padding: 1.5rem;
+  padding: 1rem;
   background-color: white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -232,4 +232,4 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-} 
+}

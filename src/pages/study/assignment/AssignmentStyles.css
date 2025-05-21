@@ -55,7 +55,14 @@
   font-size: 15px;
 }
 
-.form-field input, 
+.form-field input {
+  width: 45%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
 .form-field textarea {
   width: 100%;
   padding: 10px 12px;
@@ -222,7 +229,6 @@
   padding: 6px 8px;
   border-bottom: 1px solid #eee;
 }
-
 
 .file-info-container {
   display: flex;
@@ -542,13 +548,14 @@
 
 /* Remove the previous equal width button styles */
 /* Instead, style just the submit and reSubmit buttons to match the close button */
-.buttons-row button[variant="submit"], 
+.buttons-row button[variant="submit"],
 .buttons-row button[variant="reSubmit"],
 .buttons-row button[variant="store"] {
   width: auto;
 }
 
-.submit-button, .resubmit-button {
+.submit-button,
+.resubmit-button {
   padding: 8px 16px;
   background-color: #dc3545;
   color: white;
@@ -558,7 +565,8 @@
   font-weight: bold;
 }
 
-.submit-button:hover, .resubmit-button:hover {
+.submit-button:hover,
+.resubmit-button:hover {
   background-color: #c82333;
 }
 
@@ -816,7 +824,8 @@
   gap: 32px;
 }
 
-.instruction-section, .submission-section {
+.instruction-section,
+.submission-section {
   margin-bottom: 24px;
 }
 
@@ -881,7 +890,8 @@
   gap: 8px;
 }
 
-.preview-button, .download-button {
+.preview-button,
+.download-button {
   padding: 6px 10px;
   font-size: 13px;
   border: none;
@@ -928,7 +938,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.content-title, .feedback-title {
+.content-title,
+.feedback-title {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 8px;
@@ -1035,8 +1046,12 @@
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Add space between deadline time and status */
@@ -1049,4 +1064,4 @@
 
 .deadline-days {
   margin-left: 8px; /* Additional left margin for D-day text */
-} 
+}

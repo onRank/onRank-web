@@ -181,7 +181,7 @@ function ScheduleListPage({
                     style={{ color: colors.textPrimary }}>
                     {schedule.scheduleTitle}
                   </h3>
-                  <p style={{ fontSize: "14px", marginBottom: "4px" }}>
+                  <p style={{ fontSize: "12px", marginBottom: "4px" }}>
                     {schedule.round}회차(일시:{" "}
                     {formatDateTime(schedule.scheduleStartingAt)})
                   </p>
@@ -194,7 +194,14 @@ function ScheduleListPage({
                     backgroundColor: colors.cardBackground,
                     border: "1px solid black",
                     borderRadius: "8px",
+                    display: "flex",
                   }}>
+                  {/* 일정 내용 */}
+                  <div
+                    className="schedule-content"
+                    style={{ color: colors.text }}>
+                    {schedule.scheduleContent}
+                  </div>
                   {/* 일정 제목과 메뉴 */}
                   <div className="schedule-header">
                     <div className="schedule-info-wrapper">
@@ -209,13 +216,6 @@ function ScheduleListPage({
                         }
                       />
                     )}
-                  </div>
-
-                  {/* 일정 내용 */}
-                  <div
-                    className="schedule-content"
-                    style={{ color: colors.text }}>
-                    {schedule.scheduleContent}
                   </div>
                 </div>
               </div>

@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { formatFileSize, getFileIcon, isImageFile, getFilePreviewUrl, revokeFilePreviewUrl } from "../../utils/fileUtils";
+import {
+  formatFileSize,
+  getFileIcon,
+  isImageFile,
+  getFilePreviewUrl,
+  revokeFilePreviewUrl,
+} from "../../utils/fileUtils";
 import Button from "./Button";
 import { IoAttach } from "react-icons/io5";
 import "../../styles/fileUploader.css";
@@ -13,35 +19,35 @@ function FileUploader({
   existingFiles,
   onFileSelect,
   onFileRemove,
-  onExistingFileRemove
+  onExistingFileRemove,
 }) {
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const fileInputRef = useRef(null);
-  
+
   // 파일 미리보기 URL 저장
   const [previewUrls, setPreviewUrls] = useState({});
 
   // 파일 변경 시 미리보기 URL 생성
   useEffect(() => {
     const newPreviewUrls = {};
-    
+
     // 새 파일에 대한 미리보기 URL 생성
-    selectedFiles.forEach(file => {
+    selectedFiles.forEach((file) => {
       if (isImageFile(file) && !previewUrls[file.name]) {
         newPreviewUrls[file.name] = URL.createObjectURL(file);
       }
     });
-    
+
     if (Object.keys(newPreviewUrls).length > 0) {
-      setPreviewUrls(prev => ({...prev, ...newPreviewUrls}));
+      setPreviewUrls((prev) => ({ ...prev, ...newPreviewUrls }));
     }
-    
+
     // 컴포넌트 언마운트 시 모든 URL 정리
     return () => {
-      Object.values(newPreviewUrls).forEach(url => {
-        if (url && url.startsWith('blob:')) {
+      Object.values(newPreviewUrls).forEach((url) => {
+        if (url && url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
       });
@@ -52,8 +58,8 @@ function FileUploader({
   useEffect(() => {
     return () => {
       // 기존 모든 URL 메모리 정리
-      Object.values(previewUrls).forEach(url => {
-        if (url && url.startsWith('blob:')) {
+      Object.values(previewUrls).forEach((url) => {
+        if (url && url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
       });
@@ -90,21 +96,21 @@ function FileUploader({
     }
 
     // 선택된 파일 추가
-    setSelectedFiles(prev => [...prev, ...newFiles]);
-    
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
+
     // 파일 선택 후 input 초기화
     e.target.value = "";
   };
 
   // 선택된 파일 제거 핸들러
   const handleRemoveFile = (fileName) => {
-    setSelectedFiles(prev => prev.filter((file) => file.name !== fileName));
-    
+    setSelectedFiles((prev) => prev.filter((file) => file.name !== fileName));
+
     // 파일 제거 시 URL 해제
     if (previewUrls[fileName]) {
       URL.revokeObjectURL(previewUrls[fileName]);
-      setPreviewUrls(prev => {
-        const newUrls = {...prev};
+      setPreviewUrls((prev) => {
+        const newUrls = { ...prev };
         delete newUrls[fileName];
         return newUrls;
       });
@@ -163,7 +169,7 @@ function FileUploader({
     }
 
     // 선택된 파일 추가
-    setSelectedFiles(prev => [...prev, ...newFiles]);
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   // 파일 첨부 버튼 클릭
@@ -175,22 +181,22 @@ function FileUploader({
   const fileList = useMemo(() => {
     const allFiles = [
       // 기존 파일 목록
-      ...existingFiles.map(file => ({
+      ...existingFiles.map((file) => ({
         id: file.fileId,
         name: file.fileName,
         size: 0, // 기존 파일은 size 정보가 없을 수 있음
         isExisting: true,
-        url: file.fileUrl
+        url: file.fileUrl,
       })),
       // 새로 선택된 파일 목록
-      ...selectedFiles.map(file => ({
+      ...selectedFiles.map((file) => ({
         id: null,
         name: file.name,
         size: file.size,
         isExisting: false,
         file: file,
-        url: previewUrls[file.name] || null
-      }))
+        url: previewUrls[file.name] || null,
+      })),
     ];
 
     if (allFiles.length === 0) return null;
@@ -210,13 +216,14 @@ function FileUploader({
                 <span className="file-size">({formatFileSize(file.size)})</span>
               )}
             </div>
-            <button 
-              className="remove-file-button" 
-              onClick={() => file.isExisting 
-                ? handleRemoveExistingFile(file.id) 
-                : handleRemoveFile(file.name)} 
-              type="button"
-            >
+            <button
+              className="remove-file-button"
+              onClick={() =>
+                file.isExisting
+                  ? handleRemoveExistingFile(file.id)
+                  : handleRemoveFile(file.name)
+              }
+              type="button">
               ✕
             </button>
           </div>
@@ -227,33 +234,37 @@ function FileUploader({
 
   return (
     <div className="file-uploader-container">
-      {errorMessage && <div className="file-uploader-error">{errorMessage}</div>}
+      {errorMessage && (
+        <div className="file-uploader-error">{errorMessage}</div>
+      )}
 
       <h3 className="section-subtitle">첨부파일</h3>
-      
+
       {/* 파일 목록 */}
       {fileList}
-      
+
       {/* 파일 첨부 버튼 영역 */}
-      <div 
-        className={`attach-button-area ${isDragging ? 'dragging' : ''}`}
+      <div
+        className={`attach-button-area ${isDragging ? "dragging" : ""}`}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        <input 
+        onDrop={handleDrop}>
+        <input
           className="hidden-file-input"
-          type="file" 
+          type="file"
           ref={fileInputRef}
           onChange={handleFileChange}
           multiple
           accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
         />
-        
-        <button className="attach-button" type="button" onClick={handleAttachClick}>
+
+        <button
+          className="attach-button"
+          type="button"
+          onClick={handleAttachClick}>
           <IoAttach size={18} />
-          파일을 끌어서 놓거나
+          파일을 끌어서 놓거나 <br />
           클릭하여 추가하세요
         </button>
       </div>
@@ -266,19 +277,19 @@ FileUploader.propTypes = {
     PropTypes.shape({
       fileId: PropTypes.number.isRequired,
       fileName: PropTypes.string.isRequired,
-      fileUrl: PropTypes.string
+      fileUrl: PropTypes.string,
     })
   ),
   onFileSelect: PropTypes.func,
   onFileRemove: PropTypes.func,
-  onExistingFileRemove: PropTypes.func
+  onExistingFileRemove: PropTypes.func,
 };
 
 FileUploader.defaultProps = {
   existingFiles: [],
   onFileSelect: () => {},
   onFileRemove: () => {},
-  onExistingFileRemove: () => {}
+  onExistingFileRemove: () => {},
 };
 
-export default FileUploader; 
+export default FileUploader;

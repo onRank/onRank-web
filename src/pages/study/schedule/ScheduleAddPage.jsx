@@ -211,7 +211,7 @@ function ScheduleAddPage({ onCancel }) {
               className="char-counter"
               style={{
                 position: "absolute",
-                right: "16px",
+                left: "16px",
                 bottom: "10px",
                 color: colors.textSecondary,
                 fontSize: "13px",

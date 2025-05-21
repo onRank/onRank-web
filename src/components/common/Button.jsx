@@ -30,109 +30,89 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     create: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     back: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     store: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     upload: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     add: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     edit: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     logout: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
       borderRadius: "20px",
       width: "75px",
     },
     complete: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     submit: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
       width: "64px",
     },
     reSubmit: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
       width: "85px",
     },
     addFiles: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
       width: "76px",
     },
     delete: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
     },
     all: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     progressing: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     study: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     member: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     memberAdd: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
       minWidth: "84px",
     },
     studyDelete: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      border: "none",
       width: " 100px",
     },
     done: {
       backgroundColor: "#fff",
       color: "#333",
-      border: "1px solid #ccc",
     },
     default: {
       backgroundColor: "#f2f2f2",
       color: "#333",
-      border: "1px solid #ccc",
     },
   };
 
@@ -150,6 +130,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
+    border: "1px solid #000",
     transition: "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
     ...variantStyles[variant],
   };

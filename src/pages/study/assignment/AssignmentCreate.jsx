@@ -4,7 +4,10 @@ import useStudyRole from "../../../hooks/useStudyRole";
 import assignmentService from "../../../services/assignment";
 import Button from "../../../components/common/Button";
 import FileUploader from "../../../components/common/FileUploader";
-import { formatFileSize, handleFileUploadWithS3 } from "../../../utils/fileUtils";
+import {
+  formatFileSize,
+  handleFileUploadWithS3,
+} from "../../../utils/fileUtils";
 import "./AssignmentStyles.css";
 import "../../../styles/notice.css";
 
@@ -38,18 +41,18 @@ function AssignmentCreate() {
   // 입력값 변경 처리
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     // 포인트 제한 추가 - 1,000,000 이하만 허용
-    if (name === 'assignmentMaxPoint') {
+    if (name === "assignmentMaxPoint") {
       const numValue = parseInt(value, 10);
       if (numValue > 1000000) {
-        setError('최대 포인트는 1,000,000 이하여야 합니다.');
+        setError("최대 포인트는 1,000,000 이하여야 합니다.");
         return;
       } else {
         setError(null);
       }
     }
-    
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "number" ? parseInt(value, 10) : value,
@@ -105,41 +108,59 @@ function AssignmentCreate() {
       const offsetMs = dueDate.getTimezoneOffset() * 60 * 1000;
       const localDate = new Date(dueDate.getTime() - offsetMs);
       const dueDateISO = localDate.toISOString();
-      
-      console.log("[AssignmentCreate] 원본 마감일:", formData.assignmentDueDate);
+
+      console.log(
+        "[AssignmentCreate] 원본 마감일:",
+        formData.assignmentDueDate
+      );
       console.log("[AssignmentCreate] 변환된 마감일:", dueDateISO);
-      
+
       // 요청 데이터 구성 - JSON 형식으로 변경
       const assignmentData = {
         assignmentTitle: formData.assignmentTitle,
         assignmentContent: formData.assignmentContent,
         assignmentDueDate: dueDateISO,
         assignmentMaxPoint: formData.assignmentMaxPoint,
-        fileNames: attachedFiles.map(file => file.name), // 파일 이름 배열만 전송
+        fileNames: attachedFiles.map((file) => file.name), // 파일 이름 배열만 전송
         files: attachedFiles, // 실제 파일 객체 추가
       };
 
-      console.log("[AssignmentCreate] 과제 생성 요청 구성 완료:", assignmentData);
+      console.log(
+        "[AssignmentCreate] 과제 생성 요청 구성 완료:",
+        assignmentData
+      );
 
       // 과제 생성 API 호출 (JSON 형식 사용) - FormData 대신 JSON
-      const response = await assignmentService.createAssignment(studyId, assignmentData);
-      
+      const response = await assignmentService.createAssignment(
+        studyId,
+        assignmentData
+      );
+
       console.log("[AssignmentCreate] 과제 생성 응답:", response);
 
       // 파일이 있는 경우, 파일 업로드 처리
       if (attachedFiles.length > 0) {
         console.log("[AssignmentCreate] 파일 업로드 시작");
-        
+
         try {
           // handleFileUploadWithS3 함수 사용하여 파일 업로드
-          const uploadResults = await handleFileUploadWithS3(response, attachedFiles, "uploadUrl");
-          
+          const uploadResults = await handleFileUploadWithS3(
+            response,
+            attachedFiles,
+            "uploadUrl"
+          );
+
           console.log("[AssignmentCreate] 파일 업로드 결과:", uploadResults);
-          
+
           // 업로드 실패 체크
-          const failedUploads = uploadResults.filter(result => !result.success);
+          const failedUploads = uploadResults.filter(
+            (result) => !result.success
+          );
           if (failedUploads.length > 0) {
-            console.warn("[AssignmentCreate] 일부 파일 업로드 실패:", failedUploads);
+            console.warn(
+              "[AssignmentCreate] 일부 파일 업로드 실패:",
+              failedUploads
+            );
             alert("과제는 생성되었으나, 일부 파일 업로드에 실패했습니다.");
           } else {
             alert("과제가 성공적으로 업로드되었습니다.");
@@ -151,7 +172,7 @@ function AssignmentCreate() {
       } else {
         alert("과제가 성공적으로 업로드되었습니다.");
       }
-      
+
       navigate(`/studies/${studyId}/assignments`); // 목록 페이지로 이동
     } catch (err) {
       console.error("[AssignmentCreate] 과제 업로드 실패:", err);
@@ -196,18 +217,45 @@ function AssignmentCreate() {
             <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>
             지시사항
           </label>
-          <textarea
-            id="assignmentContent"
-            name="assignmentContent"
-            value={formData.assignmentContent}
-            onChange={handleChange}
-            placeholder="과제 내용과 지시사항을 입력하세요"
-            rows={6}
-            required
-          />
-          <div className="char-count">
-            {formData.assignmentContent.length}/10000
+          <div style={{ position: "relative" }}>
+            <textarea
+              id="assignmentContent"
+              name="assignmentContent"
+              value={formData.assignmentContent}
+              onChange={handleChange}
+              placeholder="과제 내용과 지시사항을 입력하세요"
+              rows={6}
+              required
+              style={{
+                width: "100%",
+                padding: "10px 12px 32px 12px", // 하단 패딩 추가
+                border: "1px solid #ddd",
+                borderRadius: "4px",
+                fontSize: "14px",
+                resize: "vertical",
+                minHeight: "120px",
+              }}
+            />
+            <div
+              className="char-count"
+              style={{
+                position: "absolute",
+                left: "16px",
+                bottom: "10px",
+                color: "#666",
+                fontSize: "12px",
+                background: "#fff",
+                padding: "0 4px",
+                pointerEvents: "none",
+              }}>
+              {formData.assignmentContent.length}/10000
+            </div>
           </div>
+        </div>
+
+        {/* 파일 업로더 컴포넌트 사용 */}
+        <div className="form-field">
+          <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
         </div>
 
         <div className="form-field">
@@ -215,11 +263,12 @@ function AssignmentCreate() {
             <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>
             마감기한
           </label>
-          <div 
-            className="date-picker-wrapper" 
-            onClick={() => document.getElementById('assignmentDueDate').showPicker()}
-            style={{ cursor: 'pointer' }}
-          >
+          <div
+            className="date-picker-wrapper"
+            onClick={() =>
+              document.getElementById("assignmentDueDate").showPicker()
+            }
+            style={{ cursor: "pointer" }}>
             <input
               id="assignmentDueDate"
               name="assignmentDueDate"
@@ -227,7 +276,7 @@ function AssignmentCreate() {
               value={formData.assignmentDueDate}
               onChange={handleChange}
               required
-              style={{ cursor: 'pointer' }}
+              style={{ cursor: "pointer" }}
             />
           </div>
         </div>
@@ -248,11 +297,6 @@ function AssignmentCreate() {
           />
         </div>
 
-        {/* 파일 업로더 컴포넌트 사용 */}
-        <div className="form-field">
-          <FileUploader existingFiles={[]} onFileSelect={handleFileSelect} />
-        </div>
-
         <div className="button-container">
           <Button variant="upload" type="submit" disabled={isLoading} />
           <Button variant="back" type="button" onClick={handleCancel} />
@@ -263,4 +307,3 @@ function AssignmentCreate() {
 }
 
 export default AssignmentCreate;
- 
