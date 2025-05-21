@@ -99,7 +99,7 @@ function Button({ onClick, variant = "default", label, isActive, ...props }) {
     memberAdd: {
       backgroundColor: "#ee0418",
       color: "#fff",
-      minWidth: "84px",
+      minWidth: "88px",
     },
     studyDelete: {
       backgroundColor: "#ee0418",

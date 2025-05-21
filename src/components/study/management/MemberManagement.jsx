@@ -230,7 +230,7 @@ function MemberManagement() {
         <Button
           onClick={() => setShowAddMemberModal(true)}
           variant="memberAdd"
-          style={{ width: "85px", height: "34px" }}>
+          style={{ width: "88px", height: "34px" }}>
           <svg
             width="16"
             height="16"

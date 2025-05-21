@@ -25,6 +25,7 @@ function DefaultContent({ studyData }) {
         지각: data.memberLatePoint || 0,
         결석: data.memberAbsentPoint || 0,
       },
+      showWarningIcon: true,
     },
   ];
 

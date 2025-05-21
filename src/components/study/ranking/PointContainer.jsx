@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
 import { RiErrorWarningLine } from "react-icons/ri";
+import PropTypes from "prop-types";
 
-function PointContainer({ title, icon, point, details }) {
+function PointContainer({ title, icon, point, details, showWarningIcon }) {
   const [isHovered, setIsHovered] = useState(false);
   const [popupPos, setPopupPos] = useState({ top: 0, left: 0 });
   const containerRef = React.useRef(null);
@@ -112,9 +113,11 @@ function PointContainer({ title, icon, point, details }) {
       style={styles.container}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}>
-      <div style={styles.warningIcon}>
-        <RiErrorWarningLine />
-      </div>
+      {showWarningIcon && (
+        <div style={styles.warningIcon}>
+          <RiErrorWarningLine />
+        </div>
+      )}
       <div style={styles.topRow}>
         <div style={styles.iconCircle}>{icon}</div>
         <div style={styles.title}>{title}</div>
@@ -138,5 +141,13 @@ function PointContainer({ title, icon, point, details }) {
     </div>
   );
 }
+
+PointContainer.propTypes = {
+  title: PropTypes.string.isRequired,
+  icon: PropTypes.node.isRequired,
+  point: PropTypes.number.isRequired,
+  details: PropTypes.object,
+  showWarningIcon: PropTypes.bool,
+};
 
 export default PointContainer;
