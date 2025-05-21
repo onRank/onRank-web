@@ -112,7 +112,7 @@ function PointContainer({ title, icon, point, details }) {
       style={styles.container}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}>
-      <div style={warningIcon}>
+      <div style={styles.warningIcon}>
         <RiErrorWarningLine />
       </div>
       <div style={styles.topRow}>
