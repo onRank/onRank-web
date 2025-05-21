@@ -75,7 +75,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
             alignItems: "center",
             justifyContent: "center",
             color: "#666",
-            fontSize: "14px",
+            fontSize: "22px",
             zIndex: 10,
             cursor: "pointer",
           }}

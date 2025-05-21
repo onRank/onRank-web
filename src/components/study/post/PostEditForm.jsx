@@ -5,7 +5,7 @@ import { usePost } from "./PostProvider";
 import LoadingSpinner from "../../common/LoadingSpinner";
 import Button from "../../common/Button";
 import FileUploader from "../../common/FileUploader";
-import "../../../styles/notice.css";
+import "../../../styles/post.css";
 
 function PostEditForm({
   studyId,
@@ -28,7 +28,7 @@ function PostEditForm({
     initialData?.postContent || ""
   );
   const [selectedFiles, setSelectedFiles] = useState([]);
-  
+
   // 남겨둘 파일 ID 배열 상태 처리 개선
   const [remainingFileIds, setRemainingFileIds] = useState([]);
 
@@ -37,16 +37,16 @@ function PostEditForm({
     if (initialData) {
       // API 응답 구조에 맞게 파일 ID 추출
       const fileIds = [];
-      
+
       // files 배열이 있는 경우
       if (initialData.files && Array.isArray(initialData.files)) {
-        initialData.files.forEach(file => {
+        initialData.files.forEach((file) => {
           if (file.fileId) {
             fileIds.push(file.fileId);
           }
         });
       }
-      
+
       console.log("[PostEditForm] 초기 파일 IDs:", fileIds);
       setRemainingFileIds(fileIds);
     }
@@ -86,7 +86,7 @@ function PostEditForm({
         remainingFileIds: remainingFileIds,
         newFileNames: selectedFiles.map((file) => file.name),
       };
-      
+
       console.log("[PostEditForm] 수정 요청 데이터:", updatedPost);
       console.log("[PostEditForm] 새 파일 수:", selectedFiles.length);
 
@@ -136,23 +136,24 @@ function PostEditForm({
   }
 
   // 현재 표시할 기존 파일 필터링 - remainingFileIds에 있는 파일만 표시
-  const filteredExistingFiles = initialData?.files?.filter(file => 
-    remainingFileIds.includes(file.fileId)
-  ) || [];
-  
+  const filteredExistingFiles =
+    initialData?.files?.filter((file) =>
+      remainingFileIds.includes(file.fileId)
+    ) || [];
+
   console.log("[PostEditForm] 남은 파일:", filteredExistingFiles);
 
   return (
-    <form onSubmit={handleSave} className="notice-form">
-      {submitError && <div className="notice-error-message">{submitError}</div>}
+    <form onSubmit={handleSave} className="post-form">
+      {submitError && <div className="post-error-message">{submitError}</div>}
 
-      <div className="notice-input-group">
-        <label className="notice-label" htmlFor="title">
-          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>제목
+      <div className="post-input-group">
+        <label className="post-label" htmlFor="title">
+          <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>제목
         </label>
         <input
           id="title"
-          className="notice-input"
+          className="post-input"
           placeholder="게시판 제목을 입력하세요"
           value={postTitle}
           onChange={(e) => setPostTitle(e.target.value)}
@@ -160,19 +161,19 @@ function PostEditForm({
         />
       </div>
 
-      <div className="notice-input-group">
-        <label className="notice-label" htmlFor="content">
-          <span style={{color: '#ee0418', marginRight: '4px'}}>*</span>내용
+      <div className="post-input-group">
+        <label className="post-label" htmlFor="content">
+          <span style={{ color: "#ee0418", marginRight: "4px" }}>*</span>내용
         </label>
         <textarea
           id="content"
-          className="notice-textarea"
+          className="post-textarea"
           placeholder="게시판 내용을 입력하세요"
           value={postContent}
           onChange={(e) => setPostContent(e.target.value)}
           maxLength={maxLength}
         />
-        <div className="notice-char-count">
+        <div className="post-char-count">
           {postContent.length}/{maxLength}
         </div>
       </div>
@@ -184,7 +185,7 @@ function PostEditForm({
         onExistingFileRemove={handleExistingFileRemove}
       />
 
-      <div className="notice-action-buttons">
+      <div className="post-action-buttons">
         <Button type="submit" variant="store" disabled={isSubmitting} />
         <Button
           type="button"

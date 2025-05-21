@@ -178,11 +178,6 @@ function PostDetail({ studyId, postId, handleBack }) {
           fontSize: "14px",
           color: `var(--textSecondary)`,
           marginBottom: "1.5rem",
-          border: "1px solid #e4e4e4",
-          background: "#fff",
-          borderRadius: "12px",
-          padding: "15px",
-          minHeight: "250px",
         }}>
         게시: {formattedDate}
       </div>
@@ -192,6 +187,11 @@ function PostDetail({ studyId, postId, handleBack }) {
           maxWidth: "none",
           color: `var(--textPrimary)`,
           marginBottom: hasFiles ? "1.5rem" : "0",
+          border: "1px solid #e4e4e4",
+          background: "#fff",
+          borderRadius: "12px",
+          padding: "15px",
+          minHeight: "250px",
         }}>
         {content}
       </div>
