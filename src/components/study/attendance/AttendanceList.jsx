@@ -6,8 +6,7 @@ import {
   getStatusIcon,
   STATUS_STYLES,
 } from "../../../utils/attendanceUtils";
-import { HiOutlineDotsVertical } from "react-icons/hi";
-import AttendanceEditPopup from "../../../components/study/attendance/AttendanceEditPopup";
+import { FaEdit } from "react-icons/fa";
 
 /**
  * 출석 목록 컴포넌트
@@ -21,11 +20,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
   const [hoveredId, setHoveredId] = useState(null);
 
   const navigate = useNavigate();
-  const [editPopup, setEditPopup] = useState({
-    open: false,
-    attendanceId: null,
-    popupStyle: {},
-  });
 
   // 출석 상태 표시 함수
   const renderStatus = (attendance) => {
@@ -65,34 +59,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
     const isHovered = hoveredId === attendance.attendanceId;
 
-    // 팝업 열기 핸들러
-    const handleOpenEditPopup = (event) => {
-      const rect = event.currentTarget.getBoundingClientRect();
-      const popupWidth = 280;
-      const popupHeight = 140;
-      let left = rect.left - popupWidth - 12;
-      let top = rect.top;
-      if (left < 8) left = 8;
-      if (top + popupHeight > window.innerHeight) {
-        top = window.innerHeight - popupHeight - 16;
-        if (top < 8) top = 8;
-      }
-      setEditPopup({
-        open: true,
-        attendanceId: scheduleId,
-        popupStyle: {
-          position: "fixed",
-          left,
-          top,
-          zIndex: 1000,
-        },
-      });
-    };
-
-    // 팝업에서 수정 버튼 클릭 시 url 이동
+    // 수정 버튼 클릭 시 url 이동
     const handleEdit = () => {
       navigate(`/studies/${studyId}/attendances/${scheduleId}`);
-      setEditPopup({ open: false, attendanceId: null, popupStyle: {} });
     };
 
     return (
@@ -112,19 +81,9 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
             cursor: "pointer",
           }}
           title="출석 상세"
-          onClick={handleOpenEditPopup}>
-          <HiOutlineDotsVertical />
+          onClick={handleEdit}>
+          <FaEdit />
         </span>
-        {editPopup.open && editPopup.attendanceId === scheduleId && (
-          <AttendanceEditPopup
-            open={editPopup.open}
-            onClose={() =>
-              setEditPopup({ open: false, attendanceId: null, popupStyle: {} })
-            }
-            onEdit={handleEdit}
-            style={editPopup.popupStyle}
-          />
-        )}
       </>
     );
   };
@@ -207,7 +166,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     textAlign: "left",
                     width: "10%",
                   }}>
-                  {/* 더보기/수정 */}
+                  출결 변경
                 </th>
               </tr>
             </thead>

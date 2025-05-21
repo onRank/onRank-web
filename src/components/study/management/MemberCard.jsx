@@ -72,45 +72,40 @@ function MemberCard({ member, onChangeRole, onDelete }) {
         <div>{member.university}</div>
         <div>{member.department}</div>
       </div>
-      {/* 오른쪽: 역할/삭제 버튼 */}
-      {!isCreator ? (
-        <div style={{ display: "flex", gap: 10, height: "54px" }}>
-          <div style={roleButtonGroupStyle}>
-            <button
-              style={getRoleBtnStyle(member.role === "PARTICIPANT")}
-              title="참여자로 변경"
-              onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
-              <FaUserCheck style={{ color: "#222" }} />
-            </button>
-            <button
-              style={getRoleBtnStyle(member.role === "HOST")}
-              title="관리자로 변경"
-              onClick={() => onChangeRole(member.memberId, "HOST")}>
-              <FaUserCog style={{ color: "#222" }} />
-            </button>
-          </div>
-          <button
-            style={deleteBtnStyle}
-            title="삭제"
-            onClick={() => onDelete(member.memberId)}>
-            <FaUserSlash style={{ color: "#222" }} />
-          </button>
-        </div>
-      ) : (
-        <div style={{ display: "flex", gap: 10, height: "54px" }}>
-          <div style={roleButtonGroupStyle}>
-            <div style={getRoleBtnStyle(member.role === "PARTICIPANT")}>
-              <FaUserCheck style={{ color: "#222" }} />
+      {/* 오른쪽: 역할/삭제 버튼 (생성자면 빈 div로 공간만 차지) */}
+      <div
+        style={{
+          display: "flex",
+          gap: 10,
+          height: "54px",
+          minWidth: 170,
+          justifyContent: "flex-end",
+        }}>
+        {!isCreator && (
+          <>
+            <div style={roleButtonGroupStyle}>
+              <button
+                style={getRoleBtnStyle(member.role === "PARTICIPANT")}
+                title="참여자로 변경"
+                onClick={() => onChangeRole(member.memberId, "PARTICIPANT")}>
+                <FaUserCheck style={{ color: "#222" }} />
+              </button>
+              <button
+                style={getRoleBtnStyle(member.role === "HOST")}
+                title="관리자로 변경"
+                onClick={() => onChangeRole(member.memberId, "HOST")}>
+                <FaUserCog style={{ color: "#222" }} />
+              </button>
             </div>
-            <div style={getRoleBtnStyle(member.role === "HOST")}>
-              <FaUserCog style={{ color: "#222" }} />
-            </div>
-          </div>
-          <div style={deleteBtnStyle}>
-            <FaUserSlash style={{ color: "#222" }} />
-          </div>
-        </div>
-      )}
+            <button
+              style={deleteBtnStyle}
+              title="삭제"
+              onClick={() => onDelete(member.memberId)}>
+              <FaUserSlash style={{ color: "#222" }} />
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }
