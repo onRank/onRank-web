@@ -54,7 +54,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
     );
   };
 
-  // 연필 아이콘 렌더링 함수
+  // 아이콘 렌더링 함수
   const renderEditIcon = (attendance) => {
     const scheduleId = attendance.scheduleId || attendance.attendanceId;
     const isHovered = hoveredId === attendance.attendanceId;
@@ -76,7 +76,6 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
             justifyContent: "center",
             color: "#666",
             fontSize: "14px",
-            marginRight: "8px",
             zIndex: 10,
             cursor: "pointer",
           }}
@@ -142,7 +141,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   style={{
                     padding: "0.5rem",
                     textAlign: "left",
-                    width: "45%",
+                    width: "40%",
                     fontSize: "14px",
                     fontWeight: "500",
                     color: "#333333",
@@ -163,8 +162,11 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                 <th
                   style={{
                     padding: "0.5rem",
-                    textAlign: "left",
-                    width: "10%",
+                    textAlign: "center",
+                    width: "15%",
+                    fontSize: "14px",
+                    fontWeight: "500",
+                    color: "#333333",
                   }}>
                   출결 변경
                 </th>
@@ -219,7 +221,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                       style={{
                         padding: "1rem 0.5rem",
                         display: "flex",
-                        justifyContent: "flex-end",
+                        justifyContent: "center",
                         borderBottom: isLast ? "none" : "1px solid #eee",
                         background: "#fff",
                       }}>

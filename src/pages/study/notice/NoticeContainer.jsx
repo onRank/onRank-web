@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import PropTypes from 'prop-types';
-import { useNotice, NoticeProvider } from "../../../components/study/notice/NoticeProvider";
+import PropTypes from "prop-types";
+import {
+  useNotice,
+  NoticeProvider,
+} from "../../../components/study/notice/NoticeProvider";
 import NoticeList from "../../../components/study/notice/NoticeList";
 import NoticeDetail from "../../../components/study/notice/NoticeDetail";
 import NoticeForm from "../../../components/study/notice/NoticeForm";
 import NoticeEditForm from "../../../components/study/notice/NoticeEditForm";
 import useStudyRole from "../../../hooks/useStudyRole";
 import Button from "../../../components/common/Button";
-import '../../../styles/notice.css';
+import "../../../styles/notice.css";
 
 // 실제 컨텐츠를 처리하는 내부 컨테이너
 const NoticeInnerContainer = ({ onSubPageChange }) => {
@@ -17,26 +20,26 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoadDone, setInitialLoadDone] = useState(false);
-  
+
   // Notice Context 사용
-  const { 
-    notices, 
-    selectedNotice, 
-    isLoading: contextLoading, 
-    error, 
-    getNotices, 
-    getNoticeById, 
-    createNotice, 
-    editNotice, 
-    deleteNotice 
+  const {
+    notices,
+    selectedNotice,
+    isLoading: contextLoading,
+    error,
+    getNotices,
+    getNoticeById,
+    createNotice,
+    editNotice,
+    deleteNotice,
   } = useNotice();
 
   // 권한 훅 사용
   const { isManager } = useStudyRole();
-  
+
   // 현재 경로를 분석하여 페이지 타입 결정
-  const isAddPage = location.pathname.endsWith('/add');
-  const isEditPage = location.pathname.includes('/edit');
+  const isAddPage = location.pathname.endsWith("/add");
+  const isEditPage = location.pathname.includes("/edit");
   const isDetailPage = noticeId && !isEditPage && !isAddPage;
 
   // 컴포넌트 마운트 시 공지사항 목록 로드
@@ -54,7 +57,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
       getNoticeById(studyId, noticeId);
     }
   }, [studyId, noticeId, getNoticeById]);
-  
+
   // subPage 상태 관리 및 콜백 호출
   useEffect(() => {
     if (isAddPage) {
@@ -99,13 +102,13 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
 
   // 공지사항 삭제 핸들러
   const handleDeleteNotice = async (noticeId) => {
-    if (window.confirm('정말로 이 공지사항을 삭제하시겠습니까?')) {
+    if (window.confirm("정말로 이 공지사항을 삭제하시겠습니까?")) {
       const result = await deleteNotice(studyId, noticeId);
       if (result.success) {
         handleNavigateToListPage();
         return true;
       } else {
-        alert(result.message || '공지사항 삭제에 실패했습니다.');
+        alert(result.message || "공지사항 삭제에 실패했습니다.");
         return false;
       }
     }
@@ -116,20 +119,23 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const handleSubmitCreate = async (noticeData, files) => {
     try {
       setIsLoading(true);
-      console.log("[NoticeContainer] 공지사항 생성 요청:", { studyId, noticeData });
-      
+      console.log("[NoticeContainer] 공지사항 생성 요청:", {
+        studyId,
+        noticeData,
+      });
+
       const result = await createNotice(studyId, noticeData, files);
-      
+
       if (result.success) {
         handleNavigateToListPage();
         return true;
       } else {
-        alert(result.message || '공지사항 생성에 실패했습니다.');
+        alert(result.message || "공지사항 생성에 실패했습니다.");
         return false;
       }
     } catch (error) {
       console.error("[NoticeContainer] 공지사항 생성 오류:", error);
-      alert('공지사항 생성에 실패했습니다.');
+      alert("공지사항 생성에 실패했습니다.");
       return false;
     } finally {
       setIsLoading(false);
@@ -140,20 +146,20 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   const handleSubmitEdit = async (noticeId, noticeData, files) => {
     try {
       setIsLoading(true);
-      
+
       const result = await editNotice(studyId, noticeId, noticeData, files);
-      
+
       if (result.success) {
         // 수정 후 상세 페이지로 이동
         navigate(`/studies/${studyId}/notices/${noticeId}`);
         return true;
       } else {
-        alert(result.message || '공지사항 수정에 실패했습니다.');
+        alert(result.message || "공지사항 수정에 실패했습니다.");
         return false;
       }
     } catch (error) {
       console.error("[NoticeContainer] 공지사항 수정 오류:", error);
-      alert('공지사항 수정에 실패했습니다.');
+      alert("공지사항 수정에 실패했습니다.");
       return false;
     } finally {
       setIsLoading(false);
@@ -172,7 +178,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         />
       );
     }
-    
+
     // 공지사항 수정 페이지
     if (isEditPage && selectedNotice) {
       return (
@@ -181,11 +187,13 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
           noticeId={noticeId}
           initialData={selectedNotice}
           onCancel={handleNavigateToListPage}
-          onSaveComplete={() => navigate(`/studies/${studyId}/notices/${noticeId}`)}
+          onSaveComplete={() =>
+            navigate(`/studies/${studyId}/notices/${noticeId}`)
+          }
         />
       );
     }
-    
+
     // 공지사항 상세 페이지
     if (isDetailPage && selectedNotice) {
       return (
@@ -193,7 +201,11 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
           studyId={studyId}
           noticeId={selectedNotice.noticeId}
           handleBack={handleNavigateToListPage}
-          handleEdit={isManager ? () => handleNavigateToEditPage(selectedNotice.noticeId) : undefined}
+          handleEdit={
+            isManager
+              ? () => handleNavigateToEditPage(selectedNotice.noticeId)
+              : undefined
+          }
           handleDelete={isManager ? handleDeleteNotice : undefined}
         />
       );
@@ -206,7 +218,9 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
           <div className="notice-add-box">
             <div>
               <div className="notice-add-title">공지사항 추가</div>
-              <div className="notice-add-description">새로운 공지사항을 추가해주세요.</div>
+              <div className="notice-add-description">
+                새로운 공지사항을 추가해주세요.
+              </div>
             </div>
             <Button variant="add" onClick={handleNavigateToAddPage} />
           </div>
@@ -217,9 +231,7 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
         ) : error ? (
           <div className="notice-error">{error}</div>
         ) : notices && notices.length === 0 ? (
-          <div className="notice-empty">
-            등록된 공지사항이 없습니다.
-          </div>
+          <div className="notice-empty">등록된 공지사항이 없습니다.</div>
         ) : (
           <NoticeList
             notices={notices || []}
@@ -234,25 +246,29 @@ const NoticeInnerContainer = ({ onSubPageChange }) => {
   };
 
   return (
-    <div style={{
-      width: '100%', 
-      maxWidth: '100%',
-      overflowX: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
-    }}>
-      <div style={{
-        width: '100%',
-        position: 'relative',
-        padding: '0 1rem',
-        marginTop: '1rem'
+    <div
+      style={{
+        width: "100%",
+        maxWidth: "100%",
+        overflowX: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}>
+      <div
+        style={{
+          width: "100%",
+          position: "relative",
+          padding: "0 1rem",
+          marginTop: "1rem",
+        }}>
         <div style={{ flex: 1 }}>
           <h1 className="page-title">
-            {isAddPage ? "공지사항 추가" : 
-             isEditPage ? "공지사항 수정" : 
-             isDetailPage ? "공지사항 상세" : "공지사항"}
+            {isAddPage
+              ? "공지사항 추가"
+              : isEditPage
+              ? "공지사항 수정"
+              : "공지사항"}
           </h1>
           {renderContent()}
         </div>
@@ -278,4 +294,4 @@ NoticeContainer.propTypes = {
   onSubPageChange: PropTypes.func.isRequired,
 };
 
-export default NoticeContainer; 
+export default NoticeContainer;

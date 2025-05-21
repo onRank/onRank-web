@@ -6,10 +6,21 @@ import { formatDate } from "../../../utils/dateUtils";
 import ErrorMessage from "../../common/ErrorMessage";
 import Button from "../../common/Button";
 import { useTheme } from "../../../contexts/ThemeContext";
-import { getFileIcon, downloadFile, isImageFile, formatFileSize } from "../../../utils/fileUtils";
+import {
+  getFileIcon,
+  downloadFile,
+  isImageFile,
+  formatFileSize,
+} from "../../../utils/fileUtils";
 import "../../../styles/notice.css";
 
-function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete }) {
+function NoticeDetail({
+  studyId,
+  noticeId,
+  handleBack,
+  handleEdit,
+  handleDelete,
+}) {
   const { selectedNotice, isLoading, error, getNoticeById } = useNotice();
   const { colors } = useTheme();
   const [expandedImageIndex, setExpandedImageIndex] = useState(null);
@@ -28,7 +39,7 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
 
   // 이미지 미리보기 핸들러
   const handleImagePreview = (fileUrl) => {
-    window.open(fileUrl, '_blank');
+    window.open(fileUrl, "_blank");
   };
 
   // 이미지 확장/축소 핸들러
@@ -46,34 +57,34 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
   // 모든 파일들을 통합하여 처리
   const getAllFiles = () => {
     if (!selectedNotice) return [];
-    
+
     const allFiles = [];
-    
+
     // 일반 파일 배열 처리
     if (selectedNotice.files && selectedNotice.files.length > 0) {
-      selectedNotice.files.forEach(file => {
+      selectedNotice.files.forEach((file) => {
         allFiles.push({
           fileName: file.fileName,
           fileUrl: file.fileUrl,
           fileSize: file.fileSize || 0,
-          type: 'file'
+          type: "file",
         });
       });
     }
-    
+
     // 파일 URL 배열 처리
     if (selectedNotice.fileUrls && selectedNotice.fileUrls.length > 0) {
       selectedNotice.fileUrls.forEach((fileUrl, index) => {
-        const fileName = fileUrl.split('/').pop() || `file-${index + 1}`;
+        const fileName = fileUrl.split("/").pop() || `file-${index + 1}`;
         allFiles.push({
           fileName: fileName,
           fileUrl: fileUrl,
           fileSize: 0, // 크기 정보 없음
-          type: 'url'
+          type: "url",
         });
       });
     }
-    
+
     return allFiles;
   };
 
@@ -83,7 +94,12 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
     return (
       <div style={{ padding: "1.5rem" }}>
         <ErrorMessage message={error} />
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "1rem",
+          }}>
           <Button onClick={handleBack} variant="back" />
         </div>
       </div>
@@ -98,7 +114,12 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
     return (
       <div style={{ padding: "1.5rem" }}>
         <ErrorMessage message="잘못된 공지사항 데이터입니다." type="warning" />
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1rem" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "1rem",
+          }}>
           <Button onClick={handleBack} variant="back" />
         </div>
       </div>
@@ -110,12 +131,15 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
 
   // 날짜 포맷 변경 (YYYY.MM.DD)
   const formattedDate = selectedNotice.noticeCreatedAt
-    ? new Date(selectedNotice.noticeCreatedAt).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit'
-      }).replace(/\. /g, '.').replace(/\.$/, '')
-    : '';
+    ? new Date(selectedNotice.noticeCreatedAt)
+        .toLocaleDateString("ko-KR", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        })
+        .replace(/\. /g, ".")
+        .replace(/\.$/, "")
+    : "";
 
   console.log("[NoticeDetail] 공지사항 데이터:", selectedNotice);
   console.log("[NoticeDetail] 첨부 파일:", files);
@@ -128,31 +152,33 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
           fontWeight: "bold",
           marginBottom: "0.5rem",
           color: `var(--textPrimary)`,
-        }}
-      >
+        }}>
         {selectedNotice.noticeTitle}
       </h1>
-      
+
       <div
         style={{
-          fontSize: "0.9rem",
+          fontSize: "14px",
           color: `var(--textSecondary)`,
           marginBottom: "1.5rem",
-        }}
-      >
+        }}>
         게시: {formattedDate}
       </div>
-      
+
       <div
         style={{
           maxWidth: "none",
           color: `var(--textPrimary)`,
-          marginBottom: hasFiles ? "1.5rem" : "0"
-        }}
-      >
+          marginBottom: hasFiles ? "1.5rem" : "0",
+          border: "1px solid #e4e4e4",
+          background: "#fff",
+          borderRadius: "12px",
+          padding: "15px",
+          minHeight: "250px",
+        }}>
         {selectedNotice.noticeContent}
       </div>
-      
+
       {/* 파일 목록 표시 */}
       {hasFiles && (
         <div className="files-container">
@@ -166,28 +192,28 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
                     <div className="file-name">{file.fileName}</div>
                   </div>
                   {isImageFile(file.fileName) && file.fileUrl && (
-                    <button 
+                    <button
                       className="preview-button"
-                      onClick={() => window.open(file.fileUrl, '_blank')}
+                      onClick={() => window.open(file.fileUrl, "_blank")}
                       title="이미지 미리보기"
-                      type="button"
-                    >
+                      type="button">
                       미리보기
                     </button>
                   )}
                   <button
                     className="download-button"
-                    onClick={() =>
-                      downloadFile(file.fileUrl, file.fileName)
-                    }
-                    type="button"
-                  >
+                    onClick={() => downloadFile(file.fileUrl, file.fileName)}
+                    type="button">
                     다운로드
                   </button>
                 </div>
                 {isImageFile(file.fileName) && file.fileUrl && (
                   <div className="image-preview-container">
-                    <img className="image-preview-full" src={file.fileUrl} alt={file.fileName} />
+                    <img
+                      className="image-preview-full"
+                      src={file.fileUrl}
+                      alt={file.fileName}
+                    />
                   </div>
                 )}
               </div>
@@ -195,9 +221,15 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
           </div>
         </div>
       )}
-      
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1.5rem", paddingBottom: "10px" }}>
-        <Button onClick={handleBack} variant="back" style={{ width: "auto", padding: "0 16px" }} />
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-end",
+          marginTop: "1.5rem",
+          paddingBottom: "10px",
+        }}>
+        <Button onClick={handleBack} variant="back" />
       </div>
     </>
   );
@@ -205,10 +237,11 @@ function NoticeDetail({ studyId, noticeId, handleBack, handleEdit, handleDelete 
 
 NoticeDetail.propTypes = {
   studyId: PropTypes.string.isRequired,
-  noticeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
+  noticeId: PropTypes.oneOfType([PropTypes.number, PropTypes.string])
+    .isRequired,
   handleBack: PropTypes.func.isRequired,
   handleEdit: PropTypes.func,
-  handleDelete: PropTypes.func
+  handleDelete: PropTypes.func,
 };
 
 export default NoticeDetail;
