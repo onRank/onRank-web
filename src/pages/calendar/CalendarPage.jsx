@@ -42,7 +42,11 @@ function CalendarPage() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await calendarService.getCalendarEvents();
+        // currentDate에서 연도와 월을 추출
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // JavaScript에서 month는 0부터 시작
+        
+        const response = await calendarService.getCalendarEvents(year, month);
         console.log('[CalendarPage] API Response:', response);
         
         // API 응답이 올바른 형식인지 확인
@@ -63,7 +67,7 @@ function CalendarPage() {
     };
 
     fetchCalendarData();
-  }, []);
+  }, [currentDate]); // Add currentDate as a dependency to refetch when month changes
 
   const handlePrevMonth = () => {
     setLeftArrowColor(colors.primary);
@@ -85,16 +89,30 @@ function CalendarPage() {
   const getEventsForDate = (date) => {
     if (!calendarItems || calendarItems.length === 0) return [];
     
-    return calendarItems.filter(item => {
-      try {
-        // API 응답의 time 필드가 ISO 형식인지 확인 (예: "2025-06-01T23:59:00")
-        const eventDate = item.time ? parseISO(item.time) : null;
-        return eventDate && isSameDay(date, eventDate);
-      } catch (err) {
-        console.error(`[CalendarPage] Date parsing error for item:`, item, err);
-        return false;
+    const events = [];
+    
+    // 각 스터디의 detailList를 순회하며 해당 날짜의 이벤트 찾기
+    calendarItems.forEach(study => {
+      if (study.detailList && Array.isArray(study.detailList)) {
+        study.detailList.forEach(detail => {
+          try {
+            const eventDate = detail.time ? parseISO(detail.time) : null;
+            if (eventDate && isSameDay(date, eventDate)) {
+              // 스터디 정보와 상세 정보 합치기
+              events.push({
+                ...detail,
+                studyName: study.studyName,
+                colorCode: study.colorCode
+              });
+            }
+          } catch (err) {
+            console.error(`[CalendarPage] Date parsing error for item:`, detail, err);
+          }
+        });
       }
     });
+    
+    return events;
   };
 
   // 이벤트 유형에 따른 카테고리 스타일
@@ -139,11 +157,17 @@ function CalendarPage() {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                borderLeft: `3px solid ${borderColor}`
+                borderLeft: `3px solid ${borderColor}`,
+                cursor: event.relatedUrl ? 'pointer' : 'default'
               }}
-              title={event.title || event.studyName}
+              title={`${event.title} - ${event.studyName}`}
+              onClick={() => {
+                if (event.relatedUrl) {
+                  window.location.href = event.relatedUrl;
+                }
+              }}
             >
-              {event.title || event.studyName}
+              <span style={{ fontWeight: 'bold' }}>{event.studyName}:</span> {event.title}
             </div>
           );
         })}
@@ -362,19 +386,21 @@ function CalendarPage() {
                     padding: '0.75rem',
                     borderRadius: '8px',
                     backgroundColor: style.backgroundColor,
-                    borderLeft: `4px solid ${event.colorCode || style.color}`
+                    borderLeft: `4px solid ${event.colorCode || style.color}`,
+                    cursor: event.relatedUrl ? 'pointer' : 'default'
+                  }}
+                  onClick={() => {
+                    if (event.relatedUrl) {
+                      window.location.href = event.relatedUrl;
+                    }
                   }}
                 >
                   <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                    {event.title || event.studyName}
+                    {event.studyName} - {event.title}
                   </div>
-                  {event.detailList && event.detailList.length > 0 && (
-                    <div style={{ fontSize: '14px' }}>
-                      {event.detailList.map((detail, i) => (
-                        <div key={i}>{detail.title}</div>
-                      ))}
-                    </div>
-                  )}
+                  <div style={{ fontSize: '14px', color: colors.textSecondary }}>
+                    {event.category === 'ASSIGNMENT' ? '과제' : '일정'} | {format(parseISO(event.time), 'yyyy.MM.dd HH:mm', { locale: ko })}
+                  </div>
                 </div>
               );
             })}

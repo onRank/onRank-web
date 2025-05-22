@@ -1,10 +1,17 @@
 import { api, tokenUtils } from "./api";
 
 const calendarService = {
-  getCalendarEvents: async () => {
+  getCalendarEvents: async (year, month) => {
     try {
       const token = tokenUtils.getToken();
-      const response = await api.get("/auth/calendar", {
+      let url = "/auth/calendar";
+      
+      // If both year and month are provided, add query parameters
+      if (year && month) {
+        url = `/auth/calendar?year=${year}&month=${month}`;
+      }
+      
+      const response = await api.get(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
