@@ -41,6 +41,7 @@ const ScheduleMenu = ({ onEdit, onDelete }) => {
     border: "none",
     margin: "0",
     height: "100%",
+    outline: "none",
   };
 
   return (

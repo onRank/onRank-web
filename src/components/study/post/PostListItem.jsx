@@ -17,7 +17,8 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
   const isAdmin = memberRole === "CREATOR" || memberRole === "HOST";
 
   // 게시글 작성자인지 확인 - 현재 사용자 이름과 게시글 작성자 이름 비교
-  const isPostCreator = currentUserName && post.postWritenBy === currentUserName;
+  const isPostCreator =
+    currentUserName && post.postWritenBy === currentUserName;
 
   // 메뉴를 보여줄지 결정 - 관리자이거나 작성자인 경우에만
   const showMenu = isAdmin || isPostCreator;
@@ -79,7 +80,8 @@ function PostListItem({ post, onClick, onEdit, onDelete, index, totalItems }) {
           <button
             className="post-menu-button"
             onClick={handleMenuClick}
-            aria-label="메뉴 열기">
+            aria-label="메뉴 열기"
+            style={{ outline: "none" }}>
             ⋮
           </button>
 

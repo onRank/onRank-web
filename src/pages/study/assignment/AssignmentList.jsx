@@ -132,9 +132,13 @@ function AssignmentList() {
     if (!dateString) return "";
 
     const date = new Date(dateString);
-    const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
-    const formattedTime = `${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
-    
+    const formattedDate = `${date.getFullYear()}.${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
+    const formattedTime = `${String(date.getHours()).padStart(2, "0")}:${String(
+      date.getMinutes()
+    ).padStart(2, "0")}`;
+
     return `${formattedDate} ${formattedTime}`;
   };
 
@@ -273,7 +277,8 @@ function AssignmentList() {
           <button
             className="assignment-menu-button"
             onClick={(e) => togglePopup(e, assignmentId)}
-            aria-label="메뉴 열기">
+            aria-label="메뉴 열기"
+            style={{ outline: "none" }}>
             <FiMoreVertical size={18} />
           </button>
 

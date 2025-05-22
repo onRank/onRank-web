@@ -5,7 +5,14 @@ import { useState, useRef, useEffect } from "react";
 import { useNotice } from "./NoticeProvider";
 import ActionPopup from "../../../components/common/ActionPopup";
 
-function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }) {
+function NoticeListItem({
+  notice,
+  onClick,
+  onEdit,
+  onDelete,
+  index,
+  totalItems,
+}) {
   const { isDarkMode } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
   const [popupPosition, setPopupPosition] = useState("bottom-right");
@@ -14,15 +21,15 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
 
   // 관리자 권한 확인 (CREATOR 또는 HOST인 경우)
   const isManager = memberRole === "CREATOR" || memberRole === "HOST";
-  
+
   // 공지사항의 경우 관리자만 메뉴를 보여줌 (수정/삭제 권한)
   const showMenu = isManager;
-  
+
   // 파일 첨부 여부 확인
-  const hasFiles = 
-    (notice.files && notice.files.length > 0) || 
+  const hasFiles =
+    (notice.files && notice.files.length > 0) ||
     (notice.fileUrls && notice.fileUrls.length > 0);
-  
+
   // 아이템 위치에 따라 팝업 위치 결정
   useEffect(() => {
     if (index !== undefined && totalItems !== undefined) {
@@ -34,7 +41,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
       }
     }
   }, [index, totalItems]);
-  
+
   // 토글 메뉴 클릭 처리
   const handleMenuClick = (e) => {
     e.stopPropagation(); // 클릭 이벤트가 카드까지 전파되지 않도록 방지
@@ -59,17 +66,12 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
   };
 
   return (
-    <div
-      onClick={onClick}
-      className="notice-item"
-    >
+    <div onClick={onClick} className="notice-item">
       <div className="notice-content-block">
         <div className="notice-date">
           게시: {formatDateYMD(notice.noticeCreatedAt)}
         </div>
-        <h2 className="notice-title">
-          {notice.noticeTitle}
-        </h2>
+        <h2 className="notice-title">{notice.noticeTitle}</h2>
       </div>
 
       {showMenu && (
@@ -78,7 +80,7 @@ function NoticeListItem({ notice, onClick, onEdit, onDelete, index, totalItems }
             className="notice-menu-button"
             onClick={handleMenuClick}
             aria-label="메뉴 열기"
-          >
+            style={{ outline: "none" }}>
             ⋮
           </button>
 
@@ -111,13 +113,13 @@ NoticeListItem.propTypes = {
         fileUrl: PropTypes.string.isRequired,
       })
     ),
-    fileUrls: PropTypes.arrayOf(PropTypes.string)
+    fileUrls: PropTypes.arrayOf(PropTypes.string),
   }).isRequired,
   onClick: PropTypes.func.isRequired,
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   index: PropTypes.number,
-  totalItems: PropTypes.number
+  totalItems: PropTypes.number,
 };
 
 export default NoticeListItem;
