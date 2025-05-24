@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../contexts/ThemeContext";
+import { useAuth } from "../../contexts/AuthContext";
 import LoadingSpinner from "../../components/common/LoadingSpinner";
 import ErrorMessage from "../../components/common/ErrorMessage";
 import { FaUserPen } from "react-icons/fa6";
@@ -12,19 +13,16 @@ import "./Mypage.css";
 
 function MyPage() {
   const navigate = useNavigate();
+  const { user, refreshUserInfo, isDetailedUserInfo } = useAuth();
   const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [myPageData, setMyPageData] = useState(null);
   const [isEditting, setIsEditting] = useState(false);
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const fetchMyPage = async () => {
       try {
-        // 사용자 정보 강제 새로고침 (토큰 만료 및 재발급 포함)
-        const userResult = await mypageService.refreshUserInfo();
-        setUser(userResult.data);
         const response = await mypageService.getMyPage();
         setMyPageData(response);
       } catch (error) {
@@ -35,6 +33,29 @@ function MyPage() {
     };
     fetchMyPage();
   }, []);
+
+  useEffect(() => {
+    const loadUserDetails = async () => {
+      if (isDetailedUserInfo) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
+        await refreshUserInfo();
+      } catch (error) {
+        setError("사용자 정보를 불러오는데 실패했습니다.");
+        if (error.response?.status === 401) {
+          setTimeout(() => {
+            navigate("/");
+          }, 2000);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUserDetails();
+  }, [refreshUserInfo, isDetailedUserInfo, navigate]);
 
   const formatPhoneNumber = (phoneNumber) => {
     if (!phoneNumber) return "";

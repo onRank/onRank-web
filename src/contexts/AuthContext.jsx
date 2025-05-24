@@ -168,7 +168,7 @@ export function AuthProvider({ children }) {
   const refreshUserInfo = async () => {
     try {
       console.log("[Auth] 사용자 정보 강제 새로고침");
-      const response = await api.get("/auth/login/user");
+      const response = await api.get("/auth/mypage");
       const userData = { ...response.data, isTokenBasedInfo: false };
       updateUser(userData);
       setIsDetailedUserInfo(true);
@@ -192,7 +192,7 @@ export function AuthProvider({ children }) {
             tokenUtils.setToken(newToken);
 
             // 사용자 정보 재조회
-            const userResponse = await api.get("/auth/login/user");
+            const userResponse = await api.get("/auth/mypage");
             const userData = { ...userResponse.data, isTokenBasedInfo: false };
             updateUser(userData);
             setIsDetailedUserInfo(true);
