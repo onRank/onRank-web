@@ -24,12 +24,12 @@ export const mypageService = {
             tokenUtils.setToken(newToken);
             // 재발급 후 다시 요청
             const token = tokenUtils.getToken();
-            const userResponse = await api.get("/auth/mypage", {
+            const response = await api.get("/auth/mypage", {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
-            return { data: userResponse.data, isTokenBasedInfo: false };
+            return { data: response.data, isTokenBasedInfo: false };
           }
         } catch (refreshError) {
           tokenUtils.removeToken();
