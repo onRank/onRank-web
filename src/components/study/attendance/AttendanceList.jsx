@@ -159,17 +159,19 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                   }}>
                   출석 상태
                 </th>
-                <th
-                  style={{
-                    padding: "0.5rem",
-                    textAlign: "center",
-                    width: "15%",
-                    fontSize: "14px",
-                    fontWeight: "500",
-                    color: "#333333",
-                  }}>
-                  {isHost && "출결 변경"}
-                </th>
+                {isHost && (
+                  <th
+                    style={{
+                      padding: "0.5rem",
+                      textAlign: "center",
+                      width: "15%",
+                      fontSize: "14px",
+                      fontWeight: "500",
+                      color: "#333333",
+                    }}>
+                    출결 변경
+                  </th>
+                )}
               </tr>
             </thead>
             <tbody>
@@ -217,16 +219,18 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                       }}>
                       {renderStatus(attendance)}
                     </td>
-                    <td
-                      style={{
-                        padding: "1rem 0.5rem",
-                        display: "flex",
-                        justifyContent: "center",
-                        borderBottom: isLast ? "none" : "1px solid #eee",
-                        background: "#fff",
-                      }}>
-                      {isHost && renderEditIcon(attendance)}
-                    </td>
+                    {isHost && (
+                      <td
+                        style={{
+                          padding: "1rem 0.5rem",
+                          display: "flex",
+                          justifyContent: "center",
+                          borderBottom: isLast ? "none" : "1px solid #eee",
+                          background: "#fff",
+                        }}>
+                        {isHost && renderEditIcon(attendance)}
+                      </td>
+                    )}
                   </tr>
                 );
               })}
