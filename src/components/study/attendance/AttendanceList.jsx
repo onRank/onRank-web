@@ -168,7 +168,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                     fontWeight: "500",
                     color: "#333333",
                   }}>
-                  출결 변경
+                  {isHost && "출결 변경"}
                 </th>
               </tr>
             </thead>
