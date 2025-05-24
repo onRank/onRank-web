@@ -228,7 +228,7 @@ function AttendanceList({ attendances = [], isHost, studyId, onUpdateStatus }) {
                           borderBottom: isLast ? "none" : "1px solid #eee",
                           background: "#fff",
                         }}>
-                        {isHost && renderEditIcon(attendance)}
+                        {renderEditIcon(attendance)}
                       </td>
                     )}
                   </tr>
