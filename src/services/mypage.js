@@ -11,10 +11,11 @@ export const mypageService = {
     return response.data;
   },
 
-  editMyPage: async (studentId) => {
+  editMyPage: async (mypageData) => {
     const token = tokenUtils.getToken();
-    const response = await api.put(`/auth/mypage`, {
+    const response = await api.put("/auth/mypage", mypageData, {
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     });
