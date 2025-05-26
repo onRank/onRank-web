@@ -135,18 +135,6 @@ function StudyManagement() {
     }
   };
 
-  // 취소 버튼 처리
-  const handleCancel = () => {
-    setIsEditing(false);
-    setError(null);
-    setSuccess(null);
-    // 이미지 파일 선택 상태 초기화
-    setStudyImageFile(null);
-
-    // 취소 시 서버에서 다시 데이터 가져오기
-    fetchStudyData();
-  };
-
   // 스터디 상태 표시
   const renderStudyStatus = () => {
     let statusText = "";
