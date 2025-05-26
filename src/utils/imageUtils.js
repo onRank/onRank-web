@@ -50,28 +50,7 @@ export const handleImageError = (e, imageInfo = '') => {
     return;
   }
   
-  // S3 URL인지 확인
-  const isFromS3 = isS3Url(imageInfo);
-  
-  if (isFromS3) {
-    console.log(`[이미지 로딩 실패] S3 이미지 로드 실패: ${imageInfo}`);
-    
-    // S3 URL을 CloudFront 경로로 변환 시도
-    try {
-      const cdnPath = toCdnPath(imageInfo);
-      
-      // 원본 URL과 변환된 URL이 다르면 변환된 URL로 다시 시도
-      if (cdnPath !== imageInfo) {
-        console.log(`[이미지 로딩] CloudFront 경로로 변환하여 재시도: ${cdnPath}`);
-        e.target.src = cdnPath;
-        return; // 여기서 종료하여 기본 이미지로 교체하지 않음
-      }
-    } catch (err) {
-      console.log(`[이미지 로딩] URL 변환 실패: ${err.message}`);
-    }
-  } else {
-    console.log(`[이미지 로딩 실패] 대체 이미지 사용: ${imageInfo}`);
-  }
+  console.log(`[이미지 로딩 실패] 기본 이미지로 대체: ${imageInfo}`);
   
   // src 속성을 기본 이미지로 변경
   e.target.src = DEFAULT_IMAGE_SVG;

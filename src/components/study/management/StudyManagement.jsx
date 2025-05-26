@@ -199,7 +199,6 @@ function StudyManagement() {
           alt="스터디 이미지"
           onLoad={handleImageLoad}
           onError={handleImageError}
-          crossOrigin="anonymous"
           style={{
             width: "auto",
             height: "auto",
@@ -223,7 +222,6 @@ function StudyManagement() {
         <img
           src={studyImageUrl}
           alt="스터디 이미지 미리보기"
-          crossOrigin="anonymous"
           className="image-preview-img"
           onError={(e) => {
             e.target.onerror = null;

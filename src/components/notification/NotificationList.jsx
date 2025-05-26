@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import notificationService from '../../services/notification';
-import { DEFAULT_IMAGE_SVG, handleImageError, isS3Url } from '../../utils/imageUtils';
+import { DEFAULT_IMAGE_SVG, handleImageError } from '../../utils/imageUtils';
 import './NotificationStyles.css';
 import PropTypes from 'prop-types';
-import { toCdnPath } from '../../utils/urlUtils';
 
 /**
  * 알림 목록 컴포넌트
@@ -159,31 +158,6 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
     }
   };
 
-  // S3 이미지 URL인 경우 처리 방법
-  const getImageUrl = (url) => {
-    if (!url) return DEFAULT_IMAGE_SVG;
-    
-    // S3 이미지인 경우 로깅
-    if (isS3Url(url)) {
-      console.log(`[NotificationList] S3 이미지 URL 감지: ${url.substring(0, 50)}...`);
-    }
-    
-    return toCdnPath(url) || DEFAULT_IMAGE_SVG;
-  };
-
-  // S3 이미지 로딩 에러 처리 전용 핸들러
-  const handleS3ImageError = (e, imageUrl) => {
-    console.log(`[NotificationList] 이미지 로드 실패: ${imageUrl?.substring(0, 50) || 'unknown'}...`);
-    
-    // 원래의 handleImageError 함수 호출
-    handleImageError(e, imageUrl);
-    
-    // 추가 로깅
-    if (isS3Url(imageUrl)) {
-      console.warn(`[NotificationList] S3 이미지 로드 실패 (CORS 문제일 수 있음)`);
-    }
-  };
-
   return (
     <div className="notification-list-container">
       <div className="notification-header">
@@ -211,12 +185,9 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
             {notification.studyImageUrl && (
               <div className="notification-image">
                 <img 
-                  src={getImageUrl(notification.studyImageUrl)}
+                  src={notification.studyImageUrl || DEFAULT_IMAGE_SVG}
                   alt={notification.studyName || '스터디 이미지'} 
-                  onError={(e) => handleS3ImageError(e, notification.studyImageUrl)}
-                  crossOrigin="anonymous"
-                  loading="lazy"
-                  referrerPolicy="no-referrer"
+                  onError={(e) => handleImageError(e, notification.studyImageUrl)}
                 />
               </div>
             )}
