@@ -13,7 +13,7 @@ export const mypageService = {
 
   editMyPage: async (studentId) => {
     const token = tokenUtils.getToken();
-    const response = await api.put(`/auth/${studentId}`, {
+    const response = await api.put(`/auth/mypage`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
