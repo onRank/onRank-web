@@ -119,7 +119,7 @@ function StudyManagement() {
 
         // 홈페이지나 스터디 목록 페이지로 리다이렉트
         navigate("/studies");
-        // window.location.reload();
+        window.location.reload();
       } else {
         setError(response.message || "스터디 삭제에 실패했습니다.");
         setIsDeleting(false);
