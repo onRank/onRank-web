@@ -8,6 +8,8 @@ function StudyCard({ study, onClick }) {
   // 디버깅 로그 추가
   console.log("[StudyCard] 렌더링:", study);
 
+  const isCompleted = study.studyStatus === "COMPLETED";
+
   return (
     <div
       onClick={onClick}
@@ -38,6 +40,7 @@ function StudyCard({ study, onClick }) {
           height: "180px",
           overflow: "hidden",
           backgroundColor: colors.secondaryBackground,
+          position: "relative",
         }}>
         <img
           src={study.imageUrl || DEFAULT_IMAGE_SVG}
@@ -49,6 +52,29 @@ function StudyCard({ study, onClick }) {
             objectFit: "cover",
           }}
         />
+        
+        {/* 완료된 스터디 오버레이 */}
+        {isCompleted && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "600",
+              textAlign: "center",
+              padding: "8px",
+            }}>
+            완료된 스터디입니다
+          </div>
+        )}
       </div>
 
       <div
@@ -96,6 +122,7 @@ StudyCard.propTypes = {
     title: PropTypes.string.isRequired,
     description: PropTypes.string,
     imageUrl: PropTypes.string,
+    studyStatus: PropTypes.string,
   }).isRequired,
   onClick: PropTypes.func.isRequired,
 };

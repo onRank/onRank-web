@@ -24,6 +24,7 @@ function StudyList({ studies }) {
     );
     console.log("[StudyList] file 존재 여부:", "file" in studies[0]);
     console.log("[StudyList] studyId 존재 여부:", "studyId" in studies[0]);
+    console.log("[StudyList] studyStatus 존재 여부:", "studyStatus" in studies[0]);
 
     // file 객체가 있는 경우 추가 로깅
     if (studies[0].file) {
@@ -72,6 +73,19 @@ function StudyList({ studies }) {
     );
   }
 
+  // 스터디 정렬: 완료된 스터디를 최후순위로 배치
+  const sortedStudies = [...studies].sort((a, b) => {
+    // COMPLETED 상태인 스터디를 뒤로 보내기
+    if (a.studyStatus === "COMPLETED" && b.studyStatus !== "COMPLETED") {
+      return 1; // a를 뒤로
+    }
+    if (a.studyStatus !== "COMPLETED" && b.studyStatus === "COMPLETED") {
+      return -1; // b를 뒤로
+    }
+    // 둘 다 완료되었거나 둘 다 완료되지 않은 경우 원래 순서 유지
+    return 0;
+  });
+
   return (
     <div
       style={{
@@ -79,7 +93,7 @@ function StudyList({ studies }) {
         gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))",
         gap: "1rem",
       }}>
-      {studies.map((study, index) => {
+      {sortedStudies.map((study, index) => {
         // 백엔드 필드명을 프론트엔드 필드명으로 매핑
         // studyId가 0인 경우도 유효한 ID로 처리하도록 수정
         const hasValidStudyId =
@@ -95,6 +109,7 @@ function StudyList({ studies }) {
           title: study.studyName || "제목 없음",
           description: study.studyContent || "설명 없음",
           imageUrl: fileUrl || "", // file 객체의 fileUrl 사용
+          studyStatus: study.studyStatus || "PROGRESS", // studyStatus 추가
         };
 
         // 매핑된 스터디 객체 로깅

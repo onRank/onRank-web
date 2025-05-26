@@ -117,19 +117,19 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
     }
   };
 
-  // 카테고리 이름 변환
-  const getCategoryName = (category) => {
+  // 카테고리 이름 변환 및 색상 정보
+  const getCategoryInfo = (category) => {
     const categoryMap = {
-      'NOTICE': '공지',
-      'SCHEDULE': '일정',
-      'ASSIGNMENT': '과제',
-      'ATTENDANCE': '출석',
-      'MEMBER': '멤버',
-      'STUDY': '스터디',
-      'POST': '게시글',
+      'NOTICE': { name: '공지', color: '#3498db', bgColor: '#e3f2fd' },
+      'SCHEDULE': { name: '일정', color: '#9c27b0', bgColor: '#f3e5f5' },
+      'ASSIGNMENT': { name: '과제', color: '#ff9800', bgColor: '#fff3e0' },
+      'ATTENDANCE': { name: '출석', color: '#4caf50', bgColor: '#e8f5e9' },
+      'MEMBER': { name: '멤버', color: '#607d8b', bgColor: '#eceff1' },
+      'STUDY': { name: '스터디', color: '#e91e63', bgColor: '#fce4ec' },
+      'POST': { name: '게시글', color: '#795548', bgColor: '#efebe9' },
     };
     
-    return categoryMap[category] || category;
+    return categoryMap[category] || { name: category, color: '#757575', bgColor: '#f5f5f5' };
   };
 
   // 날짜 표시 함수 - 24시간 이내 생성된 알림은 'XX시간 XX분 전' 형식으로 표시
@@ -225,9 +225,23 @@ const NotificationList = ({ onClose, onNotificationRead }) => {
                 {notification.studyName}
               </div>
               <div className="notification-title">
-                {notification.notificationCategory ? 
-                  `[${getCategoryName(notification.notificationCategory)}] ` : 
-                  ''}
+                {notification.notificationCategory && (
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      marginRight: '6px',
+                      color: getCategoryInfo(notification.notificationCategory).color,
+                      backgroundColor: getCategoryInfo(notification.notificationCategory).bgColor,
+                      border: `1px solid ${getCategoryInfo(notification.notificationCategory).color}`,
+                    }}
+                  >
+                    {getCategoryInfo(notification.notificationCategory).name}
+                  </span>
+                )}
                 {notification.notificationTitle}
               </div>
               <div className="notification-body">
