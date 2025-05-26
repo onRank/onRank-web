@@ -104,20 +104,6 @@ function StudyManagement() {
     setSuccess(null);
   };
 
-  // 삭제 처리
-  const handleDelete = async () => {
-    if (
-      window.confirm(
-        "정말로 이 스터디를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다."
-      )
-    ) {
-      setIsDeleting(true);
-      await deleteStudy();
-      navigate("/studies");
-      window.location.reload();
-    }
-  };
-
   // 스터디 삭제 API 호출
   const deleteStudy = async () => {
     try {
@@ -133,6 +119,7 @@ function StudyManagement() {
 
         // 홈페이지나 스터디 목록 페이지로 리다이렉트
         navigate("/studies");
+        // window.location.reload();
       } else {
         setError(response.message || "스터디 삭제에 실패했습니다.");
         setIsDeleting(false);
@@ -548,7 +535,7 @@ function StudyManagement() {
           </div>
 
           <div className="button-container">
-            <Button variant="studyDelete" onClick={handleDelete} />
+            <Button variant="studyDelete" onClick={deleteStudy} />
             <Button variant="edit" onClick={handleEdit} />
           </div>
         </div>
