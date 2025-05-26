@@ -256,7 +256,6 @@ function FileUploader({
           ref={fileInputRef}
           onChange={handleFileChange}
           multiple
-          accept=".pdf,.doc,.docx,.zip,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
         />
 
         <button
