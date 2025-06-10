@@ -1,0 +1,16 @@
+:root {
+  /* 출석 상태 색상 */
+  --present: #28a745;
+  --late: #ffc107;
+  --absent: #dc3545;
+  --unknown: #6c757d;
+}
+
+/* 다크 모드 */
+[data-theme="dark"] {
+  /* 출석 상태 색상 - 다크모드 */
+  --present: #28a745;
+  --late: #ffc107;
+  --absent: #dc3545;
+  --unknown: #6c757d;
+} 

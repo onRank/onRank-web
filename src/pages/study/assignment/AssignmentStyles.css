@@ -1,0 +1,1067 @@
+/* Assignment 관련 페이지 공통 스타일 */
+
+/* 레이아웃 관련 */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* 새로운 깔끔한 UI 스타일 */
+.assignment-page {
+  padding: 0;
+  margin: 0;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.form-field {
+  margin-bottom: 20px;
+}
+
+.form-field label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.form-field input {
+  width: 45%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-field textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.form-field input:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+  text-align: right;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* 폼 관련 */
+.form {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #666;
+  margin-top: 4px;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.textarea:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+/* 버튼 관련 */
+.back-button {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.back-button:hover {
+  background-color: #f8f9fa;
+}
+
+.button-group {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.button {
+  padding: 10px 24px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-button {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  color: #333;
+}
+
+.cancel-button:hover {
+  background-color: #e9ecef;
+}
+
+.submit-button {
+  background-color: #dc3545;
+  border: none;
+  color: white;
+}
+
+.submit-button:hover {
+  background-color: #c82333;
+}
+
+.submit-button:disabled {
+  background-color: #e9ecef;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* 파일 관련 */
+.hidden-file-input {
+  display: none;
+}
+
+.file-list-label {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.file-list {
+  margin-bottom: 12px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 8px;
+  background-color: #f8f9fa;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.file-info-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.file-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.file-name {
+  font-size: 13px;
+  margin-right: 8px;
+  flex: 1;
+  word-break: break-all;
+  font-weight: 500;
+}
+
+.file-size {
+  font-size: 12px;
+  color: #666;
+  margin-right: 8px;
+}
+
+.file-source {
+  font-size: 11px;
+  color: #6c757d;
+}
+
+.remove-file-button {
+  background: none;
+  border: none;
+  color: #dc3545;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.remove-file-button:hover {
+  color: #bd2130;
+}
+
+.attach-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background-color: #f8f9fa;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #666;
+  min-height: 100px;
+}
+
+.attach-button:hover {
+  background-color: #e9ecef;
+}
+
+/* 이미지 미리보기 스타일 */
+.image-preview {
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.image-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-preview-container {
+  margin-top: 12px;
+  text-align: center;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.preview-button {
+  padding: 6px 12px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  margin-right: 8px;
+  transition: background-color 0.2s;
+}
+
+.preview-button:hover {
+  background-color: #138496;
+}
+
+.download-button {
+  padding: 6px 12px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+
+.download-button:hover {
+  background-color: #218838;
+}
+
+/* 제출 관련 스타일 */
+.section {
+  background-color: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+}
+
+.section-subtitle {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+.error-message {
+  color: #dc3545;
+  background-color: #f8d7da;
+  padding: 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.loading-message {
+  text-align: center;
+  padding: 40px;
+  font-size: 16px;
+  color: #666;
+}
+
+/* 추가 스타일 */
+.meta-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+}
+
+.status-and-due-date {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.page-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.due-date {
+  color: #666;
+  font-size: 14px;
+}
+
+.point-display {
+  font-weight: bold;
+  font-size: 16px;
+  color: #666;
+}
+
+.score-display {
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #dc3545;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.description {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  margin-bottom: 24px;
+}
+
+.files-container {
+  margin-top: 16px;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-download-item {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.file-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-icon {
+  font-size: 24px;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  gap: 20px;
+  color: #dc3545;
+}
+
+.textarea-section {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.attachment-section {
+  margin-bottom: 20px;
+}
+
+.file-upload-container {
+  margin-top: 10px;
+}
+
+.file-upload-box {
+  border: 2px dashed #ddd;
+  border-radius: 4px;
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f9fa;
+  cursor: pointer;
+}
+
+.file-upload-box:hover {
+  border-color: #adb5bd;
+  background-color: #f1f3f5;
+}
+
+.file-input-label {
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  color: #6c757d;
+}
+
+.upload-icon {
+  margin-bottom: 10px;
+}
+
+.upload-text {
+  text-align: center;
+  line-height: 1.4;
+}
+
+.file-input {
+  opacity: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.add-more-files-button {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.buttons-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+/* Remove the previous equal width button styles */
+/* Instead, style just the submit and reSubmit buttons to match the close button */
+.buttons-row button[variant="submit"],
+.buttons-row button[variant="reSubmit"],
+.buttons-row button[variant="store"] {
+  width: auto;
+}
+
+.submit-button,
+.resubmit-button {
+  padding: 8px 16px;
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.submit-button:hover,
+.resubmit-button:hover {
+  background-color: #c82333;
+}
+
+.submit-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.file-item[data-status="error"] {
+  border-color: #dc3545;
+  background-color: #f8d7da;
+}
+
+.file-item[data-status="success"] {
+  border-color: #28a745;
+  background-color: #d4edda;
+}
+
+.file-upload-progress {
+  flex: 1;
+  height: 4px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.file-progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.file-error-message {
+  font-size: 12px;
+  color: #dc3545;
+}
+
+.progress-container {
+  margin-top: 16px;
+  width: 100%;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  position: relative;
+  height: 20px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #007bff;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  color: #fff;
+  text-align: center;
+  line-height: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
+.submission-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 16px;
+}
+
+.submission-label {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.submission-content-section {
+  margin-bottom: 20px;
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+}
+
+.submission-content-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #333;
+  font-size: 14px;
+}
+
+.feedback-section {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.feedback-content {
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+/* 이미지 미리보기 관련 추가 스타일 */
+.image-preview-container {
+  margin-top: 12px;
+  text-align: center;
+  max-height: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+}
+
+.image-preview-full {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.preview-icon-button {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 8px;
+}
+
+.preview-icon-button:hover {
+  opacity: 0.7;
+}
+
+/* Date picker wrapper */
+.date-picker-wrapper {
+  position: relative;
+  cursor: pointer;
+}
+
+.date-picker-wrapper input {
+  cursor: pointer;
+}
+
+/* 새로운 과제 정보 헤더 스타일 */
+.assignment-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding: 12px 16px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.assignment-status-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.expired-message {
+  padding: 20px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.submitted-message {
+  color: #2c7744;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.submitted-content {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #e9ecef;
+}
+
+/* New Assignment Detail UI */
+.assignment-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0; /* Remove padding */
+  margin: 0 auto;
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.title-and-status {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.points-and-deadline {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.assignment-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 0;
+  color: #000;
+}
+
+.assignment-deadline {
+  margin-bottom: 0;
+}
+
+.assignment-status {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 6px 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  color: #000;
+  align-self: flex-start;
+}
+
+/* Assignment status color variants */
+.status-notsubmitted {
+  color: #6c757d; /* Gray for not submitted */
+  background-color: #f8f9fa;
+}
+
+.status-submitted {
+  color: #000000; /* Black for submitted */
+  background-color: #f8f9fa;
+}
+
+.status-scored {
+  color: #ee0418; /* Theme red color for scored */
+  background-color: #f8f9fa;
+}
+
+.assignment-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.instruction-section,
+.submission-section {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #000;
+}
+
+.instruction-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.instruction-text {
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.files-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #000;
+}
+
+.files-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 8px;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+}
+
+.file-icon {
+  margin-right: 8px;
+  font-size: 20px;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 14px;
+}
+
+.file-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-button,
+.download-button {
+  padding: 6px 10px;
+  font-size: 13px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.preview-button {
+  background-color: #17a2b8;
+  color: white;
+}
+
+.download-button {
+  background-color: #007bff;
+  color: white;
+}
+
+.preview-button:hover {
+  background-color: #138496;
+}
+
+.download-button:hover {
+  background-color: #0069d9;
+}
+
+.image-preview {
+  margin-top: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.submission-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.content-title,
+.feedback-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #000;
+}
+
+.content-text {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.submission-files {
+  margin-top: 20px;
+}
+
+.submission-date {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.feedback-section {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-top: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.feedback-content {
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.equal-width-button {
+  min-width: 100px;
+  width: auto;
+  max-width: 150px;
+}
+
+.submitted-message {
+  font-size: 14px;
+  color: #28a745;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.submitted-content {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  white-space: pre-wrap;
+  line-height: 1.6;
+}
+
+/* Toggle Section Styles */
+.toggle-section {
+  margin-bottom: 24px;
+}
+
+.toggle-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px 0;
+  border-bottom: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  gap: 8px; /* Add space between title and icon */
+}
+
+.toggle-header:hover {
+  background-color: #f8f9fa;
+}
+
+.toggle-title {
+  font-size: 18px;
+  font-weight: 700; /* Bolder font weight */
+  margin: 0;
+  color: #000;
+  order: 1; /* Title comes first */
+  margin-right: 10px;
+}
+
+.toggle-icon {
+  font-size: 16px;
+  color: #6c757d;
+  order: 2; /* Icon comes after title */
+}
+
+.toggle-content {
+  padding: 16px 0 0 16px; /* Left padding for indentation */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Add space between deadline time and status */
+.deadline-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px; /* Add gap between deadline time and D-day text */
+  align-items: center;
+}
+
+.deadline-days {
+  margin-left: 8px; /* Additional left margin for D-day text */
+}

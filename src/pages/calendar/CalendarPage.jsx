@@ -1,12 +1,19 @@
-import { useState } from 'react';
-import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { useTheme } from '../../contexts/ThemeContext';
+import calendarService from '../../services/calendar';
 
 function CalendarPage() {
+  const { colors } = useTheme();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [leftArrowColor, setLeftArrowColor] = useState('#666666');
-  const [rightArrowColor, setRightArrowColor] = useState('#666666');
+  const [leftArrowColor, setLeftArrowColor] = useState(colors.textSecondary);
+  const [rightArrowColor, setRightArrowColor] = useState(colors.textSecondary);
+  const [calendarItems, setCalendarItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
   const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd });
@@ -29,20 +36,152 @@ function CalendarPage() {
 
   const allDays = [...prevMonthDays, ...daysInMonth, ...nextMonthDays];
 
+  // API에서 캘린더 데이터를 불러오는 함수
+  useEffect(() => {
+    const fetchCalendarData = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        // currentDate에서 연도와 월을 추출
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth() + 1; // JavaScript에서 month는 0부터 시작
+        
+        const response = await calendarService.getCalendarEvents(year, month);
+        console.log('[CalendarPage] API Response:', response);
+        
+        // API 응답이 올바른 형식인지 확인
+        if (response && Array.isArray(response)) {
+          setCalendarItems(response);
+        } else if (response && response.data && Array.isArray(response.data)) {
+          setCalendarItems(response.data);
+        } else {
+          console.error('[CalendarPage] Unexpected API response format:', response);
+          setError('캘린더 데이터 형식이 올바르지 않습니다.');
+        }
+      } catch (err) {
+        console.error('[CalendarPage] Calendar fetch error:', err);
+        setError('캘린더 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCalendarData();
+  }, [currentDate]); // Add currentDate as a dependency to refetch when month changes
+
   const handlePrevMonth = () => {
-    setLeftArrowColor('#FF0000');
-    setTimeout(() => setLeftArrowColor('#666666'), 200);
+    setLeftArrowColor(colors.primary);
+    setTimeout(() => setLeftArrowColor(colors.textSecondary), 200);
     setCurrentDate(subMonths(currentDate, 1));
   };
 
   const handleNextMonth = () => {
-    setRightArrowColor('#FF0000');
-    setTimeout(() => setRightArrowColor('#666666'), 200);
+    setRightArrowColor(colors.primary);
+    setTimeout(() => setRightArrowColor(colors.textSecondary), 200);
     setCurrentDate(addMonths(currentDate, 1));
   };
 
   const handleDateClick = (date) => {
     setSelectedDate(date);
+  };
+
+  // 날짜에 해당하는 일정을 찾는 함수
+  const getEventsForDate = (date) => {
+    if (!calendarItems || calendarItems.length === 0) return [];
+    
+    const events = [];
+    
+    // 각 스터디의 detailList를 순회하며 해당 날짜의 이벤트 찾기
+    calendarItems.forEach(study => {
+      if (study.detailList && Array.isArray(study.detailList)) {
+        study.detailList.forEach(detail => {
+          try {
+            const eventDate = detail.time ? parseISO(detail.time) : null;
+            if (eventDate && isSameDay(date, eventDate)) {
+              // 스터디 정보와 상세 정보 합치기
+              events.push({
+                ...detail,
+                studyName: study.studyName,
+                colorCode: study.colorCode
+              });
+            }
+          } catch (err) {
+            console.error(`[CalendarPage] Date parsing error for item:`, detail, err);
+          }
+        });
+      }
+    });
+    
+    return events;
+  };
+
+  // 이벤트 유형에 따른 카테고리 스타일
+  const getCategoryStyle = (category) => {
+    if (!category) return { color: colors.primary, backgroundColor: colors.primary + '20' };
+    
+    const categoryMap = {
+      'ASSIGNMENT': { color: '#FF5722', backgroundColor: '#FFCCBC' },
+      'SCHEDULE': { color: '#2196F3', backgroundColor: '#BBDEFB' }
+    };
+    
+    return categoryMap[category] || { color: colors.primary, backgroundColor: colors.primary + '20' };
+  };
+
+  // 날짜 카드 내 이벤트 렌더링 함수
+  const renderEvents = (date) => {
+    const events = getEventsForDate(date);
+    
+    if (events.length === 0) return null;
+    
+    return (
+      <div style={{
+        marginTop: '8px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '4px',
+        fontSize: '12px',
+        overflow: 'hidden'
+      }}>
+        {events.slice(0, 2).map((event, index) => {
+          const style = getCategoryStyle(event.category);
+          const borderColor = event.colorCode || style.color;
+          
+          return (
+            <div
+              key={index}
+              style={{
+                backgroundColor: style.backgroundColor,
+                color: style.color,
+                padding: '2px 4px',
+                borderRadius: '4px',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                borderLeft: `3px solid ${borderColor}`,
+                cursor: event.relatedUrl ? 'pointer' : 'default'
+              }}
+              title={`${event.title} - ${event.studyName}`}
+              onClick={() => {
+                if (event.relatedUrl) {
+                  window.location.href = event.relatedUrl;
+                }
+              }}
+            >
+              <span style={{ fontWeight: 'bold' }}>{event.studyName}:</span> {event.title}
+            </div>
+          );
+        })}
+        {events.length > 2 && (
+          <div style={{
+            textAlign: 'center',
+            fontSize: '11px',
+            color: colors.textSecondary
+          }}>
+            +{events.length - 2}개 더보기
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -51,6 +190,35 @@ function CalendarPage() {
       margin: '0 auto',
       padding: '2rem'
     }}>
+      {isLoading && (
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          backgroundColor: 'rgba(255, 255, 255, 0.8)',
+          padding: '1rem',
+          borderRadius: '8px',
+          boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+          zIndex: 1000
+        }}>
+          데이터를 불러오는 중...
+        </div>
+      )}
+      
+      {error && (
+        <div style={{
+          backgroundColor: colors.error + '20',
+          color: colors.error,
+          padding: '1rem',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          textAlign: 'center'
+        }}>
+          {error}
+        </div>
+      )}
+      
       {/* 달력 헤더 */}
       <div style={{
         display: 'flex',
@@ -81,7 +249,8 @@ function CalendarPage() {
         <h2 style={{
           margin: 0,
           fontSize: '24px',
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          color: colors.text
         }}>
           {format(currentDate, 'yyyy. M', { locale: ko })}
         </h2>
@@ -111,14 +280,14 @@ function CalendarPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         textAlign: 'center',
-        borderBottom: '1px solid #E5E5E5',
+        borderBottom: `1px solid ${colors.border}`,
         padding: '0.5rem'
       }}>
         {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
           <div
             key={day}
             style={{
-              color: index === 0 ? '#FF0000' : index === 6 ? '#0000FF' : '#000000',
+              color: index === 0 ? colors.primary : index === 6 ? colors.info : colors.text,
               fontSize: '14px'
             }}
           >
@@ -132,7 +301,7 @@ function CalendarPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(7, 1fr)',
         gap: '1px',
-        backgroundColor: '#E5E5E5'
+        backgroundColor: colors.border
       }}>
         {allDays.map((date, index) => {
           const isSelected = isSameDay(date, selectedDate);
@@ -144,18 +313,21 @@ function CalendarPage() {
               key={index}
               onClick={() => handleDateClick(date)}
               style={{
-                backgroundColor: '#FFFFFF',
-                padding: '1rem',
-                minHeight: '100px',
+                backgroundColor: colors.cardBackground,
+                padding: '0.5rem',
+                height: '120px',
                 cursor: 'pointer',
                 position: 'relative',
-                color: !isCurrentMonth ? '#CCCCCC' : 
-                       date.getDay() === 0 ? '#FF0000' :
-                       date.getDay() === 6 ? '#0000FF' : '#000000',
+                color: !isCurrentMonth ? colors.textSecondary : 
+                       date.getDay() === 0 ? colors.primary :
+                       date.getDay() === 6 ? colors.info : colors.text,
                 ...(isSelected && {
-                  backgroundColor: '#F8F9FA',
-                  border: '2px solid #FF0000'
-                })
+                  backgroundColor: colors.surfaceHover,
+                  border: `2px solid ${colors.primary}`
+                }),
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column'
               }}
             >
               <div style={{
@@ -165,7 +337,7 @@ function CalendarPage() {
               }}>
                 <span style={{
                   ...(todayDate && {
-                    backgroundColor: '#FF0000',
+                    backgroundColor: colors.primary,
                     color: '#FFFFFF',
                     width: '24px',
                     height: '24px',
@@ -179,10 +351,62 @@ function CalendarPage() {
                   {date.getDate()}
                 </span>
               </div>
+              
+              {/* 각 날짜에 해당하는 일정 표시 */}
+              {renderEvents(date)}
             </div>
           );
         })}
       </div>
+      
+      {/* 선택된 날짜 일정 상세 보기 (필요 시 구현) */}
+      {getEventsForDate(selectedDate).length > 0 && (
+        <div style={{
+          marginTop: '2rem',
+          backgroundColor: colors.cardBackground,
+          borderRadius: '8px',
+          padding: '1rem',
+          border: `1px solid ${colors.border}`
+        }}>
+          <h3 style={{ marginTop: 0 }}>
+            {format(selectedDate, 'yyyy년 MM월 dd일', { locale: ko })} 일정
+          </h3>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.75rem'
+          }}>
+            {getEventsForDate(selectedDate).map((event, index) => {
+              const style = getCategoryStyle(event.category);
+              
+              return (
+                <div 
+                  key={index}
+                  style={{
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    backgroundColor: style.backgroundColor,
+                    borderLeft: `4px solid ${event.colorCode || style.color}`,
+                    cursor: event.relatedUrl ? 'pointer' : 'default'
+                  }}
+                  onClick={() => {
+                    if (event.relatedUrl) {
+                      window.location.href = event.relatedUrl;
+                    }
+                  }}
+                >
+                  <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                    {event.studyName} - {event.title}
+                  </div>
+                  <div style={{ fontSize: '14px', color: colors.textSecondary }}>
+                    {event.category === 'ASSIGNMENT' ? '과제' : '일정'} | {format(parseISO(event.time), 'yyyy.MM.dd HH:mm', { locale: ko })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

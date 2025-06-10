@@ -1,0 +1,127 @@
+/* common.css - 공통 스타일 정의 */
+
+/* 페이지 제목 스타일 */
+.page-title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* 컨테이너 스타일 */
+.content-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+/* 추가 박스 스타일 (일정 추가, 과제 추가 등) */
+.add-section-box {
+  border: 1px solid black;
+  border-radius: 12px;
+  padding: 0.7rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.add-section-title {
+  font-weight: bold;
+  margin-bottom: 0.2rem;
+  font-size: 15px;
+}
+
+.add-section-description {
+  font-size: 13px;
+  color: #666;
+}
+
+/* 로딩 및 오류 메시지 */
+.loading-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+}
+
+.error-message {
+  color: #dc3545;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #f8d7da;
+  border-radius: 4px;
+}
+
+.empty-message {
+  text-align: center;
+  padding: 2rem;
+  color: #666;
+  border: 1px dashed #ddd;
+  border-radius: 4px;
+  background-color: #f8f9fa;
+}
+
+/* 파일 업로더 컴포넌트 스타일 */
+.file-uploader-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.file-uploader-dropzone {
+  border: 2px dashed #ccc;
+  border-radius: 5px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
+}
+
+.file-uploader-dropzone:hover {
+  border-color: #0066ff;
+  background-color: #f0f7ff;
+}
+
+.file-uploader-dropzone.active {
+  border-color: #0066ff;
+  background-color: #e6f0ff;
+}
+
+.file-uploader-dropzone.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.file-uploader-input {
+  display: none;
+}
+
+.file-uploader-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.file-uploader-icon {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.file-uploader-label p {
+  margin: 0;
+  font-size: 1rem;
+  color: #333;
+}
+
+.file-uploader-hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.file-uploader-error {
+  color: #dc3545;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+} 

@@ -1,76 +1,116 @@
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types";
+import { useTheme } from "../../contexts/ThemeContext";
+import { DEFAULT_IMAGE_SVG, handleImageError } from "../../utils/imageUtils";
 
 function StudyCard({ study, onClick }) {
-  // Extract or set default for creator name
-  const creatorName = study.creatorName || study.leaderName || '스터디 리더';
-  
+  const { colors } = useTheme();
+
+  // 디버깅 로그 추가
+  console.log("[StudyCard] 렌더링:", study);
+
+  const isCompleted = study.studyStatus === "COMPLETED";
+
   return (
-    <div 
+    <div
       onClick={onClick}
       style={{
-        backgroundColor: '#FFFFFF',
-        borderRadius: '25px',
-        border: '1px solid #ABB1B3',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        cursor: 'pointer',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        ':hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
-        }
-      }}
-    >
-      <div style={{
-        padding: '1.5rem',
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem'
+        backgroundColor: colors.cardBackground,
+        borderRadius: "10px",
+        border: `3px solid #1A1A1A`,
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        cursor: "pointer",
+        transition: "transform 0.2s, box-shadow 0.2s",
+        boxShadow: `4px 4px 0 ${
+          colors.isDarkMode ? "rgba(0, 0, 0, 0.2)" : "rgba(0, 0, 0)"
+        }`,
+        ":hover": {
+          transform: "translateY(-4px)",
+          boxShadow: `0 4px 6px ${
+            colors.isDarkMode ? "rgba(0, 0, 0, 0.3)" : "rgba(0, 0, 0)"
+          }`,
+        },
       }}>
-        <h3 style={{
-          fontSize: '1.25rem',
-          fontWeight: '600',
-          color: '#000000'
+      {/* 스터디 이미지 */}
+      <div
+        style={{
+          width: "100%",
+          height: "180px",
+          overflow: "hidden",
+          backgroundColor: colors.secondaryBackground,
+          position: "relative",
         }}>
-          {study.title}
+        <img
+          src={study.imageUrl || DEFAULT_IMAGE_SVG}
+          alt={study.title}
+          onError={(e) => handleImageError(e, study.imageUrl)}
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+        
+        {/* 완료된 스터디 오버레이 */}
+        {isCompleted && (
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "white",
+              fontSize: "14px",
+              fontWeight: "600",
+              textAlign: "center",
+              padding: "8px",
+            }}>
+            완료된 스터디입니다
+          </div>
+        )}
+      </div>
+
+      <div
+        style={{
+          width: "100%",
+          height: "2px",
+          background: "#1A1A1A",
+        }}
+      />
+
+      <div
+        style={{
+          padding: "16px 16px 36px",
+          display: "flex",
+          flexDirection: "column",
+        }}>
+        <h3
+          style={{
+            fontSize: "16px",
+            fontWeight: "600",
+            color: colors.text,
+            marginBottom: "8px",
+          }}>
+          {study.title || "제목 없음"}
         </h3>
-        <p style={{
-          fontSize: '0.875rem',
-          color: '#ABB1B3',
-          flex: 1
-        }}>
-          {study.description}
+        <p
+          style={{
+            fontSize: "14px",
+            color: colors.textSecondary,
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}>
+          {study.description || "설명 없음"}
         </p>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginTop: 'auto'
-        }}>
-          <span style={{
-            fontSize: '0.875rem',
-            color: '#000000'
-          }}>
-            멤버: {study.currentMembers}/{study.maxMembers}명
-          </span>
-          <span style={{
-            fontSize: '0.875rem',
-            color: study.status === '모집중' ? '#337BB8' : '#F9A955',
-            fontWeight: '500'
-          }}>
-            {study.status}
-          </span>
-        </div>
-        <div style={{
-          fontSize: '0.8rem',
-          color: '#666666',
-          marginTop: '0.5rem'
-        }}>
-          개설자: {creatorName}
-        </div>
       </div>
     </div>
   );
@@ -78,16 +118,13 @@ function StudyCard({ study, onClick }) {
 
 StudyCard.propTypes = {
   study: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string,
-    currentMembers: PropTypes.number.isRequired,
-    maxMembers: PropTypes.number.isRequired,
-    status: PropTypes.string.isRequired,
-    creatorName: PropTypes.string,
-    leaderName: PropTypes.string
+    imageUrl: PropTypes.string,
+    studyStatus: PropTypes.string,
   }).isRequired,
-  onClick: PropTypes.func.isRequired
-}
+  onClick: PropTypes.func.isRequired,
+};
 
-export default StudyCard; 
+export default StudyCard;

@@ -25,10 +25,40 @@
   --main-bg: #ffffff;
   --button-hover-bg: #e5e7eb;
 
+  /* 추가 변수 - 다크모드 호환성 */
+  --dark-mode: 0;
+  --theme-bg: #ffffff;
+  --theme-card: #ffffff;
+  --theme-text: #111827;
+  --theme-text-secondary: #6B7280;
+  --theme-border: #E5E7EB;
+  --theme-primary: #FF0000;
+  --theme-accent: #3B82F6;
+  --theme-success: #059669;
+  --theme-error: #DC2626;
+  --theme-warning: #D97706;
+
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  --background: #f8f9fa;
+  --cardBackground: #ffffff;
+  --textPrimary: #333333;
+  --text: #333333;
+  --textSecondary: #666666;
+  --border: #dddddd;
+  --hoverBackground: #f1f3f5;
+  --buttonBackground: #f1f1f1;
+  --buttonText: #333333;
+  --primary: #E50011;
+  --inputBackground: #ffffff;
+  --error: #e74c3c;
+  --errorBackground: #fdecea;
+  --success: #2ecc71;
+  --warning: #f39c12;
+  --shadowColor: rgba(0, 0, 0, 0.1);
 }
 
 a {
@@ -48,6 +78,14 @@ body {
   overflow-x: hidden;
   min-width: 320px;
   min-height: 100vh;
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background);
+  color: var(--text);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 h1 {
@@ -74,39 +112,398 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 다크모드 처리 (시스템 테마) */
 @media (prefers-color-scheme: dark) {
   :root {
-    color: rgba(255, 255, 255, 0.87);
-    background-color: #242424;
+    color: rgba(255, 255, 255, 0.9);
+    background-color: #121212;
 
     /* Dark mode variables */
-    --card-bg: #1f2937;
+    --card-bg: #1e1e1e;
     --text-primary: #ffffff;
-    --text-secondary: #9CA3AF;
-    --border-color: #374151;
+    --text-secondary: #aaaaaa;
+    --border-color: #3d3d3d;
     
     /* Header variables - Dark mode */
-    --header-bg: #1f2937;
-    --button-bg: #374151;
-    --button-active-bg: #4B5563;
+    --header-bg: #1e1e1e;
+    --button-bg: #333333;
+    --button-active-bg: #444444;
     
     /* Sidebar variables - Dark mode */
-    --sidebar-bg: #111827;
-    --main-bg: #0f172a;
-    --button-hover-bg: #374151;
+    --sidebar-bg: #121212;
+    --main-bg: #121212;
+    --button-hover-bg: #444444;
+
+    /* 추가 변수 - 다크모드 호환성 */
+    --dark-mode: 1;
+    --theme-bg: #121212;
+    --theme-card: #1e1e1e;
+    --theme-text: #ffffff;
+    --theme-text-secondary: #aaaaaa;
+    --theme-border: #3d3d3d;
+    --theme-primary: #FF6B6B;
+    --theme-accent: #60A5FA;
+    --theme-success: #10B981;
+    --theme-error: #EF4444;
+    --theme-warning: #FBBF24;
+
+    --background: #1a1c23;
+    --cardBackground: #2d3748;
+    --textPrimary: #f8f9fa;
+    --text: #f8f9fa;
+    --textSecondary: #a0aec0;
+    --border: #4a5568;
+    --hoverBackground: #3a4a5e;
+    --buttonBackground: #3a4a5e;
+    --buttonText: #f8f9fa;
+    --primary: #ff6b6b;
+    --inputBackground: #2d3748;
+    --error: #fc8181;
+    --errorBackground: #553c3c;
+    --success: #68d391;
+    --warning: #f6ad55;
+    --shadowColor: rgba(0, 0, 0, 0.3);
   }
   
   button {
-    background-color: #1a1a1a;
+    background-color: #333333;
+    color: #ffffff;
   }
   
   a:hover {
-    color: #747bff;
+    color: #FF6B6B;
   }
 }
 
+/* 다크모드 클래스 기반 스타일 (JavaScript 제어용) */
+html.dark-mode {
+  color: rgba(255, 255, 255, 0.9);
+  background-color: #121212;
+
+  /* Dark mode variables */
+  --card-bg: #1e1e1e;
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --border-color: #3d3d3d;
+  
+  /* Header variables - Dark mode */
+  --header-bg: #1e1e1e;
+  --button-bg: #333333;
+  --button-active-bg: #444444;
+  
+  /* Sidebar variables - Dark mode */
+  --sidebar-bg: #121212;
+  --main-bg: #121212;
+  --button-hover-bg: #444444;
+
+  /* 추가 변수 - 다크모드 호환성 */
+  --dark-mode: 1;
+  --theme-bg: #121212;
+  --theme-card: #1e1e1e;
+  --theme-text: #ffffff;
+  --theme-text-secondary: #aaaaaa;
+  --theme-border: #3d3d3d;
+  --theme-primary: #FF6B6B;
+  --theme-accent: #60A5FA;
+  --theme-success: #10B981;
+  --theme-error: #EF4444;
+  --theme-warning: #FBBF24;
+
+  --background: #1a1c23;
+  --cardBackground: #2d3748;
+  --textPrimary: #f8f9fa;
+  --text: #f8f9fa;
+  --textSecondary: #a0aec0;
+  --border: #4a5568;
+  --hoverBackground: #3a4a5e;
+  --buttonBackground: #3a4a5e;
+  --buttonText: #f8f9fa;
+  --primary: #ff6b6b;
+  --inputBackground: #2d3748;
+  --error: #fc8181;
+  --errorBackground: #553c3c;
+  --success: #68d391;
+  --warning: #f6ad55;
+  --shadowColor: rgba(0, 0, 0, 0.3);
+}
+
+/* 기본 스타일 재설정 */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* 카드 스타일 수정 */
+.card {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* 테이블 스타일 수정 */
+table {
+  border-color: var(--border-color);
+}
+
+th, td {
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+/* 입력 필드 스타일 수정 */
+input, textarea, select {
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+  border-color: var(--theme-border);
+}
+
+/* 버튼 스타일 수정 */
+.btn {
+  background-color: var(--button-bg);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.btn:hover {
+  background-color: var(--button-hover-bg);
+}
+
+/* 아이콘 색상 조정 */
+svg {
+  fill: currentColor;
+}
+
+/* 폼 입력 요소 스타일링 - 다크모드 지원 */
+input, textarea, select {
+  background-color: var(--inputBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* 입력 요소 플레이스홀더 스타일링 */
+input::placeholder, textarea::placeholder {
+  color: var(--textSecondary) !important;
+  opacity: 0.7;
+}
+
+/* 카드 및 컨테이너 스타일링 */
+.card, 
+div[style*="background-color: #ffffff"], 
+div[style*="background-color: white"],
+div[style*="backgroundColor: '#ffffff'"],
+div[style*="backgroundColor: 'white'"] {
+  background-color: var(--cardBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* 버튼 스타일링 - 기본(white) 버튼 */
+button[style*="background-color: white"],
+button[style*="backgroundColor: 'white'"],
+button[style*="background-color: #ffffff"],
+button[style*="backgroundColor: '#ffffff'"] {
+  background-color: var(--buttonBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* 텍스트 스타일링 */
+div[style*="color: #333"], 
+div[style*="color: #333333"],
+div[style*="color: '#333'"],
+div[style*="color: '#333333'"] {
+  color: var(--textPrimary) !important;
+}
+
+div[style*="color: #666"], 
+div[style*="color: #666666"],
+div[style*="color: '#666'"],
+div[style*="color: '#666666'"] {
+  color: var(--textSecondary) !important;
+}
+
+/* 다크모드에서 흰색 배경의 모달 수정 */
+body.dark-mode div[style*="backgroundColor: 'white'"] {
+  background-color: var(--cardBackground) !important;
+}
+
+/* 다크모드 활성화 시 body 스타일 강화 */
+body.dark-mode {
+  background-color: var(--background);
+  color: var(--text);
+}
+
+/* 전체 앱 컨테이너에 배경색 적용 */
+#root {
+  background-color: var(--background);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* 일정, 공지사항, 게시글 폼 요소 스타일링 */
+body.dark-mode .schedule-form input,
+body.dark-mode .schedule-form textarea,
+body.dark-mode .notice-form input,
+body.dark-mode .notice-form textarea,
+body.dark-mode .post-form input,
+body.dark-mode .post-form textarea {
+  background-color: var(--inputBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* 표 요소 스타일링 */
+table, th, td {
+  border-color: var(--border) !important;
+}
+
+th {
+  background-color: var(--buttonBackground) !important;
+  color: var(--textPrimary) !important;
+}
+
+td {
+  color: var(--textPrimary) !important;
+}
+
+/* 모달 배경 스타일링 */
+div[style*="backgroundColor: 'rgba(0, 0, 0, 0.5)'"] {
+  background-color: rgba(0, 0, 0, 0.6) !important;
+}
+
+/* 날짜 선택 필드 스타일링 */
+input[type="date"] {
+  background-color: var(--inputBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* 버튼 스타일 강화 */
+button {
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s !important;
+}
+
+/* 빨간색 버튼(Primary) 스타일링 */
+button[style*="background-color: #FF0000"],
+button[style*="backgroundColor: '#FF0000'"],
+button[style*="background-color: #ff0000"],
+button[style*="backgroundColor: '#ff0000'"],
+button[style*="background-color: #E50011"],
+button[style*="backgroundColor: '#E50011'"] {
+  background-color: var(--primary) !important;
+  color: white !important;
+}
+
+/* 빨간색 테두리 버튼 */
+button[style*="border: 1px solid #f44336"],
+button[style*="border: '1px solid #f44336'"] {
+  border-color: var(--primary) !important;
+  color: var(--primary) !important;
+}
+
+/* 비활성화된 버튼 스타일링 */
+button[disabled],
+button[style*="backgroundColor: '#cccccc'"],
+button[style*="background-color: #cccccc"] {
+  background-color: #cccccc !important;
+  color: #666666 !important;
+  cursor: not-allowed !important;
+}
+
+/* 모달 내부 요소 스타일링 */
+div[style*="backgroundColor: 'white'"] > div,
+div[style*="background-color: white"] > div,
+div[style*="backgroundColor: '#ffffff'"] > div,
+div[style*="background-color: #ffffff"] > div {
+  color: var(--textPrimary) !important;
+}
+
+/* 모달 내부 라벨 스타일링 */
+div[style*="backgroundColor: 'white'"] label,
+div[style*="background-color: white"] label,
+div[style*="backgroundColor: '#ffffff'"] label,
+div[style*="background-color: #ffffff"] label {
+  color: var(--textPrimary) !important;
+}
+
+/* 테이블 스타일링 강화 */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  background-color: var(--cardBackground) !important;
+}
+
+tr:nth-child(even) {
+  background-color: var(--hoverBackground) !important;
+}
+
+/* 파일 첨부 영역 스타일링 */
+div[style*="backgroundColor: '#f8f9fa'"],
+div[style*="background-color: #f8f9fa"] {
+  background-color: var(--hoverBackground) !important;
+  color: var(--textPrimary) !important;
+  border-color: var(--border) !important;
+}
+
+/* 파일 아이콘 및 텍스트 */
+span[style*="color: '#666'"],
+span[style*="color: #666"] {
+  color: var(--textSecondary) !important;
+}
+
+/* 오버레이, 팝업 배경 강화 */
+div[style*="backgroundColor: 'rgba(0, 0, 0, 0.5)'"] {
+  z-index: 9999;
+}
+
+/* 가로선 및 구분선 스타일링 */
+div[style*="backgroundColor: '#FF0000'"],
+div[style*="background-color: #FF0000"],
+div[style*="backgroundColor: '#ff0000'"],
+div[style*="background-color: #ff0000"] {
+  background-color: var(--primary) !important;
+}
+
+/* 에러 메시지 스타일링 */
+div[style*="backgroundColor: '#fdecea'"],
+div[style*="background-color: #fdecea"],
+div[style*="backgroundColor: '#FFEBEE'"],
+div[style*="background-color: #FFEBEE"] {
+  background-color: var(--errorBackground) !important;
+  color: var(--error) !important;
+}
+
+/* Safari에서 날짜 선택기 아이콘 색상 수정 */
+input::-webkit-calendar-picker-indicator {
+  filter: invert(var(--dark-mode));
+}
+
+/* 페이지 상단 검은 바 제거 */
+body::before,
+html::before {
+  display: none !important;
+  content: none !important;
+}
+
+body, html {
+  border-top: none !important;
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* body와 html 요소에 추가적인 배경색 확인 */
+body, html {
+  background-color: var(--background) !important;
+}
+
+/* 모든 상위 요소에서 border와 배경 재설정 */
+#root, body, html, head {
+  border-top: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  border-right: none !important;
 }

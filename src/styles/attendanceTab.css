@@ -1,0 +1,284 @@
+/* AttendanceTab 공통 스타일 */
+.attendance-tab {
+  padding: 1rem;
+  color: var(--textPrimary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.attendance-tab h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  color: var(--textPrimary);
+}
+
+.loading, .error-message, .no-attendance {
+  padding: 2rem;
+  text-align: center;
+  background-color: var(--cardBackground);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.error-message {
+  color: var(--error);
+}
+
+/* 출석 개요 페이지 스타일 */
+.attendance-overview-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.attendance-overview {
+  background-color: var(--cardBackground);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.attendance-chart-container {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.chart-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.percentage {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #E50011;
+}
+
+.attendance-history {
+  background-color: var(--cardBackground);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.attendance-history h3 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  color: var(--textPrimary);
+}
+
+/* 출석 목록 테이블 스타일 */
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-header {
+  display: flex;
+  background-color: var(--backgroundSecondary);
+  padding: 0.75rem 1rem;
+  border-radius: 8px 8px 0 0;
+  font-weight: bold;
+}
+
+.header-cell {
+  flex: 1;
+}
+
+.header-cell:last-child {
+  text-align: center;
+  flex: 0 0 100px;
+}
+
+.table-row {
+  display: flex;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.table-row:hover {
+  background-color: var(--backgroundHover);
+}
+
+.table-row.selected {
+  background-color: rgba(229, 0, 17, 0.05);
+}
+
+.date-cell {
+  flex: 1;
+  font-weight: 500;
+}
+
+.date-info {
+  font-size: 0.85rem;
+  color: var(--textSecondary);
+  font-weight: normal;
+}
+
+.status-cell {
+  flex: 0 0 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-icon {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.status-icon.present {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.status-icon.absent {
+  background-color: #F44336;
+  color: white;
+}
+
+.status-icon.late {
+  background-color: #FFC107;
+  color: white;
+}
+
+.status-icon.unknown {
+  background-color: #9E9E9E;
+  color: white;
+}
+
+/* 출석 상세 페이지 스타일 */
+.attendance-detail-container {
+  background-color: var(--cardBackground);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.detail-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  display: flex;
+  align-items: center;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-right: 1rem;
+}
+
+.detail-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.attendance-detail h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.2rem;
+}
+
+.attendance-table .table-row {
+  cursor: default;
+}
+
+.name-cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.is-me {
+  margin-left: 0.5rem;
+  color: var(--primary);
+  font-size: 0.85rem;
+}
+
+.role {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+.role.creator {
+  background-color: var(--primary);
+  color: white;
+}
+
+.role.host {
+  background-color: var(--primaryLight);
+  color: white;
+}
+
+/* 출석 상태 버튼 스타일 */
+.status-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.status-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+
+.status-btn:hover {
+  opacity: 1;
+}
+
+.status-btn.active {
+  opacity: 1;
+}
+
+.status-btn.present {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.status-btn.absent {
+  background-color: #F44336;
+  color: white;
+}
+
+.status-btn.late {
+  background-color: #FFC107;
+  color: white;
+}
+
+.status-btn.unknown {
+  background-color: #9E9E9E;
+  color: white;
+} 

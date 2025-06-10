@@ -1,0 +1,205 @@
+.submission-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.submission-header {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  align-self: flex-start;
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px 0;
+  margin-bottom: 15px;
+}
+
+.back-button:hover {
+  color: #000;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.submission-list-wrapper {
+  margin-top: 20px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.submission-list-header {
+  display: flex;
+  background-color: #f9f9f9;
+  padding: 15px 20px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.header-item {
+  padding: 0 10px;
+}
+
+.header-item.name {
+  flex: 1;
+  text-align: left;
+}
+
+.header-item.status {
+  width: 120px;
+  text-align: center;
+}
+
+.header-item.score {
+  width: 120px;
+  text-align: center;
+}
+
+.submission-items {
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.submission-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submission-item:hover {
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+.member-info {
+  flex: 1;
+  padding: 0 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.name-email-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.member-name {
+  font-weight: 500;
+  margin-right: 10px;
+}
+
+.member-email {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.submission-date {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.submission-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.status-text {
+  font-size: 14px;
+  color: #6c757d;
+}
+
+.submission-score {
+  text-align: center;
+  min-width: 120px;
+}
+
+.score-badge {
+  display: inline-block;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: bold;
+  min-width: 80px;
+}
+
+.score-badge.red {
+  background-color: #dc3545;
+}
+
+.score-badge.gray {
+  background-color: #adb5bd;
+}
+
+.empty-submissions {
+  padding: 30px;
+  text-align: center;
+  color: #6c757d;
+}
+
+.submission-loading {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.submission-error {
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #f8d7da;
+  border-radius: 4px;
+  color: #dc3545;
+}
+
+.submission-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.close-button {
+  padding: 8px 20px;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.close-button:hover {
+  background-color: #e9ecef;
+}
+
+/* ScoreDisplay 컴포넌트에 대한 추가 스타일 */
+.submission-score-display {
+  min-width: 100px;
+}
+
+.submission-item.not-submitted {
+  cursor: default;
+  opacity: 0.7;
+  background-color: #f8f9fa;
+  pointer-events: none;
+}
+
+.submission-item.not-submitted .status-text {
+  color: #6c757d;
+} 

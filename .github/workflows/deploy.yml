@@ -1,0 +1,69 @@
+name: Deploy Frontend to S3
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Clean install dependencies
+        run: |
+          rm -f package-lock.json
+          npm install
+
+      - name: Set env vars based on branch
+        id: set-vars
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "S3_PREFIX=main" >> $GITHUB_OUTPUT
+            echo "DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_FRONTEND_URL=https://onrank.kr" >> $GITHUB_ENV
+            echo "VITE_CLOUDFRONT_URL=https://onrank.kr" >> $GITHUB_ENV
+            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "S3_PREFIX=develop" >> $GITHUB_OUTPUT
+            echo "DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_OUTPUT
+            echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_FRONTEND_URL=https://dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_CLOUDFRONT_URL=https://dev.onrank.kr" >> $GITHUB_ENV
+            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
+          fi
+
+      - name: 🔍 Show env vars
+        run: |
+          echo "⚙️ VITE_API_URL = $VITE_API_URL"
+          echo "⚙️ VITE_FRONTEND_URL = $VITE_FRONTEND_URL"
+
+      - name: ❌ Clean old dist
+        run: rm -rf dist
+
+      - name: Build
+        run: npm run build
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Deploy to S3
+        run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/${{ steps.set-vars.outputs.S3_PREFIX }} --delete
+
+      - name: Invalidate CloudFront cache
+        run: aws cloudfront create-invalidation --distribution-id ${{ steps.set-vars.outputs.DISTRIBUTION_ID }} --paths "/*"

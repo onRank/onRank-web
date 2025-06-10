@@ -1,4 +1,6 @@
 import "./index.css";
+import "./styles/common.css";
+import "./utils/setupUrlInterceptor.js";
 import App from "./App.jsx";
 import { React } from "react";
 import { createRoot } from "react-dom/client";

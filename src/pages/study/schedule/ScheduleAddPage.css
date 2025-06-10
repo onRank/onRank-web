@@ -1,0 +1,77 @@
+/* ScheduleAddPage.css */
+.schedule-add-container {
+  width: 100%;
+}
+
+.schedule-add-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-add-form {
+  max-width: 800px;
+  height: fit-content;
+}
+
+.schedule-error {
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.field-container {
+  margin-bottom: 2rem;
+}
+
+.field-title {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.required-mark {
+  margin-right: 0.25rem;
+  color: #ee0418;
+}
+
+.form-input {
+  width: 45%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+.form-input-content {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 4px;
+  font-size: 15px;
+}
+
+.date-picker-container {
+  position: relative;
+  width: 100%;
+  cursor: pointer;
+}
+
+.textarea-container {
+  position: relative;
+}
+
+.char-counter {
+  display: flex;
+  justify-content: flex-start;
+  font-size: 12px;
+  margin-top: 0.5rem;
+}
+
+.button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
