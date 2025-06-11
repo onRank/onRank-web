@@ -7,11 +7,20 @@ on:
       - main
 
 permissions:
-  contents: read  # ✅ OIDC 인증 방지 → 'id-token: write' 제거됨
+  contents: read  # ✅ OIDC 인증 방지
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      VITE_MSW_ENABLED: false
+      AWS_REGION: us-east-1
+      CLOUDFRONT_ID: ${{ github.ref == 'refs/heads/main' && secrets.PROD_CLOUDFRONT_ID || secrets.DEV_CLOUDFRONT_ID }}
+      S3_PREFIX: ${{ github.ref == 'refs/heads/main' && 'main' || 'develop' }}
+      VITE_API_URL: ${{ github.ref == 'refs/heads/main' && 'https://api.onrank.kr' || 'https://api-dev.onrank.kr' }}
+      VITE_FRONTEND_URL: ${{ github.ref == 'refs/heads/main' && 'https://onrank.kr' || 'https://dev.onrank.kr' }}
+      VITE_CLOUDFRONT_URL: ${{ github.ref == 'refs/heads/main' && 'https://onrank.kr' || 'https://dev.onrank.kr' }}
 
     steps:
       - name: Checkout code
@@ -27,24 +36,6 @@ jobs:
         run: |
           rm -f package-lock.json
           npm install
-
-      - name: Set environment variables
-        run: |
-          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
-            echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
-            echo "VITE_FRONTEND_URL=https://onrank.kr" >> $GITHUB_ENV
-            echo "VITE_CLOUDFRONT_URL=https://onrank.kr" >> $GITHUB_ENV
-            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
-            echo "S3_PREFIX=main" >> $GITHUB_ENV
-            echo "CLOUDFRONT_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_ENV
-          else
-            echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
-            echo "VITE_FRONTEND_URL=https://dev.onrank.kr" >> $GITHUB_ENV
-            echo "VITE_CLOUDFRONT_URL=https://dev.onrank.kr" >> $GITHUB_ENV
-            echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
-            echo "S3_PREFIX=develop" >> $GITHUB_ENV
-            echo "CLOUDFRONT_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_ENV
-          fi
 
       - name: 🔍 Show env vars
         run: |
@@ -64,32 +55,30 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          aws-region: ${{ env.AWS_REGION }}
           mask-aws-account-id: true
 
       - name: 🕵️ Verify current IAM identity
-        run: aws sts get-caller-identity  # ✅ 디버깅용: 실제 IAM 사용자 확인
+        run: aws sts get-caller-identity
 
       - name: Verify AWS permissions
         run: |
-          echo "Checking CloudFront permissions..."
           aws cloudfront list-distributions --max-items 1
-          echo "Checking S3 permissions..."
           aws s3 ls s3://${{ secrets.S3_BUCKET }}
 
       - name: Deploy to S3
         run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/$S3_PREFIX --delete
 
-      - name: Invalidate CloudFront cache
+      - name: ✅ Invalidate CloudFront cache
         run: |
-          echo "Creating invalidation for distribution $CLOUDFRONT_ID"
+          echo "Creating invalidation for distribution ID: $CLOUDFRONT_ID"
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
-            --distribution-id $CLOUDFRONT_ID \
+            --distribution-id "$CLOUDFRONT_ID" \
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
-          echo "Invalidation created with ID: $INVALIDATION_ID"
+          echo "Invalidation ID: $INVALIDATION_ID"
           echo "Waiting for invalidation to complete..."
           aws cloudfront wait invalidation-completed \
-            --distribution-id $CLOUDFRONT_ID \
-            --id $INVALIDATION_ID
+            --distribution-id "$CLOUDFRONT_ID" \
+            --id "$INVALIDATION_ID"
