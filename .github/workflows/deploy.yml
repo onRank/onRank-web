@@ -28,26 +28,23 @@ jobs:
       - name: Set env vars based on branch
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "S3_PREFIX=main" >> $GITHUB_ENV
-            echo "DISTRIBUTION_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_ENV
             echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
             echo "VITE_FRONTEND_URL=https://onrank.kr" >> $GITHUB_ENV
             echo "VITE_CLOUDFRONT_URL=https://onrank.kr" >> $GITHUB_ENV
             echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
+            echo "S3_PREFIX=main" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "S3_PREFIX=develop" >> $GITHUB_ENV
-            echo "DISTRIBUTION_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_ENV
             echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_FRONTEND_URL=https://dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_CLOUDFRONT_URL=https://dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
+            echo "S3_PREFIX=develop" >> $GITHUB_ENV
           fi
 
       - name: 🔍 Show env vars
         run: |
           echo "⚙️ VITE_API_URL = $VITE_API_URL"
           echo "⚙️ VITE_FRONTEND_URL = $VITE_FRONTEND_URL"
-          echo "🚀 CloudFront Distribution ID = $DISTRIBUTION_ID"
           echo "📦 S3 Prefix = $S3_PREFIX"
 
       - name: ❌ Clean old dist
@@ -67,4 +64,9 @@ jobs:
         run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/$S3_PREFIX --delete
 
       - name: Invalidate CloudFront cache
-        run: aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
+          else
+            aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
+          fi
