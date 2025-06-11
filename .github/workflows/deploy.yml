@@ -68,10 +68,14 @@ jobs:
           aws-region: ap-northeast-2
           mask-aws-account-id: true
 
-      - name: Verify AWS credentials
+      - name: Verify AWS credentials and permissions
         run: |
+          echo "Verifying AWS credentials..."
           aws sts get-caller-identity
+          echo "Checking CloudFront permissions..."
           aws cloudfront list-distributions --max-items 1
+          echo "Checking S3 permissions..."
+          aws s3 ls s3://${{ secrets.S3_BUCKET }}
 
       - name: Deploy to S3
         run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/$S3_PREFIX --delete
@@ -79,6 +83,8 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           echo "Creating invalidation for distribution $CLOUDFRONT_ID"
+          aws cloudfront wait distribution-deployed --id $CLOUDFRONT_ID
           aws cloudfront create-invalidation \
             --distribution-id $CLOUDFRONT_ID \
-            --paths "/*"
+            --paths "/*" \
+            --debug
