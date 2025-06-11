@@ -6,6 +6,10 @@ on:
       - develop
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -62,12 +66,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
+          mask-aws-account-id: true
+
+      - name: Verify AWS credentials
+        run: |
+          aws sts get-caller-identity
+          aws cloudfront list-distributions --max-items 1
 
       - name: Deploy to S3
         run: aws s3 sync dist/ s3://${{ secrets.S3_BUCKET }}/$S3_PREFIX --delete
 
       - name: Invalidate CloudFront cache
         run: |
+          echo "Creating invalidation for distribution $CLOUDFRONT_ID"
           aws cloudfront create-invalidation \
             --distribution-id $CLOUDFRONT_ID \
             --paths "/*"
