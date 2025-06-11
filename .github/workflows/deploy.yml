@@ -7,8 +7,7 @@ on:
       - main
 
 permissions:
-  id-token: write
-  contents: read
+  contents: read  # ✅ OIDC 인증 방지 → 'id-token: write' 제거됨
 
 jobs:
   deploy:
@@ -68,10 +67,11 @@ jobs:
           aws-region: us-east-1
           mask-aws-account-id: true
 
-      - name: Verify AWS credentials and permissions
+      - name: 🕵️ Verify current IAM identity
+        run: aws sts get-caller-identity  # ✅ 디버깅용: 실제 IAM 사용자 확인
+
+      - name: Verify AWS permissions
         run: |
-          echo "Verifying AWS credentials..."
-          aws sts get-caller-identity
           echo "Checking CloudFront permissions..."
           aws cloudfront list-distributions --max-items 1
           echo "Checking S3 permissions..."
