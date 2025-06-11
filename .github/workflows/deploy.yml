@@ -65,7 +65,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ap-northeast-2
+          aws-region: us-east-1
           mask-aws-account-id: true
 
       - name: Verify AWS credentials and permissions
@@ -83,8 +83,13 @@ jobs:
       - name: Invalidate CloudFront cache
         run: |
           echo "Creating invalidation for distribution $CLOUDFRONT_ID"
-          aws cloudfront wait distribution-deployed --id $CLOUDFRONT_ID
-          aws cloudfront create-invalidation \
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id $CLOUDFRONT_ID \
             --paths "/*" \
-            --debug
+            --query 'Invalidation.Id' \
+            --output text)
+          echo "Invalidation created with ID: $INVALIDATION_ID"
+          echo "Waiting for invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id $CLOUDFRONT_ID \
+            --id $INVALIDATION_ID

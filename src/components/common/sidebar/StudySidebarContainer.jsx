@@ -39,7 +39,7 @@ const StudySidebarContainer = memo(({ activeTab, subPage }) => {
         studyImageUrl: cachedContext.studyImageUrl || null,
       });
 
-      // 역할 정보 설정 (memberRole이 없는 경우에만)
+      // 역할 정보 설정 (memberRole이 없는 경우에만) 
       if (
         cachedContext.memberRole &&
         (!memberRole || memberRole !== cachedContext.memberRole)
