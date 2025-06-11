@@ -2,7 +2,7 @@ import React, { useState, useEffect, memo } from "react";
 import PropTypes from "prop-types";
 import { useParams, Link } from "react-router-dom";
 import { useTheme } from "../../../contexts/ThemeContext";
-import  useStudyRole from "../../../hooks/useStudyRole";
+import useStudyRole from "../../../hooks/useStudyRole";
 import StudyInfoHeader from "./StudyInfoHeader";
 import StudyNavigation from "./StudyNavigation";
 import studyContextService from "../../../services/studyContext";
