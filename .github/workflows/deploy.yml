@@ -25,20 +25,22 @@ jobs:
           rm -f package-lock.json
           npm install
 
-      - name: Set env vars based on branch
+      - name: Set environment variables
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
             echo "VITE_API_URL=https://api.onrank.kr" >> $GITHUB_ENV
             echo "VITE_FRONTEND_URL=https://onrank.kr" >> $GITHUB_ENV
             echo "VITE_CLOUDFRONT_URL=https://onrank.kr" >> $GITHUB_ENV
             echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
             echo "S3_PREFIX=main" >> $GITHUB_ENV
-          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "CLOUDFRONT_ID=${{ secrets.PROD_CLOUDFRONT_ID }}" >> $GITHUB_ENV
+          else
             echo "VITE_API_URL=https://api-dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_FRONTEND_URL=https://dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_CLOUDFRONT_URL=https://dev.onrank.kr" >> $GITHUB_ENV
             echo "VITE_MSW_ENABLED=false" >> $GITHUB_ENV
             echo "S3_PREFIX=develop" >> $GITHUB_ENV
+            echo "CLOUDFRONT_ID=${{ secrets.DEV_CLOUDFRONT_ID }}" >> $GITHUB_ENV
           fi
 
       - name: 🔍 Show env vars
@@ -46,6 +48,7 @@ jobs:
           echo "⚙️ VITE_API_URL = $VITE_API_URL"
           echo "⚙️ VITE_FRONTEND_URL = $VITE_FRONTEND_URL"
           echo "📦 S3 Prefix = $S3_PREFIX"
+          echo "🚀 CloudFront Distribution ID = $CLOUDFRONT_ID"
 
       - name: ❌ Clean old dist
         run: rm -rf dist
@@ -54,7 +57,7 @@ jobs:
         run: npm run build
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -65,8 +68,6 @@ jobs:
 
       - name: Invalidate CloudFront cache
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            aws cloudfront create-invalidation --distribution-id ${{ secrets.PROD_CLOUDFRONT_ID }} --paths "/*"
-          else
-            aws cloudfront create-invalidation --distribution-id ${{ secrets.DEV_CLOUDFRONT_ID }} --paths "/*"
-          fi
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_ID \
+            --paths "/*"
